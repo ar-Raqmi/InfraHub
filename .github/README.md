@@ -106,34 +106,6 @@ Final phase for project completion and financial closure.
 - Closed project file
 - Archive documentation
 
-## Reference Documents
-
-### 1. Workflow Diagram (`251117-workflow-2.jpg`)
-Complete visual representation of the 4-phase workflow system, showing:
-- Field names and types for each phase
-- Data flow between phases
-- Auto-population and auto-calculation rules
-- Form components and validation requirements
-
-### 2. Cover Page Template (`coverPage/`)
-Official letterhead and project documentation format for:
-- Jabatan Kejuruteraan, Majlis Perbandaran Selayang
-- Professional government documentation standards
-- Project identification and classification
-
-### 3. Aku Janji Template (`akuJanji/`)
-Personal commitment letter template used in Phase 2, including:
-- Contractor commitment statements
-- Project responsibility acknowledgment
-- Legal and contractual obligations
-
-### 4. BQ Reference (`bqReference/`)
-Detailed Bill of Quantities reference documentation covering:
-- BQ structure and format
-- Item categorization
-- Costing methodology
-- Specification standards
-
 ## Usage for Government Staff
 
 ### Current Usage (Documentation Phase)
