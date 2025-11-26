@@ -162,27 +162,6 @@ Future implementation may include:
 - Authentication system
 - Report generation tools
 
-## Contributing
-
-### For Municipal Staff
-
-If you need to update workflows, templates, or procedures:
-
-1. Submit change requests through proper departmental channels
-2. Ensure changes comply with municipal regulations
-3. Update reference documentation accordingly
-4. Maintain Bahasa Malaysia as the working language
-
-### For Developers (Future Phase)
-
-When software implementation begins:
-
-1. Fork this repository
-2. Review all reference materials thoroughly
-3. Maintain bilingual documentation (code comments in English, user interface in Bahasa Malaysia)
-4. Follow government software development standards
-5. Ensure data privacy and security compliance
-
 ## Language Note
 
 **System Language**: Bahasa Malaysia (Malay)
