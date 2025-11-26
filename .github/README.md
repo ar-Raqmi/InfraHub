@@ -11,13 +11,6 @@ InfraHub is a comprehensive project management documentation system designed to 
 **Current Status**: Documentation and reference phase
 **Future Vision**: Full software application implementation
 
-## Organization
-
-**Department**: Jabatan Kejuruteraan (Engineering Department)
-**Organization**: Majlis Perbandaran Selayang
-**Address**: Bandar Baru Selayang, 68100 Batu Caves, Selangor, Malaysia
-**Director**: Mohamad Khairul Amirizn Bin Zainal Abidin
-
 ## System Architecture
 
 InfraHub implements a **4-phase workflow** for managing infrastructure projects. Each phase has specific fields, requirements, and deliverables.
@@ -112,26 +105,6 @@ Final phase for project completion and financial closure.
 - Final financial reconciliation
 - Closed project file
 - Archive documentation
-
-## Repository Structure
-
-```
-InfraHub/
-├── README.md                    # This file
-├── references/                  # Reference materials and templates
-│   ├── 251117-workflow-2.jpg   # Complete 4-phase workflow diagram
-│   ├── coverPage/              # Official project cover page template
-│   │   ├── page1.jpg
-│   │   └── page2.jpg
-│   ├── akuJanji/               # Personal commitment letter template
-│   │   └── akuJanji.jpg
-│   └── bqReference/            # Bill of Quantities reference documentation
-│       ├── page1.jpg
-│       ├── page2.jpg
-│       ├── page3.jpg
-│       └── page4.jpg
-└── .claude/                     # Claude Code configuration
-```
 
 ## Reference Documents
 
@@ -248,16 +221,3 @@ All forms, field names, and user-facing content in the system are in Bahasa Mala
 ## License
 
 This project is developed for Majlis Perbandaran Selayang. Usage and distribution rights are subject to municipal council policies.
-
-## Contact
-
-**Jabatan Kejuruteraan**
-Majlis Perbandaran Selayang
-Bandar Baru Selayang
-68100 Batu Caves, Selangor
-Malaysia
-
----
-
-**Repository Maintainer**: ar-Raqmi (ar-raqmi@proton.me)
-**Last Updated**: November 26, 2025
