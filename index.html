@@ -80,7 +80,26 @@
         color: transparent;
       }
 
-      /* Scrollbar */
+      /* HIDE NUMBER SPINNERS GLOBALLY */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+
+      /* Scrollbar Utility */
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+
+      /* Custom Scrollbar for other elements */
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.2); border-radius: 3px; }
@@ -88,14 +107,14 @@
 
       /* Print Styles */
       @media print {
-        @page { size: A4; margin: 1cm; }
-        body { background: white !important; color: black !important; }
+        @page { size: A4; margin: 0; }
+        body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; }
         .no-print { display: none !important; }
         .print-only { display: block !important; }
-        .bq-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
-        .bq-table th, .bq-table td { border: 1px solid black; padding: 4px; }
         .glass-effect { background: none !important; box-shadow: none !important; backdrop-filter: none !important; }
         aside { display: none !important; }
+        /* Ensure inputs print their values */
+        input, textarea, select { border: none !important; background: transparent !important; resize: none; overflow: visible; }
       }
     </style>
     <script>

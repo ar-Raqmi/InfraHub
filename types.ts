@@ -1,7 +1,8 @@
 
+
 export enum Role {
-  ADMIN = 'ADMIN', // PT (Pembantu Tadbir) - Full access
-  PJA = 'PJA',     // Penolong Jurutera Awam - Limited access
+  ADMIN = 'ADMIN', // "Blue"
+  PJA = 'PJA',     // "Yellow"
 }
 
 export enum ProjectStatus {
@@ -11,17 +12,21 @@ export enum ProjectStatus {
   SIAP = 'SIAP',                           // Phase 4
 }
 
-export enum TempohKontrakUnit {
-  HARI = 'HARI',
-  MINGGU = 'MINGGU',
-  BULAN = 'BULAN',
-}
+export const BP_OPTIONS = [
+  "BP 1: GOMBAK UTARA",
+  "BP 2: PERMATANG KUARZA",
+  "BP 3: GOMBAK SELATAN",
+  "BP 4: SELAYANG-GOMBAK BARAT",
+  "BP 5: KEPONG-SUNGAI BULOH",
+  "BP 6: RAWANG TIMUR",
+  "BP 7: RAWANG UTARA",
+  "BP 8: RAWANG BARAT",
+  "BP 9: RAWANG SELATAN",
+  "BP 10: KAWASAN PEMELIHARAAN"
+];
 
-export interface Aduan {
-  id: string;
-  noAduan: string; // e.g., "MPS.012334" or "AHLI MAJLIS"
-  lokasi: string;  // e.g., "Jalan 1/2 Sri Gombak"
-}
+// Generate Zon 1 to Zon 24
+export const ZON_OPTIONS = Array.from({ length: 24 }, (_, i) => `Zon ${i + 1}`);
 
 export interface User {
   id: number;
@@ -35,6 +40,12 @@ export interface User {
   avatarUrl?: string; // Added for profile picture
 }
 
+export interface GlobalDimensions {
+  length: number; // P
+  width: number;  // L
+  depth: number;  // T
+}
+
 export interface BQItem {
   id: string;
   description: string; // Keterangan
@@ -43,90 +54,79 @@ export interface BQItem {
   rate: number;
   amount: number; // Calculated
   isHeader?: boolean; // For bold headers like "1.0 INSURAN"
-  isCalculationRow?: boolean; // For the (P) x (L) rows
-  calculationFormula?: string;
+  isNote?: boolean; // NEW: For description only lines (no price)
+  
+  // New Smart Calculation Fields
+  isCalculation?: boolean; // If true, use dimensions to calculate Qty
+  isSynced?: boolean; // If true, uses Global Dimensions
+  
+  // Calculation Toggles - Control Formula
+  includeLength?: boolean; // Include P in formula
+  includeWidth?: boolean;  // Include L in formula
+  includeDepth?: boolean;  // Include T in formula
+
+  // Instance dimensions (if not synced, or overrides)
+  dimLength?: number; // Panjang (P)
+  dimWidth?: number;  // Lebar (L)
+  dimDepth?: number;  // Tebal/Tinggi (T)
+  dimCount?: number;  // Bilangan Unit / Faktor
 }
 
 export interface BQGroup {
   id: string;
-  bilNo?: string; // e.g., "BIL NO. 1"
-  title: string; // e.g., "KERJA-KERJA PERMULAAN"
+  title: string; // e.g., "BIL NO. 1 - KERJA-KERJA PERMULAAN"
   location?: string; // e.g., "JALAN 9/27 TAMAN SRI GOMBAK"
   items: BQItem[];
-}
-
-export interface PrestasiScores {
-  q1: number; // Kualiti Kerja
-  q2: number; // Jadual Pelaksanaan
-  q3: number; // Pengurusan Tapak
-  q4: number; // Pematuhan Arahan
-  q5: number; // Kebersihan & Keselamatan
-  q6: number; // Kerjasama
 }
 
 export interface Project {
   id: number;
   
-  // --- PHASE 1: BQ BUILDING & ASAS ---
+  // --- PHASE 1: BQ BUILDING (Yellow - PJA) ---
   namaProjek: string;
-  noFail: string;
-  tarikhBuka: string;
+  noAduan?: string;
+  aduan?: string;
+  lokasi?: string;
   bp: string; // Blok Perancangan
   zon?: string;
-  pjaId: number;
-
-  // Aduan - Multiple complaint numbers with locations
-  aduanList: Aduan[]; // New: Supports multiple aduan with lokasi
-
-  // Legacy fields (kept for backward compatibility)
-  noAduan?: string; // Deprecated: Use aduanList instead
-  lokasi?: string;  // Deprecated: Use aduanList instead
-  aduan?: string;   // Deprecated: Use aduanList instead
+  pjaId: number; // The PJA in charge
+  kosProjek?: number; // Auto take from BQ
+  tarikhBuka: string; // Today's date default
   
-  // --- PHASE 2: FILE CREATION & LANTIKAN ---
-  noVote?: string;
+  // --- PHASE 2: FILE CREATION (Blue - Admin/PT) ---
+  noFail: string;
   namaSyarikat?: string;
   bulan?: string;
-  kosProjek?: number; // Derived from BQ (Auto take from BQ)
-  tarikhLantikan?: string; // SST Date
-  tarikhCetakanBpp?: string; // Date BPP Printed
-  tarikhMulaKontrak?: string;
-  tarikhTamatKontrak?: string; // Auto-calculated from tempohKontrak + unit
-  tempohKontrak?: number; // Contract period value
-  tempohKontrakUnit?: TempohKontrakUnit; // HARI, MINGGU, or BULAN
-  tarikhSerahTapak?: string;
-  tarikhMulaKerja?: string; // Actual start
-  iso?: string; // Auto-generated code
+  noVote?: string; // No Vot
+  tarikhLantikan?: string; // Tarikh Lantikan
+  tarikhCetakanBpp?: string; // Tarikh BPP
+  tempohKontrak?: string; // Tempoh Kontrak
+  tarikhMulaKontrak?: string; // Tarikh Mula Kontrak
+  tarikhTamatKontrak?: string; // Tarikh Tamat Kontrak
+  tarikhSerahTapak?: string; // Tarikh Serah Tapak
+  iso?: string; // ISO
+  tarikhMulaKerja?: string; // Auto or manual type (Mula + tempoh)
 
-  // --- PHASE 3: PELARASAN & PELAKSANAAN ---
-  tarikhPermohonanLawatanTapak?: string;
-  tarikhSiapSebenar?: string; // CPC Date essentially
-  
-  // LAD (Denda Lewat)
-  ladAmount?: number; 
-  ladDays?: number;
-  
-  // CPC (Certificate of Practical Completion)
-  cpcDate?: string; 
-  cpcRef?: string;
-
-  // --- PHASE 4: TUNTUTAN & CLOSING ---
-  tarikhSyarikatKemukakanTuntutan?: string; // Tarikh Syarikat Kemukakan Dokumen Tuntutan
-  tarikhHantarKewangan?: string; // Tarikh Hantar Dokumen Tuntutan Ke Kewangan
-  tarikhPadanan?: string; // Tarikh Padanan Kali 2
-  
-  kosProjekSebenar?: number; // Final Account
-  
-  // Prestasi
+  // --- PHASE 3: BQ PELARASAN BUILDING (Yellow - PJA) ---
+  tarikhPemeriksaan?: string; // Tarikh Pemeriksaan
+  tarikhSiapSebenar?: string; // Tarikh Siap (Pemeriksa)
   prestasi?: 'Cemerlang' | 'Baik' | 'Memuaskan' | 'Tidak Memuaskan';
-  prestasiScores?: PrestasiScores;
-  
-  // Regular Update
-  peratusSiap?: number; // Available globally
+  tuntutanBayaran?: number; 
+  kosSebenar?: number; // Kos Sebenar
+  tarikhSurvey?: string; // Survey form date
+  cpcDate?: string;
+  ladAmount?: number;
+  ladDays?: number;
 
+  // --- PHASE 4: CLOSING FILE/PROJECT (Orange - Admin/PT) ---
+  tarikhHantarKewangan?: string; // Tarikh Hantar ke Pemadanan
+  tarikhPadanan?: string; // Tarikh Pemadanan
+  peratusSiap?: number; // % Kerja di Tapak
   status: ProjectStatus;
+
+  // DATA
   bqData?: BQGroup[]; // Stored BQ JSON
-  bqPelarasanData?: BQGroup[]; // Stored Adjusted BQ JSON (Phase 3)
+  globalDimensions?: GlobalDimensions; // Saved global dims for this project
 }
 
 export const formatCurrency = (amount: number | undefined) => {
@@ -137,27 +137,12 @@ export const formatCurrency = (amount: number | undefined) => {
   }).format(amount);
 };
 
-export const formatDate = (dateStr: string | undefined) => {
-  if (!dateStr) return '-';
-  return new Date(dateStr).toLocaleDateString('ms-MY');
-};
-
-export const getStatusLabel = (status: ProjectStatus) => {
-  switch (status) {
-    case ProjectStatus.MENUNGGU_LANTIKAN: return 'Menunggu Lantikan';
-    case ProjectStatus.DALAM_PROSES: return 'Dalam Proses';
-    case ProjectStatus.TUNTUTAN_BAYARAN: return 'Tuntutan Bayaran';
-    case ProjectStatus.SIAP: return 'Siap';
-    default: return status;
-  }
-};
-
 export const getStatusColor = (status: ProjectStatus) => {
   switch (status) {
-    case ProjectStatus.MENUNGGU_LANTIKAN: return 'bg-slate-100 text-slate-700 border-slate-200';
+    case ProjectStatus.MENUNGGU_LANTIKAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
     case ProjectStatus.DALAM_PROSES: return 'bg-blue-100 text-blue-700 border-blue-200';
-    case ProjectStatus.TUNTUTAN_BAYARAN: return 'bg-orange-100 text-orange-700 border-orange-200';
-    case ProjectStatus.SIAP: return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    case ProjectStatus.TUNTUTAN_BAYARAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200'; // Phase 3 is also yellow in diagram
+    case ProjectStatus.SIAP: return 'bg-orange-100 text-orange-700 border-orange-200'; // Phase 4 is orange
     default: return 'bg-gray-100 text-gray-700';
   }
 };

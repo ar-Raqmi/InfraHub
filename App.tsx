@@ -77,6 +77,14 @@ function App() {
     setSelectedProject(p);
     setIsEditing(true);
   };
+  
+  const handleDeleteProject = async (project: Project) => {
+    if (window.confirm(`Adakah anda pasti mahu memadam projek "${project.namaProjek}"?`)) {
+      await mockService.deleteProject(project.id);
+      loadProjects();
+      showToast('Projek berjaya dipadam.', 'success');
+    }
+  };
 
   const handleProjectSaved = () => {
     loadProjects();
@@ -141,12 +149,11 @@ function App() {
           <div className="animate-fade-in-up delay-200">
              {isEditing ? (
                 <div className="glass-effect rounded-3xl p-4 md:p-6 shadow-xl border border-white/20 dark:border-white/5">
-                  <ProjectDetail
-                    project={selectedProject}
-                    onClose={() => setIsEditing(false)}
+                  <ProjectDetail 
+                    project={selectedProject} 
+                    onClose={() => setIsEditing(false)} 
                     onSave={handleProjectSaved}
                     currentUserRole={user.role}
-                    currentUser={user}
                   />
                 </div>
               ) : (
@@ -166,6 +173,7 @@ function App() {
                       projects={filteredProjects} 
                       onAddProject={handleAddProject}
                       onEditProject={handleEditProject}
+                      onDeleteProject={handleDeleteProject}
                     />
                   )}
                   {currentPage === 'users' && (

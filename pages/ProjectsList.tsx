@@ -1,15 +1,23 @@
 
 import React, { useState } from 'react';
 import { Project, ProjectStatus, formatCurrency, getStatusColor } from '../types';
-import { Search, Plus, List, Grid, Folder, ArrowRight, Building2, Download, ChevronDown, ChevronRight, Layout } from 'lucide-react';
+import { Search, Plus, List, Grid, Folder, ArrowRight, Building2, Download, ChevronDown, ChevronRight, Layout, Trash2 } from 'lucide-react';
 
 interface ProjectsListProps {
   projects: Project[];
   onAddProject: () => void;
   onEditProject: (project: Project) => void;
+  onDeleteProject: (project: Project) => void;
 }
 
-const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onEditProject }) => {
+interface CompanyGroupData {
+  projects: Project[];
+  totalCost: number;
+  totalActualCost: number;
+  count: number;
+}
+
+const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onEditProject, onDeleteProject }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'ALL'>('ALL');
   const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
@@ -42,16 +50,16 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
     tarikhMulaKerja: false,
     
     // Phase 3: Pelaksanaan
-    tarikhPermohonanLawatanTapak: false,
+    tarikhPemeriksaan: false,
     tarikhSiapSebenar: false,
     cpcDate: false, // Tarikh CPC
     lad: false, // ladAmount + ladDays
 
     // Phase 4: Penutup
-    tarikhSyarikatKemukakanTuntutan: false,
     tarikhHantarKewangan: false,
     tarikhPadanan: false,
     kosSebenar: false, // kosProjekSebenar
+    peratusSiap: false,
     prestasi: false,
     
     status: true,
@@ -61,8 +69,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
   const columnGroups = {
     'Fasa 1: Maklumat Asas': ['noFail', 'namaProjek', 'noAduan', 'lokasi', 'bp', 'zon', 'aduan', 'tarikhBuka'],
     'Fasa 2: Lantikan & Kontrak': ['syarikat', 'noVote', 'bulan', 'kosProjek', 'tarikhLantikan', 'tarikhCetakanBpp', 'tarikhMulaKontrak', 'tarikhTamatKontrak', 'tempohKontrak', 'tarikhSerahTapak', 'tarikhMulaKerja'],
-    'Fasa 3: Pelaksanaan & CPC': ['tarikhPermohonanLawatanTapak', 'tarikhSiapSebenar', 'cpcDate', 'lad'],
-    'Fasa 4: Tuntutan & Penutup': ['tarikhSyarikatKemukakanTuntutan', 'tarikhHantarKewangan', 'tarikhPadanan', 'kosSebenar', 'prestasi', 'status']
+    'Fasa 3: Pelaksanaan & CPC': ['tarikhPemeriksaan', 'tarikhSiapSebenar', 'cpcDate', 'lad'],
+    'Fasa 4: Tuntutan & Penutup': ['tarikhHantarKewangan', 'tarikhPadanan', 'kosSebenar', 'peratusSiap', 'prestasi', 'status']
   };
 
   const toggleCompany = (company: string) => {
@@ -81,17 +89,17 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
   });
 
   // Grouping Logic
-  const groupedProjects = filteredProjects.reduce((acc, project) => {
+  const groupedProjects = filteredProjects.reduce<Record<string, CompanyGroupData>>((acc, project) => {
     const company = project.namaSyarikat || 'Tiada Syarikat';
     if (!acc[company]) {
       acc[company] = { projects: [], totalCost: 0, totalActualCost: 0, count: 0 };
     }
     acc[company].projects.push(project);
     acc[company].totalCost += (project.kosProjek || 0);
-    acc[company].totalActualCost += (project.kosProjekSebenar || 0);
+    acc[company].totalActualCost += (project.kosSebenar || 0);
     acc[company].count += 1;
     return acc;
-  }, {} as Record<string, { projects: Project[], totalCost: number, totalActualCost: number, count: number }>);
+  }, {});
 
   // Excel Export
   const exportToExcel = () => {
@@ -106,7 +114,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
             `"${(p.namaSyarikat || '').replace(/"/g, '""')}"`,
             p.status,
             p.kosProjek || 0,
-            p.kosProjekSebenar || 0,
+            p.kosSebenar || 0,
             p.tarikhBuka,
             p.tarikhSiapSebenar || ''
           ].join(",");
@@ -283,16 +291,16 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                     {visibleColumns.tarikhMulaKerja && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Mula Kerja</th>}
 
                     {/* Phase 3 */}
-                    {visibleColumns.tarikhPermohonanLawatanTapak && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Lawatan Tapak</th>}
+                    {visibleColumns.tarikhPemeriksaan && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Pemeriksaan</th>}
                     {visibleColumns.tarikhSiapSebenar && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Siap Sebenar</th>}
                     {visibleColumns.cpcDate && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tarikh CPC</th>}
                     {visibleColumns.lad && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">LAD (RM)</th>}
 
                     {/* Phase 4 */}
-                    {visibleColumns.tarikhSyarikatKemukakanTuntutan && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tuntutan Syarikat</th>}
                     {visibleColumns.tarikhHantarKewangan && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Hantar Kewangan</th>}
                     {visibleColumns.tarikhPadanan && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tarikh Padanan</th>}
                     {visibleColumns.kosSebenar && <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Kos Sebenar</th>}
+                    {visibleColumns.peratusSiap && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">% Siap</th>}
                     {visibleColumns.prestasi && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Prestasi</th>}
 
                     {visibleColumns.status && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Status</th>}
@@ -345,20 +353,20 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                       {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhMulaKerja || '-'}</td>}
 
                       {/* Phase 3 */}
-                      {visibleColumns.tarikhPermohonanLawatanTapak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhPermohonanLawatanTapak || '-'}</td>}
+                      {visibleColumns.tarikhPemeriksaan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhPemeriksaan || '-'}</td>}
                       {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhSiapSebenar || '-'}</td>}
                       {visibleColumns.cpcDate && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.cpcDate || '-'}</td>}
                       {visibleColumns.lad && <td className="px-6 py-4 text-center text-sm text-red-500 font-medium whitespace-nowrap">{project.ladAmount ? formatCurrency(project.ladAmount) : '-'}</td>}
 
                       {/* Phase 4 */}
-                      {visibleColumns.tarikhSyarikatKemukakanTuntutan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhSyarikatKemukakanTuntutan || '-'}</td>}
                       {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhHantarKewangan || '-'}</td>}
                       {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhPadanan || '-'}</td>}
                       {visibleColumns.kosSebenar && (
                         <td className="px-6 py-4 text-right font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                            {formatCurrency(project.kosProjekSebenar)}
+                            {formatCurrency(project.kosSebenar)}
                         </td>
                       )}
+                      {visibleColumns.peratusSiap && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.peratusSiap ? `${project.peratusSiap}%` : '-'}</td>}
                       {visibleColumns.prestasi && (
                          <td className="px-6 py-4 text-center text-sm">
                             {project.prestasi ? (
@@ -381,12 +389,22 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                         </td>
                       )}
                       <td className="px-6 py-4 text-right sticky right-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/80 transition-colors z-10 border-l border-slate-100 dark:border-slate-800">
-                        <button 
-                          onClick={() => onEditProject(project)}
-                          className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl"
-                        >
-                          <ArrowRight className="h-5 w-5" />
-                        </button>
+                        <div className="flex justify-end gap-2">
+                           <button 
+                              onClick={(e) => { e.stopPropagation(); onDeleteProject(project); }}
+                              className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl"
+                              title="Padam Projek"
+                           >
+                              <Trash2 className="h-5 w-5" />
+                           </button>
+                           <button 
+                              onClick={() => onEditProject(project)}
+                              className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl"
+                              title="Edit Projek"
+                           >
+                              <ArrowRight className="h-5 w-5" />
+                           </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -450,14 +468,19 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                                         <div className="text-xs text-slate-400 font-mono">{p.noFail}</div>
                                      </td>
                                      <td className="px-6 py-3 text-right font-medium">{formatCurrency(p.kosProjek)}</td>
-                                     <td className="px-6 py-3 text-right font-medium">{formatCurrency(p.kosProjekSebenar)}</td>
-                                     <td className={`px-6 py-3 text-right font-medium ${(p.kosProjekSebenar || 0) > (p.kosProjek || 0) ? 'text-red-500' : 'text-emerald-500'}`}>
-                                        {formatCurrency((p.kosProjekSebenar || 0) - (p.kosProjek || 0))}
+                                     <td className="px-6 py-3 text-right font-medium">{formatCurrency(p.kosSebenar)}</td>
+                                     <td className={`px-6 py-3 text-right font-medium ${(p.kosSebenar || 0) > (p.kosProjek || 0) ? 'text-red-500' : 'text-emerald-500'}`}>
+                                        {formatCurrency((p.kosSebenar || 0) - (p.kosProjek || 0))}
                                      </td>
                                      <td className="px-6 py-3 text-right">
-                                        <button onClick={() => onEditProject(p)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg">
-                                           <ArrowRight className="w-4 h-4 text-slate-400" />
-                                        </button>
+                                        <div className="flex justify-end gap-1">
+                                            <button onClick={(e) => { e.stopPropagation(); onDeleteProject(p); }} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg group/del">
+                                               <Trash2 className="w-4 h-4 text-slate-400 group-hover/del:text-red-500" />
+                                            </button>
+                                            <button onClick={() => onEditProject(p)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg">
+                                               <ArrowRight className="w-4 h-4 text-slate-400" />
+                                            </button>
+                                        </div>
                                      </td>
                                   </tr>
                                ))}
