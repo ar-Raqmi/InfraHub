@@ -111,9 +111,10 @@ export interface Project {
   tarikhPemeriksaan?: string; // Tarikh Pemeriksaan
   tarikhSiapSebenar?: string; // Tarikh Siap (Pemeriksa)
   prestasi?: 'Cemerlang' | 'Baik' | 'Memuaskan' | 'Tidak Memuaskan';
-  tuntutanBayaran?: number; 
-  kosSebenar?: number; // Kos Sebenar
-  tarikhSurvey?: string; // Survey form date
+  tarikhTuntutanBayaran?: string; // Changed from number amount to date
+  
+  kosSebenar?: number; // Calculated from BQPelarasan
+  
   cpcDate?: string;
   ladAmount?: number;
   ladDays?: number;
@@ -125,7 +126,8 @@ export interface Project {
   status: ProjectStatus;
 
   // DATA
-  bqData?: BQGroup[]; // Stored BQ JSON
+  bqData?: BQGroup[]; // Original Contract BQ
+  bqDataPelarasan?: BQGroup[]; // Adjusted BQ (Pelarasan)
   globalDimensions?: GlobalDimensions; // Saved global dims for this project
 }
 
@@ -135,6 +137,29 @@ export const formatCurrency = (amount: number | undefined) => {
     style: 'currency',
     currency: 'MYR',
   }).format(amount);
+};
+
+// Strict Malaysia Date Format (DD/MM/YYYY)
+// Manually parsing string to avoid timezone shifts and force format
+export const formatDate = (dateString?: string) => {
+  if (!dateString) return '-';
+  
+  // Remove time part if exists
+  const cleanDate = dateString.split('T')[0];
+  const parts = cleanDate.split('-');
+  
+  // Expecting YYYY-MM-DD
+  if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+  }
+  
+  return dateString;
+};
+
+// Get Today's Date in Malaysia Time (YYYY-MM-DD for inputs)
+export const getCurrentDate = () => {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
 };
 
 export const getStatusColor = (status: ProjectStatus) => {

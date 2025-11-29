@@ -1,8 +1,9 @@
-
-import React, { useState, useEffect } from 'react';
-import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, GlobalDimensions } from '../types';
-import { ArrowLeft, Save, Zap, FileText, Calendar, Info, Folder, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate } from '../types';
+import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Printer, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle } from 'lucide-react';
 import BQEditor from './BQEditor';
+import BQPelarasanEditor from './BQPelarasanEditor';
 import { mockService } from '../services/mockService';
 
 interface ProjectDetailProps {
@@ -12,41 +13,489 @@ interface ProjectDetailProps {
   currentUserRole: string;
 }
 
+// --- HELPER FUNCTIONS FOR DATES ---
+const addDaysSkippingWeekends = (dateStr: string, daysToAdd: number): string => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return ''; // Invalid date check
+
+  let count = 0;
+  
+  // Simple add days
+  date.setDate(date.getDate() + daysToAdd);
+  
+  // Adjust if landing on weekend
+  if (date.getDay() === 6) { // Saturday
+    date.setDate(date.getDate() + 2); // Move to Monday
+  } else if (date.getDay() === 0) { // Sunday
+    date.setDate(date.getDate() + 1); // Move to Monday
+  }
+  
+  return date.toISOString().split('T')[0];
+};
+
+const calculateEndDate = (startDateStr: string, duration: number, unit: 'Minggu' | 'Bulan' | 'Tahun'): string => {
+  if (!startDateStr || !duration) return '';
+  const date = new Date(startDateStr);
+  if (isNaN(date.getTime())) return '';
+
+  if (unit === 'Minggu') {
+    date.setDate(date.getDate() + (duration * 7));
+  } else if (unit === 'Bulan') {
+    date.setMonth(date.getMonth() + duration);
+  } else if (unit === 'Tahun') {
+    date.setFullYear(date.getFullYear() + duration);
+  }
+  
+  return date.toISOString().split('T')[0];
+};
+
+const calculateBusinessDays = (startDateStr: string, endDateStr: string): number => {
+  if (!startDateStr || !endDateStr) return 0;
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+  
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
+  if (start > end) return 0;
+
+  let count = 0;
+  const cur = new Date(start);
+  while (cur <= end) {
+    const dayOfWeek = cur.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sun (0) or Sat (6)
+      count++;
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+  return count;
+};
+
+// --- CUSTOM DATE INPUT COMPONENT ---
+// Hybrid Input: Allows typing DD/MM/YYYY OR picking via Calendar Icon
+interface StrictDateInputProps {
+  name: string;
+  value?: string;
+  onChange: (e: any) => void;
+  className?: string;
+  readOnly?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+}
+
+const StrictDateInput: React.FC<StrictDateInputProps> = ({ name, value, onChange, className, readOnly, disabled, placeholder }) => {
+  const [textValue, setTextValue] = useState('');
+  const [error, setError] = useState(false);
+  
+  // Sync text value with prop value (YYYY-MM-DD -> DD/MM/YYYY)
+  // Only sync if the incoming value is different from what we represent, 
+  // to avoid overwriting user while typing if parent re-renders for other reasons.
+  useEffect(() => {
+    if (value) {
+      const formatted = formatDate(value);
+      setTextValue(formatted);
+      setError(false);
+    } else {
+       // If value is cleared externally, clear text
+       // But we don't want to clear if the user is currently typing garbage that isn't saved yet
+       // Simple approach: if value is empty, and we aren't in an error state (meaning we just loaded), clear it.
+       if (!error) setTextValue('');
+    }
+  }, [value]);
+
+  const validateAndParse = (input: string): string | null => {
+      // Allow separators: / . -
+      // Clean up multiple separators or spaces
+      const parts = input.trim().split(/[\/\-\.]/);
+      
+      if (parts.length !== 3) return null;
+
+      let d = parseInt(parts[0], 10);
+      let m = parseInt(parts[1], 10);
+      let y = parseInt(parts[2], 10);
+
+      if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
+
+      // Year expansion (e.g. 25 -> 2025)
+      if (y < 100) {
+          y += 2000;
+      }
+
+      // Basic Range Checks
+      if (m < 1 || m > 12) return null;
+      if (d < 1 || d > 31) return null;
+      
+      // Strict Date Validity (e.g. Feb 30)
+      const dateObj = new Date(y, m - 1, d);
+      if (dateObj.getFullYear() !== y || dateObj.getMonth() !== m - 1 || dateObj.getDate() !== d) {
+          return null;
+      }
+
+      // Return ISO YYYY-MM-DD
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setTextValue(val);
+    // Remove error while typing to be less annoying
+    if (error) setError(false);
+  };
+
+  const commitDate = () => {
+    if (textValue.trim() === '') {
+        setError(false);
+        onChange({ target: { name, value: '' } });
+        return;
+    }
+
+    const isoDate = validateAndParse(textValue);
+    
+    if (isoDate) {
+        setError(false);
+        // Update parent
+        onChange({ target: { name, value: isoDate } });
+        // Update local text to be perfectly formatted (e.g. 1/1/25 -> 01/01/2025)
+        setTextValue(formatDate(isoDate));
+    } else {
+        // Invalid date format
+        setError(true);
+        // We send empty to parent so calculations don't run on garbage data
+        onChange({ target: { name, value: '' } });
+    }
+  };
+
+  const handleBlur = () => {
+      commitDate();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+          e.currentTarget.blur(); // Triggers handleBlur
+      }
+  };
+
+  const handlePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Native picker returns YYYY-MM-DD
+    setError(false);
+    onChange(e); // Picker updates trigger immediate change
+  };
+
+  return (
+    <div className="relative">
+        <div className={`relative flex items-center ${className} ${error ? 'border-red-400 focus:border-red-500 ring-1 ring-red-100 dark:ring-red-900/20' : ''}`}>
+        {/* Visible Text Input for Manual Typing */}
+        <input
+            type="text"
+            value={textValue}
+            onChange={handleTextChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder || 'DD/MM/YYYY'}
+            readOnly={readOnly}
+            disabled={disabled}
+            className={`w-full h-full bg-transparent border-none outline-none p-0 text-inherit placeholder-slate-400 ${readOnly ? 'cursor-not-allowed' : ''}`}
+        />
+
+        {/* Calendar Picker Trigger */}
+        <div className="relative ml-2 w-5 h-5 shrink-0">
+            <Calendar className={`w-5 h-5 pointer-events-none ${error ? 'text-red-400' : 'text-slate-400'}`} />
+            {!readOnly && !disabled && (
+            <input
+                type="date"
+                name={name}
+                value={value || ''}
+                onChange={handlePickerChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                tabIndex={-1}
+            />
+            )}
+        </div>
+        </div>
+        {error && (
+            <div className="absolute -bottom-5 left-0 text-[10px] text-red-500 font-bold flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Tarikh tidak sah
+            </div>
+        )}
+    </div>
+  );
+};
+
+// --- FIXED COST HUD COMPONENT (PORTAL) ---
+interface CostHUDProps {
+  grandTotal: number;
+  finalTotal?: number; // Added for Pelarasan Total
+  status: ProjectStatus;
+  progress: number;
+  onStatusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onProgressChange: (val: number) => void;
+  saveAction?: React.ReactNode;
+  isPrintView: boolean;
+  onToggleView: (view: 'editor' | 'print') => void;
+  isPelarasanActive?: boolean;
+}
+
+const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onProgressChange, saveAction, isPrintView, onToggleView, isPelarasanActive }: CostHUDProps) => {
+  const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '');
+
+  useEffect(() => {
+    setLocalProgress(progress !== undefined ? progress.toString() : '');
+  }, [progress]);
+
+  const handleBlur = () => {
+    let val = parseFloat(localProgress.replace(/[^0-9.]/g, ''));
+    if (isNaN(val)) val = 0;
+    if (val > 100) val = 100;
+    
+    onProgressChange(val);
+    setLocalProgress(val.toString());
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+        handleBlur();
+        (e.currentTarget as HTMLInputElement).blur();
+    }
+  };
+
+  return createPortal(
+    <div className="fixed top-0 left-0 md:left-20 right-0 z-[100] transition-all duration-300 animate-slide-down no-print">
+       <div className="bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-lg px-4 py-3 flex items-center justify-between gap-4">
+          
+          {/* View Toggles */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
+             <button 
+                onClick={() => onToggleView('editor')}
+                className={`p-2 rounded-lg transition-all ${!isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                title="Editor Mode"
+             >
+                <Edit className="w-4 h-4" />
+             </button>
+             <button 
+                onClick={() => onToggleView('print')}
+                className={`p-2 rounded-lg transition-all ${isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                title="Preview & Print Mode"
+             >
+                <Printer className="w-4 h-4" />
+             </button>
+          </div>
+
+          {/* Center Section: Status */}
+          <div className="flex-1 flex justify-center max-w-2xl px-4 border-l border-r border-slate-100 dark:border-slate-800/50 mx-2">
+             {isPrintView ? (
+                <div className="text-center">
+                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Preview Mode</span>
+                </div>
+             ) : (
+                <div className="w-full max-w-md flex flex-col gap-2">
+                     <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-2">
+                            <div className="relative group">
+                                <select 
+                                    name="status" 
+                                    value={status} 
+                                    onChange={onStatusChange} 
+                                    className="appearance-none bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
+                                    <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
+                                    <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
+                                    <option value={ProjectStatus.SIAP}>Siap</option>
+                                </select>
+                            </div>
+                            {saveAction}
+                         </div>
+
+                         <div className="flex items-center gap-1 group cursor-text" onClick={() => document.getElementById('progress-input')?.focus()}>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Siap</span>
+                            <input 
+                                id="progress-input"
+                                type="text" 
+                                value={localProgress}
+                                onChange={(e) => setLocalProgress(e.target.value)}
+                                onBlur={handleBlur}
+                                onKeyDown={handleKeyDown}
+                                className="w-10 text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 p-0 text-sm font-bold text-indigo-600 dark:text-indigo-400 focus:ring-0 outline-none transition-colors"
+                            />
+                            <span className="text-xs font-bold text-slate-400">%</span>
+                         </div>
+                     </div>
+                     <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div 
+                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-500 ease-out"
+                            style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }}
+                        ></div>
+                     </div>
+                </div>
+             )}
+          </div>
+
+          {/* Costs */}
+          <div className="flex items-center gap-4 md:gap-8 shrink-0">
+              <div className="text-right">
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-0.5">
+                    {isPelarasanActive ? 'Kos Asal' : 'Kos Projek'}
+                  </p>
+                  <p className={`text-lg font-bold font-mono leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400'}`}>
+                      {formatCurrency(grandTotal)}
+                  </p>
+                  {isPelarasanActive && finalTotal !== undefined && (
+                     <p className="text-xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 leading-none mt-1">
+                        {formatCurrency(finalTotal)}
+                     </p>
+                  )}
+              </div>
+          </div>
+       </div>
+    </div>,
+    document.body
+  );
+};
+
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole }) => {
   
-  // WORKFLOW PHASES Based on Image
   const TABS = [
-    { id: 'phase1', label: '1. BQ Building (PJA)', color: 'bg-yellow-400 text-yellow-900', ringColor: 'ring-yellow-400' },
-    { id: 'phase2', label: '2. File Creation (PT)', color: 'bg-blue-500 text-white', ringColor: 'ring-blue-500' },
-    { id: 'phase3', label: '3. Pelarasan (PJA)', color: 'bg-yellow-400 text-yellow-900', ringColor: 'ring-yellow-400' },
-    { id: 'phase4', label: '4. Penutup (PT)', color: 'bg-orange-500 text-white', ringColor: 'ring-orange-500' },
+    { id: 'phase1', label: '1. BQ Building (PJA)', color: 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/30', ringColor: 'ring-yellow-400' },
+    { id: 'phase2', label: '2. File Creation (PT)', color: 'bg-white dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600', ringColor: 'ring-blue-500' },
+    { id: 'phase3', label: '3. Pelarasan (PJA)', color: 'bg-white dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600', ringColor: 'ring-yellow-400' },
+    { id: 'phase4', label: '4. Penutup (PT)', color: 'bg-white dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600', ringColor: 'ring-orange-500' },
   ];
 
   const [activeTab, setActiveTab] = useState('phase1');
   const [isSaving, setIsSaving] = useState(false);
+  const [isPrintView, setIsPrintView] = useState(false);
+  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+  const [previewCost, setPreviewCost] = useState(0); 
+  const [users, setUsers] = useState<User[]>([]);
+  
+  // Lists for Dropdowns
+  const [companies, setCompanies] = useState<string[]>([]);
+  const [voteNumbers, setVoteNumbers] = useState<string[]>([]);
+
+  // Local state for complex inputs
+  const [tempohVal, setTempohVal] = useState<number>(0);
+  const [tempohUnit, setTempohUnit] = useState<'Minggu'|'Bulan'|'Tahun'>('Minggu');
+  
+  // Manual Date Overrides
+  const [manualMulaKontrak, setManualMulaKontrak] = useState(false);
+  const [manualMulaKerja, setManualMulaKerja] = useState(false);
+
+  useEffect(() => {
+    setUsers(mockService.getUsers());
+    setCompanies(mockService.getCompanies());
+    setVoteNumbers(mockService.getVoteNumbers());
+  }, []);
   
   const [formData, setFormData] = useState<Partial<Project>>(project || {
-    // Defaults
-    namaProjek: '', noFail: '', noAduan: '', tarikhBuka: new Date().toISOString().split('T')[0], 
+    namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(), 
     pjaId: 0, bp: '', zon: '', lokasi: '', 
     status: ProjectStatus.MENUNGGU_LANTIKAN, 
     bqData: [], 
+    bqDataPelarasan: [],
     globalDimensions: { length: 0, width: 0, depth: 0 }
   });
 
+  // Initialize Split Tempoh State from saved string (e.g., "5 Minggu")
+  useEffect(() => {
+    if (project?.tempohKontrak) {
+      const parts = project.tempohKontrak.split(' ');
+      if (parts.length === 2) {
+        setTempohVal(Number(parts[0]));
+        setTempohUnit(parts[1] as any);
+      }
+    }
+  }, [project]);
+
+  // Update formData tempoh string when val/unit changes
+  useEffect(() => {
+    const newVal = tempohVal > 0 ? `${tempohVal} ${tempohUnit}` : '';
+    if (formData.tempohKontrak !== newVal) {
+        setFormData(prev => ({ ...prev, tempohKontrak: newVal }));
+    }
+  }, [tempohVal, tempohUnit]);
+
+  // Handle Phase 3 Activation - Initialize Pelarasan Data if missing
+  useEffect(() => {
+    if (activeTab === 'phase3' && (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0) && formData.bqData && formData.bqData.length > 0) {
+       // Deep copy the original BQ to Pelarasan BQ
+       const clonedData = JSON.parse(JSON.stringify(formData.bqData));
+       setFormData(prev => ({ ...prev, bqDataPelarasan: clonedData }));
+    }
+  }, [activeTab, formData.bqData]);
+
+  // --- AUTO CALCULATION LOGIC ---
+
+  // 1. Calculate Tarikh Mula Kontrak
+  useEffect(() => {
+    if (!manualMulaKontrak && formData.tarikhCetakanBpp) {
+       const newDate = addDaysSkippingWeekends(formData.tarikhCetakanBpp, 2);
+       if (newDate && newDate !== formData.tarikhMulaKontrak) {
+         setFormData(prev => ({ ...prev, tarikhMulaKontrak: newDate }));
+       }
+    }
+  }, [formData.tarikhCetakanBpp, manualMulaKontrak]);
+
+  // 2. Calculate Tarikh Tamat Kontrak
+  useEffect(() => {
+    if (formData.tarikhMulaKontrak && tempohVal > 0) {
+       const newDate = calculateEndDate(formData.tarikhMulaKontrak, tempohVal, tempohUnit);
+       if (newDate && newDate !== formData.tarikhTamatKontrak) {
+         setFormData(prev => ({ ...prev, tarikhTamatKontrak: newDate }));
+       }
+    }
+  }, [formData.tarikhMulaKontrak, tempohVal, tempohUnit]);
+
+  // 3. Calculate Tarikh Mula Kerja
+  useEffect(() => {
+     if (!manualMulaKerja && formData.tarikhSerahTapak) {
+        const newDate = addDaysSkippingWeekends(formData.tarikhSerahTapak, 2);
+        if (newDate && newDate !== formData.tarikhMulaKerja) {
+            setFormData(prev => ({ ...prev, tarikhMulaKerja: newDate }));
+        }
+     }
+  }, [formData.tarikhSerahTapak, manualMulaKerja]);
+
+  // 4. Calculate ISO (Business Days between BPP and Serah Tapak)
+  useEffect(() => {
+     if (formData.tarikhCetakanBpp && formData.tarikhSerahTapak) {
+         const days = calculateBusinessDays(formData.tarikhCetakanBpp, formData.tarikhSerahTapak);
+         const isoString = `${days} Hari`;
+         if (formData.iso !== isoString) {
+             setFormData(prev => ({ ...prev, iso: isoString }));
+         }
+     }
+  }, [formData.tarikhCetakanBpp, formData.tarikhSerahTapak]);
+
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleBQSave = async (bqData: BQGroup[], globalDims: GlobalDimensions) => {
+  const handleBQChange = (bqData: BQGroup[], globalDims: GlobalDimensions) => {
     const totalCost = bqData.reduce((acc, group) => {
       return acc + group.items.reduce((gTotal, item) => gTotal + (item.amount || 0), 0);
     }, 0);
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      bqData, 
+      globalDimensions: globalDims, 
+      kosProjek: totalCost 
+    }));
+  };
 
-    // Auto update status if needed logic here
-    const updatedData = { ...formData, bqData, globalDimensions: globalDims, kosProjek: totalCost };
-    setFormData(updatedData);
+  const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[], globalDims: GlobalDimensions) => {
+    // Calculate new total
+    const totalCostPelarasan = bqDataPelarasan.reduce((acc, group) => {
+      return acc + group.items.reduce((gTotal, item) => gTotal + (item.amount || 0), 0);
+    }, 0);
+
+    setFormData(prev => ({ 
+      ...prev, 
+      bqDataPelarasan, 
+      kosSebenar: totalCostPelarasan 
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,268 +510,452 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     } catch (err) { setIsSaving(false); alert('Error saving project'); }
   };
 
-  // Styles
-  const inputClass = "w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm shadow-sm";
-  const labelClass = "block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 font-manrope";
-  
-  // Phase Containers
-  const yellowPhaseClass = "bg-yellow-50/80 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700 p-6 rounded-3xl animate-fade-in-up";
-  const bluePhaseClass = "bg-blue-50/80 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-700 p-6 rounded-3xl animate-fade-in-up";
-  const orangePhaseClass = "bg-orange-50/80 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-700 p-6 rounded-3xl animate-fade-in-up";
+  const grandTotal = formData.bqData?.reduce((acc, group) => {
+      return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
+  }, 0) || 0;
+
+  const pelarasanTotal = formData.bqDataPelarasan?.reduce((acc, group) => {
+    return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
+  }, 0) || 0;
+
+  // Final Total for Display (Pelarasan Total - LAD)
+  const finalTotalDisplay = activeTab === 'phase3' 
+    ? pelarasanTotal - (Number(formData.ladAmount || 0)) 
+    : undefined;
+
+  const saveButton = (
+    <button 
+        onClick={handleSubmit} 
+        disabled={isSaving} 
+        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white p-2 rounded-lg font-bold text-xs shadow-md shadow-indigo-500/30 transition-all flex items-center justify-center"
+        title="Simpan Projek"
+    >
+        <Save className="w-4 h-4" /> 
+        <span className="hidden sm:inline ml-1">{isSaving ? '...' : 'Simpan'}</span>
+    </button>
+  );
+
+  const inputClass = "w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm shadow-sm dark:shadow-inner";
+  const labelClass = "block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 font-jakarta";
+  const disabledClass = "bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed";
+
+  const yellowPhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-yellow-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
+  const bluePhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-blue-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
+  const orangePhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-orange-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
 
   return (
-    <div className="pb-20 relative min-h-screen">
+    <div className={`relative min-h-screen text-slate-900 dark:text-slate-200 ${isPrintView ? 'pb-12' : 'pb-40'}`}>
       
-      {/* Top Navigation */}
-      <div className="flex items-center justify-between mb-8 px-2 no-print">
-        <div className="flex items-center gap-4">
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors">
-            <ArrowLeft className="h-6 w-6 text-slate-900 dark:text-slate-200" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold gradient-text">{project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{formData.noFail || 'No. Fail Belum Ditetapkan'}</p>
-          </div>
-        </div>
-        <button onClick={handleSubmit} disabled={isSaving} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/30">
-           <Save className="h-4 w-4" /> {isSaving ? 'Menyimpan...' : 'Simpan'}
-        </button>
-      </div>
+      <CostHUD 
+          grandTotal={grandTotal}
+          finalTotal={finalTotalDisplay}
+          isPelarasanActive={activeTab === 'phase3'}
+          status={formData.status || ProjectStatus.MENUNGGU_LANTIKAN}
+          progress={formData.peratusSiap || 0}
+          onStatusChange={handleInputChange}
+          onProgressChange={(val) => setFormData(prev => ({ ...prev, peratusSiap: val }))}
+          saveAction={saveButton}
+          isPrintView={isPrintView}
+          onToggleView={(view) => setIsPrintView(view === 'print')}
+      />
 
-      {/* Workflow Tabs */}
-      <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl mb-8 no-print overflow-x-auto mx-2 gap-2 scrollbar-hide">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 min-w-[140px] px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex items-center justify-center gap-2 ${
-              activeTab === tab.id 
-                ? `${tab.color} shadow-md transform scale-105` 
-                : 'text-slate-500 hover:bg-white/50 dark:hover:bg-white/5'
-            }`}
-          >
-            {activeTab === tab.id && <CheckCircle className="w-4 h-4" />}
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* --- PHASE 1: BQ BUILDING (YELLOW) --- */}
-      {activeTab === 'phase1' && (
-        <div className="space-y-6">
-           <div className={yellowPhaseClass}>
-              <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-400 mb-6 flex items-center gap-2">
-                <Zap className="h-5 w-5"/> Maklumat Asas (PJA)
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="group lg:col-span-2">
-                   <label className={labelClass}>Cadangan Kerja (Nama Projek)</label>
-                   <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} className={inputClass} rows={2} placeholder="CADANGAN KERJA-KERJA..." />
+      <div className={`${isPrintView ? 'pt-20' : 'pt-24'}`}>
+        
+        {!isPrintView && (
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 px-2 no-print gap-4">
+            <div className="flex items-center gap-4">
+              <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-xl transition-colors group">
+                <ArrowLeft className="h-6 w-6 text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
+              </button>
+              <div>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+                  <div>
+                      <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}</h1>
+                      <p className="text-xs text-slate-500 font-mono mt-0.5 uppercase tracking-wider">{formData.noFail || 'No. Fail Belum Ditetapkan'}</p>
+                  </div>
                 </div>
-                <div className="group">
-                   <label className={labelClass}>No. Aduan</label>
-                   <input type="text" name="noAduan" value={formData.noAduan} onChange={handleInputChange} className={inputClass} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isPrintView && (
+          <div className="mb-8">
+              <div className="grid grid-cols-4 bg-slate-100 dark:bg-slate-900/50 p-1 rounded-2xl gap-2 border border-slate-200 dark:border-slate-800">
+                  {TABS.map((tab) => (
+                      <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-2 py-3 md:px-4 md:py-4 rounded-xl text-[10px] md:text-xs font-bold transition-all flex flex-col md:flex-row items-center justify-center gap-2 border border-transparent ${
+                          activeTab === tab.id 
+                          ? `${tab.color}` 
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+                      }`}
+                      >
+                      {tab.label}
+                      </button>
+                  ))}
+              </div>
+          </div>
+        )}
+
+        {/* --- PHASE 1 --- */}
+        {activeTab === 'phase1' && (
+          <div className="space-y-6">
+            <div className={`${yellowPhaseClass} ${isPrintView ? 'hidden' : ''}`}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
+                <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 mb-8 flex items-center gap-3">
+                  <Zap className="h-5 w-5"/> Maklumat Asas (PJA)
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
+                  <div className="group lg:col-span-2">
+                    <label className={labelClass}>Cadangan Kerja (Nama Projek)</label>
+                    <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} className={`${inputClass} min-h-[50px] resize-none`} placeholder="CADANGAN KERJA-KERJA..." />
+                  </div>
+                  <div className="group">
+                    <label className={labelClass}>No. Aduan</label>
+                    <input type="text" name="noAduan" value={formData.noAduan} onChange={handleInputChange} className={`${inputClass} dark:bg-[#162032] dark:border-slate-600 dark:text-white`} placeholder="MPS xxxxx"/>
+                  </div>
+                  <div className="group">
+                    <label className={labelClass}>Lokasi</label>
+                    <input type="text" name="lokasi" value={formData.lokasi} onChange={handleInputChange} className={inputClass} placeholder="Alamat Lokasi"/>
+                  </div>
+                  <div className="group">
+                    <label className={labelClass}>BP (Blok Perancangan)</label>
+                    <select name="bp" value={formData.bp} onChange={handleInputChange} className={inputClass}>
+                      <option value="">Pilih BP...</option>
+                      {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
+                    </select>
+                  </div>
+                  <div className="group">
+                    <label className={labelClass}>Zon</label>
+                    <select name="zon" value={formData.zon} onChange={handleInputChange} className={inputClass}>
+                      <option value="">Pilih Zon...</option>
+                      {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
+                    </select>
+                  </div>
+                  <div className="group">
+                    <label className={labelClass}>Tarikh Buka</label>
+                    <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} className={inputClass} />
+                  </div>
+                  <div className="group">
+                    <label className={labelClass}>Disediakan Oleh</label>
+                    <select name="pjaId" value={formData.pjaId || ''} onChange={(e) => setFormData(prev => ({ ...prev, pjaId: Number(e.target.value) }))} className={inputClass}>
+                        <option value="">Pilih Pegawai...</option>
+                        {users.map(u => (
+                            <option key={u.id} value={u.id}>
+                                {u.role === Role.ADMIN ? 'PT' : 'PJA'} {u.username.toUpperCase()}
+                            </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+            </div>
+
+            <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'overflow-hidden'}`}>
+                {!isPrintView && (
+                  <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                          <Calculator className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Penyediaan BQ (Wizard)</h3>
+                          <p className="text-xs text-slate-500 font-medium">Uruskan item dan ukuran global di sini</p>
+                        </div>
+                      </div>
+                  </div>
+                )}
+                <div className="bg-slate-50/50 dark:bg-[#0f172a]/30">
+                  <BQEditor 
+                      initialData={formData.bqData} 
+                      initialDims={formData.globalDimensions}
+                      onDataChange={handleBQChange}
+                      onGroupChange={setActiveGroupIndex}
+                      projectData={formData as Project}
+                      isPrintView={isPrintView}
+                      onPreviewCostChange={setPreviewCost}
+                  />
+                </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- PHASE 2: FILE CREATION (BLUE) --- */}
+        {!isPrintView && activeTab === 'phase2' && (
+          <div className="space-y-6">
+            <div className={bluePhaseClass}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+                <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-8 flex items-center gap-3">
+                  <Folder className="h-5 w-5"/> Maklumat Fail & Kontrak (PT)
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
+                  <div className="group">
+                      <label className={labelClass}>No. Fail</label>
+                      <input type="text" name="noFail" value={formData.noFail} onChange={handleInputChange} className={inputClass} />
+                  </div>
+
+                  {/* Dropdown for Company */}
+                  <div className="group lg:col-span-2">
+                      <label className={labelClass}>Nama Syarikat (Dropdown)</label>
+                      <select name="namaSyarikat" value={formData.namaSyarikat} onChange={handleInputChange} className={inputClass}>
+                          <option value="">Pilih Syarikat...</option>
+                          {companies.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                  </div>
+
+                  <div className="group">
+                      <label className={labelClass}>Bulan</label>
+                      <select name="bulan" value={formData.bulan} onChange={handleInputChange} className={inputClass}>
+                        <option value="">Pilih...</option>
+                        {['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'].map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                  </div>
+
+                  {/* Dropdown for No. Vot */}
+                  <div className="group">
+                      <label className={labelClass}>No. Vot (Dropdown)</label>
+                      <select name="noVote" value={formData.noVote} onChange={handleInputChange} className={inputClass}>
+                          <option value="">Pilih Vot...</option>
+                          {voteNumbers.map(v => <option key={v} value={v}>{v}</option>)}
+                      </select>
+                  </div>
+
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Lantikan</label>
+                      <StrictDateInput name="tarikhLantikan" value={formData.tarikhLantikan} onChange={handleInputChange} className={inputClass} />
+                  </div>
+                  <div className="group">
+                      <label className={labelClass}>Tarikh BPP</label>
+                      <StrictDateInput name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp} onChange={handleInputChange} className={inputClass} />
+                  </div>
+
+                  {/* Tempoh Kontrak: Composite Input */}
+                  <div className="group">
+                      <label className={labelClass}>Tempoh Kontrak</label>
+                      <div className="flex gap-2">
+                          <input 
+                              type="number" 
+                              value={tempohVal || ''} 
+                              onChange={(e) => setTempohVal(Number(e.target.value))} 
+                              className={`${inputClass} flex-1`}
+                              placeholder="0" 
+                          />
+                          <select 
+                              value={tempohUnit} 
+                              onChange={(e) => setTempohUnit(e.target.value as any)} 
+                              className={`${inputClass} w-32`}
+                          >
+                              <option value="Minggu">Minggu</option>
+                              <option value="Bulan">Bulan</option>
+                              <option value="Tahun">Tahun</option>
+                          </select>
+                      </div>
+                  </div>
+
+                  {/* Tarikh Mula Kontrak - Auto Calculated with Manual Override */}
+                  <div className="group">
+                      <div className="flex justify-between items-center mb-1">
+                          <label className={labelClass}>Tarikh Mula Kontrak</label>
+                          <button 
+                            type="button" 
+                            onClick={() => setManualMulaKontrak(!manualMulaKontrak)}
+                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-indigo-500"
+                            title={manualMulaKontrak ? "Reset to Auto" : "Manual Edit"}
+                          >
+                             {manualMulaKontrak ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>}
+                             {manualMulaKontrak ? "Manual" : "Auto"}
+                          </button>
+                      </div>
+                      <StrictDateInput 
+                        name="tarikhMulaKontrak" 
+                        value={formData.tarikhMulaKontrak} 
+                        onChange={handleInputChange} 
+                        className={`${inputClass} ${!manualMulaKontrak ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-indigo-500/20'}`}
+                        readOnly={!manualMulaKontrak}
+                      />
+                      {!manualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari BPP (Business Days)</p>}
+                  </div>
+
+                  {/* Tarikh Tamat Kontrak - Auto Calculated */}
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label>
+                      <StrictDateInput 
+                        name="tarikhTamatKontrak" 
+                        value={formData.tarikhTamatKontrak} 
+                        onChange={() => {}} 
+                        className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 cursor-not-allowed`}
+                        readOnly 
+                      />
+                  </div>
+
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Serah Tapak</label>
+                      <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak} onChange={handleInputChange} className={inputClass} />
+                  </div>
+
+                  {/* ISO - Auto Calculated Business Days */}
+                  <div className="group">
+                      <label className={labelClass}>ISO (BPP ke Serah Tapak)</label>
+                      <input 
+                        type="text" 
+                        name="iso" 
+                        value={formData.iso} 
+                        className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 font-mono`}
+                        readOnly
+                        placeholder="Auto calc..."
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1 italic">Hari bekerja sahaja</p>
+                  </div>
+
+                  {/* Tarikh Mula Kerja - Auto Calculated with Manual Override */}
+                  <div className="group">
+                      <div className="flex justify-between items-center mb-1">
+                          <label className={labelClass}>Tarikh Mula Kerja</label>
+                          <button 
+                            type="button" 
+                            onClick={() => setManualMulaKerja(!manualMulaKerja)}
+                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-indigo-500"
+                            title={manualMulaKerja ? "Reset to Auto" : "Manual Edit"}
+                          >
+                             {manualMulaKerja ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>}
+                             {manualMulaKerja ? "Manual" : "Auto"}
+                          </button>
+                      </div>
+                      <StrictDateInput 
+                        name="tarikhMulaKerja" 
+                        value={formData.tarikhMulaKerja} 
+                        onChange={handleInputChange} 
+                        className={`${inputClass} ${!manualMulaKerja ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-indigo-500/20'}`}
+                        readOnly={!manualMulaKerja}
+                      />
+                      {!manualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari Serah Tapak (Business Days)</p>}
+                  </div>
+                </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- PHASE 3: BQ PELARASAN --- */}
+        {activeTab === 'phase3' && (
+          <div className="space-y-6">
+            <div className={`${yellowPhaseClass} ${isPrintView ? 'hidden' : ''}`}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
+                <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 mb-8 flex items-center gap-3">
+                  <Info className="h-5 w-5"/> BQ Pelarasan Building
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Pemeriksaan</label>
+                      <StrictDateInput name="tarikhPemeriksaan" value={formData.tarikhPemeriksaan} onChange={handleInputChange} className={inputClass} />
+                  </div>
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Siap (Sebenar)</label>
+                      <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar} onChange={handleInputChange} className={inputClass} />
+                  </div>
+                  <div className="group">
+                      <label className={labelClass}>Prestasi</label>
+                      <select name="prestasi" value={formData.prestasi} onChange={handleInputChange} className={inputClass}>
+                        <option value="">Pilih...</option>
+                        <option value="Cemerlang">Cemerlang</option>
+                        <option value="Baik">Baik</option>
+                        <option value="Memuaskan">Memuaskan</option>
+                        <option value="Tidak Memuaskan">Tidak Memuaskan</option>
+                      </select>
+                  </div>
+                  {/* UPDATED: Tarikh Tuntutan Bayaran instead of Amount */}
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Tuntutan Bayaran</label>
+                      <StrictDateInput name="tarikhTuntutanBayaran" value={formData.tarikhTuntutanBayaran || ''} onChange={handleInputChange} className={inputClass} />
+                  </div>
+                  
+                  {/* LAD FIELDS */}
+                  <div className="group">
+                      <label className={labelClass}>LAD Amount (RM)</label>
+                      <input type="number" name="ladAmount" value={formData.ladAmount} onChange={handleInputChange} className={inputClass} placeholder="0.00" />
+                  </div>
+                   <div className="group">
+                      <label className={labelClass}>LAD Days</label>
+                      <input type="number" name="ladDays" value={formData.ladDays} onChange={handleInputChange} className={inputClass} placeholder="0" />
+                  </div>
+                  
+                  <div className="group">
+                      <label className={labelClass}>Tarikh CPC</label>
+                      <StrictDateInput name="cpcDate" value={formData.cpcDate} onChange={handleInputChange} className={inputClass} />
+                  </div>
+                  
+                  {/* Display Only Calculated Field */}
+                  <div className="group">
+                      <label className={labelClass}>Kos Sebenar (Auto Calc)</label>
+                      <div className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-slate-600 font-bold flex items-center`}>
+                          {formatCurrency(formData.kosSebenar)}
+                      </div>
+                  </div>
+
+                </div>
+            </div>
+
+            {/* PELARASAN EDITOR */}
+            <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'overflow-hidden'}`}>
+                {!isPrintView && (
+                  <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+                          <Edit className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Pelarasan BQ</h3>
+                          <p className="text-xs text-slate-500 font-medium">Bandingkan dengan kontrak asal & buat pelarasan</p>
+                        </div>
+                      </div>
+                  </div>
+                )}
+                <div className="bg-slate-50/50 dark:bg-[#0f172a]/30">
+                  <BQPelarasanEditor 
+                      originalData={formData.bqData || []}
+                      pelarasanData={formData.bqDataPelarasan || []}
+                      globalDims={formData.globalDimensions || { length: 0, width: 0, depth: 0 }}
+                      onDataChange={handleBQPelarasanChange}
+                      projectData={formData as Project}
+                      isPrintView={isPrintView}
+                  />
+                </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- PHASE 4 --- */}
+        {!isPrintView && activeTab === 'phase4' && (
+          <div className="space-y-6">
+            <div className={orangePhaseClass}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                  <h3 className="text-lg font-bold text-orange-600 dark:text-orange-400 flex items-center gap-3">
+                    <CheckCircle className="h-5 w-5"/> Closing File / Project
+                  </h3>
                 </div>
                 
-                <div className="group">
-                   <label className={labelClass}>Lokasi</label>
-                   <input type="text" name="lokasi" value={formData.lokasi} onChange={handleInputChange} className={inputClass} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Hantar Kewangan</label>
+                      <StrictDateInput name="tarikhHantarKewangan" value={formData.tarikhHantarKewangan} onChange={handleInputChange} className={inputClass} />
+                  </div>
+                  <div className="group">
+                      <label className={labelClass}>Tarikh Padanan</label>
+                      <StrictDateInput name="tarikhPadanan" value={formData.tarikhPadanan} onChange={handleInputChange} className={inputClass} />
+                  </div>
                 </div>
-
-                <div className="group">
-                   <label className={labelClass}>BP (Blok Perancangan)</label>
-                   <select name="bp" value={formData.bp} onChange={handleInputChange} className={inputClass}>
-                     <option value="">Pilih BP...</option>
-                     {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
-                   </select>
-                </div>
-
-                <div className="group">
-                   <label className={labelClass}>Zon</label>
-                   <select name="zon" value={formData.zon} onChange={handleInputChange} className={inputClass}>
-                     <option value="">Pilih Zon...</option>
-                     {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
-                   </select>
-                </div>
-
-                <div className="group">
-                   <label className={labelClass}>Tarikh Buka</label>
-                   <input type="date" name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} className={inputClass} />
-                </div>
-              </div>
-           </div>
-
-           {/* BQ WIZARD */}
-           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden">
-               <div className="bg-slate-50 dark:bg-slate-800 p-4 border-b border-slate-200 dark:border-slate-700">
-                  <h3 className="font-bold text-slate-700 dark:text-slate-300">Penyediaan BQ (Wizard)</h3>
-               </div>
-               <BQEditor 
-                  initialData={formData.bqData} 
-                  initialDims={formData.globalDimensions}
-                  onSave={handleBQSave} 
-                  projectData={formData as Project}
-               />
-           </div>
-        </div>
-      )}
-
-      {/* --- PHASE 2: FILE CREATION (BLUE) --- */}
-      {activeTab === 'phase2' && (
-        <div className="space-y-6">
-           <div className={bluePhaseClass}>
-              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-300 mb-6 flex items-center gap-2">
-                <Folder className="h-5 w-5"/> Maklumat Fail & Kontrak (PT)
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                 <div className="group">
-                    <label className={labelClass}>No. Fail</label>
-                    <input type="text" name="noFail" value={formData.noFail} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group lg:col-span-2">
-                    <label className={labelClass}>Nama Syarikat</label>
-                    <input type="text" name="namaSyarikat" value={formData.namaSyarikat} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Bulan</label>
-                    <select name="bulan" value={formData.bulan} onChange={handleInputChange} className={inputClass}>
-                       <option value="">Pilih...</option>
-                       {['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'].map(m => (
-                         <option key={m} value={m}>{m}</option>
-                       ))}
-                    </select>
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>No. Vot</label>
-                    <input type="text" name="noVote" value={formData.noVote} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Lantikan</label>
-                    <input type="date" name="tarikhLantikan" value={formData.tarikhLantikan} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh BPP</label>
-                    <input type="date" name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tempoh Kontrak</label>
-                    <input type="text" name="tempohKontrak" value={formData.tempohKontrak} onChange={handleInputChange} className={inputClass} placeholder="Minggu/Bulan" />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Mula Kontrak</label>
-                    <input type="date" name="tarikhMulaKontrak" value={formData.tarikhMulaKontrak} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Tamat Kontrak</label>
-                    <input type="date" name="tarikhTamatKontrak" value={formData.tarikhTamatKontrak} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Serah Tapak</label>
-                    <input type="date" name="tarikhSerahTapak" value={formData.tarikhSerahTapak} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>ISO</label>
-                    <input type="text" name="iso" value={formData.iso} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Mula Kerja</label>
-                    <input type="date" name="tarikhMulaKerja" value={formData.tarikhMulaKerja} onChange={handleInputChange} className={inputClass} />
-                 </div>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {/* --- PHASE 3: PELARASAN BUILDING (YELLOW) --- */}
-      {activeTab === 'phase3' && (
-        <div className="space-y-6">
-           <div className={yellowPhaseClass}>
-              <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-400 mb-6 flex items-center gap-2">
-                <Info className="h-5 w-5"/> BQ Pelarasan Building
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Pemeriksaan</label>
-                    <input type="date" name="tarikhPemeriksaan" value={formData.tarikhPemeriksaan} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Siap (Sebenar)</label>
-                    <input type="date" name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Prestasi</label>
-                    <select name="prestasi" value={formData.prestasi} onChange={handleInputChange} className={inputClass}>
-                       <option value="">Pilih...</option>
-                       <option value="Cemerlang">Cemerlang</option>
-                       <option value="Baik">Baik</option>
-                       <option value="Memuaskan">Memuaskan</option>
-                       <option value="Tidak Memuaskan">Tidak Memuaskan</option>
-                    </select>
-                 </div>
-                 
-                 <div className="group">
-                    <label className={labelClass}>Tuntutan Bayaran (RM)</label>
-                    <input type="number" name="tuntutanBayaran" value={formData.tuntutanBayaran} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Kos Sebenar (RM)</label>
-                    <input type="number" name="kosSebenar" value={formData.kosSebenar} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Survey</label>
-                    <input type="date" name="tarikhSurvey" value={formData.tarikhSurvey} onChange={handleInputChange} className={inputClass} />
-                 </div>
-
-                 <div className="group">
-                    <label className={labelClass}>LAD (RM)</label>
-                    <input type="number" name="ladAmount" value={formData.ladAmount} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh CPC</label>
-                    <input type="date" name="cpcDate" value={formData.cpcDate} onChange={handleInputChange} className={inputClass} />
-                 </div>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {/* --- PHASE 4: CLOSING FILE (ORANGE) --- */}
-      {activeTab === 'phase4' && (
-        <div className="space-y-6">
-           <div className={orangePhaseClass}>
-              <h3 className="text-lg font-bold text-orange-800 dark:text-orange-300 mb-6 flex items-center gap-2">
-                <CheckCircle className="h-5 w-5"/> Closing File / Project
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Hantar Kewangan</label>
-                    <input type="date" name="tarikhHantarKewangan" value={formData.tarikhHantarKewangan} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Tarikh Pemadanan</label>
-                    <input type="date" name="tarikhPadanan" value={formData.tarikhPadanan} onChange={handleInputChange} className={inputClass} />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>% Kerja Di Tapak</label>
-                    <input type="number" name="peratusSiap" value={formData.peratusSiap} onChange={handleInputChange} className={inputClass} placeholder="100" />
-                 </div>
-                 <div className="group">
-                    <label className={labelClass}>Status Projek</label>
-                    <select name="status" value={formData.status} onChange={handleInputChange} className={inputClass}>
-                       <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
-                       <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
-                       <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
-                       <option value={ProjectStatus.SIAP}>Siap</option>
-                    </select>
-                 </div>
-              </div>
-           </div>
-        </div>
-      )}
+            </div>
+          </div>
+        )}
+      </div>
 
     </div>
   );

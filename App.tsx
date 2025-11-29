@@ -11,7 +11,7 @@ import Users from './pages/Users';
 import Inbox from './pages/Inbox';
 import Calendar from './pages/Calendar';
 import Profile from './pages/Profile';
-import ThemeToggle from './components/ThemeToggle';
+import AdminSettings from './pages/AdminSettings';
 import YearSelector from './components/YearSelector';
 import Toast from './components/Toast';
 
@@ -79,11 +79,9 @@ function App() {
   };
   
   const handleDeleteProject = async (project: Project) => {
-    if (window.confirm(`Adakah anda pasti mahu memadam projek "${project.namaProjek}"?`)) {
-      await mockService.deleteProject(project.id);
-      loadProjects();
-      showToast('Projek berjaya dipadam.', 'success');
-    }
+    await mockService.deleteProject(project.id);
+    loadProjects();
+    showToast('Projek berjaya dipadam.', 'success');
   };
 
   const handleProjectSaved = () => {
@@ -93,7 +91,7 @@ function App() {
   };
 
   const handleNavClick = (page: string) => {
-    if (['dashboard', 'projects', 'users', 'inbox', 'calendar'].includes(page)) {
+    if (['dashboard', 'projects', 'users', 'inbox', 'calendar', 'settings'].includes(page)) {
       setCurrentPage(page);
       setIsEditing(false);
     } else {
@@ -134,14 +132,9 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           
           {/* Top Bar / Header */}
-          <header className="opacity-0 animate-slide-down delay-100 flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
+          <header className="relative z-40 opacity-0 animate-slide-down delay-100 flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
              <div className="flex items-center gap-4">
                <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
-             </div>
-             <div className="flex items-center space-x-4 ml-auto">
-                <div className="relative block">
-                  <ThemeToggle />
-                </div>
              </div>
           </header>
 
@@ -187,6 +180,9 @@ function App() {
                   )}
                   {currentPage === 'profile' && (
                     <Profile user={user} />
+                  )}
+                  {currentPage === 'settings' && (
+                    <AdminSettings user={user} />
                   )}
                 </>
               )}

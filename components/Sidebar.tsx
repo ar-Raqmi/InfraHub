@@ -2,6 +2,7 @@
 import React from 'react';
 import { Home, FolderKanban, Users, Calendar, LogOut, Settings, Hexagon, Menu } from 'lucide-react';
 import { Role } from '../types';
+import ThemeToggle from './ThemeToggle';
 
 interface SidebarProps {
   role: Role;
@@ -63,9 +64,13 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
 
         {/* Bottom Actions */}
         <div className="mt-auto flex flex-col space-y-6 w-full px-2 items-center">
-          <button className="p-3 rounded-xl text-gray-400 hover:text-indigo-600 hover:bg-white/50 dark:hover:bg-white/5 hover:shadow-lg hover:scale-110 transition-all duration-300" title="Tetapan">
-            <Settings className="w-5 h-5" strokeWidth={1.5} />
-          </button>
+          <ThemeToggle className="p-3 rounded-xl text-gray-400 hover:text-indigo-600 hover:bg-white/50 dark:hover:bg-white/5 hover:shadow-lg hover:scale-110 transition-all duration-300" />
+          
+          {role === Role.ADMIN && (
+            <button onClick={() => onNavigate('settings')} className={navItemClass('settings')} title="Tetapan">
+              <Settings className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+          )}
           
           <button onClick={onLogout} className="p-3 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 hover:shadow-lg hover:scale-110 transition-all duration-300" title="Log Keluar">
             <LogOut className="w-5 h-5" strokeWidth={1.5} />

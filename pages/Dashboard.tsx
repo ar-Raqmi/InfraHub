@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Project, ProjectStatus, User, formatCurrency } from '../types';
+import { Project, ProjectStatus, User, formatCurrency, formatDate } from '../types';
 import { Search, Bell, TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote } from 'lucide-react';
 
 interface DashboardProps {

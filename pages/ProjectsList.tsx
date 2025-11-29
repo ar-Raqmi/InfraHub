@@ -1,7 +1,7 @@
-
-import React, { useState } from 'react';
-import { Project, ProjectStatus, formatCurrency, getStatusColor } from '../types';
-import { Search, Plus, List, Grid, Folder, ArrowRight, Building2, Download, ChevronDown, ChevronRight, Layout, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate } from '../types';
+import { Search, Plus, List, Grid, Folder, ArrowRight, Building2, Download, ChevronDown, ChevronRight, Layout, Trash2, AlertTriangle, X } from 'lucide-react';
 
 interface ProjectsListProps {
   projects: Project[];
@@ -23,6 +23,42 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
   const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
   const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
   
+  // Delete Modal State
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [deleteCountdown, setDeleteCountdown] = useState(0);
+
+  useEffect(() => {
+    let timer: any;
+    if (projectToDelete) {
+      setDeleteCountdown(5);
+      timer = setInterval(() => {
+        setDeleteCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [projectToDelete]);
+
+  const handleDeleteClick = (project: Project) => {
+    setProjectToDelete(project);
+  };
+
+  const confirmDelete = () => {
+    if (projectToDelete) {
+      onDeleteProject(projectToDelete);
+      setProjectToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setProjectToDelete(null);
+  };
+
   // Expanded Column Toggle State for Workflow Visibility
   const [showFilters, setShowFilters] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState({
@@ -115,8 +151,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
             p.status,
             p.kosProjek || 0,
             p.kosSebenar || 0,
-            p.tarikhBuka,
-            p.tarikhSiapSebenar || ''
+            formatDate(p.tarikhBuka),
+            formatDate(p.tarikhSiapSebenar) || ''
           ].join(",");
       }).join("\n");
 
@@ -239,7 +275,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                                   type="checkbox" 
                                   checked={visibleColumns[col as keyof typeof visibleColumns]} 
                                   onChange={() => setVisibleColumns(prev => ({...prev, [col]: !prev[col as keyof typeof visibleColumns]}))}
-                                  className="peer h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-all cursor-pointer"
+                                  className="peer w-4 h-4 rounded border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-2 accent-indigo-600 cursor-pointer transition-all"
                                 />
                               </div>
                               <span className={`text-sm font-medium transition-colors capitalize select-none ${visibleColumns[col as keyof typeof visibleColumns] ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300'}`}>
@@ -329,7 +365,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                       {visibleColumns.bp && <td className="px-6 py-4 text-center text-sm text-slate-500">{project.bp || '-'}</td>}
                       {visibleColumns.zon && <td className="px-6 py-4 text-center text-sm text-slate-500">{project.zon || '-'}</td>}
                       {visibleColumns.aduan && <td className="px-6 py-4 text-sm text-slate-500 truncate max-w-[200px]">{project.aduan || '-'}</td>}
-                      {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhBuka || '-'}</td>}
+                      {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhBuka)}</td>}
 
                       {/* Phase 2 */}
                       {visibleColumns.syarikat && (
@@ -344,23 +380,23 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                             {formatCurrency(project.kosProjek)}
                         </td>
                       )}
-                      {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhLantikan || '-'}</td>}
-                      {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhCetakanBpp || '-'}</td>}
-                      {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhMulaKontrak || '-'}</td>}
-                      {visibleColumns.tarikhTamatKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhTamatKontrak || '-'}</td>}
+                      {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhLantikan)}</td>}
+                      {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhCetakanBpp)}</td>}
+                      {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhMulaKontrak)}</td>}
+                      {visibleColumns.tarikhTamatKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhTamatKontrak)}</td>}
                       {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500">{project.tempohKontrak || '-'}</td>}
-                      {visibleColumns.tarikhSerahTapak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhSerahTapak || '-'}</td>}
-                      {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhMulaKerja || '-'}</td>}
+                      {visibleColumns.tarikhSerahTapak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhSerahTapak)}</td>}
+                      {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhMulaKerja)}</td>}
 
                       {/* Phase 3 */}
-                      {visibleColumns.tarikhPemeriksaan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhPemeriksaan || '-'}</td>}
-                      {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhSiapSebenar || '-'}</td>}
-                      {visibleColumns.cpcDate && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.cpcDate || '-'}</td>}
+                      {visibleColumns.tarikhPemeriksaan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhPemeriksaan)}</td>}
+                      {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhSiapSebenar)}</td>}
+                      {visibleColumns.cpcDate && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.cpcDate)}</td>}
                       {visibleColumns.lad && <td className="px-6 py-4 text-center text-sm text-red-500 font-medium whitespace-nowrap">{project.ladAmount ? formatCurrency(project.ladAmount) : '-'}</td>}
 
                       {/* Phase 4 */}
-                      {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhHantarKewangan || '-'}</td>}
-                      {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.tarikhPadanan || '-'}</td>}
+                      {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhHantarKewangan)}</td>}
+                      {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhPadanan)}</td>}
                       {visibleColumns.kosSebenar && (
                         <td className="px-6 py-4 text-right font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
                             {formatCurrency(project.kosSebenar)}
@@ -391,7 +427,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                       <td className="px-6 py-4 text-right sticky right-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/80 transition-colors z-10 border-l border-slate-100 dark:border-slate-800">
                         <div className="flex justify-end gap-2">
                            <button 
-                              onClick={(e) => { e.stopPropagation(); onDeleteProject(project); }}
+                              onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }}
                               className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl"
                               title="Padam Projek"
                            >
@@ -474,7 +510,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                                      </td>
                                      <td className="px-6 py-3 text-right">
                                         <div className="flex justify-end gap-1">
-                                            <button onClick={(e) => { e.stopPropagation(); onDeleteProject(p); }} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg group/del">
+                                            <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(p); }} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg group/del">
                                                <Trash2 className="w-4 h-4 text-slate-400 group-hover/del:text-red-500" />
                                             </button>
                                             <button onClick={() => onEditProject(p)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg">
@@ -500,6 +536,60 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal Portal */}
+      {projectToDelete && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={cancelDelete}>
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform scale-100 transition-all animate-slide-up relative" onClick={e => e.stopPropagation()}>
+                <button onClick={cancelDelete} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                   <X className="w-5 h-5" />
+                </button>
+                <div className="flex flex-col items-center text-center pt-2">
+                   <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-6 text-red-500 animate-pulse-slow">
+                      <div className="w-14 h-14 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center">
+                        <AlertTriangle className="w-8 h-8 stroke-[1.5]" />
+                      </div>
+                   </div>
+                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta">Padam Projek Ini?</h3>
+                   <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed px-4">
+                     Adakah anda pasti mahu memadam projek <br/>
+                     <span className="font-bold text-slate-900 dark:text-white block mt-1 p-2 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 truncate max-w-full">
+                       {projectToDelete.namaProjek}
+                     </span>
+                     <span className="mt-2 block text-xs text-red-500 font-medium">Tindakan ini tidak boleh dikembalikan.</span>
+                   </p>
+                   
+                   <div className="flex gap-3 w-full">
+                      <button 
+                        onClick={cancelDelete}
+                        className="flex-1 py-3.5 px-4 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md"
+                      >
+                        Batal
+                      </button>
+                      <button 
+                        onClick={confirmDelete}
+                        disabled={deleteCountdown > 0}
+                        className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg ${
+                          deleteCountdown > 0 
+                            ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-70 shadow-none' 
+                            : 'bg-red-600 hover:bg-red-700 shadow-red-600/30 hover:shadow-red-600/50 hover:-translate-y-0.5'
+                        }`}
+                      >
+                        {deleteCountdown > 0 ? (
+                            <span className="font-mono">Tunggu ({deleteCountdown}s)</span>
+                        ) : (
+                            <>
+                                <Trash2 className="w-4 h-4" />
+                                <span>Pasti</span>
+                            </>
+                        )}
+                      </button>
+                   </div>
+                </div>
+            </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

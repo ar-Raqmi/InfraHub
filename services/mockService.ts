@@ -9,9 +9,25 @@ const INITIAL_USERS: User[] = [
 
 const INITIAL_PROJECTS: Project[] = [];
 
+// Initial Dropdown Data
+const INITIAL_COMPANIES = [
+  "Syarikat Pembinaan Jaya Sdn Bhd",
+  "Teguh Bina Enterprise",
+  "Maju Infrastruktur Sdn Bhd",
+  "Khairul Enterprise"
+];
+
+const INITIAL_VOTES = [
+  "282090",
+  "340001",
+  "560002"
+];
+
 class MockService {
   private users: User[] = [];
   private projects: Project[] = [];
+  private companies: string[] = [];
+  private voteNumbers: string[] = [];
   private currentUser: User | null = null;
 
   constructor() {
@@ -22,6 +38,10 @@ class MockService {
     const storedUsers = localStorage.getItem('infrahub_users');
     const storedProjects = localStorage.getItem('infrahub_projects');
     const storedSession = localStorage.getItem('infrahub_session');
+    
+    // New Stored Data
+    const storedCompanies = localStorage.getItem('infrahub_companies');
+    const storedVotes = localStorage.getItem('infrahub_votes');
 
     this.users = storedUsers ? JSON.parse(storedUsers) : INITIAL_USERS;
     
@@ -34,6 +54,10 @@ class MockService {
     }
 
     this.projects = storedProjects ? JSON.parse(storedProjects) : INITIAL_PROJECTS;
+    
+    this.companies = storedCompanies ? JSON.parse(storedCompanies) : INITIAL_COMPANIES;
+    this.voteNumbers = storedVotes ? JSON.parse(storedVotes) : INITIAL_VOTES;
+
     if (storedSession) {
       this.currentUser = JSON.parse(storedSession);
     }
@@ -42,6 +66,9 @@ class MockService {
   private saveData() {
     localStorage.setItem('infrahub_users', JSON.stringify(this.users));
     localStorage.setItem('infrahub_projects', JSON.stringify(this.projects));
+    localStorage.setItem('infrahub_companies', JSON.stringify(this.companies));
+    localStorage.setItem('infrahub_votes', JSON.stringify(this.voteNumbers));
+
     if (this.currentUser) {
       localStorage.setItem('infrahub_session', JSON.stringify(this.currentUser));
     } else {
@@ -51,7 +78,6 @@ class MockService {
 
   // Auth
   async login(username: string, password: string): Promise<User> {
-    // Simple case-insensitive match for username
     const user = this.users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
     if (!user) throw new Error('Invalid credentials');
     this.currentUser = user;
@@ -91,8 +117,6 @@ class MockService {
     if (index === -1) throw new Error('Project not found');
     
     const updatedProject = { ...this.projects[index], ...updates };
-    
-    // Ensure numbers
     if (updates.kosProjek !== undefined) updatedProject.kosProjek = Number(updates.kosProjek);
 
     this.projects[index] = updatedProject;
@@ -120,6 +144,40 @@ class MockService {
 
   async deleteUser(id: number) {
     this.users = this.users.filter(u => u.id !== id);
+    this.saveData();
+  }
+
+  // Dropdown Management (Companies)
+  getCompanies() {
+    return [...this.companies];
+  }
+
+  async addCompany(name: string) {
+    if (!this.companies.includes(name)) {
+      this.companies.push(name);
+      this.saveData();
+    }
+  }
+
+  async deleteCompany(name: string) {
+    this.companies = this.companies.filter(c => c !== name);
+    this.saveData();
+  }
+
+  // Dropdown Management (Votes)
+  getVoteNumbers() {
+    return [...this.voteNumbers];
+  }
+
+  async addVoteNumber(vote: string) {
+    if (!this.voteNumbers.includes(vote)) {
+      this.voteNumbers.push(vote);
+      this.saveData();
+    }
+  }
+
+  async deleteVoteNumber(vote: string) {
+    this.voteNumbers = this.voteNumbers.filter(v => v !== vote);
     this.saveData();
   }
 }

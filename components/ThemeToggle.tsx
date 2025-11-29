@@ -3,7 +3,11 @@ import { Moon, Sun, Monitor } from 'lucide-react';
 
 type Theme = 'light' | 'dark' | 'system';
 
-const ThemeToggle: React.FC = () => {
+interface ThemeToggleProps {
+  className?: string;
+}
+
+const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('theme') as Theme) || 'system';
@@ -49,10 +53,12 @@ const ThemeToggle: React.FC = () => {
     else setTheme('light');
   };
 
+  const defaultClass = "p-2 rounded-xl bg-white/20 hover:bg-black/5 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 backdrop-blur-sm transition-all shadow-sm border border-transparent dark:border-zinc-700";
+
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-xl bg-white/20 hover:bg-black/5 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 backdrop-blur-sm transition-all shadow-sm border border-transparent dark:border-zinc-700"
+      className={className || defaultClass}
       title={`Current theme: ${theme}`}
     >
       {theme === 'light' && <Sun className="h-5 w-5" />}
