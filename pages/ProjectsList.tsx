@@ -88,7 +88,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
     // Phase 3: Pelaksanaan
     tarikhPemeriksaan: false,
     tarikhSiapSebenar: false,
-    cpcDate: false, // Tarikh CPC
     lad: false, // ladAmount + ladDays
 
     // Phase 4: Penutup
@@ -105,7 +104,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
   const columnGroups = {
     'Fasa 1: Maklumat Asas': ['noFail', 'namaProjek', 'noAduan', 'lokasi', 'bp', 'zon', 'aduan', 'tarikhBuka'],
     'Fasa 2: Lantikan & Kontrak': ['syarikat', 'noVote', 'bulan', 'kosProjek', 'tarikhLantikan', 'tarikhCetakanBpp', 'tarikhMulaKontrak', 'tarikhTamatKontrak', 'tempohKontrak', 'tarikhSerahTapak', 'tarikhMulaKerja'],
-    'Fasa 3: Pelaksanaan & CPC': ['tarikhPemeriksaan', 'tarikhSiapSebenar', 'cpcDate', 'lad'],
+    'Fasa 3: Pelaksanaan': ['tarikhPemeriksaan', 'tarikhSiapSebenar', 'lad'],
     'Fasa 4: Tuntutan & Penutup': ['tarikhHantarKewangan', 'tarikhPadanan', 'kosSebenar', 'peratusSiap', 'prestasi', 'status']
   };
 
@@ -175,7 +174,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
         </div>
         <button 
           onClick={onAddProject}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:scale-105 transition-all duration-300 w-full md:w-auto justify-center"
+          className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:scale-105 transition-all duration-300 w-full md:w-auto justify-center"
         >
           <Plus className="h-5 w-5" />
           <span>Tambah Projek</span>
@@ -194,7 +193,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
               placeholder="Cari No. Fail, Projek..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
+              className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
             />
           </div>
 
@@ -203,14 +202,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
             <div className="flex w-full md:w-auto bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl shrink-0">
               <button 
                 onClick={() => setViewMode('list')}
-                className={`flex-1 md:flex-none justify-center px-3 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 md:flex-none justify-center px-3 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <List className="w-4 h-4" />
                 <span className="md:hidden">List</span>
               </button>
               <button 
                 onClick={() => setViewMode('group')}
-                className={`flex-1 md:flex-none justify-center px-3 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${viewMode === 'group' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 md:flex-none justify-center px-3 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${viewMode === 'group' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <Grid className="w-4 h-4" />
                 <span className="md:hidden">Group</span>
@@ -221,7 +220,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
             <select 
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="w-full md:w-auto px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border-0 text-slate-700 dark:text-slate-300 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer min-w-[140px]"
+                className="w-full md:w-auto px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border-0 text-slate-700 dark:text-slate-300 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer min-w-[140px]"
             >
                 <option value="ALL">Semua Status</option>
                 <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
@@ -235,7 +234,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
               onClick={() => setShowFilters(!showFilters)}
               className={`w-full md:w-auto px-4 py-3 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all border border-slate-200 dark:border-white/5 ${
                 showFilters 
-                ? 'bg-indigo-600 text-white shadow-indigo-500/20 shadow-lg' 
+                ? 'bg-emerald-600 text-white shadow-emerald-500/20 shadow-lg' 
                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
               }`}
             >
@@ -261,7 +260,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
                {Object.entries(columnGroups).map(([groupName, columns]) => (
                   <div key={groupName}>
-                     <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                     <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                         {groupName}
                         <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full ml-auto">
                            {columns.filter(c => visibleColumns[c as keyof typeof visibleColumns]).length}/{columns.length}
@@ -275,11 +274,11 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                                   type="checkbox" 
                                   checked={visibleColumns[col as keyof typeof visibleColumns]} 
                                   onChange={() => setVisibleColumns(prev => ({...prev, [col]: !prev[col as keyof typeof visibleColumns]}))}
-                                  className="peer w-4 h-4 rounded border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-2 accent-indigo-600 cursor-pointer transition-all"
+                                  className="peer w-4 h-4 rounded border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-emerald-600 focus:ring-emerald-500 focus:ring-2 accent-emerald-600 cursor-pointer transition-all"
                                 />
                               </div>
                               <span className={`text-sm font-medium transition-colors capitalize select-none ${visibleColumns[col as keyof typeof visibleColumns] ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300'}`}>
-                                 {col.replace(/([A-Z])/g, ' $1').trim().replace(/lad/i, 'LAD').replace(/cpc/i, 'CPC').replace(/bp/i, 'BP').replace(/iso/i, 'ISO')}
+                                 {col.replace(/([A-Z])/g, ' $1').trim().replace(/lad/i, 'LAD').replace(/bp/i, 'BP').replace(/iso/i, 'ISO')}
                               </span>
                            </label>
                         ))}
@@ -306,6 +305,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                   <tr>
                     {/* Phase 1 */}
                     {visibleColumns.noFail && <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Projek / No. Fail</th>}
+                    {visibleColumns.namaProjek && !visibleColumns.noFail && <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Projek</th>}
                     {visibleColumns.noAduan && <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">No. Aduan</th>}
                     {visibleColumns.lokasi && <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Lokasi</th>}
                     {visibleColumns.bp && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">BP</th>}
@@ -325,11 +325,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                     {visibleColumns.tempohKontrak && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tempoh</th>}
                     {visibleColumns.tarikhSerahTapak && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Serah Tapak</th>}
                     {visibleColumns.tarikhMulaKerja && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Mula Kerja</th>}
-
+                    
                     {/* Phase 3 */}
                     {visibleColumns.tarikhPemeriksaan && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Pemeriksaan</th>}
                     {visibleColumns.tarikhSiapSebenar && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Siap Sebenar</th>}
-                    {visibleColumns.cpcDate && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tarikh CPC</th>}
                     {visibleColumns.lad && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">LAD (RM)</th>}
 
                     {/* Phase 4 */}
@@ -338,85 +337,70 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                     {visibleColumns.kosSebenar && <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Kos Sebenar</th>}
                     {visibleColumns.peratusSiap && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">% Siap</th>}
                     {visibleColumns.prestasi && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Prestasi</th>}
-
                     {visibleColumns.status && <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Status</th>}
-                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap sticky right-0 bg-slate-50 dark:bg-slate-900 z-10">Tindakan</th>
+                    <th className="px-6 py-4 text-right sticky right-0 bg-slate-50/50 dark:bg-slate-800/50 z-10 border-l border-slate-100 dark:border-slate-800"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredProjects.map((project) => (
-                    <tr key={project.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all duration-300 group">
-                      {/* Phase 1 */}
+                    <tr 
+                      key={project.id} 
+                      className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all duration-300 group cursor-pointer"
+                      onClick={() => onEditProject(project)}
+                    >
+                      {/* Phase 1 TDs */}
                       {visibleColumns.noFail && (
-                        <td className="px-6 py-4">
-                            <div className="flex items-center gap-4 min-w-[200px]">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center shadow-md text-slate-500 dark:text-slate-400 shrink-0">
-                                    <Folder className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 transition-colors text-sm">{project.namaProjek}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">{project.noFail}</p>
-                                </div>
-                            </div>
+                        <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                           <div className="flex flex-col">
+                              <span className="font-bold">{project.noFail}</span>
+                              <span className="text-xs text-slate-500 line-clamp-1 max-w-[200px]">{project.namaProjek}</span>
+                           </div>
                         </td>
                       )}
-                      {visibleColumns.noAduan && <td className="px-6 py-4 text-sm text-slate-500">{project.noAduan || '-'}</td>}
-                      {visibleColumns.lokasi && <td className="px-6 py-4 text-sm text-slate-500 truncate max-w-[200px]">{project.lokasi || '-'}</td>}
-                      {visibleColumns.bp && <td className="px-6 py-4 text-center text-sm text-slate-500">{project.bp || '-'}</td>}
-                      {visibleColumns.zon && <td className="px-6 py-4 text-center text-sm text-slate-500">{project.zon || '-'}</td>}
-                      {visibleColumns.aduan && <td className="px-6 py-4 text-sm text-slate-500 truncate max-w-[200px]">{project.aduan || '-'}</td>}
-                      {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhBuka)}</td>}
+                      {visibleColumns.namaProjek && !visibleColumns.noFail && (
+                        <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                           {project.namaProjek}
+                        </td>
+                      )}
+                      {visibleColumns.noAduan && <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{project.noAduan || '-'}</td>}
+                      {visibleColumns.lokasi && <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap line-clamp-1 max-w-[200px]">{project.lokasi || '-'}</td>}
+                      {visibleColumns.bp && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{project.bp || '-'}</td>}
+                      {visibleColumns.zon && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{project.zon || '-'}</td>}
+                      {visibleColumns.aduan && <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap line-clamp-1 max-w-[200px]">{project.aduan || '-'}</td>}
+                      {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhBuka)}</td>}
 
-                      {/* Phase 2 */}
-                      {visibleColumns.syarikat && (
-                        <td className="px-6 py-4">
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">{project.namaSyarikat || '-'}</span>
-                        </td>
-                      )}
-                      {visibleColumns.noVote && <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">{project.noVote || '-'}</td>}
-                      {visibleColumns.bulan && <td className="px-6 py-4 text-center text-sm text-slate-500">{project.bulan || '-'}</td>}
-                      {visibleColumns.kosProjek && (
-                        <td className="px-6 py-4 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                            {formatCurrency(project.kosProjek)}
-                        </td>
-                      )}
-                      {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhLantikan)}</td>}
-                      {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhCetakanBpp)}</td>}
-                      {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhMulaKontrak)}</td>}
-                      {visibleColumns.tarikhTamatKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhTamatKontrak)}</td>}
-                      {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-center text-sm text-slate-500">{project.tempohKontrak || '-'}</td>}
-                      {visibleColumns.tarikhSerahTapak && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhSerahTapak)}</td>}
-                      {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhMulaKerja)}</td>}
+                      {/* Phase 2 TDs */}
+                      {visibleColumns.syarikat && <td className="px-6 py-4 text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap line-clamp-1 max-w-[200px]">{project.namaSyarikat || '-'}</td>}
+                      {visibleColumns.noVote && <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap font-mono">{project.noVote || '-'}</td>}
+                      {visibleColumns.bulan && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{project.bulan || '-'}</td>}
+                      {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatCurrency(project.kosProjek)}</td>}
+                      {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhLantikan)}</td>}
+                      {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhCetakanBpp)}</td>}
+                      {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhMulaKontrak)}</td>}
+                      {visibleColumns.tarikhTamatKontrak && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhTamatKontrak)}</td>}
+                      {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{project.tempohKontrak || '-'}</td>}
+                      {visibleColumns.tarikhSerahTapak && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhSerahTapak)}</td>}
+                      {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhMulaKerja)}</td>}
+                      
+                      {/* Phase 3 TDs */}
+                      {visibleColumns.tarikhPemeriksaan && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhPemeriksaan)}</td>}
+                      {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhSiapSebenar)}</td>}
+                      {visibleColumns.lad && <td className="px-6 py-4 text-center text-sm text-red-500 whitespace-nowrap">{project.ladAmount ? `${formatCurrency(project.ladAmount)} (${project.ladDays || 0} hari)` : '-'}</td>}
 
-                      {/* Phase 3 */}
-                      {visibleColumns.tarikhPemeriksaan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhPemeriksaan)}</td>}
-                      {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhSiapSebenar)}</td>}
-                      {visibleColumns.cpcDate && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.cpcDate)}</td>}
-                      {visibleColumns.lad && <td className="px-6 py-4 text-center text-sm text-red-500 font-medium whitespace-nowrap">{project.ladAmount ? formatCurrency(project.ladAmount) : '-'}</td>}
-
-                      {/* Phase 4 */}
-                      {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhHantarKewangan)}</td>}
-                      {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{formatDate(project.tarikhPadanan)}</td>}
-                      {visibleColumns.kosSebenar && (
-                        <td className="px-6 py-4 text-right font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                            {formatCurrency(project.kosSebenar)}
-                        </td>
-                      )}
+                      {/* Phase 4 TDs */}
+                      {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhHantarKewangan)}</td>}
+                      {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatDate(project.tarikhPadanan)}</td>}
+                      {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatCurrency(project.kosSebenar)}</td>}
                       {visibleColumns.peratusSiap && <td className="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">{project.peratusSiap ? `${project.peratusSiap}%` : '-'}</td>}
                       {visibleColumns.prestasi && (
                          <td className="px-6 py-4 text-center text-sm">
                             {project.prestasi ? (
-                               <span className={`px-2 py-0.5 rounded text-[10px] border ${
-                                   project.prestasi === 'Cemerlang' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
-                                   project.prestasi === 'Baik' ? 'bg-blue-50 border-blue-200 text-blue-700' :
-                                   'bg-gray-50 border-gray-200 text-gray-700'
-                               }`}>
+                               <span className={`px-2 py-0.5 rounded text-[10px] border border-gray-200 text-gray-700 bg-gray-50`}>
                                   {project.prestasi}
                                </span>
                             ) : '-'}
                          </td>
                       )}
-
                       {visibleColumns.status && (
                         <td className="px-6 py-4 text-center">
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(project.status)} whitespace-nowrap`}>
@@ -424,6 +408,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                           </span>
                         </td>
                       )}
+                      
                       <td className="px-6 py-4 text-right sticky right-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/80 transition-colors z-10 border-l border-slate-100 dark:border-slate-800">
                         <div className="flex justify-end gap-2">
                            <button 
@@ -434,8 +419,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                               <Trash2 className="h-5 w-5" />
                            </button>
                            <button 
-                              onClick={() => onEditProject(project)}
-                              className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl"
+                              onClick={(e) => { e.stopPropagation(); onEditProject(project); }}
+                              className="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl"
                               title="Edit Projek"
                            >
                               <ArrowRight className="h-5 w-5" />
@@ -467,7 +452,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                       onClick={() => toggleCompany(company)}
                    >
                       <div className="flex items-center gap-4">
-                         <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                         <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                             <Building2 className="w-6 h-6" />
                          </div>
                          <div>
@@ -478,7 +463,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                       <div className="flex items-center gap-8 w-full sm:w-auto justify-between sm:justify-end">
                          <div className="text-right">
                             <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Jumlah Kontrak</p>
-                            <p className="font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(data.totalCost)}</p>
+                            <p className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(data.totalCost)}</p>
                          </div>
                       </div>
                    </div>
@@ -553,7 +538,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onAddProject, onE
                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta">Padam Projek Ini?</h3>
                    <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed px-4">
                      Adakah anda pasti mahu memadam projek <br/>
-                     <span className="font-bold text-slate-900 dark:text-white block mt-1 p-2 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 truncate max-w-full">
+                     <span className="font-bold text-slate-900 dark:text-white block mt-1 p-2 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 whitespace-normal break-words text-left max-w-full">
                        {projectToDelete.namaProjek}
                      </span>
                      <span className="mt-2 block text-xs text-red-500 font-medium">Tindakan ini tidak boleh dikembalikan.</span>
