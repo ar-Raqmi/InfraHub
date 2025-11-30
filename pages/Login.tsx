@@ -26,17 +26,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <div className="h-screen w-full bg-slate-50 relative overflow-hidden flex items-center justify-center p-4 font-manrope">
       
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:to-slate-950">
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-pink-50 dark:from-slate-900 dark:to-slate-950">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-300/30 rounded-full blur-[80px] animate-float"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-300/30 rounded-full blur-[80px] animate-float" style={{ animationDelay: '-2s' }}></div>
+          <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-teal-300/30 rounded-full blur-[80px] animate-float"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-300/30 rounded-full blur-[80px] animate-float" style={{ animationDelay: '-2s' }}></div>
         </div>
       </div>
 
       <div className="w-full max-w-md bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[40px] p-8 md:p-12 shadow-2xl border border-white/50 dark:border-white/10 relative z-10 animate-fade-in-up">
         
         <div className="flex flex-col items-center mb-10">
-           <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-indigo-500/30 animate-glow transform hover:scale-110 transition-transform duration-500">
+           <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30 animate-glow transform hover:scale-110 transition-transform duration-500">
              <Hexagon className="h-8 w-8 text-white fill-current" />
            </div>
            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Nexus InfraHub</h1>
@@ -50,7 +50,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-5 py-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400 shadow-sm"
+              className="w-full px-5 py-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white placeholder-slate-400 shadow-sm"
               placeholder="Contoh: syafiq"
               required
             />
@@ -61,7 +61,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-5 py-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400 shadow-sm"
+              className="w-full px-5 py-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white placeholder-slate-400 shadow-sm"
               placeholder="••••••••"
               required
             />
@@ -75,7 +75,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           <button 
             type="submit" 
-            className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-lg hover:bg-indigo-600 dark:hover:bg-indigo-50 transition-all shadow-xl shadow-slate-900/10 dark:shadow-white/5 mt-4 flex items-center justify-center gap-2 group"
+            className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-lg hover:bg-emerald-600 dark:hover:bg-emerald-50 transition-all shadow-xl shadow-slate-900/10 dark:shadow-white/5 mt-4 flex items-center justify-center gap-2 group"
           >
             Log Masuk <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
