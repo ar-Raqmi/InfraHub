@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -60,13 +59,13 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-2xl px-4 py-2 shadow-sm border transition-all group ${
           isOpen 
-            ? 'ring-2 ring-indigo-500 border-indigo-500 bg-white dark:bg-slate-800' 
+            ? 'ring-2 ring-emerald-500 border-emerald-500 bg-white dark:bg-slate-800' 
             : 'border-white/20 dark:border-white/5 hover:bg-white dark:hover:bg-slate-700'
         }`}
       >
-        <Calendar className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
+        <Calendar className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
         <span className="font-bold text-slate-700 dark:text-slate-200 font-manrope">{selectedYear}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-emerald-500' : ''}`} />
       </button>
 
       {isOpen && (
@@ -101,7 +100,7 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
                   onClick={() => handleYearSelect(year)}
                   className={`py-2 rounded-xl text-sm font-bold transition-all ${
                     isSelected
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105'
                   } ${isOutsideDecade ? 'opacity-40' : ''}`}
                 >
