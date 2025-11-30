@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate } from '../types';
-import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Printer, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Printer, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle } from 'lucide-react';
 import BQEditor from './BQEditor';
 import BQPelarasanEditor from './BQPelarasanEditor';
+import AkuJanjiEditor from './AkuJanjiEditor';
 import { mockService } from '../services/mockService';
 
 interface ProjectDetailProps {
@@ -11,6 +12,7 @@ interface ProjectDetailProps {
   onClose: () => void;
   onSave: () => void;
   currentUserRole: string;
+  selectedYear: number;
 }
 
 // --- HELPER FUNCTIONS FOR DATES ---
@@ -259,21 +261,21 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
   };
 
   return createPortal(
-    <div className="fixed top-0 left-0 md:left-20 right-0 z-[100] transition-all duration-300 animate-slide-down no-print">
+    <div className="fixed top-0 left-0 md:left-20 right-0 z-[90] transition-all duration-300 animate-slide-down no-print">
        <div className="bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-lg px-4 py-3 flex items-center justify-between gap-4">
           
           {/* View Toggles */}
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
              <button 
                 onClick={() => onToggleView('editor')}
-                className={`p-2 rounded-lg transition-all ${!isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                className={`p-2 rounded-lg transition-all ${!isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                 title="Editor Mode"
              >
                 <Edit className="w-4 h-4" />
              </button>
              <button 
                 onClick={() => onToggleView('print')}
-                className={`p-2 rounded-lg transition-all ${isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                className={`p-2 rounded-lg transition-all ${isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                 title="Preview & Print Mode"
              >
                 <Printer className="w-4 h-4" />
@@ -284,7 +286,7 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
           <div className="flex-1 flex justify-center max-w-2xl px-4 border-l border-r border-slate-100 dark:border-slate-800/50 mx-2">
              {isPrintView ? (
                 <div className="text-center">
-                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Preview Mode</span>
+                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Preview Mode</span>
                 </div>
              ) : (
                 <div className="w-full max-w-md flex flex-col gap-2">
@@ -295,7 +297,7 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
                                     name="status" 
                                     value={status} 
                                     onChange={onStatusChange} 
-                                    className="appearance-none bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                    className="appearance-none bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
                                     <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
@@ -315,14 +317,14 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
                                 onChange={(e) => setLocalProgress(e.target.value)}
                                 onBlur={handleBlur}
                                 onKeyDown={handleKeyDown}
-                                className="w-10 text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 p-0 text-sm font-bold text-indigo-600 dark:text-indigo-400 focus:ring-0 outline-none transition-colors"
+                                className="w-10 text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 p-0 text-sm font-bold text-emerald-600 dark:text-emerald-400 focus:ring-0 outline-none transition-colors"
                             />
                             <span className="text-xs font-bold text-slate-400">%</span>
                          </div>
                      </div>
                      <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div 
-                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-500 ease-out"
+                            className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-500 ease-out"
                             style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }}
                         ></div>
                      </div>
@@ -333,10 +335,10 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
           {/* Costs */}
           <div className="flex items-center gap-4 md:gap-8 shrink-0">
               <div className="text-right">
-                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-0.5">
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">
                     {isPelarasanActive ? 'Kos Asal' : 'Kos Projek'}
                   </p>
-                  <p className={`text-lg font-bold font-mono leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400'}`}>
+                  <p className={`text-lg font-bold font-mono leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400'}`}>
                       {formatCurrency(grandTotal)}
                   </p>
                   {isPelarasanActive && finalTotal !== undefined && (
@@ -352,13 +354,34 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
   );
 };
 
-const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole }) => {
+const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole, selectedYear }) => {
   
+  // Revised TABS to be consistent
   const TABS = [
-    { id: 'phase1', label: '1. BQ Building (PJA)', color: 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/30', ringColor: 'ring-yellow-400' },
-    { id: 'phase2', label: '2. File Creation (PT)', color: 'bg-white dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600', ringColor: 'ring-blue-500' },
-    { id: 'phase3', label: '3. Pelarasan (PJA)', color: 'bg-white dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600', ringColor: 'ring-yellow-400' },
-    { id: 'phase4', label: '4. Penutup (PT)', color: 'bg-white dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600', ringColor: 'ring-orange-500' },
+    { 
+      id: 'phase1', 
+      label: '1. BQ Building (PJA)', 
+      color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 shadow-sm', 
+      ringColor: 'ring-yellow-400' 
+    },
+    { 
+      id: 'phase2', 
+      label: '2. File Creation (PT)', 
+      color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm', 
+      ringColor: 'ring-blue-500' 
+    },
+    { 
+      id: 'phase3', 
+      label: '3. Pelarasan (PJA)', 
+      color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 shadow-sm', 
+      ringColor: 'ring-yellow-400' 
+    },
+    { 
+      id: 'phase4', 
+      label: '4. Penutup (PT)', 
+      color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800 shadow-sm', 
+      ringColor: 'ring-orange-500' 
+    },
   ];
 
   const [activeTab, setActiveTab] = useState('phase1');
@@ -380,6 +403,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [manualMulaKontrak, setManualMulaKontrak] = useState(false);
   const [manualMulaKerja, setManualMulaKerja] = useState(false);
 
+  // Dynamic Location/Aduan State
+  const [locationRows, setLocationRows] = useState<{ id: string; lokasi: string; aduan: string }[]>([]);
+
+  // Confirmation Modal State
+  const [confirmationState, setConfirmationState] = useState<{
+    isOpen: boolean;
+    type: 'back' | 'save' | null;
+  }>({ isOpen: false, type: null });
+
   useEffect(() => {
     setUsers(mockService.getUsers());
     setCompanies(mockService.getCompanies());
@@ -394,6 +426,58 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     bqDataPelarasan: [],
     globalDimensions: { length: 0, width: 0, depth: 0 }
   });
+
+  // Initialize Location/Aduan Rows
+  useEffect(() => {
+    if (project) {
+        // Parse existing strings (assumed newline separated)
+        const locs = (project.lokasi || '').split('\n').filter(l => l.trim() !== '');
+        const aduans = (project.noAduan || '').split('\n');
+        
+        let rows = locs.map((l, i) => ({
+            id: Math.random().toString(36).substr(2, 9),
+            lokasi: l,
+            aduan: aduans[i] || ''
+        }));
+        
+        if (rows.length === 0) {
+            rows = [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }];
+        }
+        setLocationRows(rows);
+    } else if (locationRows.length === 0) {
+        // New project default
+        setLocationRows([{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]);
+    }
+  }, [project]);
+
+  // Sync Location Rows back to FormData Strings
+  useEffect(() => {
+     // Join with newlines for storage
+     const lokasiStr = locationRows.map(r => r.lokasi).join('\n');
+     const aduanStr = locationRows.map(r => r.aduan).join('\n');
+     
+     if (formData.lokasi !== lokasiStr || formData.noAduan !== aduanStr) {
+         setFormData(prev => ({ ...prev, lokasi: lokasiStr, noAduan: aduanStr }));
+     }
+  }, [locationRows]);
+
+  const addLocationRow = () => {
+      setLocationRows([...locationRows, { id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]);
+  };
+
+  const removeLocationRow = (id: string) => {
+      if (locationRows.length > 1) {
+          setLocationRows(locationRows.filter(r => r.id !== id));
+      } else {
+          // If only 1, just clear it
+          setLocationRows([{ ...locationRows[0], lokasi: '', aduan: '' }]);
+      }
+  };
+
+  const updateLocationRow = (id: string, field: 'lokasi' | 'aduan', value: string) => {
+      setLocationRows(locationRows.map(r => r.id === id ? { ...r, [field]: value } : r));
+  };
+
 
   // Initialize Split Tempoh State from saved string (e.g., "5 Minggu")
   useEffect(() => {
@@ -498,8 +582,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAkuJanjiUpdate = (updates: Partial<Project>) => {
+      setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  // Separated Save Logic
+  const executeSave = async () => {
     setIsSaving(true);
     try {
       const safeData = { ...formData };
@@ -508,6 +596,26 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       setIsSaving(false);
       onSave();
     } catch (err) { setIsSaving(false); alert('Error saving project'); }
+  };
+
+  // Old handler just calls confirm now
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    handleSaveClick();
+  };
+
+  // --- CONFIRMATION HANDLERS ---
+  const handleBackClick = () => setConfirmationState({ isOpen: true, type: 'back' });
+  const handleSaveClick = () => setConfirmationState({ isOpen: true, type: 'save' });
+  const cancelConfirmation = () => setConfirmationState({ isOpen: false, type: null });
+  
+  const confirmAction = () => {
+    if (confirmationState.type === 'back') {
+      onClose();
+    } else if (confirmationState.type === 'save') {
+      executeSave();
+    }
+    setConfirmationState({ isOpen: false, type: null });
   };
 
   const grandTotal = formData.bqData?.reduce((acc, group) => {
@@ -523,19 +631,29 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     ? pelarasanTotal - (Number(formData.ladAmount || 0)) 
     : undefined;
 
-  const saveButton = (
-    <button 
-        onClick={handleSubmit} 
-        disabled={isSaving} 
-        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white p-2 rounded-lg font-bold text-xs shadow-md shadow-indigo-500/30 transition-all flex items-center justify-center"
-        title="Simpan Projek"
-    >
-        <Save className="w-4 h-4" /> 
-        <span className="hidden sm:inline ml-1">{isSaving ? '...' : 'Simpan'}</span>
-    </button>
+  const actionButtons = (
+    <div className="flex items-center gap-2">
+       <button 
+          onClick={handleBackClick} 
+          className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 p-2 rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center"
+          title="Kembali ke Senarai"
+      >
+          <ArrowLeft className="w-4 h-4" /> 
+          <span className="hidden sm:inline ml-1">Kembali</span>
+      </button>
+      <button 
+          onClick={handleSaveClick} 
+          disabled={isSaving} 
+          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white p-2 rounded-lg font-bold text-xs shadow-md shadow-emerald-500/30 transition-all flex items-center justify-center"
+          title="Simpan Projek"
+      >
+          <Save className="w-4 h-4" /> 
+          <span className="hidden sm:inline ml-1">{isSaving ? '...' : 'Simpan'}</span>
+      </button>
+    </div>
   );
 
-  const inputClass = "w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm shadow-sm dark:shadow-inner";
+  const inputClass = "w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700/50 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm shadow-sm dark:shadow-inner";
   const labelClass = "block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 font-jakarta";
   const disabledClass = "bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed";
 
@@ -554,7 +672,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           progress={formData.peratusSiap || 0}
           onStatusChange={handleInputChange}
           onProgressChange={(val) => setFormData(prev => ({ ...prev, peratusSiap: val }))}
-          saveAction={saveButton}
+          saveAction={actionButtons}
           isPrintView={isPrintView}
           onToggleView={(view) => setIsPrintView(view === 'print')}
       />
@@ -564,12 +682,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         {!isPrintView && (
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 px-2 no-print gap-4">
             <div className="flex items-center gap-4">
-              <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-xl transition-colors group">
-                <ArrowLeft className="h-6 w-6 text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
-              </button>
               <div>
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+                  <div className="h-8 w-1.5 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"></div>
                   <div>
                       <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}</h1>
                       <p className="text-xs text-slate-500 font-mono mt-0.5 uppercase tracking-wider">{formData.noFail || 'No. Fail Belum Ditetapkan'}</p>
@@ -609,48 +724,100 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   <Zap className="h-5 w-5"/> Maklumat Asas (PJA)
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
-                  <div className="group lg:col-span-2">
+                {/* VERTICAL STACK FOR CLEANER LAYOUT */}
+                <div className="flex flex-col gap-8">
+                  
+                  {/* Section 1: Project Name (Full Width) */}
+                  <div className="group w-full">
                     <label className={labelClass}>Cadangan Kerja (Nama Projek)</label>
-                    <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} className={`${inputClass} min-h-[50px] resize-none`} placeholder="CADANGAN KERJA-KERJA..." />
+                    <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} className={`${inputClass} min-h-[80px] text-base resize-y`} placeholder="CADANGAN KERJA-KERJA..." />
                   </div>
-                  <div className="group">
-                    <label className={labelClass}>No. Aduan</label>
-                    <input type="text" name="noAduan" value={formData.noAduan} onChange={handleInputChange} className={`${inputClass} dark:bg-[#162032] dark:border-slate-600 dark:text-white`} placeholder="MPS xxxxx"/>
+                  
+                  {/* Section 2: Dynamic Location Manager (Card Style) */}
+                  <div className="group w-full bg-slate-50 dark:bg-black/20 p-5 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm">
+                      <div className="flex items-center justify-between mb-4">
+                         <div className="flex items-center gap-2">
+                            <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Lokasi & No. Aduan</label>
+                         </div>
+                         <button 
+                            type="button" 
+                            onClick={addLocationRow}
+                            className="text-[11px] flex items-center gap-1.5 bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-bold transition-all shadow-sm"
+                         >
+                            <Plus className="w-3.5 h-3.5" /> Tambah Lokasi
+                         </button>
+                      </div>
+                      
+                      <div className="space-y-3">
+                          {locationRows.map((row, idx) => (
+                              <div key={row.id} className="flex flex-col md:flex-row gap-3 items-start animate-fade-in group/row">
+                                  <div className="w-full md:flex-[2] relative">
+                                      <span className="absolute left-3 top-3.5 text-xs font-bold text-slate-400 select-none">{idx + 1}.</span>
+                                      <input 
+                                          type="text" 
+                                          value={row.lokasi} 
+                                          onChange={(e) => updateLocationRow(row.id, 'lokasi', e.target.value)}
+                                          className={`${inputClass} pl-8 ${!row.lokasi ? 'border-red-200 dark:border-red-900/30 focus:border-red-500' : ''}`}
+                                          placeholder="Lokasi"
+                                          required
+                                      />
+                                  </div>
+                                  <div className="w-full md:flex-1 flex gap-2">
+                                      <input 
+                                          type="text" 
+                                          value={row.aduan} 
+                                          onChange={(e) => updateLocationRow(row.id, 'aduan', e.target.value)}
+                                          className={`${inputClass} dark:bg-[#162032] dark:border-slate-600 dark:text-white`}
+                                          placeholder="Aduan"
+                                      />
+                                      <button 
+                                          type="button" 
+                                          onClick={() => removeLocationRow(row.id)}
+                                          className="p-3 rounded-lg text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-white/5 border border-transparent hover:border-red-100 dark:hover:border-red-900/30 transition-all shadow-sm opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
+                                          title="Padam Baris"
+                                      >
+                                          <X className="w-4 h-4" />
+                                      </button>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
                   </div>
-                  <div className="group">
-                    <label className={labelClass}>Lokasi</label>
-                    <input type="text" name="lokasi" value={formData.lokasi} onChange={handleInputChange} className={inputClass} placeholder="Alamat Lokasi"/>
+
+                  {/* Section 3: Metadata Grid (4 Columns) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <div className="group">
+                        <label className={labelClass}>BP (Blok Perancangan)</label>
+                        <select name="bp" value={formData.bp} onChange={handleInputChange} className={inputClass}>
+                        <option value="">Pilih BP...</option>
+                        {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
+                        </select>
+                    </div>
+                    <div className="group">
+                        <label className={labelClass}>Zon</label>
+                        <select name="zon" value={formData.zon} onChange={handleInputChange} className={inputClass}>
+                        <option value="">Pilih Zon...</option>
+                        {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
+                        </select>
+                    </div>
+                    <div className="group">
+                        <label className={labelClass}>Tarikh Buka</label>
+                        <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} className={inputClass} />
+                    </div>
+                    <div className="group">
+                        <label className={labelClass}>Disediakan Oleh</label>
+                        <select name="pjaId" value={formData.pjaId || ''} onChange={(e) => setFormData(prev => ({ ...prev, pjaId: Number(e.target.value) }))} className={inputClass}>
+                            <option value="">Pilih Pegawai...</option>
+                            {users.map(u => (
+                                <option key={u.id} value={u.id}>
+                                    {u.role === Role.ADMIN ? 'PT' : 'PJA'} {u.username.toUpperCase()}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                   </div>
-                  <div className="group">
-                    <label className={labelClass}>BP (Blok Perancangan)</label>
-                    <select name="bp" value={formData.bp} onChange={handleInputChange} className={inputClass}>
-                      <option value="">Pilih BP...</option>
-                      {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
-                    </select>
-                  </div>
-                  <div className="group">
-                    <label className={labelClass}>Zon</label>
-                    <select name="zon" value={formData.zon} onChange={handleInputChange} className={inputClass}>
-                      <option value="">Pilih Zon...</option>
-                      {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
-                    </select>
-                  </div>
-                  <div className="group">
-                    <label className={labelClass}>Tarikh Buka</label>
-                    <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} className={inputClass} />
-                  </div>
-                  <div className="group">
-                    <label className={labelClass}>Disediakan Oleh</label>
-                    <select name="pjaId" value={formData.pjaId || ''} onChange={(e) => setFormData(prev => ({ ...prev, pjaId: Number(e.target.value) }))} className={inputClass}>
-                        <option value="">Pilih Pegawai...</option>
-                        {users.map(u => (
-                            <option key={u.id} value={u.id}>
-                                {u.role === Role.ADMIN ? 'PT' : 'PJA'} {u.username.toUpperCase()}
-                            </option>
-                        ))}
-                    </select>
-                  </div>
+
                 </div>
             </div>
 
@@ -658,7 +825,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                 {!isPrintView && (
                   <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                           <Calculator className="w-6 h-6" />
                         </div>
                         <div>
@@ -684,8 +851,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         )}
 
         {/* --- PHASE 2: FILE CREATION (BLUE) --- */}
-        {!isPrintView && activeTab === 'phase2' && (
+        {/* We hide the form in print view and only show Aku Janji Doc if print view is active in phase 2 */}
+        {activeTab === 'phase2' && (
           <div className="space-y-6">
+            {!isPrintView && (
             <div className={bluePhaseClass}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
                 <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-8 flex items-center gap-3">
@@ -765,7 +934,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                           <button 
                             type="button" 
                             onClick={() => setManualMulaKontrak(!manualMulaKontrak)}
-                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-indigo-500"
+                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500"
                             title={manualMulaKontrak ? "Reset to Auto" : "Manual Edit"}
                           >
                              {manualMulaKontrak ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>}
@@ -776,7 +945,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                         name="tarikhMulaKontrak" 
                         value={formData.tarikhMulaKontrak} 
                         onChange={handleInputChange} 
-                        className={`${inputClass} ${!manualMulaKontrak ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-indigo-500/20'}`}
+                        className={`${inputClass} ${!manualMulaKontrak ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-emerald-500/20'}`}
                         readOnly={!manualMulaKontrak}
                       />
                       {!manualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari BPP (Business Days)</p>}
@@ -820,7 +989,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                           <button 
                             type="button" 
                             onClick={() => setManualMulaKerja(!manualMulaKerja)}
-                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-indigo-500"
+                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500"
                             title={manualMulaKerja ? "Reset to Auto" : "Manual Edit"}
                           >
                              {manualMulaKerja ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>}
@@ -831,13 +1000,42 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                         name="tarikhMulaKerja" 
                         value={formData.tarikhMulaKerja} 
                         onChange={handleInputChange} 
-                        className={`${inputClass} ${!manualMulaKerja ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-indigo-500/20'}`}
+                        className={`${inputClass} ${!manualMulaKerja ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-emerald-500/20'}`}
                         readOnly={!manualMulaKerja}
                       />
                       {!manualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari Serah Tapak (Business Days)</p>}
                   </div>
                 </div>
             </div>
+            )}
+
+            {/* --- AKU JANJI SECTION (NEW) --- */}
+            <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'overflow-hidden'}`}>
+                {!isPrintView && (
+                  <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                          <FileSignature className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Dokumen Aku Janji</h3>
+                          <p className="text-xs text-slate-500 font-medium">Jana dan cetak dokumen rasmi</p>
+                        </div>
+                      </div>
+                  </div>
+                )}
+                
+                <div className="p-6 bg-slate-50/50 dark:bg-[#0f172a]/30">
+                     <AkuJanjiEditor 
+                        project={formData as Project} 
+                        selectedYear={selectedYear}
+                        pjaUser={users.find(u => u.id === formData.pjaId)}
+                        onUpdate={handleAkuJanjiUpdate}
+                        isPrintView={isPrintView}
+                     />
+                </div>
+            </div>
+
           </div>
         )}
 
@@ -860,35 +1058,30 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar} onChange={handleInputChange} className={inputClass} />
                   </div>
                   <div className="group">
-                      <label className={labelClass}>Prestasi</label>
-                      <select name="prestasi" value={formData.prestasi} onChange={handleInputChange} className={inputClass}>
-                        <option value="">Pilih...</option>
-                        <option value="Cemerlang">Cemerlang</option>
-                        <option value="Baik">Baik</option>
-                        <option value="Memuaskan">Memuaskan</option>
-                        <option value="Tidak Memuaskan">Tidak Memuaskan</option>
-                      </select>
+                      <label className={labelClass}>Prestasi (%)</label>
+                      <div className="relative">
+                        <input type="text" name="prestasi" value={formData.prestasi} onChange={handleInputChange} className={inputClass} placeholder="80%" />
+                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                            <span className="text-slate-400 text-xs font-bold">%</span>
+                        </div>
+                      </div>
                   </div>
-                  {/* UPDATED: Tarikh Tuntutan Bayaran instead of Amount */}
                   <div className="group">
                       <label className={labelClass}>Tarikh Tuntutan Bayaran</label>
                       <StrictDateInput name="tarikhTuntutanBayaran" value={formData.tarikhTuntutanBayaran || ''} onChange={handleInputChange} className={inputClass} />
                   </div>
                   
-                  {/* LAD FIELDS */}
-                  <div className="group">
-                      <label className={labelClass}>LAD Amount (RM)</label>
-                      <input type="number" name="ladAmount" value={formData.ladAmount} onChange={handleInputChange} className={inputClass} placeholder="0.00" />
-                  </div>
+                  {/* LAD FIELDS - SWAPPED ORDER AND UPDATED */}
                    <div className="group">
-                      <label className={labelClass}>LAD Days</label>
+                      <label className={labelClass}>Hari LAD</label>
                       <input type="number" name="ladDays" value={formData.ladDays} onChange={handleInputChange} className={inputClass} placeholder="0" />
                   </div>
-                  
                   <div className="group">
-                      <label className={labelClass}>Tarikh CPC</label>
-                      <StrictDateInput name="cpcDate" value={formData.cpcDate} onChange={handleInputChange} className={inputClass} />
+                      <label className={labelClass}>Jumlah LAD (RM)</label>
+                      <input type="number" name="ladAmount" value={formData.ladAmount} onChange={handleInputChange} className={inputClass} placeholder="0.00" />
                   </div>
+                  
+                  {/* REMOVED TARIKH CPC */}
                   
                   {/* Display Only Calculated Field */}
                   <div className="group">
@@ -956,6 +1149,67 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           </div>
         )}
       </div>
+
+      {/* CONFIRMATION MODAL (PORTAL) */}
+      {confirmationState.isOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={cancelConfirmation}>
+            <div 
+              className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform scale-100 transition-all animate-slide-up relative" 
+              onClick={e => e.stopPropagation()}
+            >
+                <button onClick={cancelConfirmation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                   <X className="w-5 h-5" />
+                </button>
+                <div className="flex flex-col items-center text-center pt-2">
+                   
+                   {/* Icon based on action type */}
+                   {confirmationState.type === 'back' ? (
+                     <div className="w-20 h-20 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-6 text-yellow-500 animate-pulse-slow">
+                        <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center">
+                          <HelpCircle className="w-8 h-8 stroke-[1.5]" />
+                        </div>
+                     </div>
+                   ) : (
+                     <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mb-6 text-emerald-500 animate-pulse-slow">
+                        <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-8 h-8 stroke-[1.5]" />
+                        </div>
+                     </div>
+                   )}
+
+                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta">
+                     {confirmationState.type === 'back' ? 'Kembali ke Senarai?' : 'Simpan Projek?'}
+                   </h3>
+                   
+                   <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed px-4">
+                     {confirmationState.type === 'back' 
+                        ? 'Sebarang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu kembali?' 
+                        : 'Adakah anda pasti mahu menyimpan maklumat projek ini? Pastikan semua maklumat adalah tepat.'}
+                   </p>
+                   
+                   <div className="flex gap-3 w-full">
+                      <button 
+                        onClick={cancelConfirmation}
+                        className="flex-1 py-3.5 px-4 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md"
+                      >
+                        Batal
+                      </button>
+                      <button 
+                        onClick={confirmAction}
+                        className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg ${
+                            confirmationState.type === 'back' 
+                            ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' 
+                            : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
+                        }`}
+                      >
+                         {confirmationState.type === 'back' ? 'Ya, Kembali' : 'Ya, Simpan'}
+                      </button>
+                   </div>
+                </div>
+            </div>
+        </div>,
+        document.body
+      )}
 
     </div>
   );
