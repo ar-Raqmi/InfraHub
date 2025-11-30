@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { BQGroup, BQItem, formatCurrency, GlobalDimensions, Project } from '../types';
 import { Trash2, Type, Calculator, PlusCircle, StickyNote, MoveUp, MoveDown, Download, Loader2, FileText, Eraser } from 'lucide-react';
@@ -28,7 +27,6 @@ const getLongkangTemplate = (): BQGroup[] => [
     title: 'BIL NO. 1 - KERJA-KERJA PERMULAAN',
     items: [
       { id: uuid(), description: 'ALL QUANTITY ARE PROVISIONAL', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
-      { id: uuid(), description: 'BIL NO. 1 - KERJA-KERJA PERMULAAN', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: '1.0 INSURAN', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: 'Menyediakan polisi insuran berikut bagi merangkumi tempoh pekerjaan yang perlu seperti insuran tanggungan awam (Public Liability), insuran pampasan pekerja (Workmen\'s Compensation) dan SOCSO', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { id: uuid(), description: 'Nota: Liputan (coverage ) minima insuran bagi pampasan adalah 30% daripada nilai kerja jika sekiranya pemborong tidak dapat mengadakan Nombor Pendaftaran PERKESO. Liputan bagi Insurans Tanggungan Umum adalah seperti berikut :-', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
@@ -47,12 +45,11 @@ const getLongkangTemplate = (): BQGroup[] => [
     title: 'BIL NO. 2 - BUTIRAN KERJA BAIKPULIH LONGKANG',
     location: 'JALAN 9/27 TAMAN SRI GOMBAK',
     items: [
-      { id: uuid(), description: 'BIL NO. 2 - BUTIRAN KERJA BAIKPULIH LONGKANG', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: '1.0 KERJA PENGOREKAN', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: 'Kerja-kerja menggali dan membuang tembok longkang sedia ada tidak melebihi 1500mm ukuran termasuk membuang sisa di tempat yang dibenarkan oleh pegawai penguasa.', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { id: uuid(), description: 'i. Dengan tangan', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { 
-        id: uuid(), description: '80M(P) X 0.6M(L) X 0.7M(T)', unit: 'M3', qty: 33.6, rate: 53.40, amount: 1794.24, 
+        id: uuid(), description: '80m(P) x 0.6m(L) x 0.7m(T)', unit: 'M3', qty: 33.6, rate: 53.40, amount: 1794.24, 
         isCalculation: true, isSynced: true, dimCount: 1,
         includeLength: true, includeWidth: true, includeDepth: true 
       },
@@ -60,7 +57,7 @@ const getLongkangTemplate = (): BQGroup[] => [
       { id: uuid(), description: '2.0 LEAN CONCRETE', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: 'Kerja-kerja membekal dan memadat konkrit tidak bertetulang (Site Mixed) gred 15 (1:2:4-9mm) 75mm purata tebal lantai atau batu baur (ikut kesesuaian tanah) untuk tapak asas longkang. (Lean Concrete)', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { 
-        id: uuid(), description: '80M(P) X 0.6M(L)', unit: 'M2', qty: 48, rate: 27.35, amount: 1312.80, 
+        id: uuid(), description: '80m(P) x 0.6m(L)', unit: 'M2', qty: 48, rate: 27.35, amount: 1312.80, 
         isCalculation: true, isSynced: true, dimCount: 1, 
         includeLength: true, includeWidth: true, includeDepth: false 
       },
@@ -68,12 +65,12 @@ const getLongkangTemplate = (): BQGroup[] => [
       { id: uuid(), description: '3.0 REINFORCEMENT', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: 'Kerja-kerja membekal, memasang, membengkok dan memotong kepingan jejaring (BRC) No. B7 atau tetulang keluli dikimpal berbentuk jejaring 100mm x 200mm, beratnya 4.53kg setiap meter persegi. (BRC B7)', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { 
-        id: uuid(), description: '80M(P) X 0.6M(L)', unit: 'M2', qty: 48, rate: 30.30, amount: 1454.40, 
+        id: uuid(), description: '80m(P) x 0.6m(L)', unit: 'M2', qty: 48, rate: 30.30, amount: 1454.40, 
         isCalculation: true, isSynced: true, dimCount: 1, 
         includeLength: true, includeWidth: true, includeDepth: false 
       },
       { 
-        id: uuid(), description: '80M(P) X 0.7M(T) X 2', unit: 'M2', qty: 112, rate: 30.30, amount: 3393.60, 
+        id: uuid(), description: '80m(P) x 0.7m(T) x 2 Nos', unit: 'M2', qty: 112, rate: 30.30, amount: 3393.60, 
         isCalculation: true, isSynced: true, dimCount: 2, 
         includeLength: true, includeWidth: false, includeDepth: true 
       },
@@ -82,7 +79,7 @@ const getLongkangTemplate = (): BQGroup[] => [
       { id: uuid(), description: 'Kerja-kerja membekal, memotong dan memasang acuan konkrit daripada papan tidak berketam pada muka-muka yang pugak (Vertical) termasuk kerja-kerja menanggal dan membuang.', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { id: uuid(), description: 'i. 2 kali penggunaan - (21m ke atas)', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { 
-        id: uuid(), description: '80M(P) X 0.7M(T) X 2', unit: 'M2', qty: 112, rate: 28.05, amount: 3141.60, 
+        id: uuid(), description: '80m(P) x 0.7m(T) x 2 Nos', unit: 'M2', qty: 112, rate: 28.05, amount: 3141.60, 
         isCalculation: true, isSynced: true, dimCount: 2, 
         includeLength: true, includeWidth: false, includeDepth: true 
       },
@@ -91,12 +88,12 @@ const getLongkangTemplate = (): BQGroup[] => [
       { id: uuid(), description: 'Kerja-kerja membekal, menuang dan memadat konkrit Ready Mixed/tuang disitu gred 20 bertetulang tuang disitu untuk lantai dan tembok longkang tebal 100mm/150mm/ Ready Mixed/tuang disitu.', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { id: uuid(), description: 'i. 100mm tebal (Tuang Disitu)', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { 
-        id: uuid(), description: '80M(P) X 0.6M(L)', unit: 'M2', qty: 48, rate: 46.01, amount: 2208.48, 
+        id: uuid(), description: '80m(P) x 0.6m(L)', unit: 'M2', qty: 48, rate: 46.01, amount: 2208.48, 
         isCalculation: true, isSynced: true, dimCount: 1, 
         includeLength: true, includeWidth: true, includeDepth: false 
       },
       { 
-        id: uuid(), description: '80M(P) X 0.7M(T) X 2', unit: 'M2', qty: 112, rate: 46.01, amount: 5153.12, 
+        id: uuid(), description: '80m(P) x 0.7m(T) x 2 Nos', unit: 'M2', qty: 112, rate: 46.01, amount: 5153.12, 
         isCalculation: true, isSynced: true, dimCount: 2, 
         includeLength: true, includeWidth: false, includeDepth: true 
       },
@@ -104,7 +101,7 @@ const getLongkangTemplate = (): BQGroup[] => [
       { id: uuid(), description: '6.0 LONGKANG JENIS TEMBIKAR (CLAY)', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: 'Kerja-kerja membekal dan memasang longkang jenis separuh bulatan jenis tembikar bergilap (HRGW) dan di sambung dengan simen motar 1:3 saiz :-', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { 
-        id: uuid(), description: '225mm', unit: 'M', qty: 80, rate: 17.70, amount: 1416.00, 
+        id: uuid(), description: '80m(P)', unit: 'M', qty: 80, rate: 17.70, amount: 1416.00, 
         isCalculation: true, isSynced: true, dimCount: 1, 
         includeLength: true, includeWidth: false, includeDepth: false 
       },
@@ -119,7 +116,6 @@ const getLongkangTemplate = (): BQGroup[] => [
     title: 'BIL NO. 3 - BUTIRAN KERJA BAIKPULIH LONGKANG',
     location: 'JALAN 9/27 TAMAN SRI GOMBAK',
     items: [
-      { id: uuid(), description: 'BIL NO. 3 - BUTIRAN KERJA BAIKPULIH LONGKANG', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: '1.0 MEMBUAT KERJA-KERJA KONKRIT SEDIA ADA', unit: '', qty: 0, rate: 0, amount: 0, isHeader: true },
       { id: uuid(), description: 'Memecah atau merobohkan konkrit sedia ada dan membaiki semula mana-mana bahagian rosak, tidak melebihi 300mm tebal.', unit: '', qty: 0, rate: 0, amount: 0, isNote: true },
       { id: uuid(), description: 'i. Dengan tetulang', unit: 'M3', qty: 2, rate: 384.70, amount: 769.40 },
@@ -139,7 +135,7 @@ const getLongkangTemplate = (): BQGroup[] => [
 
 // --- COMPONENTS ---
 // Auto-expanding Textarea Component
-const AutoTextArea = ({ value, onChange, className, placeholder, rows = 1 }: any) => {
+const AutoTextArea = ({ value, onChange, className, placeholder, rows = 1, readOnly }: any) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -161,6 +157,7 @@ const AutoTextArea = ({ value, onChange, className, placeholder, rows = 1 }: any
       className={className}
       placeholder={placeholder}
       rows={rows}
+      readOnly={readOnly}
       style={{ overflow: 'hidden' }}
     />
   );
@@ -238,12 +235,12 @@ const BQItemCard = ({
   if (isHeader) {
      cardClass += "bg-gradient-to-r from-slate-700 to-slate-800 border-slate-600 shadow-md text-white";
   } else if (item.isCalculation) {
-     cardClass += "bg-indigo-50 dark:bg-[#162032] border-indigo-200 dark:border-indigo-900/50 shadow-inner";
+     cardClass += "bg-emerald-50 dark:bg-[#162032] border-emerald-200 dark:border-emerald-900/50 shadow-inner";
   } else {
      cardClass += "bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 shadow-sm";
   }
 
-  const inputStyle = "bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg p-2 text-xs w-full text-center outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600";
+  const inputStyle = "bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg p-2 text-xs w-full text-center outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600";
   const labelStyle = "text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider mb-1 block text-center";
 
   return (
@@ -255,7 +252,7 @@ const BQItemCard = ({
                 <button 
                     type="button"
                     onClick={() => onUpdate({ isCalculation: false, isHeader: false, isNote: false })}
-                    className={`p-1.5 rounded-md transition-all ${!item.isCalculation && !item.isHeader && !item.isNote ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`p-1.5 rounded-md transition-all ${!item.isCalculation && !item.isHeader && !item.isNote ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     title="Item Biasa"
                 >
                     <Type className="w-3.5 h-3.5" />
@@ -263,7 +260,7 @@ const BQItemCard = ({
                 <button 
                     type="button"
                     onClick={() => onUpdate({ isCalculation: false, isHeader: false, isNote: true })}
-                    className={`p-1.5 rounded-md transition-all ${item.isNote ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`p-1.5 rounded-md transition-all ${item.isNote ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     title="Nota"
                 >
                     <StickyNote className="w-3.5 h-3.5" />
@@ -271,7 +268,7 @@ const BQItemCard = ({
                 <button 
                     type="button"
                     onClick={() => onUpdate({ isCalculation: false, isHeader: true, isNote: false })}
-                    className={`p-1.5 rounded-md transition-all ${item.isHeader ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`p-1.5 rounded-md transition-all ${item.isHeader ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     title="Tajuk"
                 >
                     <span className="text-[10px] font-bold">H</span>
@@ -279,7 +276,7 @@ const BQItemCard = ({
                 <button 
                     type="button"
                     onClick={() => onUpdate({ isCalculation: true, isHeader: false, isNote: false })}
-                    className={`p-1.5 rounded-md transition-all ${item.isCalculation ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`p-1.5 rounded-md transition-all ${item.isCalculation ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     title="Kiraan Auto"
                 >
                     <Calculator className="w-3.5 h-3.5" />
@@ -292,9 +289,10 @@ const BQItemCard = ({
                 <AutoTextArea 
                   value={item.description}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onUpdate({ description: e.target.value })}
-                  className={`w-full bg-transparent resize-none outline-none border-b border-transparent focus:border-indigo-500 transition-colors ${item.isHeader ? 'font-bold uppercase tracking-wide text-white' : item.isNote ? 'text-slate-500 dark:text-slate-400 italic' : 'font-medium text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600'}`}
+                  className={`w-full bg-transparent resize-none outline-none border-b border-transparent focus:border-emerald-500 transition-colors ${item.isHeader ? 'font-bold uppercase tracking-wide text-white' : item.isNote ? 'text-slate-500 dark:text-slate-400 italic' : 'font-medium text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600'} ${item.isCalculation ? 'opacity-70 cursor-not-allowed' : ''}`}
                   rows={item.isHeader ? 1 : 2}
                   placeholder={item.isNote ? "Tulis nota di sini..." : "Keterangan..."}
+                  readOnly={item.isCalculation}
                 />
                 
                 {/* Advanced Calculation Controls */}
@@ -303,13 +301,13 @@ const BQItemCard = ({
                       
                       {/* Formula Toggles */}
                       <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mb-1">
-                          <span className="uppercase tracking-wider text-[10px] text-indigo-500 dark:text-indigo-400">Formula:</span>
+                          <span className="uppercase tracking-wider text-[10px] text-emerald-500 dark:text-emerald-400">Formula:</span>
                           <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
                             <input 
                               type="checkbox" 
                               checked={item.includeLength !== false} // Default true
                               onChange={(e) => onUpdate({ includeLength: e.target.checked })}
-                              className="w-3 h-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              className="w-3 h-3 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                             />
                             P
                           </label>
@@ -318,7 +316,7 @@ const BQItemCard = ({
                               type="checkbox" 
                               checked={item.includeWidth !== false} // Default true
                               onChange={(e) => onUpdate({ includeWidth: e.target.checked })}
-                              className="w-3 h-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              className="w-3 h-3 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                             />
                             L
                           </label>
@@ -327,7 +325,7 @@ const BQItemCard = ({
                               type="checkbox" 
                               checked={item.includeDepth !== false} // Default true
                               onChange={(e) => onUpdate({ includeDepth: e.target.checked })}
-                              className="w-3 h-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              className="w-3 h-3 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                             />
                             T
                           </label>
@@ -346,7 +344,7 @@ const BQItemCard = ({
                                 placeholder="0.00"
                                 disabled={item.isSynced}
                               />
-                              {item.isSynced && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div></div>}
+                              {item.isSynced && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>}
                           </div>
                         </div>
                         <div>
@@ -389,7 +387,7 @@ const BQItemCard = ({
                               type="checkbox" 
                               checked={item.isSynced || false} 
                               onChange={(e) => onUpdate({ isSynced: e.target.checked })}
-                              className="w-3 h-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              className="w-3 h-3 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                             />
                             Guna Ukuran Global
                           </label>
@@ -413,7 +411,7 @@ const BQItemCard = ({
                         // If calculation is on, qty is read-only derived
                         readOnly={item.isCalculation}
                         onChange={(e) => handleInput('qty', e.target.value, true)} 
-                        className={`${inputStyle} ${item.isCalculation ? 'bg-indigo-50 dark:bg-indigo-900/20 font-bold text-indigo-600' : ''}`} 
+                        className={`${inputStyle} ${item.isCalculation ? 'bg-emerald-50 dark:bg-emerald-900/20 font-bold text-emerald-600' : ''}`} 
                         placeholder="0" 
                     />
                 </div>
@@ -435,7 +433,7 @@ const BQItemCard = ({
           <div className="flex flex-col gap-1 pt-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
             <button type="button" onClick={() => onMove('up')} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400" title="Naik"><MoveUp className="w-3.5 h-3.5" /></button>
             <button type="button" onClick={() => onMove('down')} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400" title="Turun"><MoveDown className="w-3.5 h-3.5" /></button>
-            <button type="button" onClick={onInsertAfter} className="p-1.5 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30 rounded-lg text-slate-400" title="Tambah Bawah"><PlusCircle className="w-3.5 h-3.5" /></button>
+            <button type="button" onClick={onInsertAfter} className="p-1.5 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30 rounded-lg text-slate-400" title="Tambah Bawah"><PlusCircle className="w-3.5 h-3.5" /></button>
             <button type="button" onClick={onDelete} className="p-1.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 rounded-lg text-slate-400" title="Padam"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
        </div>
@@ -506,7 +504,16 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
           const qty = Math.round(calculatedQty * 100) / 100;
           const amount = Math.round((qty * (item.rate || 0)) * 100) / 100;
           
-          return { ...item, qty, amount };
+          // AUTO-SYNC DESCRIPTION
+          const parts = [];
+          if (item.includeLength !== false) parts.push(`${L}m(P)`);
+          if (item.includeWidth !== false) parts.push(`${W}m(L)`);
+          if (item.includeDepth !== false) parts.push(`${D}m(T)`);
+          
+          const dimString = parts.join(' x ');
+          const description = Count > 1 ? `${dimString} x ${Count}` : dimString;
+
+          return { ...item, qty, amount, description };
         } else {
           const amount = Math.round(((item.qty || 0) * (item.rate || 0)) * 100) / 100;
           return { ...item, amount };
@@ -741,12 +748,21 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
       // Get PJA User Name
       const pjaUser = mockService.getUsers().find(u => u.id === projectData.pjaId);
       const preparerName = pjaUser ? pjaUser.fullName.toUpperCase() : 'MOHAMAD KHAIRUL AMIRIN BIN ZAINAL ABIDIN';
+      
+      // Prepare dynamic rows for Aduan and Lokasi
+      const rawAduan = projectData.noAduan || '';
+      const rawLokasi = projectData.lokasi || ''; // Fallback to group.location not needed if projectData is sync'd
+      
+      const aduanList = rawAduan.split('\n').filter(s => s.trim().length > 0);
+      const lokasiList = rawLokasi.split('\n').filter(s => s.trim().length > 0);
+      
+      const headerRowCount = Math.max(aduanList.length, lokasiList.length, 1);
 
       return (
         <div className="flex flex-col items-center bg-gray-100 min-h-screen py-8">
             {/* Toolbar */}
             <div className="sticky top-20 z-50 flex gap-4 mb-8 bg-white/80 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-gray-200">
-                <button type="button" onClick={handleDownloadPDF} disabled={isGeneratingPdf} className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50">
+                <button type="button" onClick={handleDownloadPDF} disabled={isGeneratingPdf} className="flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50">
                     {isGeneratingPdf ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
                     <span>{isGeneratingPdf ? 'Sedang Menjana...' : 'Muat Turun PDF'}</span>
                 </button>
@@ -889,10 +905,20 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
                             <PrintPage key={`${group.id}-page-${pIndex}`}>
                                  {/* Header Table - Repeats on every page */}
                                  <div className="border-2 border-black text-xs font-bold font-arial mb-2">
-                                     <div className="flex border-b border-black">
-                                        <div className="w-1/2 p-2 border-r border-black">NO ADUAN : {projectData.noAduan}</div>
-                                        <div className="w-1/2 p-2">LOKASI : {group.location || projectData.lokasi}</div>
+                                     <div className="flex border-b border-black bg-gray-100">
+                                         <div className="w-[25%] p-2 border-r border-black uppercase">NO ADUAN :</div>
+                                         <div className="w-[75%] p-2 uppercase">LOKASI :</div>
                                      </div>
+                                     {Array.from({ length: headerRowCount }).map((_, i) => (
+                                         <div key={i} className={`flex ${i < headerRowCount - 1 ? 'border-b border-black' : ''}`}>
+                                             <div className="w-[25%] p-2 border-r border-black">
+                                                 {aduanList.length > 0 ? (aduanList[i] || '') : (i === 0 ? (projectData.noAduan || '') : '')}
+                                             </div>
+                                             <div className="w-[75%] p-2">
+                                                 {lokasiList.length > 0 ? (lokasiList[i] || '') : (i === 0 ? (projectData.lokasi || group.location || '') : '')}
+                                             </div>
+                                         </div>
+                                     ))}
                                  </div>
         
                                  {/* Items Table */}
@@ -1058,9 +1084,9 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
        </div>
 
        {/* Global Dimensions Card */}
-       <div className="mb-8 p-6 rounded-2xl bg-indigo-50 dark:bg-[#162032] border border-indigo-100 dark:border-indigo-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+       <div className="mb-8 p-6 rounded-2xl bg-emerald-50 dark:bg-[#162032] border border-emerald-100 dark:border-emerald-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+              <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
                  <Calculator className="w-6 h-6" />
               </div>
               <div>
@@ -1072,14 +1098,14 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
            <div className="flex gap-4">
                {['length', 'width', 'depth'].map((dim) => (
                    <div key={dim} className="relative group">
-                       <label className="absolute -top-2 left-3 bg-indigo-50 dark:bg-[#162032] px-1 text-[10px] font-bold text-indigo-500 uppercase tracking-wider">
+                       <label className="absolute -top-2 left-3 bg-emerald-50 dark:bg-[#162032] px-1 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
                            {dim === 'length' ? 'Panjang' : dim === 'width' ? 'Lebar' : 'Tinggi'}
                        </label>
                        <input 
                            type="number" 
                            value={globalDims[dim as keyof GlobalDimensions] || ''}
                            onChange={(e) => updateGlobalDim(dim as keyof GlobalDimensions, parseFloat(e.target.value) || 0)}
-                           className="w-24 px-3 py-3 rounded-xl bg-white dark:bg-[#0f172a] border border-indigo-200 dark:border-indigo-900 focus:ring-2 focus:ring-indigo-500 text-center font-bold text-indigo-600 dark:text-indigo-400 outline-none shadow-sm"
+                           className="w-24 px-3 py-3 rounded-xl bg-white dark:bg-[#0f172a] border border-emerald-200 dark:border-emerald-900 focus:ring-2 focus:ring-emerald-500 text-center font-bold text-emerald-600 dark:text-emerald-400 outline-none shadow-sm"
                            placeholder="0.00"
                        />
                    </div>
@@ -1161,7 +1187,7 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
                {/* Add Item Button */}
                <button 
                    onClick={() => handleAddItem(groupIndex)}
-                   className="mt-4 w-full py-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-400 hover:text-indigo-500 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all flex items-center justify-center gap-2 font-bold text-sm group"
+                   className="mt-4 w-full py-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-400 hover:text-emerald-500 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2 font-bold text-sm group"
                >
                    <PlusCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
                    Tambah Item Baru
@@ -1177,7 +1203,7 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
                    setGroups(newGroups);
                    onDataChange(newGroups, globalDims);
                }}
-               className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex items-center justify-center gap-2 text-slate-500 font-bold hover:text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all mb-10"
+               className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex items-center justify-center gap-2 text-slate-500 font-bold hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all mb-10"
            >
                <PlusCircle className="w-5 h-5" />
                Tambah Kumpulan Baru
@@ -1197,7 +1223,7 @@ const BQEditor: React.FC<BQEditorProps> = ({ initialData, initialDims, onDataCha
                        const newGroups = [...groups, { id: uuid(), title: 'BIL NO. 1', items: [] }];
                        setGroups(newGroups);
                        onDataChange(newGroups, globalDims);
-                   }} className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all">
+                   }} className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all">
                        Tambah Kumpulan
                    </button>
                    <button onClick={loadTemplate} className="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">
