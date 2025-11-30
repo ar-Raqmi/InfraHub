@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Project } from '../types';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info } from 'lucide-react';
@@ -99,8 +98,8 @@ const Calendar: React.FC<CalendarProps> = ({ projects }) => {
               currentDate.getFullYear() === new Date().getFullYear();
 
             return (
-              <div key={day} className={`h-32 md:h-40 rounded-2xl p-3 border transition-all hover:shadow-md flex flex-col overflow-hidden ${isToday ? 'bg-white dark:bg-slate-800 border-indigo-500 shadow-indigo-500/20 ring-2 ring-indigo-500/20' : 'bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-white/5 hover:bg-white dark:hover:bg-slate-800'}`}>
-                <span className={`text-sm font-bold mb-2 w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+              <div key={day} className={`h-32 md:h-40 rounded-2xl p-3 border transition-all hover:shadow-md flex flex-col overflow-hidden ${isToday ? 'bg-white dark:bg-slate-800 border-emerald-500 shadow-emerald-500/20 ring-2 ring-emerald-500/20' : 'bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-white/5 hover:bg-white dark:hover:bg-slate-800'}`}>
+                <span className={`text-sm font-bold mb-2 w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-emerald-600 text-white' : 'text-slate-700 dark:text-slate-300'}`}>
                   {day}
                 </span>
                 
