@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { BQGroup, BQItem, formatCurrency, GlobalDimensions, Project } from '../types';
 import { Download, Loader2, Lock, Unlock } from 'lucide-react';
@@ -40,7 +38,7 @@ const AutoTextArea = ({ value, onChange, className, placeholder, rows = 1, disab
   );
 };
 
-// Helper to calculate item totals
+// Helper to calculate item totals AND sync description
 const calculateItem = (item: BQItem, dims: GlobalDimensions): BQItem => {
   if (item.isCalculation) {
     const L = item.isSynced ? (dims.length || 0) : (item.dimLength || 0);
@@ -55,8 +53,16 @@ const calculateItem = (item: BQItem, dims: GlobalDimensions): BQItem => {
     
     const qty = Math.round(calculatedQty * 100) / 100;
     const amount = Math.round((qty * (item.rate || 0)) * 100) / 100;
+
+    // BUG FIX 1: Sync Description string
+    const parts = [];
+    if (item.includeLength !== false) parts.push(`${L}m(P)`);
+    if (item.includeWidth !== false) parts.push(`${W}m(L)`);
+    if (item.includeDepth !== false) parts.push(`${D}m(T)`);
+    const dimString = parts.join(' x ');
+    const description = Count > 1 ? `${dimString} x ${Count}` : dimString;
     
-    return { ...item, qty, amount };
+    return { ...item, qty, amount, description };
   } else {
     const amount = Math.round(((item.qty || 0) * (item.rate || 0)) * 100) / 100;
     return { ...item, amount };
@@ -76,10 +82,54 @@ const ComparisonItemRow = ({
     onUpdate: (updates: Partial<BQItem>) => void 
 }) => {
     
+    // BUG FIX 3: Initialize Locked state based on equality
     const [isLocked, setIsLocked] = useState(true);
 
+    useEffect(() => {
+        // Simple equality check to set initial lock state
+        if (originalItem) {
+            const hasChanged = 
+                originalItem.amount !== adjustedItem.amount ||
+                originalItem.qty !== adjustedItem.qty ||
+                originalItem.rate !== adjustedItem.rate ||
+                (adjustedItem.isCalculation && (
+                    originalItem.dimLength !== adjustedItem.dimLength ||
+                    originalItem.dimWidth !== adjustedItem.dimWidth ||
+                    originalItem.dimDepth !== adjustedItem.dimDepth ||
+                    originalItem.dimCount !== adjustedItem.dimCount
+                ));
+            
+            if (hasChanged && isLocked) {
+                setIsLocked(false);
+            }
+        }
+    }, [originalItem, adjustedItem]); // Dependency ensures check runs when props load
+
     const toggleLock = () => {
-        setIsLocked(!isLocked);
+        const newLockedState = !isLocked;
+        setIsLocked(newLockedState);
+
+        // Restore original values if locking
+        if (newLockedState && originalItem) {
+            onUpdate({
+                ...originalItem,
+                id: adjustedItem.id, 
+                // Restore all relevant fields
+                isCalculation: originalItem.isCalculation,
+                isSynced: originalItem.isSynced,
+                includeLength: originalItem.includeLength,
+                includeWidth: originalItem.includeWidth,
+                includeDepth: originalItem.includeDepth,
+                dimLength: originalItem.dimLength,
+                dimWidth: originalItem.dimWidth,
+                dimDepth: originalItem.dimDepth,
+                dimCount: originalItem.dimCount,
+                qty: originalItem.qty,
+                rate: originalItem.rate,
+                amount: originalItem.amount,
+                description: originalItem.description
+            });
+        }
     };
 
     const handleInput = (field: keyof BQItem, value: any) => {
@@ -87,7 +137,6 @@ const ComparisonItemRow = ({
         const finalValue = isNaN(numValue) ? value : numValue;
         
         // Critical Fix: If user manually changes dimensions, we MUST disable sync
-        // to ensure the manual value is used in calculation instead of Global Dims.
         if (field === 'dimLength' || field === 'dimWidth' || field === 'dimDepth') {
             onUpdate({ [field]: finalValue, isSynced: false });
         } else {
@@ -187,7 +236,7 @@ const ComparisonItemRow = ({
                                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInput('description', e.target.value)}
                                 disabled={isLocked}
                                 rows={adjustedItem.isHeader ? 1 : 2}
-                                className={`w-full bg-transparent resize-none outline-none border-b border-transparent focus:border-indigo-500 transition-colors ${adjustedItem.isHeader ? 'font-bold uppercase tracking-wide text-slate-900 dark:text-white' : adjustedItem.isNote ? 'text-slate-500 dark:text-slate-400 italic' : 'font-medium text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600'}`}
+                                className={`w-full bg-transparent resize-none outline-none border-b border-transparent focus:border-indigo-500 transition-colors ${adjustedItem.isHeader ? 'font-bold uppercase tracking-wide text-slate-900 dark:text-white' : adjustedItem.isNote ? 'text-slate-500 dark:text-slate-400 italic' : 'font-medium text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600'} ${adjustedItem.isCalculation && isLocked ? 'opacity-70' : ''}`}
                                 placeholder={adjustedItem.isNote ? "Tulis nota di sini..." : "Keterangan..."}
                             />
 
@@ -252,22 +301,23 @@ const ComparisonItemRow = ({
 
 // --- PRINT LAYOUT COMPONENTS ---
 const PrintPage = ({ children }: { children: React.ReactNode }) => (
+    // Added 'text-black' class to FORCE black text everywhere for print/pdf
     <div className="print-page relative w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg print:shadow-none print:w-full print:h-full overflow-hidden flex flex-col p-[20mm] box-border text-black mb-8 print:mb-0">
        {children}
     </div>
 );
   
 const PrintHeader = ({ title }: { title: string }) => (
-    <div className="text-center mb-6 font-arial">
+    <div className="text-center mb-6 font-arial text-black">
         <div className="flex justify-between items-start mb-4">
-          <div className="w-32 h-20 border border-black flex items-center justify-center text-xs font-bold p-2 text-center">LOGO MPS</div>
-          <div className="flex-1 px-4">
-             <h1 className="font-bold text-lg uppercase leading-tight">JABATAN KEJURUTERAAN</h1>
-             <h2 className="font-bold text-xl uppercase mt-1">MAJLIS PERBANDARAN SELAYANG</h2>
+          <div className="w-32 h-20 border border-black flex items-center justify-center text-xs font-bold p-2 text-center text-black">LOGO MPS</div>
+          <div className="flex-1 px-4 text-black">
+             <h1 className="font-bold text-lg uppercase leading-tight text-black">JABATAN KEJURUTERAAN</h1>
+             <h2 className="font-bold text-xl uppercase mt-1 text-black">MAJLIS PERBANDARAN SELAYANG</h2>
           </div>
-          <div className="w-24 h-20 border border-black flex items-center justify-center text-xs font-bold p-2 text-center bg-gray-200">LOGO SELANGOR</div>
+          <div className="w-24 h-20 border border-black flex items-center justify-center text-xs font-bold p-2 text-center bg-gray-200 text-black">LOGO SELANGOR</div>
         </div>
-        <h3 className="font-bold text-lg underline uppercase">{title}</h3>
+        <h3 className="font-bold text-lg underline uppercase text-black">{title}</h3>
     </div>
 );
 
@@ -302,6 +352,25 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({ originalData, pel
         onDataChange(newGroups, globalDims);
     };
 
+    // Pagination Helper for Detailed View
+    const getGroupPages = (items: BQItem[]) => {
+        const pages: BQItem[][] = [];
+        const FIRST_PAGE_ITEMS = 10; 
+        const NEXT_PAGE_ITEMS = 15;
+        
+        let remainingItems = [...items];
+        let isFirstPage = true;
+        
+        while (remainingItems.length > 0) {
+            const limit = isFirstPage ? FIRST_PAGE_ITEMS : NEXT_PAGE_ITEMS;
+            const chunk = remainingItems.splice(0, limit);
+            pages.push(chunk);
+            isFirstPage = false;
+        }
+        
+        return pages.length > 0 ? pages : [[]];
+    };
+
     // PDF GENERATION
     const handleDownloadPDF = async () => {
         setIsGeneratingPdf(true);
@@ -317,7 +386,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({ originalData, pel
                 clone.style.padding = '0';
                 clone.style.position = 'static'; 
                 clone.style.backgroundColor = 'white';
-    
+                clone.style.color = 'black'; // FORCE BLACK TEXT
+
                 const pages = clone.querySelectorAll('.print-page');
                 pages.forEach((page) => {
                     const p = page as HTMLElement;
@@ -330,6 +400,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({ originalData, pel
                     p.style.padding = '20mm'; 
                     p.style.boxSizing = 'border-box';
                     p.style.backgroundColor = 'white';
+                    p.style.color = 'black'; // FORCE BLACK TEXT
                 });
                 
                 const container = document.createElement('div');
@@ -374,6 +445,15 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({ originalData, pel
         const totalAdjusted = pelarasanData.reduce((acc, g) => acc + g.items.reduce((s, i) => s + (i.amount || 0), 0), 0);
         const totalLAD = projectData.ladAmount || 0; 
         const finalPayable = totalAdjusted - totalLAD;
+        
+        // Prepare dynamic rows for Aduan and Lokasi
+        const rawAduan = projectData.noAduan || '';
+        const rawLokasi = projectData.lokasi || ''; 
+        
+        const aduanList = rawAduan.split('\n').filter(s => s.trim().length > 0);
+        const lokasiList = rawLokasi.split('\n').filter(s => s.trim().length > 0);
+        
+        const headerRowCount = Math.max(aduanList.length, lokasiList.length, 1);
 
         return (
             <div className="flex flex-col items-center bg-gray-100 min-h-screen py-8">
@@ -384,94 +464,240 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({ originalData, pel
                     </button>
                 </div>
 
-                <div id="pdf-pelarasan-root" className="w-[210mm] bg-white shadow-2xl">
+                <div id="pdf-pelarasan-root" className="w-[210mm] bg-white shadow-2xl text-black">
                     
-                    {/* SUMMARY PAGE */}
+                    {/* COVER PAGE */}
                     <PrintPage>
                         <PrintHeader title="LAPORAN PELARASAN MUKTAMAD" />
                         
-                        <div className="border-2 border-black flex-1 flex flex-col font-arial text-sm">
-                            {/* Project Info */}
-                            <div className="p-4 border-b-2 border-black bg-gray-50">
-                                <table className="w-full">
+                        <div className="border-2 border-black flex-1 flex flex-col font-arial text-sm text-black">
+                            {/* Project Info - FORCED TEXT BLACK */}
+                            <div className="p-4 border-b-2 border-black bg-gray-50 text-black print:bg-gray-50">
+                                <table className="w-full text-black">
                                     <tbody>
                                         <tr>
-                                            <td className="font-bold w-32 py-1">Tajuk Projek</td>
-                                            <td className="uppercase">: {projectData.namaProjek}</td>
+                                            <td className="font-bold w-32 py-1 text-black">Tajuk Projek</td>
+                                            <td className="uppercase text-black">: {projectData.namaProjek}</td>
                                         </tr>
                                         <tr>
-                                            <td className="font-bold w-32 py-1">No. Fail</td>
-                                            <td>: {projectData.noFail}</td>
+                                            <td className="font-bold w-32 py-1 text-black">No. Fail</td>
+                                            <td className="text-black">: {projectData.noFail}</td>
                                         </tr>
                                         <tr>
-                                            <td className="font-bold w-32 py-1">Kontraktor</td>
-                                            <td>: {projectData.namaSyarikat}</td>
+                                            <td className="font-bold w-32 py-1 text-black">Kontraktor</td>
+                                            <td className="text-black">: {projectData.namaSyarikat}</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
-                            {/* Comparison Table */}
-                            <div className="flex bg-gray-100 font-bold border-b border-black text-center text-xs">
-                                <div className="w-12 p-2 border-r border-black">BIL</div>
-                                <div className="flex-1 p-2 border-r border-black">KETERANGAN</div>
-                                <div className="w-32 p-2 border-r border-black">KOS ASAL (RM)</div>
-                                <div className="w-32 p-2 border-r border-black">PELARASAN (RM)</div>
-                                <div className="w-32 p-2">BEZA (RM)</div>
-                            </div>
-
-                            {pelarasanData.map((group, idx) => {
-                                // Find matching original group
-                                const originalGroup = originalData.find(g => g.id === group.id);
-                                const groupTotalOriginal = originalGroup ? originalGroup.items.reduce((acc, i) => acc + (i.amount || 0), 0) : 0;
-                                const groupTotalAdjusted = group.items.reduce((acc, i) => acc + (i.amount || 0), 0);
-                                const diff = groupTotalAdjusted - groupTotalOriginal;
-                                
-                                return (
-                                    <div key={group.id} className="flex border-b border-black text-xs">
-                                        <div className="w-12 p-2 border-r border-black text-center">{idx + 1}</div>
-                                        <div className="flex-1 p-2 border-r border-black uppercase font-bold">{group.title}</div>
-                                        <div className="w-32 p-2 border-r border-black text-right">{formatCurrency(groupTotalOriginal).replace('RM', '')}</div>
-                                        <div className="w-32 p-2 border-r border-black text-right">{formatCurrency(groupTotalAdjusted).replace('RM', '')}</div>
-                                        <div className={`w-32 p-2 text-right font-bold ${diff < 0 ? 'text-red-600' : diff > 0 ? 'text-blue-600' : ''}`}>
-                                            {formatCurrency(diff).replace('RM', '')}
+                            {/* Overall Summary Table */}
+                            <div className="p-4 text-black">
+                                <h4 className="font-bold mb-2 uppercase underline text-black">Ringkasan Kewangan</h4>
+                                <div className="text-sm font-bold border-2 border-black text-black">
+                                    <div className="flex border-b border-black bg-gray-50 text-black">
+                                        <div className="flex-1 p-2 text-right border-r border-black">JUMLAH KOS ASAL</div>
+                                        <div className="w-48 p-2 text-right text-black">{formatCurrency(totalOriginal)}</div>
+                                    </div>
+                                    
+                                    {/* ADJUSTED ROW - CONDITIONAL COLOR */}
+                                    <div className="flex border-b border-black bg-gray-50 text-black">
+                                        <div className="flex-1 p-2 text-right border-r border-black">JUMLAH KOS PELARASAN</div>
+                                        <div className={`w-48 p-2 text-right ${totalAdjusted < totalOriginal ? 'text-red-600' : totalAdjusted > totalOriginal ? 'text-blue-600' : 'text-black'}`}>
+                                            {formatCurrency(totalAdjusted)}
                                         </div>
                                     </div>
-                                );
-                            })}
-
-                            {/* Spacer */}
-                            <div className="flex-1 border-b border-black"></div>
-
-                            {/* Totals */}
-                            <div className="text-sm font-bold">
-                                <div className="flex border-b border-black bg-gray-50">
-                                    <div className="flex-1 p-2 text-right border-r border-black">JUMLAH KOS ASAL</div>
-                                    <div className="w-64 p-2 text-right">{formatCurrency(totalOriginal)}</div>
-                                </div>
-                                <div className="flex border-b border-black bg-gray-50">
-                                    <div className="flex-1 p-2 text-right border-r border-black">JUMLAH KOS PELARASAN</div>
-                                    <div className="w-64 p-2 text-right text-blue-600">{formatCurrency(totalAdjusted)}</div>
-                                </div>
-                                
-                                {totalLAD > 0 && (
-                                    <div className="flex border-b border-black text-red-600">
-                                        <div className="flex-1 p-2 text-right border-r border-black">
-                                            TOLAK: LAD ({projectData.ladDays || 0} HARI)
-                                        </div>
-                                        <div className="w-64 p-2 text-right">
-                                            - {formatCurrency(totalLAD)}
-                                        </div>
+                                    
+                                    {/* DIFFERENCE ROW (ADDED) */}
+                                    <div className="flex border-b border-black text-black">
+                                         <div className="flex-1 p-2 text-right border-r border-black">BEZA KOS</div>
+                                         <div className={`w-48 p-2 text-right ${totalAdjusted < totalOriginal ? 'text-red-600' : totalAdjusted > totalOriginal ? 'text-blue-600' : 'text-black'}`}>
+                                             {formatCurrency(totalAdjusted - totalOriginal)}
+                                         </div>
                                     </div>
-                                )}
+                                    
+                                    {totalLAD > 0 && (
+                                        <div className="flex border-b border-black text-red-600">
+                                            <div className="flex-1 p-2 text-right border-r border-black">
+                                                TOLAK: LAD ({projectData.ladDays || 0} HARI)
+                                            </div>
+                                            <div className="w-48 p-2 text-right">
+                                                - {formatCurrency(totalLAD)}
+                                            </div>
+                                        </div>
+                                    )}
 
-                                <div className="flex border-b border-black bg-indigo-50 text-base">
-                                    <div className="flex-1 p-3 text-right border-r border-black uppercase">BAYARAN MUKTAMAD</div>
-                                    <div className="w-64 p-3 text-right">{formatCurrency(finalPayable)}</div>
+                                    <div className="flex bg-indigo-50 text-base text-black">
+                                        <div className="flex-1 p-3 text-right border-r border-black uppercase">BAYARAN MUKTAMAD</div>
+                                        <div className="w-48 p-3 text-right">{formatCurrency(finalPayable)}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </PrintPage>
+
+                    {/* DETAILED ITEMS PAGES */}
+                    {pelarasanData.map((group, gIndex) => {
+                        const originalGroup = originalData.find(g => g.id === group.id);
+                        const groupPages = getGroupPages(group.items);
+
+                        return groupPages.map((pageItems, pIndex) => {
+                            const isFirstPageOfGroup = pIndex === 0;
+                            const isLastPageOfGroup = pIndex === groupPages.length - 1;
+                            
+                            // Calculate items before this page for numbering
+                            let itemsBefore = 0;
+                            for(let i=0; i<pIndex; i++) itemsBefore += groupPages[i].length;
+
+                            // Calculate Group Totals for Footer
+                            const groupTotalAdjusted = group.items.reduce((acc, item) => acc + (item.amount || 0), 0);
+                            const groupTotalOriginal = originalGroup?.items.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
+                            const groupTotalDiff = groupTotalAdjusted - groupTotalOriginal;
+
+                            return (
+                                <PrintPage key={`${group.id}-page-${pIndex}`}>
+                                    {/* Header Table - Repeats on every page */}
+                                     <div className="border-2 border-black text-xs font-bold font-arial mb-2">
+                                        <div className="flex border-b border-black bg-gray-100">
+                                            <div className="w-[25%] p-2 border-r border-black uppercase">NO ADUAN :</div>
+                                            <div className="w-[75%] p-2 uppercase">LOKASI :</div>
+                                        </div>
+                                        {Array.from({ length: headerRowCount }).map((_, i) => (
+                                            <div key={i} className={`flex ${i < headerRowCount - 1 ? 'border-b border-black' : ''}`}>
+                                                <div className="w-[25%] p-2 border-r border-black">
+                                                    {aduanList.length > 0 ? (aduanList[i] || '') : (i === 0 ? (projectData.noAduan || '') : '')}
+                                                </div>
+                                                <div className="w-[75%] p-2">
+                                                    {lokasiList.length > 0 ? (lokasiList[i] || '') : (i === 0 ? (projectData.lokasi || group.location || '') : '')}
+                                                </div>
+                                            </div>
+                                        ))}
+                                     </div>
+
+                                    {/* Items Table */}
+                                    <div className="flex-1 border-2 border-black flex flex-col font-arial text-xs text-black">
+                                        {/* Table Header */}
+                                        <div className="flex border-b-2 border-black bg-gray-100 font-bold text-center text-black">
+                                            <div className="w-10 p-2 border-r border-black flex items-center justify-center">BIL</div>
+                                            <div className="flex-1 p-2 border-r border-black flex items-center justify-center">KETERANGAN</div>
+                                            <div className="w-14 p-2 border-r border-black flex items-center justify-center">UNIT</div>
+                                            <div className="w-14 p-2 border-r border-black flex items-center justify-center">QTY</div>
+                                            <div className="w-20 p-2 border-r border-black flex items-center justify-center">KADAR (RM)</div>
+                                            <div className="w-24 p-2 border-r border-black flex items-center justify-center">JUMLAH (RM)</div>
+                                            <div className="w-24 p-2 flex items-center justify-center bg-gray-200">BEZA (RM)</div>
+                                        </div>
+
+                                        {/* Group Title Row - ONLY on First Page of Group */}
+                                        {isFirstPageOfGroup && (
+                                            <div className="flex border-b border-black font-bold bg-gray-50 text-black">
+                                                <div className="w-10 p-2 border-r border-black"></div>
+                                                <div className="flex-1 p-2 border-r border-black uppercase">{group.title}</div>
+                                                <div className="w-14 border-r border-black"></div>
+                                                <div className="w-14 border-r border-black"></div>
+                                                <div className="w-20 border-r border-black"></div>
+                                                <div className="w-24 border-r border-black"></div>
+                                                <div className="w-24 bg-gray-50"></div>
+                                            </div>
+                                        )}
+
+                                        {/* Items */}
+                                        {pageItems.map((item, localIndex) => {
+                                            const globalItemIndex = itemsBefore + localIndex;
+                                            
+                                            // Find Comparison Data
+                                            const originalItem = originalGroup?.items.find(i => i.id === item.id);
+                                            const origAmount = originalItem?.amount || 0;
+                                            const adjAmount = item.amount || 0;
+                                            const diff = adjAmount - origAmount;
+                                            
+                                            // Determine styles based on difference
+                                            const hasDiff = Math.abs(diff) > 0.01;
+                                            const diffColor = diff < 0 ? 'text-red-600' : diff > 0 ? 'text-blue-600' : 'text-black';
+                                            const rowBg = hasDiff ? (diff < 0 ? 'bg-red-50' : 'bg-blue-50') : '';
+
+                                            // ORIGINAL ROW (Only if difference exists and Original Item exists)
+                                            // We remove Strikethrough, just show it but maybe muted or specific color
+                                            const renderOriginal = hasDiff && originalItem && !item.isHeader && !item.isNote;
+
+                                            return (
+                                                <React.Fragment key={item.id}>
+                                                    
+                                                    {/* ORIGINAL ROW (If Diff) */}
+                                                    {renderOriginal && (
+                                                        <div className={`flex border-b border-black min-h-[32px] ${rowBg} opacity-70`}>
+                                                             <div className="w-10 p-1 border-r border-black text-center flex items-start justify-center pt-2">
+                                                                {/* Empty Number for Original Row */}
+                                                            </div>
+                                                            <div className="flex-1 p-2 border-r border-black whitespace-pre-wrap">
+                                                                <span className="text-black font-medium">
+                                                                    {originalItem?.description}
+                                                                </span>
+                                                                <span className="text-[9px] font-bold block text-gray-500">(ASAL)</span>
+                                                            </div>
+                                                            <div className="w-14 p-2 border-r border-black text-center flex items-center justify-center">
+                                                                {originalItem?.unit}
+                                                            </div>
+                                                            <div className="w-14 p-2 border-r border-black text-center flex items-center justify-center font-bold">
+                                                                {originalItem?.qty}
+                                                            </div>
+                                                            <div className="w-20 p-2 border-r border-black text-right flex items-center justify-end">
+                                                                {originalItem?.rate?.toFixed(2)}
+                                                            </div>
+                                                            <div className="w-24 p-2 border-r border-black text-right flex items-center justify-end font-bold text-black">
+                                                                {formatCurrency(originalItem?.amount).replace('RM', '')}
+                                                            </div>
+                                                            <div className="w-24 p-2 text-right bg-gray-50/50"></div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* ADJUSTED ROW (Always Shown) */}
+                                                    <div className={`flex border-b border-black min-h-[32px] ${rowBg} text-black`}>
+                                                        <div className="w-10 p-1 border-r border-black text-center flex items-start justify-center pt-2">
+                                                            {!item.isHeader && !item.isNote && `${gIndex + 1}.${globalItemIndex + 1}`}
+                                                            {item.isHeader && <span className="font-bold">{gIndex + 1}.{globalItemIndex + 1}</span>}
+                                                        </div>
+                                                        <div className="flex-1 p-2 border-r border-black whitespace-pre-wrap">
+                                                            <span className={`text-black ${item.isHeader ? 'font-bold' : item.isNote ? 'italic' : ''} ${item.description === 'ALL QUANTITY ARE PROVISIONAL' ? 'text-red-600 font-bold underline' : ''}`}>
+                                                                {item.description}
+                                                            </span>
+                                                        </div>
+                                                        <div className="w-14 p-2 border-r border-black text-center flex items-center justify-center">
+                                                            {item.unit}
+                                                        </div>
+                                                        <div className="w-14 p-2 border-r border-black text-center flex items-center justify-center font-bold">
+                                                            {item.qty && item.qty > 0 ? item.qty : ''}
+                                                        </div>
+                                                        <div className="w-20 p-2 border-r border-black text-right flex items-center justify-end">
+                                                            {item.rate && item.rate > 0 ? item.rate.toFixed(2) : ''}
+                                                        </div>
+                                                        <div className="w-24 p-2 border-r border-black text-right flex items-center justify-end font-bold">
+                                                            {item.amount && item.amount > 0 ? formatCurrency(item.amount).replace('RM', '') : ''}
+                                                        </div>
+                                                        <div className={`w-24 p-2 text-right flex items-center justify-end font-bold ${diffColor} bg-gray-50/50`}>
+                                                            {hasDiff ? formatCurrency(diff).replace('RM', '') : '-'}
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            );
+                                        })}
+
+                                        {/* Group Total Row - ONLY on Last Page of Group */}
+                                        {isLastPageOfGroup && (
+                                            <div className="mt-auto border-t-2 border-black flex font-bold bg-gray-100 text-black">
+                                                <div className="flex-1 p-2 text-right border-r border-black">JUMLAH KUMPULAN</div>
+                                                <div className="w-24 p-2 text-right border-r border-black">
+                                                    {formatCurrency(groupTotalAdjusted).replace('RM', '')}
+                                                </div>
+                                                <div className={`w-24 p-2 text-right ${groupTotalDiff < 0 ? 'text-red-600' : groupTotalDiff > 0 ? 'text-blue-600' : ''}`}>
+                                                     {formatCurrency(groupTotalDiff).replace('RM', '')}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </PrintPage>
+                            );
+                        });
+                    })}
                 </div>
             </div>
         );
