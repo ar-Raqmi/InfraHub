@@ -46,7 +46,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
-          className="bg-indigo-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:bg-indigo-700 transition-all"
+          className="bg-emerald-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:bg-emerald-700 transition-all"
         >
           <UserPlus className="h-5 w-5" />
           <span>Tambah Pengguna</span>
@@ -54,7 +54,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
       </div>
 
       {isAdding && (
-        <div className="glass-effect p-6 rounded-3xl shadow-xl border border-indigo-100 dark:border-indigo-900/30 animate-slide-down">
+        <div className="glass-effect p-6 rounded-3xl shadow-xl border border-emerald-100 dark:border-emerald-900/30 animate-slide-down">
           <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1">ID Pengguna</label>
@@ -99,7 +99,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
             </div>
             <div className="md:col-span-4 lg:col-span-4 flex justify-end gap-2 mt-4">
               <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-slate-500">Batal</button>
-              <button type="submit" className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold">Simpan</button>
+              <button type="submit" className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold">Simpan</button>
             </div>
           </form>
         </div>
@@ -110,7 +110,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
           <div key={user.id} className="glass-effect rounded-3xl p-6 border border-white/20 dark:border-white/5 shadow-lg relative group">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white ${user.role === Role.ADMIN ? 'bg-gradient-to-br from-purple-500 to-indigo-600' : 'bg-gradient-to-br from-blue-400 to-cyan-500'}`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white ${user.role === Role.ADMIN ? 'bg-gradient-to-br from-teal-500 to-emerald-600' : 'bg-gradient-to-br from-blue-400 to-cyan-500'}`}>
                   {user.role === Role.ADMIN ? <Shield className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />}
                 </div>
                 <div>
@@ -128,7 +128,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
               )}
             </div>
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.role === Role.ADMIN ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.role === Role.ADMIN ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700'}`}>
                 {user.role}
               </span>
               <span className="text-xs text-slate-400">ID: {user.id}</span>
