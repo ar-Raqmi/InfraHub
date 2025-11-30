@@ -1,5 +1,3 @@
-
-
 export enum Role {
   ADMIN = 'ADMIN', // "Blue"
   PJA = 'PJA',     // "Yellow"
@@ -110,12 +108,11 @@ export interface Project {
   // --- PHASE 3: BQ PELARASAN BUILDING (Yellow - PJA) ---
   tarikhPemeriksaan?: string; // Tarikh Pemeriksaan
   tarikhSiapSebenar?: string; // Tarikh Siap (Pemeriksa)
-  prestasi?: 'Cemerlang' | 'Baik' | 'Memuaskan' | 'Tidak Memuaskan';
+  prestasi?: string; // Changed to string for % input
   tarikhTuntutanBayaran?: string; // Changed from number amount to date
   
   kosSebenar?: number; // Calculated from BQPelarasan
   
-  cpcDate?: string;
   ladAmount?: number;
   ladDays?: number;
 
@@ -129,6 +126,11 @@ export interface Project {
   bqData?: BQGroup[]; // Original Contract BQ
   bqDataPelarasan?: BQGroup[]; // Adjusted BQ (Pelarasan)
   globalDimensions?: GlobalDimensions; // Saved global dims for this project
+
+  // AKU JANJI
+  akuJanjiMonth?: string; // The selected month string e.g. "November"
+  akuJanjiPanelTitle?: string; // Title for "Kontraktor Panel"
+  akuJanjiFooterText?: string; // Text after year, e.g. "PJA NAME - COMPANY"
 }
 
 export const formatCurrency = (amount: number | undefined) => {
