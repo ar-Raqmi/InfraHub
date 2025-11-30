@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { User, Project } from './types';
 import { mockService } from './services/mockService';
@@ -106,12 +107,12 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 font-sans transition-colors duration-300 relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950 font-sans transition-colors duration-300 relative overflow-x-hidden">
       
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-300 to-blue-300 dark:from-purple-900 dark:to-blue-900 rounded-full opacity-20 animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-indigo-300 to-purple-300 dark:from-indigo-900 dark:to-purple-900 rounded-full opacity-20 animate-float" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-teal-300 to-emerald-300 dark:from-teal-900 dark:to-emerald-900 rounded-full opacity-20 animate-float"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-emerald-300 to-teal-300 dark:from-emerald-900 dark:to-teal-900 rounded-full opacity-20 animate-float" style={{ animationDelay: '-3s' }}></div>
       </div>
 
       {/* Toast Notification Container */}
@@ -147,6 +148,7 @@ function App() {
                     onClose={() => setIsEditing(false)} 
                     onSave={handleProjectSaved}
                     currentUserRole={user.role}
+                    selectedYear={selectedYear}
                   />
                 </div>
               ) : (
