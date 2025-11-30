@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Home, FolderKanban, Users, Calendar, LogOut, Settings, Hexagon, Menu } from 'lucide-react';
 import { Role } from '../types';
@@ -16,15 +15,15 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
   const navItemClass = (page: string) => `
     p-3 rounded-xl transition-all duration-300 group relative
     ${currentPage === page 
-      ? 'text-indigo-600 bg-white/80 dark:bg-indigo-500/20 shadow-lg scale-110' 
-      : 'text-gray-400 hover:text-indigo-600 hover:bg-white/50 dark:hover:bg-white/5 hover:shadow-lg hover:scale-110'}
+      ? 'text-emerald-600 bg-white/80 dark:bg-emerald-500/20 shadow-lg scale-110' 
+      : 'text-gray-400 hover:text-emerald-600 hover:bg-white/50 dark:hover:bg-white/5 hover:shadow-lg hover:scale-110'}
   `;
 
   const mobileNavItemClass = (page: string) => `
     flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300
     ${currentPage === page 
-      ? 'text-indigo-600' 
-      : 'text-gray-400 hover:text-indigo-600'}
+      ? 'text-emerald-600' 
+      : 'text-gray-400 hover:text-emerald-600'}
   `;
 
   return (
@@ -33,8 +32,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
       <aside className="hidden md:flex fixed z-30 inset-y-0 left-0 w-20 glass-effect flex-col items-center py-8 border-r border-white/20 dark:border-white/5 shadow-2xl transition-all duration-500 animate-fade-in-left">
         
         {/* Brand */}
-        <div className="mb-10 transition-all duration-300 cursor-pointer hover:text-indigo-700 animate-glow text-indigo-600">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110">
+        <div className="mb-10 transition-all duration-300 cursor-pointer hover:text-emerald-700 animate-glow text-emerald-600">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110">
             <Hexagon className="w-6 h-6 fill-current" />
           </div>
         </div>
@@ -64,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
 
         {/* Bottom Actions */}
         <div className="mt-auto flex flex-col space-y-6 w-full px-2 items-center">
-          <ThemeToggle className="p-3 rounded-xl text-gray-400 hover:text-indigo-600 hover:bg-white/50 dark:hover:bg-white/5 hover:shadow-lg hover:scale-110 transition-all duration-300" />
+          <ThemeToggle className="p-3 rounded-xl text-gray-400 hover:text-emerald-600 hover:bg-white/50 dark:hover:bg-white/5 hover:shadow-lg hover:scale-110 transition-all duration-300" />
           
           {role === Role.ADMIN && (
             <button onClick={() => onNavigate('settings')} className={navItemClass('settings')} title="Tetapan">
