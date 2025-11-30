@@ -2,6 +2,12 @@
 
 > Infrastructure Project Management Workflow System for Majlis Perbandaran Selayang
 
+<p align="center">
+  <img src="https://i.imgur.com/8Smw9sf.png"
+       alt="InfraHub Main Image"
+       style="height:520px; width:auto; border-radius:6px;" />
+</p>
+
 **Note**: This system operates fully in **Bahasa Malaysia** (Malay language). This README is provided in English for broader accessibility, but all system documentation, forms, and workflows are in Bahasa Malaysia.
 
 ## Overview
