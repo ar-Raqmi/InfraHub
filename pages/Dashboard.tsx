@@ -38,7 +38,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           </h1>
           <button 
             onClick={() => handleDummyAction('Ringkasan Mingguan')}
-            className="flex items-center text-slate-500 dark:text-slate-400 group transition-all duration-300 hover:text-indigo-600"
+            className="flex items-center text-slate-500 dark:text-slate-400 group transition-all duration-300 hover:text-emerald-600"
           >
             <span className="text-sm md:text-base font-medium">Ringkasan projek minggu ini</span>
           </button>
@@ -50,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <input 
               type="text" 
               placeholder="Cari projek, fail..." 
-              className="pl-12 pr-4 py-3 w-full md:w-72 rounded-2xl border-0 glass-effect shadow-lg focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300 placeholder-slate-400 dark:text-white dark:placeholder-slate-500"
+              className="pl-12 pr-4 py-3 w-full md:w-72 rounded-2xl border-0 glass-effect shadow-lg focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all duration-300 placeholder-slate-400 dark:text-white dark:placeholder-slate-500"
             />
           </div>
           <div className="flex items-center gap-4 justify-between md:justify-start">
@@ -59,11 +59,11 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                 className="p-3 rounded-2xl glass-effect shadow-lg hover:shadow-xl transition-all duration-300 relative group transform hover:scale-105"
                 title="Inbox / Notifikasi"
              >
-                <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 transition-colors" />
+                <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-emerald-600 transition-colors" />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
              </button>
              <div onClick={onProfileClick} className="flex items-center space-x-3 glass-effect px-4 py-2 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0">
                    {user.username.substring(0,2).toUpperCase()}
                 </div>
                 <div className="block text-left">
@@ -96,7 +96,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
           {/* Phase 2: Dalam Proses */}
           <div className="glass-effect rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-500 group transform hover:-translate-y-2 border border-white/20 dark:border-white/5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-all duration-300 bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg text-white">
               <Clock className="w-6 h-6" />
             </div>
@@ -136,7 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
         <div className="glass-effect rounded-3xl p-6 shadow-xl border border-white/20 dark:border-white/5 flex flex-col justify-center">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Tindakan Pantas</h3>
             <div className="space-y-3">
-              <button onClick={onNewProject} className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
+              <button onClick={onNewProject} className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                       <Plus className="w-5 h-5" />
@@ -145,7 +145,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                   </div>
                   <ArrowRight className="w-4 h-4" />
               </button>
-              <button onClick={() => handleDummyAction('Laporan Bulanan')} className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
+              <button onClick={() => handleDummyAction('Laporan Bulanan')} className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 text-white hover:from-teal-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                       <Printer className="w-5 h-5" />
@@ -187,7 +187,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
            <h2 className="text-xl md:text-2xl font-bold gradient-text">Projek Terkini</h2>
            <button 
              onClick={() => onNavigate('projects')} 
-             className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-2 group"
+             className="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-2 group"
            >
               Lihat semua <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
            </button>
