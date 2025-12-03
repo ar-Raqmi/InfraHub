@@ -85,7 +85,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
            <div className="inline-flex gap-2 text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full">
              <span>syafiq / password</span>
              <span className="opacity-30">|</span>
-             <span>ahmad / password</span>
+             <span>khairul / password</span>
            </div>
         </div>
       </div>
