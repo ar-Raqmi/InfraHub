@@ -6,7 +6,7 @@ const Inbox = () => {
     { id: 1, sender: 'Pengarah Jabatan', subject: 'Mesyuarat Penyelarasan Projek Zon 1', time: '10:30 AM', unread: true },
     { id: 2, sender: 'Syarikat Binaan Jaya', subject: 'Penyerahan Tuntutan Bayaran No. 2', time: 'Semalam', unread: true },
     { id: 3, sender: 'Unit Kewangan', subject: 'Status Pembayaran Projek Lampu Jalan', time: 'Semalam', unread: false },
-    { id: 4, sender: 'Ahmad (PJA)', subject: 'Laporan Kemajuan Tapak - Mingguan', time: '12 Okt', unread: false },
+    { id: 4, sender: 'Khairul (PJA)', subject: 'Laporan Kemajuan Tapak - Mingguan', time: '12 Okt', unread: false },
   ];
 
   const handleAction = (action: string) => {
@@ -53,7 +53,7 @@ const Inbox = () => {
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">PJ</div>
             <div>
               <p className="font-bold text-slate-900 dark:text-white">Pengarah Jabatan <span className="text-slate-400 font-normal text-sm">&lt;pengarah@mps.gov.my&gt;</span></p>
-              <p className="text-xs text-slate-400">Kepada: saya, Ahmad, Fatimah</p>
+              <p className="text-xs text-slate-400">Kepada: saya, Khairul, Fatimah</p>
             </div>
           </div>
           <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
