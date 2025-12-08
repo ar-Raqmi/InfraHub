@@ -1,10 +1,35 @@
 
+
 import { Project, User, Role, ProjectStatus, BQGroup } from '../types';
 
 // Initial Seed Data
 const INITIAL_USERS: User[] = [
-  { id: 1, username: 'syafiq', fullName: 'Syafiq (Admin)', role: Role.ADMIN, password: 'password', email: 'syafiq@mps.gov.my', department: 'Unit Pembangunan', phone: '012-3456789' },
-  { id: 2, username: 'ahmad', fullName: 'Ahmad (PJA)', role: Role.PJA, password: 'password', email: 'ahmad@mps.gov.my', department: 'Zon 1', phone: '013-9876543' },
+  { 
+    id: 1, 
+    username: 'syafiq', 
+    fullName: 'Syafiq Daniel Bin Ahmad Firdaus', 
+    role: Role.ADMIN, 
+    password: 'password', 
+    email: 'syafiq@mps.gov.my', 
+    department: 'Unit Pembangunan', 
+    phone: '012-3456789',
+    jawatan: 'Pembantu Tadbir N1',
+    bahagian: 'Bahagian Infrastruktur',
+    unit: 'Unit Selenggara Infrastruktur'
+  },
+  { 
+    id: 2, 
+    username: 'khairul', 
+    fullName: 'Mohamad Khairul Amirin Bin Zainal Abidin', 
+    role: Role.PJA, 
+    password: 'password', 
+    email: 'khairul@mps.gov.my', 
+    department: 'Zon 1', 
+    phone: '013-9876543',
+    jawatan: 'Penolong Jurutera JA5',
+    bahagian: 'Bahagian Infrastruktur',
+    unit: 'Unit Selenggara Infrastruktur'
+  },
 ];
 
 const INITIAL_PROJECTS: Project[] = [];
@@ -45,11 +70,11 @@ class MockService {
 
     this.users = storedUsers ? JSON.parse(storedUsers) : INITIAL_USERS;
     
-    // FAILSAFE: Ensure Syafiq and Ahmad exist if localStorage has old data
+    // FAILSAFE: Ensure Syafiq and Khairul exist if localStorage has old data
     if (!this.users.find(u => u.username === 'syafiq')) {
-      this.users.push(INITIAL_USERS[0]);
+      this.users.unshift(INITIAL_USERS[0]);
     }
-    if (!this.users.find(u => u.username === 'ahmad')) {
+    if (!this.users.find(u => u.username === 'khairul')) {
       this.users.push(INITIAL_USERS[1]);
     }
 
@@ -140,6 +165,21 @@ class MockService {
     this.users.push(newUser);
     this.saveData();
     return newUser;
+  }
+  
+  async updateUser(id: number, updates: Partial<User>) {
+      const index = this.users.findIndex(u => u.id === id);
+      if (index === -1) throw new Error('User not found');
+      
+      this.users[index] = { ...this.users[index], ...updates };
+      
+      // Update session if editing current user
+      if (this.currentUser && this.currentUser.id === id) {
+          this.currentUser = this.users[index];
+      }
+      
+      this.saveData();
+      return this.users[index];
   }
 
   async deleteUser(id: number) {
