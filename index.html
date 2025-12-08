@@ -119,12 +119,14 @@
       }
     </style>
     <script>
-       // Prevent FOUC
+       // Prevent FOUC and enforce light mode default
        try {
         const storedTheme = localStorage.getItem('theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (storedTheme === 'dark' || (!storedTheme && systemDark)) {
+        // Only apply dark mode if explicitly stored as 'dark'. Default is light.
+        if (storedTheme === 'dark') {
           document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
         }
       } catch (e) {}
     </script>
