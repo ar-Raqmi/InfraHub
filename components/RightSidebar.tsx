@@ -69,7 +69,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ projects }) => {
 
         <div className="mt-4 rounded-2xl bg-white/80 dark:bg-white/90 p-3 backdrop-blur-sm">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-geist font-medium">Semakan BQ</span>
+            <span className="text-sm font-geist font-medium">Semakan Dokumen</span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-zinc-600 font-geist">Due</span>
               <span className="px-2 py-0.5 rounded-full text-xs bg-zinc-900 text-white font-geist">Hari Ini</span>
