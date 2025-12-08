@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { mockService } from '../services/mockService';
 import { User } from '../types';
 import { Hexagon, ArrowRight } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -25,6 +26,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   return (
     <div className="h-screen w-full bg-slate-50 relative overflow-hidden flex items-center justify-center p-4 font-manrope">
       
+      {/* Theme Toggle Top Right */}
+      <div className="absolute top-6 right-6 z-50">
+         <ThemeToggle />
+      </div>
+
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-pink-50 dark:from-slate-900 dark:to-slate-950">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
@@ -39,8 +45,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
            <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30 animate-glow transform hover:scale-110 transition-transform duration-500">
              <Hexagon className="h-8 w-8 text-white fill-current" />
            </div>
-           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Nexus InfraHub</h1>
-           <p className="text-slate-500 dark:text-slate-400 text-center font-medium">Sistem Pengurusan Projek</p>
+           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">InfraHub</h1>
+           <p className="text-slate-500 dark:text-slate-400 text-center font-medium">Sistem Pengurusan Projek 
+             <br/> Jabatan Kejuruteraan
+           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -51,7 +59,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-5 py-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white placeholder-slate-400 shadow-sm"
-              placeholder="Contoh: syafiq"
+              // placeholder="Contoh: syafiq"
               required
             />
           </div>
@@ -62,7 +70,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-5 py-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white placeholder-slate-400 shadow-sm"
-              placeholder="••••••••"
+              // placeholder="••••••••"
               required
             />
           </div>
