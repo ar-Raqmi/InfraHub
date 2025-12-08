@@ -75,7 +75,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             .map(s => s.trim())
             .filter(s => s.length > 0)
             .join(', ')
-        : 'MPS.XXXXXX';
+        : '';
 
     return (
         <div className="flex flex-col gap-6">
@@ -138,7 +138,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                     {/* HEADER */}
                     <div className="flex flex-col items-end text-[13px] mb-8 font-bold">
                          <div className="text-right">
-                             <p>Bil ( ) dlm.MPS {project.noFail}</p>
+                             <p>Bil ( ) dlm.{project.noFail}</p>
                              <p className="mt-1">{currentMonth} {selectedYear}</p>
                          </div>
                     </div>
