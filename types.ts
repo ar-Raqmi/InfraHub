@@ -1,3 +1,5 @@
+
+
 export enum Role {
   ADMIN = 'ADMIN', // "Blue"
   PJA = 'PJA',     // "Yellow"
@@ -34,8 +36,13 @@ export interface User {
   password?: string; // For mock auth
   email?: string;
   phone?: string;
-  department?: string;
-  avatarUrl?: string; // Added for profile picture
+  department?: string; // Legacy field, keeping for compat
+  avatarUrl?: string; 
+  
+  // NEW FIELDS FOR COVER PAGE BINDING
+  jawatan?: string;
+  bahagian?: string;
+  unit?: string;
 }
 
 export interface GlobalDimensions {
@@ -44,37 +51,72 @@ export interface GlobalDimensions {
   depth: number;  // T
 }
 
+export interface CalculationPart {
+  id: string;
+  label?: string; // Optional: e.g. "Base", "Wall 1"
+  
+  // Flags
+  hasLength: boolean;
+  hasWidth: boolean;
+  hasDepth: boolean;
+
+  // Values
+  length: number;
+  width: number;
+  depth: number;
+  multiplier: number; // Factor
+}
+
 export interface BQItem {
   id: string;
-  description: string; // Keterangan
+  
+  // Structure
+  type: 'HEADER' | 'ITEM' | 'NOTE'; 
+  isCollapsed?: boolean; // NEW: Controls visibility of children
+  
+  // Content
+  description: string; // Main Description
+  variant?: string; // e.g., "i) Dengan tangan"
+  
+  // Pricing & Unit
   unit: string;
-  qty: number;
   rate: number;
-  amount: number; // Calculated
-  isHeader?: boolean; // For bold headers like "1.0 INSURAN"
-  isNote?: boolean; // NEW: For description only lines (no price)
   
-  // New Smart Calculation Fields
-  isCalculation?: boolean; // If true, use dimensions to calculate Qty
-  isSynced?: boolean; // If true, uses Global Dimensions
+  // Dimensions for Calculation
+  isGlobal?: boolean; // NEW: If true, syncs with location global dims
   
-  // Calculation Toggles - Control Formula
-  includeLength?: boolean; // Include P in formula
-  includeWidth?: boolean;  // Include L in formula
-  includeDepth?: boolean;  // Include T in formula
+  // --- NEW: Multiple Calculation Parts ---
+  calculationParts?: CalculationPart[];
 
-  // Instance dimensions (if not synced, or overrides)
-  dimLength?: number; // Panjang (P)
-  dimWidth?: number;  // Lebar (L)
-  dimDepth?: number;  // Tebal/Tinggi (T)
-  dimCount?: number;  // Bilangan Unit / Faktor
+  // --- DEPRECATED: Single Dim Fields (Keeping for backward compat if needed during migration) ---
+  hasLength?: boolean;
+  hasWidth?: boolean;
+  hasDepth?: boolean;
+  dimLength?: number; 
+  dimWidth?: number;  
+  dimDepth?: number;  
+  dimMultiplier?: number; 
+  
+  // Custom Calculation Override (String Mode)
+  isCustomCalc?: boolean;
+  customCalc?: string; // The manual text string "80 x 0.5 = 40"
+
+  // Calculated
+  qty: number;
+  amount: number;
 }
 
 export interface BQGroup {
   id: string;
   title: string; // e.g., "BIL NO. 1 - KERJA-KERJA PERMULAAN"
-  location?: string; // e.g., "JALAN 9/27 TAMAN SRI GOMBAK"
+  locationId?: string; // Links to a specific locationRow ID
   items: BQItem[];
+}
+
+export interface ProjectLocation {
+  id: string;
+  lokasi: string;
+  aduan: string;
 }
 
 export interface Project {
@@ -125,12 +167,21 @@ export interface Project {
   // DATA
   bqData?: BQGroup[]; // Original Contract BQ
   bqDataPelarasan?: BQGroup[]; // Adjusted BQ (Pelarasan)
-  globalDimensions?: GlobalDimensions; // Saved global dims for this project
+  
+  // Dimensions
+  globalDimensions?: GlobalDimensions; // DEPRECATED: Keep for backward compat
+  locationDimensions?: Record<string, GlobalDimensions>; // NEW: Map location string to dims
 
   // AKU JANJI
   akuJanjiMonth?: string; // The selected month string e.g. "November"
   akuJanjiPanelTitle?: string; // Title for "Kontraktor Panel"
   akuJanjiFooterText?: string; // Text after year, e.g. "PJA NAME - COMPANY"
+
+  // COVER PAGE SETTINGS (NEW)
+  coverJawatan?: string; // e.g. "Penolong Jurutera JA5"
+  coverBahagian?: string; // e.g. "Bahagian Infrastruktur"
+  coverUnit?: string; // e.g. "Unit Selenggara Infrastruktur"
+  coverSebutHargaText?: string; // Multiline text for Page 2
 }
 
 export const formatCurrency = (amount: number | undefined) => {
@@ -141,16 +192,12 @@ export const formatCurrency = (amount: number | undefined) => {
   }).format(amount);
 };
 
-// Strict Malaysia Date Format (DD/MM/YYYY)
-// Manually parsing string to avoid timezone shifts and force format
 export const formatDate = (dateString?: string) => {
   if (!dateString) return '-';
   
-  // Remove time part if exists
   const cleanDate = dateString.split('T')[0];
   const parts = cleanDate.split('-');
   
-  // Expecting YYYY-MM-DD
   if (parts.length === 3) {
       const [year, month, day] = parts;
       return `${day}/${month}/${year}`;
@@ -159,7 +206,6 @@ export const formatDate = (dateString?: string) => {
   return dateString;
 };
 
-// Get Today's Date in Malaysia Time (YYYY-MM-DD for inputs)
 export const getCurrentDate = () => {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
 };
@@ -168,8 +214,8 @@ export const getStatusColor = (status: ProjectStatus) => {
   switch (status) {
     case ProjectStatus.MENUNGGU_LANTIKAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
     case ProjectStatus.DALAM_PROSES: return 'bg-blue-100 text-blue-700 border-blue-200';
-    case ProjectStatus.TUNTUTAN_BAYARAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200'; // Phase 3 is also yellow in diagram
-    case ProjectStatus.SIAP: return 'bg-orange-100 text-orange-700 border-orange-200'; // Phase 4 is orange
+    case ProjectStatus.TUNTUTAN_BAYARAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    case ProjectStatus.SIAP: return 'bg-orange-100 text-orange-700 border-orange-200';
     default: return 'bg-gray-100 text-gray-700';
   }
 };
