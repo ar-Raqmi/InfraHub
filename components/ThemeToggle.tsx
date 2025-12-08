@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 
 interface ThemeToggleProps {
   className?: string;
@@ -10,47 +10,26 @@ interface ThemeToggleProps {
 const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme') as Theme) || 'system';
+      const stored = localStorage.getItem('theme');
+      return stored === 'dark' ? 'dark' : 'light';
     }
-    return 'system';
+    return 'light';
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
     
-    const removeOldTheme = () => {
-      root.classList.remove('light', 'dark');
-    };
-
-    const applyTheme = (t: Theme) => {
-      removeOldTheme();
-      if (t === 'system') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        root.classList.add(systemTheme);
-      } else {
-        root.classList.add(t);
-      }
-    };
-
-    applyTheme(theme);
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
     localStorage.setItem('theme', theme);
-
-    // Listener for system changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemChange = () => {
-      if (theme === 'system') {
-        applyTheme('system');
-      }
-    };
-    mediaQuery.addEventListener('change', handleSystemChange);
-
-    return () => mediaQuery.removeEventListener('change', handleSystemChange);
   }, [theme]);
 
   const toggleTheme = () => {
-    if (theme === 'light') setTheme('dark');
-    else if (theme === 'dark') setTheme('system');
-    else setTheme('light');
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
   const defaultClass = "p-2 rounded-xl bg-white/20 hover:bg-black/5 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 backdrop-blur-sm transition-all shadow-sm border border-transparent dark:border-zinc-700";
@@ -59,11 +38,9 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
     <button
       onClick={toggleTheme}
       className={className || defaultClass}
-      title={`Current theme: ${theme}`}
+      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
-      {theme === 'light' && <Sun className="h-5 w-5" />}
-      {theme === 'dark' && <Moon className="h-5 w-5" />}
-      {theme === 'system' && <Monitor className="h-5 w-5" />}
+      {theme === 'light' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </button>
   );
 };
