@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 interface ToastProps {
@@ -27,8 +28,9 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
     info: <Info className="h-5 w-5" />,
   };
 
-  return (
-    <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3.5 rounded-2xl shadow-2xl shadow-black/10 ${styles[type]} backdrop-blur-md transition-all duration-300 animate-in slide-in-from-top-4 fade-in`}>
+  // Render using portal to ensure it sits on top of all other elements (modals, overlays)
+  return createPortal(
+    <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] flex items-center gap-3 px-6 py-3.5 rounded-2xl shadow-2xl shadow-black/10 ${styles[type]} backdrop-blur-md transition-all duration-300 animate-in slide-in-from-top-4 fade-in`}>
       <div className="shrink-0">
         {icons[type]}
       </div>
@@ -39,7 +41,8 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
       >
         <X className="h-4 w-4" />
       </button>
-    </div>
+    </div>,
+    document.body
   );
 };
 
