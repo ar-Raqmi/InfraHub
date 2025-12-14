@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ms" class="h-full antialiased">
   <head>
@@ -116,6 +117,9 @@
         aside { display: none !important; }
         /* Ensure inputs print their values */
         input, textarea, select { border: none !important; background: transparent !important; resize: none; overflow: visible; }
+        
+        /* Forces page break only during browser print, ignored by html2pdf default flow */
+        .print-break-page { page-break-after: always; break-after: page; }
       }
     </style>
     <script>
