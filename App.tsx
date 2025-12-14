@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Project } from './types';
@@ -223,7 +224,7 @@ function App() {
                     <Profile user={user} />
                   )}
                   {currentPage === 'settings' && (
-                    <AdminSettings user={user} />
+                    <AdminSettings user={user} selectedYear={selectedYear} />
                   )}
                 </>
               )}
