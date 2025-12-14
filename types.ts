@@ -45,6 +45,17 @@ export interface User {
   unit?: string;
 }
 
+export interface CompanyDetail {
+  name: string;
+  address: string;
+  ownerName: string;
+  phone: string;
+  phoneAlt?: string;
+  email: string;
+  gred: string; // e.g. "G1"
+  registrationNumber?: string; // NEW: Nombor Pembekal / Kontraktor
+}
+
 export interface GlobalDimensions {
   length: number; // P
   width: number;  // L
@@ -127,6 +138,7 @@ export interface Project {
   noAduan?: string;
   aduan?: string;
   lokasi?: string;
+  projectLocations?: ProjectLocation[]; // Structured location data with stable IDs
   bp: string; // Blok Perancangan
   zon?: string;
   pjaId: number; // The PJA in charge
@@ -135,6 +147,9 @@ export interface Project {
   
   // --- PHASE 2: FILE CREATION (Blue - Admin/PT) ---
   noFail: string;
+  noSebutharga?: string; // NEW: No. Sebutharga (e.g. MPS/SH/192/23)
+  noInden?: string; // NEW: No. Inden / Pesanan Rasmi
+  noBpp?: string; // NEW: No. BPP
   namaSyarikat?: string;
   bulan?: string;
   noVote?: string; // No Vot
@@ -157,6 +172,11 @@ export interface Project {
   
   ladAmount?: number;
   ladDays?: number;
+  wangTahanan?: number; // Retention Money
+
+  // --- PRESTASI FORM DATA (NEW) ---
+  skop?: 'BEKALAN' | 'PERKHIDMATAN' | 'KERJA';
+  prestasiScores?: number[]; // Array of 6 scores (1-10)
 
   // --- PHASE 4: CLOSING FILE/PROJECT (Orange - Admin/PT) ---
   tarikhHantarKewangan?: string; // Tarikh Hantar ke Pemadanan
@@ -170,7 +190,8 @@ export interface Project {
   
   // Dimensions
   globalDimensions?: GlobalDimensions; // DEPRECATED: Keep for backward compat
-  locationDimensions?: Record<string, GlobalDimensions>; // NEW: Map location string to dims
+  locationDimensions?: Record<string, GlobalDimensions>; // Map location string to dims (Contract)
+  locationDimensionsPelarasan?: Record<string, GlobalDimensions>; // NEW: Map location string to dims (Pelarasan)
 
   // AKU JANJI
   akuJanjiMonth?: string; // The selected month string e.g. "November"
@@ -204,6 +225,19 @@ export const formatDate = (dateString?: string) => {
   }
   
   return dateString;
+};
+
+export const formatDateMalay = (dateString?: string) => {
+  if (!dateString) return '-';
+  const months = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"];
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '-';
+  
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  
+  return `${day} ${month} ${year}`;
 };
 
 export const getCurrentDate = () => {
