@@ -1,3 +1,4 @@
+// ... existing imports ...
 import React, { useState, useEffect } from 'react';
 import { Project, User } from '../types';
 import { Download, Loader2, FilePenLine } from 'lucide-react';
@@ -132,13 +133,13 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                 {/* A4 PAGE CONTAINER */}
                 <div 
                     id="aku-janji-doc" 
-                    className="w-[210mm] min-h-[297mm] bg-white text-black p-[25mm] shadow-xl relative box-border mx-auto font-sans leading-relaxed"
+                    className="w-[210mm] min-h-[297mm] bg-white text-black dark:text-black p-[25mm] shadow-xl relative box-border mx-auto font-sans leading-relaxed"
                     style={{ fontFamily: 'Arial, sans-serif' }}
                 >
                     {/* HEADER */}
                     <div className="flex flex-col items-end text-[13px] mb-8 font-bold">
                          <div className="text-right">
-                             <p>Bil ( ) dlm.{project.noFail}</p>
+                             <p>Bil (&nbsp;&nbsp;&nbsp;) dlm.{project.noFail}</p>
                              <p className="mt-1">{currentMonth} {selectedYear}</p>
                          </div>
                     </div>
