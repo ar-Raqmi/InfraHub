@@ -1,11 +1,16 @@
 
+// ... existing imports ...
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate } from '../types';
-import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Printer, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle } from 'lucide-react';
+import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate, ProjectLocation } from '../types';
+import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Printer, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star } from 'lucide-react';
 import BQEditor from './BQEditor';
 import BQPelarasanEditor from './BQPelarasanEditor';
 import AkuJanjiEditor from './AkuJanjiEditor';
+import CoverPageEditor from './CoverPageEditor';
+import LADCertificate from './LADCertificate';
+import CPCCertificate from './CPCCertificate';
+import PrestasiCertificate from './PrestasiCertificate';
 import { mockService } from '../services/mockService';
 
 interface ProjectDetailProps {
@@ -17,7 +22,7 @@ interface ProjectDetailProps {
   onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
-// --- HELPER FUNCTIONS FOR DATES ---
+// ... [Keep helper functions unchanged: addDaysSkippingWeekends, calculateEndDate, calculateBusinessDays, StrictDateInput] ...
 const addDaysSkippingWeekends = (dateStr: string, daysToAdd: number): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
@@ -74,8 +79,6 @@ const calculateBusinessDays = (startDateStr: string, endDateStr: string): number
   return count;
 };
 
-// --- CUSTOM DATE INPUT COMPONENT ---
-// Hybrid Input: Allows typing DD/MM/YYYY OR picking via Calendar Icon
 interface StrictDateInputProps {
   name: string;
   value?: string;
@@ -205,7 +208,6 @@ const StrictDateInput: React.FC<StrictDateInputProps> = ({ name, value, onChange
   );
 };
 
-// --- FIXED COST HUD COMPONENT (PORTAL) ---
 interface CostHUDProps {
   grandTotal: number;
   finalTotal?: number;
@@ -213,13 +215,14 @@ interface CostHUDProps {
   progress: number;
   onStatusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onProgressChange: (val: number) => void;
-  saveAction?: React.ReactNode;
+  saveAction: React.ReactNode;
+  exportAction: React.ReactNode;
   isPrintView: boolean;
   onToggleView: (view: 'editor' | 'print') => void;
-  isPelarasanActive?: boolean;
+  isPelarasanActive: boolean;
 }
 
-const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onProgressChange, saveAction, isPrintView, onToggleView, isPelarasanActive }: CostHUDProps) => {
+const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPrintView, onToggleView, isPelarasanActive }: CostHUDProps) => {
   const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '');
 
   useEffect(() => {
@@ -265,8 +268,9 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
 
           <div className="flex-1 flex justify-center max-w-2xl px-4 border-l border-r border-slate-100 dark:border-slate-800/50 mx-2">
              {isPrintView ? (
-                <div className="text-center">
-                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Preview Mode</span>
+                <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hidden sm:inline">Preview Mode</span>
+                    {exportAction}
                 </div>
              ) : (
                 <div className="w-full max-w-md flex flex-col gap-2">
@@ -321,7 +325,11 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
                       {formatCurrency(grandTotal)}
                   </p>
                   {isPelarasanActive && finalTotal !== undefined && (
-                     <p className="text-xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 leading-none mt-1">
+                     <p className={`text-xl font-bold font-mono leading-none mt-1 ${
+                        finalTotal > grandTotal 
+                        ? 'text-red-500 dark:text-red-400' 
+                        : 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400'
+                     }`}>
                         {formatCurrency(finalTotal)}
                      </p>
                   )}
@@ -334,7 +342,7 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
 };
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole, selectedYear, onShowToast }) => {
-  
+  // ... [State variables] ...
   const TABS = [
     { 
       id: 'phase1', 
@@ -365,11 +373,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [activeTab, setActiveTab] = useState('phase1');
   const [isSaving, setIsSaving] = useState(false);
   const [isPrintView, setIsPrintView] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [previewCost, setPreviewCost] = useState(0); 
   const [users, setUsers] = useState<User[]>([]);
   
   const [companies, setCompanies] = useState<string[]>([]);
   const [voteNumbers, setVoteNumbers] = useState<string[]>([]);
+  const [sebuthargaNumbers, setSebuthargaNumbers] = useState<string[]>([]); // New state
 
   const [tempohVal, setTempohVal] = useState<number>(0);
   const [tempohUnit, setTempohUnit] = useState<'Minggu'|'Bulan'|'Tahun'>('Minggu');
@@ -377,18 +387,27 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [manualMulaKontrak, setManualMulaKontrak] = useState(false);
   const [manualMulaKerja, setManualMulaKerja] = useState(false);
 
-  const [locationRows, setLocationRows] = useState<{ id: string; lokasi: string; aduan: string }[]>([]);
+  const [locationRows, setLocationRows] = useState<ProjectLocation[]>([]);
+  const [isLADOpen, setIsLADOpen] = useState(false); // LAD Modal state
+  const [isCPCOpen, setIsCPCOpen] = useState(false); // CPC Modal state
+  const [isPrestasiOpen, setIsPrestasiOpen] = useState(false); // Prestasi Modal state
 
   const [confirmationState, setConfirmationState] = useState<{
     isOpen: boolean;
     type: 'back' | 'save' | null;
   }>({ isOpen: false, type: null });
 
+  // ... [Effects and Handlers] ...
   useEffect(() => {
     setUsers(mockService.getUsers());
-    setCompanies(mockService.getCompanies());
-    setVoteNumbers(mockService.getVoteNumbers());
-  }, []);
+    let year = selectedYear;
+    if (project && project.tarikhBuka) {
+        year = new Date(project.tarikhBuka).getFullYear();
+    }
+    setCompanies(mockService.getCompanies(year));
+    setVoteNumbers(mockService.getVoteNumbers(year));
+    setSebuthargaNumbers(mockService.getSebuthargaNumbers(year));
+  }, [project, selectedYear]);
   
   const [formData, setFormData] = useState<Partial<Project>>(project || {
     namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(), 
@@ -398,12 +417,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     bqDataPelarasan: [],
     globalDimensions: { length: 0, width: 0, depth: 0 },
     locationDimensions: {},
+    locationDimensionsPelarasan: {}, 
     coverJawatan: '',
     coverBahagian: '',
-    coverUnit: ''
+    coverUnit: '',
+    prestasiScores: [0,0,0,0,0,0], // Initialize 6 zeros
+    skop: 'BEKALAN'
   });
 
-  // AUTO-POPULATE COVER INFO WHEN PJA SELECTED
   const handlePjaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       const selectedPjaId = Number(e.target.value);
       const selectedUser = users.find(u => u.id === selectedPjaId);
@@ -411,7 +432,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       setFormData(prev => ({
           ...prev,
           pjaId: selectedPjaId,
-          // Auto populate if user exists
           coverJawatan: selectedUser?.jawatan || prev.coverJawatan || '',
           coverBahagian: selectedUser?.bahagian || prev.coverBahagian || 'Bahagian Infrastruktur',
           coverUnit: selectedUser?.unit || prev.coverUnit || 'Unit Selenggara Infrastruktur'
@@ -420,21 +440,21 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
   useEffect(() => {
     if (project) {
-        const locs = (project.lokasi || '').split('\n').filter(l => l.trim() !== '');
-        const aduans = (project.noAduan || '').split('\n');
-        
-        // Try to recover IDs if we stored them somewhere, for now generate new or use existing
-        // In a real app, locations should be a separate table
-        let rows = locs.map((l, i) => ({
-            id: Math.random().toString(36).substr(2, 9),
-            lokasi: l,
-            aduan: aduans[i] || ''
-        }));
-        
-        if (rows.length === 0) {
-            rows = [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }];
+        if (project.projectLocations && project.projectLocations.length > 0) {
+            setLocationRows(project.projectLocations);
+        } else {
+            const locs = (project.lokasi || '').split('\n').filter(l => l.trim() !== '');
+            const aduans = (project.noAduan || '').split('\n');
+            let rows = locs.map((l, i) => ({
+                id: Math.random().toString(36).substr(2, 9),
+                lokasi: l,
+                aduan: aduans[i] || ''
+            }));
+            if (rows.length === 0) {
+                rows = [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }];
+            }
+            setLocationRows(rows);
         }
-        setLocationRows(rows);
     } else if (locationRows.length === 0) {
         setLocationRows([{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]);
     }
@@ -443,9 +463,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   useEffect(() => {
      const lokasiStr = locationRows.map(r => r.lokasi).join('\n');
      const aduanStr = locationRows.map(r => r.aduan).join('\n');
-     
-     if (formData.lokasi !== lokasiStr || formData.noAduan !== aduanStr) {
-         setFormData(prev => ({ ...prev, lokasi: lokasiStr, noAduan: aduanStr }));
+     if (formData.lokasi !== lokasiStr || formData.noAduan !== aduanStr || JSON.stringify(formData.projectLocations) !== JSON.stringify(locationRows)) {
+         setFormData(prev => ({ 
+             ...prev, 
+             lokasi: lokasiStr, 
+             noAduan: aduanStr,
+             projectLocations: locationRows 
+         }));
      }
   }, [locationRows]);
 
@@ -462,11 +486,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   };
 
   const updateLocationRow = (id: string, field: 'lokasi' | 'aduan', value: string) => {
-      // Force uppercase for both Lokasi and Aduan
       const finalValue = value.toUpperCase();
       setLocationRows(locationRows.map(r => r.id === id ? { ...r, [field]: finalValue } : r));
   };
-
 
   useEffect(() => {
     if (project?.tempohKontrak) {
@@ -485,10 +507,87 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     }
   }, [tempohVal, tempohUnit]);
 
+  // --- AUTOMATIC LAD CALCULATION EFFECT ---
   useEffect(() => {
-    if (activeTab === 'phase3' && (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0) && formData.bqData && formData.bqData.length > 0) {
-       const clonedData = JSON.parse(JSON.stringify(formData.bqData));
-       setFormData(prev => ({ ...prev, bqDataPelarasan: clonedData }));
+    // Requires End Date and Actual Finish Date
+    if (formData.tarikhTamatKontrak && formData.tarikhSiapSebenar) {
+        const endDate = new Date(formData.tarikhTamatKontrak);
+        const actualDate = new Date(formData.tarikhSiapSebenar);
+        
+        // Calculate Days: (Actual - End) / (1000 * 60 * 60 * 24)
+        const timeDiff = actualDate.getTime() - endDate.getTime();
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        const ladDays = dayDiff > 0 ? dayDiff : 0; // Negative means early/on time
+
+        // Calculate Rate
+        // Formula: < 20k -> RM 20/day
+        // Formula: >= 20k -> (ContractSum * 0.064) / 365
+        const contractSum = formData.kosProjek || 0;
+        let dailyRate = 0;
+        
+        if (contractSum < 20000) {
+            dailyRate = 20.00;
+        } else {
+            // Using 6.4% derived from 6.65(BLR) - 0.25 (Treasury)
+            dailyRate = (contractSum * 0.064) / 365;
+        }
+
+        const totalLad = parseFloat((dailyRate * ladDays).toFixed(2));
+
+        // Update State if changed
+        if (formData.ladDays !== ladDays || formData.ladAmount !== totalLad) {
+            setFormData(prev => ({ ...prev, ladDays: ladDays, ladAmount: totalLad }));
+        }
+    } else {
+        // Reset if dates cleared, only if values exist
+        if (formData.ladDays !== 0 && formData.ladDays !== undefined) {
+             setFormData(prev => ({ ...prev, ladDays: 0, ladAmount: 0 }));
+        }
+    }
+  }, [formData.tarikhTamatKontrak, formData.tarikhSiapSebenar, formData.kosProjek]);
+
+  useEffect(() => {
+    if (activeTab === 'phase3' && formData.bqData && formData.bqData.length > 0) {
+       const sourceData = formData.bqData;
+       const targetData = formData.bqDataPelarasan || [];
+
+       const syncedData = sourceData.map(sourceBill => {
+           const targetBill = targetData.find(b => b.id === sourceBill.id);
+           
+           if (!targetBill) {
+               return JSON.parse(JSON.stringify(sourceBill));
+           }
+
+           const newBill = { 
+               ...targetBill, 
+               title: sourceBill.title, 
+               locationId: sourceBill.locationId 
+           };
+
+           newBill.items = sourceBill.items.map(sourceItem => {
+               const targetItem = targetBill.items.find(i => i.id === sourceItem.id);
+               
+               if (!targetItem) {
+                   return JSON.parse(JSON.stringify(sourceItem));
+               }
+
+               return {
+                   ...targetItem,
+                   description: sourceItem.description,
+                   unit: sourceItem.unit,
+                   rate: sourceItem.rate,
+                   variant: sourceItem.variant,
+                   type: sourceItem.type,
+               };
+           });
+
+           return newBill;
+       });
+
+       if (JSON.stringify(syncedData) !== JSON.stringify(targetData)) {
+           setFormData(prev => ({ ...prev, bqDataPelarasan: syncedData }));
+           if (onShowToast) onShowToast("BQ Pelarasan diselaraskan dengan BQ Kontrak.", "info");
+       }
     }
   }, [activeTab, formData.bqData]);
 
@@ -529,10 +628,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
      }
   }, [formData.tarikhCetakanBpp, formData.tarikhSerahTapak]);
 
-  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    // Force uppercase for Nama Projek as requested
     const finalValue = name === 'namaProjek' ? value.toUpperCase() : value;
     setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
@@ -559,7 +656,17 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     }));
   };
 
-  const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[], globalDims: GlobalDimensions) => {
+  const handleLocationDimensionsPelarasanChange = (locationId: string, dims: GlobalDimensions) => {
+    setFormData(prev => ({
+      ...prev,
+      locationDimensionsPelarasan: {
+        ...(prev.locationDimensionsPelarasan || {}),
+        [locationId]: dims
+      }
+    }));
+  };
+
+  const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[]) => {
     const totalCostPelarasan = bqDataPelarasan.reduce((acc, group) => {
       return acc + group.items.reduce((gTotal, item) => gTotal + (item.amount || 0), 0);
     }, 0);
@@ -573,6 +680,20 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
   const handleAkuJanjiUpdate = (updates: Partial<Project>) => {
       setFormData(prev => ({ ...prev, ...updates }));
+  };
+  
+  const handleCoverPageUpdate = (updates: Partial<Project>) => {
+      setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  // Callback from Prestasi Dialog
+  const handlePrestasiUpdate = (newScores: number[], percentage: number, newSkop: 'BEKALAN'|'PERKHIDMATAN'|'KERJA') => {
+      setFormData(prev => ({
+          ...prev,
+          prestasiScores: newScores,
+          prestasi: `${percentage}%`,
+          skop: newSkop
+      }));
   };
 
   const executeSave = async () => {
@@ -604,6 +725,52 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     setConfirmationState({ isOpen: false, type: null });
   };
 
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    setTimeout(async () => {
+        try {
+            const pages = document.querySelectorAll('.pdf-page');
+            if (pages.length > 0) {
+                 const opt = {
+                    margin: 0,
+                    filename: `Dokumen_Tender_${formData.noFail || 'Projek'}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: 'avoid-all' }
+                };
+                // @ts-ignore
+                let worker = window.html2pdf().set(opt).from(pages[0]).toPdf();
+                for (let i = 1; i < pages.length; i++) {
+                    worker = worker.get('pdf').then((pdf: any) => {
+                        pdf.addPage();
+                    }).from(pages[i]).toContainer().toCanvas().toPdf();
+                }
+                await worker.save();
+            } else {
+                const element = document.getElementById('pdf-export-container');
+                if (element) {
+                    const opt = {
+                        margin: 0,
+                        filename: `Dokumen_Tender_${formData.noFail || 'Projek'}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                    };
+                    // @ts-ignore
+                    await window.html2pdf().set(opt).from(element).save();
+                }
+            }
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            if (onShowToast) onShowToast("Gagal menjana PDF (Canvas size error). Sila guna 'Ctrl+P' (Save as PDF).", "error");
+        } finally {
+            setIsExporting(false);
+        }
+    }, 100);
+  };
+
   const grandTotal = formData.bqData?.reduce((acc, group) => {
       return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
   }, 0) || 0;
@@ -613,7 +780,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   }, 0) || 0;
 
   const finalTotalDisplay = activeTab === 'phase3' 
-    ? pelarasanTotal - (Number(formData.ladAmount || 0)) 
+    ? pelarasanTotal
     : undefined;
 
   const actionButtons = (
@@ -638,16 +805,30 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     </div>
   );
 
+  const exportButton = (
+     <button 
+        onClick={handleExportPDF}
+        disabled={isExporting}
+        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg font-bold shadow-md transition-all hover:scale-105 disabled:opacity-70 disabled:scale-100 text-xs"
+     >
+        {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <Download className="w-3.5 h-3.5"/>}
+        <span>Muat Turun PDF</span>
+     </button>
+  );
+
+  // ... [Keep rest of layout] ...
   const inputClass = "w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700/50 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm shadow-sm dark:shadow-inner";
   const labelClass = "block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 font-jakarta";
 
   const yellowPhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-yellow-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
   const bluePhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-blue-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
   const orangePhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-orange-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
+  const indigoPhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-indigo-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
 
   return (
-    <div className={`relative min-h-screen text-slate-900 dark:text-slate-200 ${isPrintView ? 'pb-12' : 'pb-20'}`}>
+    <div className={`relative min-h-screen text-slate-900 dark:text-slate-200 ${isPrintView ? 'pb-12 bg-gray-100' : 'pb-20'}`}>
       
+      {/* Existing CostHUD ... */}
       <CostHUD 
           grandTotal={grandTotal}
           finalTotal={finalTotalDisplay}
@@ -657,12 +838,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           onStatusChange={handleInputChange}
           onProgressChange={(val) => setFormData(prev => ({ ...prev, peratusSiap: val }))}
           saveAction={actionButtons}
+          exportAction={exportButton}
           isPrintView={isPrintView}
           onToggleView={(view) => setIsPrintView(view === 'print')}
       />
 
+      {/* Main Content Area */}
       <div className={`${isPrintView ? 'pt-20' : 'pt-24'}`}>
-        
+        {/* ... [Header] ... */}
         {!isPrintView && (
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 px-2 no-print gap-4">
             <div className="flex items-center gap-4">
@@ -679,6 +862,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           </div>
         )}
 
+        {/* ... [Tabs] ... */}
         {!isPrintView && (
           <div className="mb-6">
               <div className="grid grid-cols-4 bg-slate-100 dark:bg-slate-900/50 p-1 rounded-2xl gap-2 border border-slate-200 dark:border-slate-800">
@@ -699,7 +883,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           </div>
         )}
 
-        {/* --- PHASE 1 --- */}
+        {/* ... [Phase 1 & 2 content remains same] ... */}
         {activeTab === 'phase1' && (
           <div className="space-y-4">
             <div className={`${yellowPhaseClass} ${isPrintView ? 'hidden' : ''}`}>
@@ -709,7 +893,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                 </h3>
                 
                 <div className="flex flex-col gap-6">
-                  
+                  {/* ... Phase 1 fields ... */}
                   <div className="group w-full">
                     <label className={labelClass}>Cadangan Kerja (Nama Projek)</label>
                     <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} className={`${inputClass} min-h-[60px] text-sm resize-y`} placeholder="CADANGAN KERJA-KERJA..." />
@@ -729,7 +913,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                             <Plus className="w-3 h-3" /> Tambah Lokasi
                          </button>
                       </div>
-                      
                       <div className="space-y-2 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
                           {locationRows.map((row, idx) => (
                               <div key={row.id} className="flex flex-col md:flex-row gap-2 items-start animate-fade-in group/row">
@@ -802,41 +985,50 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                         </select>
                     </div>
                   </div>
-
                 </div>
             </div>
 
-            <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'flex flex-col h-auto overflow-visible'}`}>
-                {!isPrintView && (
-                  <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                          <Calculator className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight">Penyediaan BQ</h3>
-                          <p className="text-[10px] text-slate-500 font-medium">Wizard Mode</p>
-                        </div>
-                      </div>
-                  </div>
+            <div id="pdf-export-container" className={`flex flex-col items-center gap-0 ${isPrintView ? 'w-full' : 'w-full'}`}>
+                {isPrintView && (
+                     <CoverPageEditor 
+                        project={formData as Project} 
+                        selectedYear={selectedYear}
+                        pjaUser={users.find(u => u.id === formData.pjaId)}
+                        onUpdate={handleCoverPageUpdate}
+                        isPrintView={true}
+                     />
                 )}
-                <div className={`bg-slate-50/50 dark:bg-[#0f172a]/30 ${isPrintView ? '' : 'flex-1 relative'}`}>
-                  <BQEditor 
-                      initialData={formData.bqData} 
-                      onDataChange={handleBQChange}
-                      projectData={formData as Project}
-                      isPrintView={isPrintView}
-                      onPreviewCostChange={setPreviewCost}
-                      locationRows={locationRows}
-                      onLocationDimensionsChange={handleLocationDimensionsChange}
-                      onShowToast={onShowToast}
-                  />
+                <div className={`${isPrintView ? '' : 'rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 flex flex-col h-auto overflow-visible w-full'}`}>
+                    {!isPrintView && (
+                      <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 rounded-t-[2rem]">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                              <Calculator className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight">Penyediaan BQ</h3>
+                              <p className="text-xs text-slate-500 font-medium">Wizard Mode</p>
+                            </div>
+                          </div>
+                      </div>
+                    )}
+                    <div className={`${isPrintView ? '' : 'bg-slate-50/50 dark:bg-[#0f172a]/30 flex-1 relative rounded-b-[2rem]'}`}>
+                      <BQEditor 
+                          initialData={formData.bqData} 
+                          onDataChange={handleBQChange}
+                          projectData={formData as Project}
+                          isPrintView={isPrintView}
+                          onPreviewCostChange={setPreviewCost}
+                          locationRows={locationRows}
+                          onLocationDimensionsChange={handleLocationDimensionsChange}
+                          onShowToast={onShowToast}
+                      />
+                    </div>
                 </div>
             </div>
           </div>
         )}
 
-        {/* --- PHASE 2: FILE CREATION (BLUE) --- */}
         {activeTab === 'phase2' && (
           <div className="space-y-6">
             {!isPrintView && (
@@ -847,19 +1039,22 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
+                  {/* 1. No. Fail */}
                   <div className="group">
                       <label className={labelClass}>No. Fail</label>
                       <input type="text" name="noFail" value={formData.noFail} onChange={handleInputChange} className={inputClass} />
                   </div>
 
+                  {/* 2. Nama Syarikat (remove the name Nama Projek) */}
                   <div className="group lg:col-span-2">
-                      <label className={labelClass}>Nama Syarikat (Dropdown)</label>
+                      <label className={labelClass}>Nama Syarikat</label>
                       <select name="namaSyarikat" value={formData.namaSyarikat} onChange={handleInputChange} className={inputClass}>
                           <option value="">Pilih Syarikat...</option>
                           {companies.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                   </div>
 
+                  {/* 3. Bulan */}
                   <div className="group">
                       <label className={labelClass}>Bulan</label>
                       <select name="bulan" value={formData.bulan} onChange={handleInputChange} className={inputClass}>
@@ -870,23 +1065,28 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       </select>
                   </div>
 
+                  {/* 4. No. Vot (Remove the dropdown text) */}
                   <div className="group">
-                      <label className={labelClass}>No. Vot (Dropdown)</label>
+                      <label className={labelClass}>No. Vot</label>
                       <select name="noVote" value={formData.noVote} onChange={handleInputChange} className={inputClass}>
                           <option value="">Pilih Vot...</option>
                           {voteNumbers.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                   </div>
 
+                  {/* 5. Tarikh Lantikan */}
                   <div className="group">
                       <label className={labelClass}>Tarikh Lantikan</label>
                       <StrictDateInput name="tarikhLantikan" value={formData.tarikhLantikan} onChange={handleInputChange} className={inputClass} />
                   </div>
+
+                  {/* 6. Tarikh BPP */}
                   <div className="group">
                       <label className={labelClass}>Tarikh BPP</label>
                       <StrictDateInput name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp} onChange={handleInputChange} className={inputClass} />
                   </div>
 
+                  {/* 7. Tempoh Kontrak */}
                   <div className="group">
                       <label className={labelClass}>Tempoh Kontrak</label>
                       <div className="flex gap-2">
@@ -909,6 +1109,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       </div>
                   </div>
 
+                  {/* 8. Tarikh Mula Kontrak */}
                   <div className="group">
                       <div className="flex justify-between items-center mb-1">
                           <label className={labelClass}>Tarikh Mula Kontrak</label>
@@ -932,6 +1133,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       {!manualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari BPP (Business Days)</p>}
                   </div>
 
+                  {/* 9. Tarikh Tamat Kontrak */}
                   <div className="group">
                       <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label>
                       <StrictDateInput 
@@ -943,11 +1145,19 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       />
                   </div>
 
+                  {/* 10. No. BPP */}
+                  <div className="group">
+                      <label className={labelClass}>No. BPP</label>
+                      <input type="text" name="noBpp" value={formData.noBpp || ''} onChange={handleInputChange} className={inputClass} />
+                  </div>
+
+                  {/* 11. Tarikh Serah Tapak */}
                   <div className="group">
                       <label className={labelClass}>Tarikh Serah Tapak</label>
                       <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak} onChange={handleInputChange} className={inputClass} />
                   </div>
 
+                  {/* 12. ISO */}
                   <div className="group">
                       <label className={labelClass}>ISO (BPP ke Serah Tapak)</label>
                       <input 
@@ -961,6 +1171,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       <p className="text-[10px] text-slate-400 mt-1 italic">Hari bekerja sahaja</p>
                   </div>
 
+                  {/* 13. Tarikh Mula Kerja */}
                   <div className="group">
                       <div className="flex justify-between items-center mb-1">
                           <label className={labelClass}>Tarikh Mula Kerja</label>
@@ -983,6 +1194,22 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       />
                       {!manualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari Serah Tapak (Business Days)</p>}
                   </div>
+
+                  {/* 14. No. Inden (remove the Pesanan Rasmi text) */}
+                  <div className="group">
+                      <label className={labelClass}>No. Inden</label>
+                      <input type="text" name="noInden" value={formData.noInden || ''} onChange={handleInputChange} className={inputClass} placeholder="cth: A00321423" />
+                  </div>
+
+                  {/* 15. No. Sebutharga (remove the Dropdown text) */}
+                  <div className="group">
+                      <label className={labelClass}>No. Sebutharga</label>
+                      <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} className={inputClass}>
+                          <option value="">Pilih No. Sebutharga...</option>
+                          {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)}
+                      </select>
+                  </div>
+
                 </div>
             </div>
             )}
@@ -1012,18 +1239,48 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                      />
                 </div>
             </div>
-
           </div>
         )}
 
-        {/* --- PHASE 3: BQ PELARASAN --- */}
+        {/* --- PHASE 3: PELARASAN --- */}
         {activeTab === 'phase3' && (
           <div className="space-y-6">
             <div className={`${yellowPhaseClass} ${isPrintView ? 'hidden' : ''}`}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
-                <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 mb-8 flex items-center gap-3">
-                  <Info className="h-5 w-5"/> BQ Pelarasan Building
-                </h3>
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4">
+                    <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 flex items-center gap-3">
+                        <Info className="h-5 w-5"/> BQ Pelarasan Building
+                    </h3>
+                    
+                    <div className="flex flex-wrap gap-2">
+                        {/* CPC Certificate Button */}
+                        <button 
+                            onClick={() => setIsCPCOpen(true)}
+                            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
+                        >
+                            <Award className="w-4 h-4" />
+                            Jana CPC (Siap Kerja)
+                        </button>
+
+                        {/* LAD Certificate Button */}
+                        <button 
+                            onClick={() => setIsLADOpen(true)}
+                            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
+                        >
+                            <FileWarning className="w-4 h-4" />
+                            Jana Perakuan LAD
+                        </button>
+
+                        {/* Prestasi Button */}
+                        <button 
+                            onClick={() => setIsPrestasiOpen(true)}
+                            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
+                        >
+                            <Star className="w-4 h-4" />
+                            Borang Penilaian Prestasi
+                        </button>
+                    </div>
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
                   <div className="group">
@@ -1035,12 +1292,16 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar} onChange={handleInputChange} className={inputClass} />
                   </div>
                   <div className="group">
-                      <label className={labelClass}>Prestasi (%)</label>
+                      <label className={labelClass}>Prestasi (%) - Auto</label>
                       <div className="relative">
-                        <input type="text" name="prestasi" value={formData.prestasi} onChange={handleInputChange} className={inputClass} placeholder="80%" />
-                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                            <span className="text-slate-400 text-xs font-bold">%</span>
-                        </div>
+                        <input 
+                            type="text" 
+                            name="prestasi" 
+                            value={formData.prestasi || ''} 
+                            readOnly
+                            className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed`} 
+                            placeholder="0%" 
+                        />
                       </div>
                   </div>
                   <div className="group">
@@ -1049,14 +1310,33 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   </div>
                   
                    <div className="group">
-                      <label className={labelClass}>Hari LAD</label>
-                      <input type="number" name="ladDays" value={formData.ladDays} onChange={handleInputChange} className={inputClass} placeholder="0" />
+                      <label className={labelClass}>Hari LAD (Auto)</label>
+                      <input 
+                        type="number" 
+                        name="ladDays" 
+                        value={formData.ladDays || 0} 
+                        onChange={() => {}} // Read-only derived
+                        className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-red-500 font-bold`} 
+                        readOnly
+                      />
                   </div>
                   <div className="group">
-                      <label className={labelClass}>Jumlah LAD (RM)</label>
-                      <input type="number" name="ladAmount" value={formData.ladAmount} onChange={handleInputChange} className={inputClass} placeholder="0.00" />
+                      <label className={labelClass}>Jumlah LAD (RM) (Auto)</label>
+                      <input 
+                        type="text" 
+                        name="ladAmount" 
+                        value={formatCurrency(formData.ladAmount || 0)} 
+                        onChange={() => {}} 
+                        className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-red-500 font-bold`} 
+                        readOnly
+                      />
                   </div>
                   
+                  <div className="group">
+                      <label className={labelClass}>Wang Tahanan (RM)</label>
+                      <input type="number" name="wangTahanan" value={formData.wangTahanan} onChange={handleInputChange} className={inputClass} placeholder="0.00" />
+                  </div>
+
                   <div className="group">
                       <label className={labelClass}>Kos Sebenar (Auto Calc)</label>
                       <div className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-slate-600 font-bold flex items-center`}>
@@ -1067,7 +1347,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                 </div>
             </div>
 
-            <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'overflow-hidden'}`}>
+            <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'flex flex-col h-auto overflow-visible w-full'}`}>
                 {!isPrintView && (
                   <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
                       <div className="flex items-center gap-4">
@@ -1085,10 +1365,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   <BQPelarasanEditor 
                       originalData={formData.bqData || []}
                       pelarasanData={formData.bqDataPelarasan || []}
-                      globalDims={formData.globalDimensions || { length: 0, width: 0, depth: 0 }}
                       onDataChange={handleBQPelarasanChange}
                       projectData={formData as Project}
                       isPrintView={isPrintView}
+                      locationRows={locationRows}
+                      locationDimensionsPelarasan={formData.locationDimensionsPelarasan || {}}
+                      onLocationDimensionsPelarasanChange={handleLocationDimensionsPelarasanChange}
                   />
                 </div>
             </div>
@@ -1132,7 +1414,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                    <X className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center text-center pt-2">
-                   
+                   {/* ... [Modal Content same as before] ... */}
                    {confirmationState.type === 'back' ? (
                      <div className="w-20 h-20 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-6 text-yellow-500 animate-pulse-slow">
                         <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center">
@@ -1179,6 +1461,33 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             </div>
         </div>,
         document.body
+      )}
+
+      {/* LAD Certificate Modal */}
+      {isLADOpen && (
+          <LADCertificate 
+              project={formData as Project} 
+              pjaUser={users.find(u => u.id === formData.pjaId)}
+              onClose={() => setIsLADOpen(false)}
+          />
+      )}
+
+      {/* CPC Certificate Modal */}
+      {isCPCOpen && (
+          <CPCCertificate 
+              project={formData as Project} 
+              pjaUser={users.find(u => u.id === formData.pjaId)}
+              onClose={() => setIsCPCOpen(false)}
+          />
+      )}
+
+      {/* Prestasi Dialog (Replaces Certificate Preview) */}
+      {isPrestasiOpen && (
+          <PrestasiCertificate 
+              project={formData as Project} 
+              onClose={() => setIsPrestasiOpen(false)}
+              onUpdate={handlePrestasiUpdate}
+          />
       )}
 
     </div>
