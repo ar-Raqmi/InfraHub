@@ -12,168 +12,142 @@
 
 ## Overview
 
-InfraHub is a comprehensive project management documentation system designed to standardize and track infrastructure development projects under the Selayang Municipal Council (Majlis Perbandaran Selayang). The system defines workflows, required documentation, and procedural steps for construction projects from initial planning through project completion and financial closure.
+InfraHub is a comprehensive project management documentation system designed to standardize and track infrastructure development projects under the Selayang Municipal Council (Majlis Perbandaran Selayang). The system manages workflows, documentation, and procedural steps for construction projects from initial planning through project completion and financial closure.
 
-**Current Status**: Documentation and reference phase
-**Future Vision**: Full software application implementation
+**Current Status**: Active Development (Work in Progress)
 
-## System Architecture
+## Tech Stack
 
-InfraHub implements a **4-phase workflow** for managing infrastructure projects. Each phase has specific fields, requirements, and deliverables.
+- **Frontend**: React 18 + TypeScript
+- **Styling**: Tailwind CSS with dark mode support
+- **Build Tool**: Vite
+- **Icons**: Lucide React
+- **PDF Export**: html2pdf.js
+- **Data Storage**: localStorage (mock service for development)
 
-### Phase 1: BQ Building (Bill of Quantities)
+## Features
 
-This initial phase focuses on creating the Bill of Quantities and project specifications.
+### Implemented
 
-**Key Fields**:
-- **Cadangan Kerja** - Proposed work/project proposal
-- **No Aduan** - Complaint/request number
-- **Lokasi** - Project location
-- **BP** - Budget proposal reference
-- **Zon** - Zone/area designation
-- **PJA** - Project officer assignment
-- **Kos Projek** - Project cost estimate
-- **Tarikh Buka** - Opening/start date
+- **4-Phase Project Workflow** - Complete lifecycle management from BQ creation to project closure
+- **Bill of Quantities (BQ) Editor** - Interactive editor with calculation parts, global dimensions, and library presets
+- **BQ Pelarasan Editor** - Adjustment/revision editor with location-based dimensions
+- **Aku Janji Generator** - Personal commitment letter document generation
+- **Cover Page Editor** - Ulasan Pengarah document with meeting date integration
+- **Certificate Generators**:
+  - CPC Certificate (Sijil Siap Kerja) with DLP calculation
+  - LAD Certificate (Liquidated Ascertained Damages) with auto-calculation
+  - Prestasi Certificate (Borang Penilaian Prestasi) with scoring system
+- **Project List** - Advanced filtering (Status, PJA, Zon, BP), column visibility toggle, CSV export
+- **Admin Settings** - Year-based management of companies, vote numbers, sebutharga numbers, and meeting dates
+- **Company Details Management** - Full company profile (address, owner, phone, gred, registration)
+- **Role-Based Access** - Admin and PJA (Penolong Jurutera Awam) roles
+- **Dark Mode** - Full dark theme support
+- **Print/PDF Export** - Paginated output with orphan protection for headers
 
-**Deliverables**:
-- Bill of Quantities (BQ) document
-- Project cover page
-- Initial project specifications
+### Project Phases
 
-### Phase 2: File Creation (Aku Janji - Personal Commitment)
+#### Phase 1: BQ Building (Bill of Quantities)
+Initial phase for creating Bill of Quantities and project specifications.
 
-This phase establishes the formal contract and commitment documentation.
+**Key Fields**: Cadangan Kerja, No Aduan, Lokasi, BP, Zon, PJA, Kos Projek, Tarikh Buka
 
-**Key Fields**:
-- **No Fail** - File number (auto-generated)
-- **Syarikat** - Company/contractor name (dropdown selection)
-- **Bulan** - Month (dropdown selection)
-- **No Vot** - Vote/budget number (dropdown selection)
-- **Tarikh Lantikan** - Appointment date (date field)
-- **Tarikh BPP** - BPP date (auto-populated from Phase 1)
-- **Tempoh Kontrak** - Contract duration (auto-populated)
-- **Tarikh Mula Kontrak** - Contract start date (date field)
-- **Tarikh Tamat Kontrak** - Contract end date (auto-calculated)
-- **Tarikh Serah Tapak** - Site handover date (date field)
-- **ISO** - ISO compliance checkbox
+**Components**: `BQEditor.tsx` - Full BQ editor with preset library, calculation parts, and print view
 
-**Field Types**:
-- Manual entry fields
-- Dropdown selections
-- Date pickers
-- Auto-populated fields (from Phase 1 data)
-- Auto-calculated fields
+#### Phase 2: File Creation (Aku Janji)
+Establishes formal contract and commitment documentation.
 
-**Deliverables**:
-- Aku Janji (Personal commitment letter)
-- Contract documentation
-- Site handover documentation
-
-### Phase 3: BQ Pelarasan (BQ Adjustment/Revision)
-
-This phase handles site inspections, work progress, and cost adjustments.
-
-**Key Fields**:
-- **Tarikh Pemeriksaan Tapak** - Site inspection date
-- **Tarikh Siap** - Completion date
-- **Prestasi** - Performance rating/assessment
-- **Tarikh Tuntutan Bayaran** - Payment claim date
-- **Kos Sebenar** - Actual cost (final cost calculation)
-
-**Regular Updates**:
-- **%Kerja di Tapak** - Percentage of work completed on site (ongoing tracking)
+**Key Fields**: No Fail, Syarikat, Bulan, No Vot, No Sebutharga, Tarikh Lantikan, Tempoh Kontrak, Tarikh Mula/Tamat Kontrak
 
 **Components**:
-- Site inspection forms
-- Progress reports
-- Cost calculation adjustments
-- Payment claim processing
+- `AkuJanjiEditor.tsx` - Aku Janji document generator
+- `CoverPageEditor.tsx` - Ulasan Pengarah cover page
 
-**Deliverables**:
-- Revised BQ (if needed)
-- Site inspection reports
-- Progress update reports
-- Payment claims
+#### Phase 3: BQ Pelarasan (Adjustment)
+Handles site inspections, work progress, and cost adjustments.
 
-### Phase 4: Closing File/Project
+**Key Fields**: Tarikh Pemeriksaan, Tarikh Siap Sebenar, % Siap, Kos Sebenar, LAD
 
+**Components**:
+- `BQPelarasanEditor.tsx` - Adjustment BQ with location-based dimensions
+- `LADCertificate.tsx` - LAD calculation and document
+- `CPCCertificate.tsx` - Completion certificate with DLP dates
+- `PrestasiCertificate.tsx` - Contractor performance evaluation
+
+#### Phase 4: Closing File/Project
 Final phase for project completion and financial closure.
 
-**Key Fields**:
-- **Tarikh Hantar ke Kewangan** - Date sent to Finance department
-- **Tarikh Pemadanan** - Reconciliation/matching date
+**Key Fields**: Tarikh Hantar Kewangan, Tarikh Padanan, Wang Tahanan
 
-**Final Status**:
-- **%Kerja di Tapak** - Final work completion percentage (should be 100%)
+## Project Structure
 
-**Deliverables**:
-- Project completion certificate
-- Final financial reconciliation
-- Closed project file
-- Archive documentation
+```
+InfraHub/
+├── App.tsx                 # Main application with routing
+├── components/
+│   └── YearSelector.tsx    # Year picker component
+├── pages/
+│   ├── Dashboard.tsx       # Main dashboard
+│   ├── ProjectsList.tsx    # Project list with filters
+│   ├── ProjectDetail.tsx   # Project detail view (all phases)
+│   ├── BQEditor.tsx        # Bill of Quantities editor
+│   ├── BQPelarasanEditor.tsx # BQ adjustment editor
+│   ├── AkuJanjiEditor.tsx  # Aku Janji document
+│   ├── CoverPageEditor.tsx # Cover page editor
+│   ├── CPCCertificate.tsx  # CPC certificate
+│   ├── LADCertificate.tsx  # LAD certificate
+│   ├── PrestasiCertificate.tsx # Prestasi form
+│   ├── AdminSettings.tsx   # System settings
+│   ├── Calendar.tsx        # Calendar view
+│   ├── Inbox.tsx           # Notifications
+│   ├── Login.tsx           # Authentication
+│   └── Profile.tsx         # User profile
+├── services/
+│   └── mockService.ts      # Data service with localStorage
+├── data/
+│   └── bqPresets.ts        # BQ library presets
+├── types.ts                # TypeScript interfaces
+└── index.html              # Entry point with print styles
+```
 
-## Usage for Government Staff
+## Getting Started
 
-### Current Usage (Documentation Phase)
+```bash
+# Install dependencies
+npm install
 
-1. **Review Workflow**: Study the workflow diagram to understand the complete project lifecycle
-2. **Use Templates**: Reference the cover page and Aku Janji templates for project documentation
-3. **Follow Phases**: Ensure all projects follow the 4-phase structure
-4. **Complete Fields**: Verify all required fields are completed at each phase
-5. **Track Progress**: Monitor %Kerja di Tapak throughout Phase 3 and 4
+# Run development server
+npm run dev
 
-### Field Automation Notes
+# Build for production
+npm run build
+```
 
-- **Auto-populated fields**: These pull data from previous phases (e.g., Tarikh BPP from Phase 1)
-- **Auto-calculated fields**: These compute values based on other inputs (e.g., Tarikh Tamat Kontrak = Tarikh Mula Kontrak + Tempoh Kontrak)
-- **Dropdown fields**: Limited selection from predefined options to ensure data consistency
+## Default Users
+
+| Username | Password | Role |
+|----------|----------|------|
+| syafiq | password | Admin |
+| khairul | password | PJA |
+| farhan | password | PJA |
+| nursilmi | password | PJA |
+| salam | password | PJA |
 
 ## Future Development
 
-This repository currently contains reference materials and workflow documentation. Future development plans include:
-
-### Planned Features
-
-1. **Web Application**
-   - Digital forms for each phase
-   - Automated field population and calculations
-   - Workflow state management
-   - User authentication and role-based access
-
-2. **Database System**
-   - Centralized project storage
-   - Historical project tracking
-   - Reporting and analytics
-   - Document management
-
-3. **Integration Capabilities**
-   - Finance department integration
-   - ISO compliance tracking
-   - Automated notifications
-   - Progress monitoring dashboards
-
-4. **Mobile Access**
-   - Site inspection mobile forms
-   - Photo/documentation upload
-   - Real-time progress updates
-   - Offline capability
-
-### Technology Considerations
-
-Future implementation may include:
-- Modern web framework (React, Vue, or similar)
-- Backend API (Node.js, Python/Django, or similar)
-- Database system (PostgreSQL, MySQL, or similar)
-- Document storage solution
-- Authentication system
-- Report generation tools
+- Backend API integration (currently using localStorage mock)
+- Database system (PostgreSQL/MySQL)
+- User management interface
+- Document archival system
+- Mobile responsive improvements
+- Offline capability
 
 ## Language Note
 
 **System Language**: Bahasa Malaysia (Malay)
 **Technical Documentation**: English with Malay term references
 
-All forms, field names, and user-facing content in the system are in Bahasa Malaysia to serve the primary users (municipal council staff and contractors). Technical implementation documentation may be bilingual to facilitate developer collaboration.
+All forms, field names, and user-facing content are in Bahasa Malaysia to serve the primary users (municipal council staff and contractors).
 
 ## License
 
