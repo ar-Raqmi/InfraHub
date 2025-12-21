@@ -1,9 +1,7 @@
-
-// ... existing imports ...
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate, ProjectLocation } from '../types';
-import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Printer, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star } from 'lucide-react';
+import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate, ProjectLocation, BQItem, CalculationPart } from '../types';
+import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Printer, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star, Megaphone, User as UserIcon } from 'lucide-react';
 import BQEditor from './BQEditor';
 import BQPelarasanEditor from './BQPelarasanEditor';
 import AkuJanjiEditor from './AkuJanjiEditor';
@@ -11,7 +9,158 @@ import CoverPageEditor from './CoverPageEditor';
 import LADCertificate from './LADCertificate';
 import CPCCertificate from './CPCCertificate';
 import PrestasiCertificate from './PrestasiCertificate';
+import NotisGenerator from './NotisGenerator';
 import { mockService } from '../services/mockService';
+
+const toRoman = (num: number): string => {
+  const lookup: { [key: string]: number } = {m:1000,cm:900,d:500,cd:400,c:100,xc:90,l:50,xl:40,x:10,ix:9,v:5,iv:4,i:1};
+  let roman = '';
+  for (let i in lookup ) {
+    while ( num >= lookup[i] ) {
+      roman += i;
+      num -= lookup[i];
+    }
+  }
+  return roman;
+};
+
+const getMalayMonthYear = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    const months = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+};
+
+const getItemLevel = (item: BQItem): 0 | 1 | 2 => {
+    if (item.type === 'HEADER') {
+        const isUppercase = item.description === item.description.toUpperCase() && /[A-Z]/.test(item.description);
+        return isUppercase ? 0 : 1;
+    }
+    return 2; 
+};
+
+const getAutoNumber = (items: BQItem[], currentIndex: number) => {
+    let sectionIndex = 0;
+    let itemIndex = 0;
+    let variantIndex = 0;
+    let lastHeaderType: 'NONE' | 'SECTION' | 'ITEM_PARENT' = 'NONE';
+
+    for (let i = 0; i <= currentIndex; i++) {
+        const item = items[i];
+        const level = getItemLevel(item);
+
+        if (level === 0) { 
+            sectionIndex++;
+            itemIndex = 0;
+            variantIndex = 0;
+            lastHeaderType = 'SECTION';
+        } else if (level === 1) { 
+            itemIndex++;
+            variantIndex = 0;
+            lastHeaderType = 'ITEM_PARENT';
+        } else { 
+            if (lastHeaderType === 'ITEM_PARENT') {
+                variantIndex++;
+            } else {
+                itemIndex++; 
+            }
+        }
+    }
+
+    const currentItem = items[currentIndex];
+    const level = getItemLevel(currentItem);
+    
+    if (level === 0) return `${sectionIndex}.0`;
+    if (level === 1) return `${sectionIndex}.${itemIndex}`;
+    
+    if (lastHeaderType === 'ITEM_PARENT') {
+        return `${toRoman(variantIndex)})`;
+    } else {
+        return `${sectionIndex}.${itemIndex}`;
+    }
+};
+
+const getBase64ImageFromURL = (url: string): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+      } else {
+          resolve(null);
+      }
+    };
+    img.onerror = () => {
+      resolve(null);
+    };
+    img.src = url;
+  });
+};
+
+const groupItemsForPrint = (items: BQItem[]) => {
+    const groups: { items: BQItem[], startIndex: number, hasFooter?: boolean, isFirstPage?: boolean }[] = [];
+    const PAGE_CONTENT_HEIGHT = 900; 
+    const TABLE_HEADER_HEIGHT = 160; 
+    const BILL_TITLE_HEIGHT = 40; 
+    const FOOTER_HEIGHT = 40; 
+    const BASE_ROW_HEIGHT = 28; 
+    const CHARS_PER_LINE = 55; 
+    const LINE_HEIGHT = 16; 
+
+    let currentGroup: BQItem[] = [];
+    let startIndex = 0;
+    let currentHeight = TABLE_HEADER_HEIGHT + BILL_TITLE_HEIGHT; 
+    let isFirstPageOfBill = true;
+
+    const calculateItemHeight = (item: BQItem) => {
+        let h = BASE_ROW_HEIGHT;
+        const descLines = Math.ceil((item.description.length || 1) / CHARS_PER_LINE);
+        const dimLines = (item.calculationParts || []).filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || (p.multiplier !== 1)).length;
+        h += (descLines * LINE_HEIGHT);
+        h += (dimLines * 12);
+        h += 10; 
+        return h;
+    };
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const itemHeight = calculateItemHeight(item);
+        let forceBreak = false;
+        if (item.type === 'HEADER' && i < items.length - 1) {
+            const nextItem = items[i+1];
+            const nextHeight = calculateItemHeight(nextItem);
+            if (currentHeight + itemHeight <= PAGE_CONTENT_HEIGHT) {
+                 const spaceRemaining = PAGE_CONTENT_HEIGHT - (currentHeight + itemHeight);
+                 if (nextHeight > spaceRemaining && currentGroup.length > 0) {
+                     forceBreak = true;
+                 }
+            }
+        }
+        const isLastItem = i === items.length - 1;
+        const extraHeight = isLastItem ? FOOTER_HEIGHT : 0;
+        if (forceBreak || currentHeight + itemHeight + extraHeight > PAGE_CONTENT_HEIGHT) {
+            groups.push({ items: currentGroup, startIndex, hasFooter: false, isFirstPage: isFirstPageOfBill });
+            currentGroup = [];
+            startIndex = i;
+            currentHeight = TABLE_HEADER_HEIGHT + itemHeight; 
+            isFirstPageOfBill = false;
+        } else {
+            currentHeight += itemHeight;
+        }
+        currentGroup.push(item);
+    }
+    if (currentGroup.length > 0) {
+        groups.push({ items: currentGroup, startIndex, hasFooter: true, isFirstPage: isFirstPageOfBill });
+    }
+    return groups;
+};
 
 interface ProjectDetailProps {
   project?: Project;
@@ -22,24 +171,12 @@ interface ProjectDetailProps {
   onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
-// ... [Keep helper functions unchanged: addDaysSkippingWeekends, calculateEndDate, calculateBusinessDays, StrictDateInput] ...
 const addDaysSkippingWeekends = (dateStr: string, daysToAdd: number): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return ''; // Invalid date check
-
-  let count = 0;
-  
-  // Simple add days
+  if (isNaN(date.getTime())) return ''; 
   date.setDate(date.getDate() + daysToAdd);
-  
-  // Adjust if landing on weekend
-  if (date.getDay() === 6) { // Saturday
-    date.setDate(date.getDate() + 2); // Move to Monday
-  } else if (date.getDay() === 0) { // Sunday
-    date.setDate(date.getDate() + 1); // Move to Monday
-  }
-  
+  if (date.getDay() === 6) { date.setDate(date.getDate() + 2); } else if (date.getDay() === 0) { date.setDate(date.getDate() + 1); }
   return date.toISOString().split('T')[0];
 };
 
@@ -47,15 +184,7 @@ const calculateEndDate = (startDateStr: string, duration: number, unit: 'Minggu'
   if (!startDateStr || !duration) return '';
   const date = new Date(startDateStr);
   if (isNaN(date.getTime())) return '';
-
-  if (unit === 'Minggu') {
-    date.setDate(date.getDate() + (duration * 7));
-  } else if (unit === 'Bulan') {
-    date.setMonth(date.getMonth() + duration);
-  } else if (unit === 'Tahun') {
-    date.setFullYear(date.getFullYear() + duration);
-  }
-  
+  if (unit === 'Minggu') { date.setDate(date.getDate() + (duration * 7)); } else if (unit === 'Bulan') { date.setMonth(date.getMonth() + duration); } else if (unit === 'Tahun') { date.setFullYear(date.getFullYear() + duration); }
   return date.toISOString().split('T')[0];
 };
 
@@ -63,17 +192,13 @@ const calculateBusinessDays = (startDateStr: string, endDateStr: string): number
   if (!startDateStr || !endDateStr) return 0;
   const start = new Date(startDateStr);
   const end = new Date(endDateStr);
-  
   if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
   if (start > end) return 0;
-
   let count = 0;
   const cur = new Date(start);
   while (cur <= end) {
     const dayOfWeek = cur.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sun (0) or Sat (6)
-      count++;
-    }
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { count++; }
     cur.setDate(cur.getDate() + 1);
   }
   return count;
@@ -92,118 +217,42 @@ interface StrictDateInputProps {
 const StrictDateInput: React.FC<StrictDateInputProps> = ({ name, value, onChange, className, readOnly, disabled, placeholder }) => {
   const [textValue, setTextValue] = useState('');
   const [error, setError] = useState(false);
-  
   useEffect(() => {
-    if (value) {
-      const formatted = formatDate(value);
-      setTextValue(formatted);
-      setError(false);
-    } else {
-       if (!error) setTextValue('');
-    }
+    if (value) { const formatted = formatDate(value); setTextValue(formatted); setError(false); } else { if (!error) setTextValue(''); }
   }, [value]);
-
   const validateAndParse = (input: string): string | null => {
       const parts = input.trim().split(/[\/\-\.]/);
-      
       if (parts.length !== 3) return null;
-
-      let d = parseInt(parts[0], 10);
-      let m = parseInt(parts[1], 10);
-      let y = parseInt(parts[2], 10);
-
+      let d = parseInt(parts[0], 10); let m = parseInt(parts[1], 10); let y = parseInt(parts[2], 10);
       if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
-
-      if (y < 100) {
-          y += 2000;
-      }
-
+      if (y < 100) { y += 2000; }
       if (m < 1 || m > 12) return null;
       if (d < 1 || d > 31) return null;
-      
       const dateObj = new Date(y, m - 1, d);
-      if (dateObj.getFullYear() !== y || dateObj.getMonth() !== m - 1 || dateObj.getDate() !== d) {
-          return null;
-      }
-
+      if (dateObj.getFullYear() !== y || dateObj.getMonth() !== m - 1 || dateObj.getDate() !== d) { return null; }
       return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   };
-
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setTextValue(val);
-    if (error) setError(false);
+    const val = e.target.value; setTextValue(val); if (error) setError(false);
   };
-
   const commitDate = () => {
-    if (textValue.trim() === '') {
-        setError(false);
-        onChange({ target: { name, value: '' } });
-        return;
-    }
-
+    if (textValue.trim() === '') { setError(false); onChange({ target: { name, value: '' } }); return; }
     const isoDate = validateAndParse(textValue);
-    
-    if (isoDate) {
-        setError(false);
-        onChange({ target: { name, value: isoDate } });
-        setTextValue(formatDate(isoDate));
-    } else {
-        setError(true);
-        onChange({ target: { name, value: '' } });
-    }
+    if (isoDate) { setError(false); onChange({ target: { name, value: isoDate } }); setTextValue(formatDate(isoDate)); } else { setError(true); onChange({ target: { name, value: '' } }); }
   };
-
-  const handleBlur = () => {
-      commitDate();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-          e.currentTarget.blur();
-      }
-  };
-
-  const handlePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(false);
-    onChange(e);
-  };
-
+  const handleBlur = () => { commitDate(); };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.currentTarget.blur(); } };
+  const handlePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => { setError(false); onChange(e); };
   return (
     <div className="relative">
         <div className={`relative flex items-center ${className} ${error ? 'border-red-400 focus:border-red-500 ring-1 ring-red-100 dark:ring-red-900/20' : ''}`}>
-        <input
-            type="text"
-            value={textValue}
-            onChange={handleTextChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder || 'DD/MM/YYYY'}
-            readOnly={readOnly}
-            disabled={disabled}
-            className={`w-full h-full bg-transparent border-none outline-none p-0 text-inherit placeholder-slate-400 ${readOnly ? 'cursor-not-allowed' : ''}`}
-        />
-
+        <input type="text" value={textValue} onChange={handleTextChange} onBlur={handleBlur} onKeyDown={handleKeyDown} placeholder={placeholder || 'DD/MM/YYYY'} readOnly={readOnly} disabled={disabled} className={`w-full h-full bg-transparent border-none outline-none p-0 text-inherit placeholder-slate-400 ${readOnly ? 'cursor-not-allowed' : ''}`} />
         <div className="relative ml-2 w-5 h-5 shrink-0">
             <Calendar className={`w-5 h-5 pointer-events-none ${error ? 'text-red-400' : 'text-slate-400'}`} />
-            {!readOnly && !disabled && (
-            <input
-                type="date"
-                name={name}
-                value={value || ''}
-                onChange={handlePickerChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                tabIndex={-1}
-            />
-            )}
+            {!readOnly && !disabled && ( <input type="date" name={name} value={value || ''} onChange={handlePickerChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" tabIndex={-1} /> )}
         </div>
         </div>
-        {error && (
-            <div className="absolute -bottom-5 left-0 text-[10px] text-red-500 font-bold flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                Tarikh tidak sah
-            </div>
-        )}
+        {error && ( <div className="absolute -bottom-5 left-0 text-[10px] text-red-500 font-bold flex items-center gap-1"> <AlertCircle className="w-3 h-3" /> Tarikh tidak sah </div> )}
     </div>
   );
 };
@@ -220,119 +269,105 @@ interface CostHUDProps {
   isPrintView: boolean;
   onToggleView: (view: 'editor' | 'print') => void;
   isPelarasanActive: boolean;
+  isReadOnly?: boolean;
 }
 
-const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPrintView, onToggleView, isPelarasanActive }: CostHUDProps) => {
-  const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '');
+const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPrintView, onToggleView, isPelarasanActive, isReadOnly }: CostHUDProps) => {
+  const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '0');
+  const [isEditingProgress, setIsEditingProgress] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setLocalProgress(progress !== undefined ? progress.toString() : '');
-  }, [progress]);
+  useEffect(() => { setLocalProgress(progress !== undefined ? progress.toString() : '0'); }, [progress]);
 
   const handleBlur = () => {
     let val = parseFloat(localProgress.replace(/[^0-9.]/g, ''));
-    if (isNaN(val)) val = 0;
-    if (val > 100) val = 100;
-    
-    onProgressChange(val);
-    setLocalProgress(val.toString());
+    if (isNaN(val)) val = 0; if (val > 100) val = 100;
+    onProgressChange(val); setLocalProgress(val.toString());
+    setIsEditingProgress(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-        handleBlur();
-        (e.currentTarget as HTMLInputElement).blur();
-    }
+  const handleKeyDown = (e: React.KeyboardEvent) => { 
+    if (e.key === 'Enter') { 
+        handleBlur(); 
+        (e.currentTarget as HTMLInputElement).blur(); 
+    } 
+  };
+
+  const toggleEdit = () => {
+    if (isReadOnly) return;
+    setIsEditingProgress(true);
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   return createPortal(
     <div className="fixed top-0 left-0 md:left-20 right-0 z-[90] transition-all duration-300 animate-slide-down no-print">
-       <div className="bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-lg px-4 py-3 flex items-center justify-between gap-4">
-          
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
-             <button 
-                onClick={() => onToggleView('editor')}
-                className={`p-2 rounded-lg transition-all ${!isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                title="Editor Mode"
-             >
-                <Edit className="w-4 h-4" />
-             </button>
-             <button 
-                onClick={() => onToggleView('print')}
-                className={`p-2 rounded-lg transition-all ${isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                title="Preview & Print Mode"
-             >
-                <Printer className="w-4 h-4" />
-             </button>
+       <div className="bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-lg px-2 md:px-4 py-2 md:py-3 flex items-center justify-between gap-2 md:gap-4">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 scale-90 md:scale-100 origin-left">
+             <button onClick={() => onToggleView('editor')} className={`p-2 rounded-lg transition-all ${!isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`} title="Editor Mode"> <Edit className="w-4 h-4" /> </button>
+             <button onClick={() => onToggleView('print')} className={`p-2 rounded-lg transition-all ${isPrintView ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`} title="Preview & Print Mode"> <Printer className="w-4 h-4" /> </button>
           </div>
-
-          <div className="flex-1 flex justify-center max-w-2xl px-4 border-l border-r border-slate-100 dark:border-slate-800/50 mx-2">
-             {isPrintView ? (
-                <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hidden sm:inline">Preview Mode</span>
-                    {exportAction}
-                </div>
-             ) : (
-                <div className="w-full max-w-md flex flex-col gap-2">
+          
+          <div className="flex-1 flex justify-center max-w-2xl border-l border-r border-slate-100 dark:border-slate-800/50 mx-1 md:mx-2 px-1 md:px-4">
+             {isPrintView ? ( <div className="flex items-center gap-3"> <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hidden sm:inline">Preview Mode</span> {exportAction} </div> ) : (
+                <div className="w-full max-w-md flex flex-col gap-1 md:gap-2">
                      <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                            <div className="relative group">
+                         <div className="flex items-center gap-1 md:gap-2">
+                            <div className="relative group shrink-0">
                                 <select 
-                                    name="status" 
-                                    value={status} 
-                                    onChange={onStatusChange} 
-                                    className="appearance-none bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                  name="status" 
+                                  value={status} 
+                                  onChange={onStatusChange} 
+                                  disabled={isReadOnly}
+                                  className={`appearance-none bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1 px-2 md:py-1.5 md:pl-3 md:pr-8 text-[10px] md:text-xs font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 transition-colors ${isReadOnly ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700'}`} 
                                 >
-                                    <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
-                                    <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
-                                    <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
+                                    <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Lantikan</option>
+                                    <option value={ProjectStatus.DALAM_PROSES}>Proses</option>
+                                    <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Tapak</option>
+                                    <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Bayaran</option>
                                     <option value={ProjectStatus.SIAP}>Siap</option>
                                 </select>
                             </div>
-                            {saveAction}
+                            {!isReadOnly && <div className="scale-90 md:scale-100">{saveAction}</div>}
                          </div>
-
-                         <div className="flex items-center gap-1 group cursor-text" onClick={() => document.getElementById('progress-input')?.focus()}>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Siap</span>
-                            <input 
-                                id="progress-input"
-                                type="text" 
-                                value={localProgress}
-                                onChange={(e) => setLocalProgress(e.target.value)}
-                                onBlur={handleBlur}
-                                onKeyDown={handleKeyDown}
-                                className="w-10 text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 p-0 text-sm font-bold text-emerald-600 dark:text-emerald-400 focus:ring-0 outline-none transition-colors"
-                            />
-                            <span className="text-xs font-bold text-slate-400">%</span>
+                         
+                         {/* MOBILE FRIENDLY PROGRESS INPUT */}
+                         <div 
+                            className={`flex items-center gap-1 md:gap-1.5 px-2 py-1 rounded-lg transition-colors group ${isReadOnly ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 active:bg-emerald-50'}`} 
+                            onClick={toggleEdit}
+                         >
+                            <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden xs:inline">Siap</span>
+                            <div className="flex items-baseline gap-0.5">
+                                <input 
+                                    ref={inputRef}
+                                    id="progress-input" 
+                                    type="number" 
+                                    inputMode="decimal"
+                                    value={localProgress} 
+                                    onChange={(e) => setLocalProgress(e.target.value)} 
+                                    onBlur={handleBlur} 
+                                    onKeyDown={handleKeyDown} 
+                                    disabled={isReadOnly} 
+                                    className={`w-8 md:w-10 text-right bg-transparent border-b-2 p-0 text-xs md:sm font-black text-emerald-600 dark:text-emerald-400 focus:ring-0 outline-none transition-all ${isEditingProgress ? 'border-emerald-500 bg-white dark:bg-slate-800 px-1' : 'border-transparent'}`} 
+                                />
+                                <span className="text-[10px] md:text-xs font-bold text-slate-400">%</span>
+                            </div>
                          </div>
                      </div>
-                     <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div 
-                            className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-500 ease-out"
-                            style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }}
-                        ></div>
+                     <div className="h-1 md:h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-500 ease-out" style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }} ></div>
                      </div>
                 </div>
              )}
           </div>
 
-          <div className="flex items-center gap-4 md:gap-8 shrink-0">
-              <div className="text-right">
-                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">
-                    {isPelarasanActive ? 'Kos Asal' : 'Kos Projek'}
-                  </p>
-                  <p className={`text-lg font-bold font-mono leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400'}`}>
-                      {formatCurrency(grandTotal)}
-                  </p>
-                  {isPelarasanActive && finalTotal !== undefined && (
-                     <p className={`text-xl font-bold font-mono leading-none mt-1 ${
-                        finalTotal > grandTotal 
-                        ? 'text-red-500 dark:text-red-400' 
-                        : 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400'
-                     }`}>
-                        {formatCurrency(finalTotal)}
-                     </p>
-                  )}
+          <div className="flex items-center gap-2 md:gap-8 shrink-0">
+              <div className="text-right hidden xs:block">
+                  <p className="text-[8px] md:text-[10px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5 leading-none"> {isPelarasanActive ? 'Kos Asal' : 'Kos Projek'} </p>
+                  <p className={`text-xs md:text-lg font-bold font-mono leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-[10px] md:text-sm' : 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400'}`}> {formatCurrency(grandTotal)} </p>
+                  {isPelarasanActive && finalTotal !== undefined && ( <p className={`text-sm md:text-xl font-bold font-mono leading-none mt-1 ${ finalTotal > grandTotal ? 'text-red-500 dark:text-red-400' : 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400' }`}> {formatCurrency(finalTotal)} </p> )}
+              </div>
+              <div className="xs:hidden text-right">
+                  <p className="text-[10px] font-black font-mono text-emerald-600">{formatCurrency(isPelarasanActive ? finalTotal : grandTotal)}</p>
               </div>
           </div>
        </div>
@@ -342,32 +377,12 @@ const CostHUD = ({ grandTotal, finalTotal, status, progress, onStatusChange, onP
 };
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole, selectedYear, onShowToast }) => {
-  // ... [State variables] ...
+  const currentUser = mockService.getCurrentUser();
   const TABS = [
-    { 
-      id: 'phase1', 
-      label: '1. BQ Building (PJA)', 
-      color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 shadow-sm', 
-      ringColor: 'ring-yellow-400' 
-    },
-    { 
-      id: 'phase2', 
-      label: '2. File Creation (PT)', 
-      color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm', 
-      ringColor: 'ring-blue-500' 
-    },
-    { 
-      id: 'phase3', 
-      label: '3. Pelarasan (PJA)', 
-      color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 shadow-sm', 
-      ringColor: 'ring-yellow-400' 
-    },
-    { 
-      id: 'phase4', 
-      label: '4. Penutup (PT)', 
-      color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800 shadow-sm', 
-      ringColor: 'ring-orange-500' 
-    },
+    { id: 'phase1', label: '1. BQ Building (PJA)', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 shadow-sm', ringColor: 'ring-yellow-400' },
+    { id: 'phase2', label: '2. File Creation (PT)', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm', ringColor: 'ring-blue-500' },
+    { id: 'phase3', label: '3. Pelarasan (PJA)', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 shadow-sm', ringColor: 'ring-yellow-400' },
+    { id: 'phase4', label: '4. Penutup (PT)', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800 shadow-sm', ringColor: 'ring-orange-500' },
   ];
 
   const [activeTab, setActiveTab] = useState('phase1');
@@ -376,59 +391,61 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [isExporting, setIsExporting] = useState(false);
   const [previewCost, setPreviewCost] = useState(0); 
   const [users, setUsers] = useState<User[]>([]);
-  
   const [companies, setCompanies] = useState<string[]>([]);
   const [voteNumbers, setVoteNumbers] = useState<string[]>([]);
-  const [sebuthargaNumbers, setSebuthargaNumbers] = useState<string[]>([]); // New state
-
+  const [sebuthargaNumbers, setSebuthargaNumbers] = useState<string[]>([]);
   const [tempohVal, setTempohVal] = useState<number>(0);
   const [tempohUnit, setTempohUnit] = useState<'Minggu'|'Bulan'|'Tahun'>('Minggu');
-  
   const [manualMulaKontrak, setManualMulaKontrak] = useState(false);
   const [manualMulaKerja, setManualMulaKerja] = useState(false);
-
   const [locationRows, setLocationRows] = useState<ProjectLocation[]>([]);
-  const [isLADOpen, setIsLADOpen] = useState(false); // LAD Modal state
-  const [isCPCOpen, setIsCPCOpen] = useState(false); // CPC Modal state
-  const [isPrestasiOpen, setIsPrestasiOpen] = useState(false); // Prestasi Modal state
+  const [isLADOpen, setIsLADOpen] = useState(false);
+  const [isCPCOpen, setIsCPCOpen] = useState(false);
+  const [isPrestasiOpen, setIsPrestasiOpen] = useState(false);
+  const [isNotisOpen, setIsNotisOpen] = useState(false);
+  const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | null; }>({ isOpen: false, type: null });
 
-  const [confirmationState, setConfirmationState] = useState<{
-    isOpen: boolean;
-    type: 'back' | 'save' | null;
-  }>({ isOpen: false, type: null });
+  // Initial Logic for PJA Account Lock during creation
+  const initialPjaId = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (project?.pjaId || 0);
 
-  // ... [Effects and Handlers] ...
-  useEffect(() => {
-    setUsers(mockService.getUsers());
-    let year = selectedYear;
-    if (project && project.tarikhBuka) {
-        year = new Date(project.tarikhBuka).getFullYear();
-    }
-    setCompanies(mockService.getCompanies(year));
-    setVoteNumbers(mockService.getVoteNumbers(year));
-    setSebuthargaNumbers(mockService.getSebuthargaNumbers(year));
-  }, [project, selectedYear]);
-  
   const [formData, setFormData] = useState<Partial<Project>>(project || {
     namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(), 
-    pjaId: 0, bp: '', zon: '', lokasi: '', 
+    pjaId: initialPjaId, bp: '', zon: '', lokasi: '', 
     status: ProjectStatus.MENUNGGU_LANTIKAN, 
     bqData: [], 
     bqDataPelarasan: [],
     globalDimensions: { length: 0, width: 0, depth: 0 },
     locationDimensions: {},
     locationDimensionsPelarasan: {}, 
-    coverJawatan: '',
-    coverBahagian: '',
-    coverUnit: '',
-    prestasiScores: [0,0,0,0,0,0], // Initialize 6 zeros
-    skop: 'BEKALAN'
+    coverJawatan: (currentUser?.role === Role.PJA && !project) ? currentUser.jawatan : '',
+    coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
+    coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
+    prestasiScores: [0,0,0,0,0,0],
+    skop: 'BEKALAN',
+    noInbois: ''
   });
+
+  // --- ACCESS CONTROL CALCULATIONS ---
+  const isPJA = currentUser?.role === Role.PJA;
+  const isAdminOrJurutera = currentUser?.role === Role.ADMIN || currentUser?.role === Role.JURUTERA;
+  
+  // Logic: "Others PJA cannot edit other's pjas project but can view"
+  const isDifferentPJA = isPJA && formData.pjaId !== 0 && formData.pjaId !== currentUser?.id;
+  const isGlobalReadOnly = isDifferentPJA;
+
+  // Logic: "File Creation (PT) and Penutup (PT) PJA can access it but cannot edit/modify it at all"
+  const isPTSectionReadOnly = isPJA || isGlobalReadOnly;
+
+  useEffect(() => {
+    setUsers(mockService.getUsers());
+    let year = selectedYear;
+    if (project && project.tarikhBuka) { year = new Date(project.tarikhBuka).getFullYear(); }
+    setCompanies(mockService.getCompanies(year)); setVoteNumbers(mockService.getVoteNumbers(year)); setSebuthargaNumbers(mockService.getSebuthargaNumbers(year));
+  }, [project, selectedYear]);
 
   const handlePjaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       const selectedPjaId = Number(e.target.value);
       const selectedUser = users.find(u => u.id === selectedPjaId);
-      
       setFormData(prev => ({
           ...prev,
           pjaId: selectedPjaId,
@@ -438,1058 +455,697 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       }));
   };
 
+  const handleBackClick = () => { setConfirmationState({ isOpen: true, type: 'back' }); };
+  const handleSaveClick = () => { setConfirmationState({ isOpen: true, type: 'save' }); };
+  const cancelConfirmation = () => { setConfirmationState({ isOpen: false, type: null }); };
+  const confirmAction = async () => {
+    if (confirmationState.type === 'back') { setConfirmationState({ isOpen: false, type: null }); onClose(); } 
+    else if (confirmationState.type === 'save') {
+        setConfirmationState({ isOpen: false, type: null }); setIsSaving(true);
+        try {
+            if (project && project.id) { await mockService.updateProject(project.id, formData); } else { await mockService.createProject(formData as any); }
+            onSave();
+        } catch (e) { console.error(e); if (onShowToast) onShowToast("Ralat menyimpan projek.", "error"); } finally { setIsSaving(false); }
+    }
+  };
+
+  const addLocationRow = () => { setLocationRows(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]); };
+  const removeLocationRow = (id: string) => { setLocationRows(prev => { if (prev.length <= 1) return [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]; return prev.filter(r => r.id !== id); }); };
+  const updateLocationRow = (id: string, field: 'lokasi' | 'aduan', value: string) => { setLocationRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r)); };
+  const handlePrestasiUpdate = (newScores: number[], percentage: number, skop: 'BEKALAN'|'PERKHIDMATAN'|'KERJA', noInbois: string) => {
+      const prestasiString = `${percentage}%`;
+      setFormData(prev => ({ ...prev, prestasiScores: newScores, prestasi: prestasiString, skop: skop, noInbois: noInbois }));
+      if (onShowToast) onShowToast("Maklumat prestasi dikemaskini. Sila simpan projek.", "info");
+  };
+
   useEffect(() => {
     if (project) {
-        if (project.projectLocations && project.projectLocations.length > 0) {
-            setLocationRows(project.projectLocations);
-        } else {
+        if (project.projectLocations && project.projectLocations.length > 0) { setLocationRows(project.projectLocations); } 
+        else {
             const locs = (project.lokasi || '').split('\n').filter(l => l.trim() !== '');
             const aduans = (project.noAduan || '').split('\n');
-            let rows = locs.map((l, i) => ({
-                id: Math.random().toString(36).substr(2, 9),
-                lokasi: l,
-                aduan: aduans[i] || ''
-            }));
-            if (rows.length === 0) {
-                rows = [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }];
-            }
+            let rows = locs.map((l, i) => ({ id: Math.random().toString(36).substr(2, 9), lokasi: l, aduan: aduans[i] || '' }));
+            if (rows.length === 0) { rows = [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]; }
             setLocationRows(rows);
         }
-    } else if (locationRows.length === 0) {
-        setLocationRows([{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]);
-    }
+    } else if (locationRows.length === 0) { setLocationRows([{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]); }
   }, [project]);
 
   useEffect(() => {
      const lokasiStr = locationRows.map(r => r.lokasi).join('\n');
      const aduanStr = locationRows.map(r => r.aduan).join('\n');
-     if (formData.lokasi !== lokasiStr || formData.noAduan !== aduanStr || JSON.stringify(formData.projectLocations) !== JSON.stringify(locationRows)) {
-         setFormData(prev => ({ 
-             ...prev, 
-             lokasi: lokasiStr, 
-             noAduan: aduanStr,
-             projectLocations: locationRows 
-         }));
-     }
+     if (formData.lokasi !== lokasiStr || formData.noAduan !== aduanStr || JSON.stringify(formData.projectLocations) !== JSON.stringify(locationRows)) { setFormData(prev => ({ ...prev, lokasi: lokasiStr, noAduan: aduanStr, projectLocations: locationRows })); }
   }, [locationRows]);
 
-  const addLocationRow = () => {
-      setLocationRows([...locationRows, { id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]);
-  };
-
-  const removeLocationRow = (id: string) => {
-      if (locationRows.length > 1) {
-          setLocationRows(locationRows.filter(r => r.id !== id));
-      } else {
-          setLocationRows([{ ...locationRows[0], lokasi: '', aduan: '' }]);
-      }
-  };
-
-  const updateLocationRow = (id: string, field: 'lokasi' | 'aduan', value: string) => {
-      const finalValue = value.toUpperCase();
-      setLocationRows(locationRows.map(r => r.id === id ? { ...r, [field]: finalValue } : r));
-  };
-
   useEffect(() => {
-    if (project?.tempohKontrak) {
-      const parts = project.tempohKontrak.split(' ');
-      if (parts.length === 2) {
-        setTempohVal(Number(parts[0]));
-        setTempohUnit(parts[1] as any);
-      }
-    }
+    if (project?.tempohKontrak) { const parts = project.tempohKontrak.split(' '); if (parts.length === 2) { setTempohVal(Number(parts[0])); setTempohUnit(parts[1] as any); } }
   }, [project]);
 
   useEffect(() => {
     const newVal = tempohVal > 0 ? `${tempohVal} ${tempohUnit}` : '';
-    if (formData.tempohKontrak !== newVal) {
-        setFormData(prev => ({ ...prev, tempohKontrak: newVal }));
-    }
+    if (formData.tempohKontrak !== newVal) { setFormData(prev => ({ ...prev, tempohKontrak: newVal })); }
   }, [tempohVal, tempohUnit]);
 
-  // --- AUTOMATIC LAD CALCULATION EFFECT ---
   useEffect(() => {
-    // Requires End Date and Actual Finish Date
     if (formData.tarikhTamatKontrak && formData.tarikhSiapSebenar) {
-        const endDate = new Date(formData.tarikhTamatKontrak);
-        const actualDate = new Date(formData.tarikhSiapSebenar);
-        
-        // Calculate Days: (Actual - End) / (1000 * 60 * 60 * 24)
-        const timeDiff = actualDate.getTime() - endDate.getTime();
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        const ladDays = dayDiff > 0 ? dayDiff : 0; // Negative means early/on time
-
-        // Calculate Rate
-        // Formula: < 20k -> RM 20/day
-        // Formula: >= 20k -> (ContractSum * 0.064) / 365
-        const contractSum = formData.kosProjek || 0;
-        let dailyRate = 0;
-        
-        if (contractSum < 20000) {
-            dailyRate = 20.00;
-        } else {
-            // Using 6.4% derived from 6.65(BLR) - 0.25 (Treasury)
-            dailyRate = (contractSum * 0.064) / 365;
-        }
-
+        const endDate = new Date(formData.tarikhTamatKontrak); const actualDate = new Date(formData.tarikhSiapSebenar);
+        const timeDiff = actualDate.getTime() - endDate.getTime(); const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        const ladDays = dayDiff > 0 ? dayDiff : 0; const contractSum = formData.kosProjek || 0;
+        let dailyRate = contractSum < 20000 ? 20.00 : (contractSum * 0.064) / 365;
         const totalLad = parseFloat((dailyRate * ladDays).toFixed(2));
-
-        // Update State if changed
-        if (formData.ladDays !== ladDays || formData.ladAmount !== totalLad) {
-            setFormData(prev => ({ ...prev, ladDays: ladDays, ladAmount: totalLad }));
-        }
-    } else {
-        // Reset if dates cleared, only if values exist
-        if (formData.ladDays !== 0 && formData.ladDays !== undefined) {
-             setFormData(prev => ({ ...prev, ladDays: 0, ladAmount: 0 }));
-        }
-    }
+        if (formData.ladDays !== ladDays || formData.ladAmount !== totalLad) { setFormData(prev => ({ ...prev, ladDays: ladDays, ladAmount: totalLad })); }
+    } else { if (formData.ladDays !== 0 && formData.ladDays !== undefined) { setFormData(prev => ({ ...prev, ladDays: 0, ladAmount: 0 })); } }
   }, [formData.tarikhTamatKontrak, formData.tarikhSiapSebenar, formData.kosProjek]);
 
   useEffect(() => {
     if (activeTab === 'phase3' && formData.bqData && formData.bqData.length > 0) {
-       const sourceData = formData.bqData;
-       const targetData = formData.bqDataPelarasan || [];
-
+       const sourceData = formData.bqData; const targetData = formData.bqDataPelarasan || [];
        const syncedData = sourceData.map(sourceBill => {
            const targetBill = targetData.find(b => b.id === sourceBill.id);
-           
-           if (!targetBill) {
-               return JSON.parse(JSON.stringify(sourceBill));
-           }
-
-           const newBill = { 
-               ...targetBill, 
-               title: sourceBill.title, 
-               locationId: sourceBill.locationId 
-           };
-
+           if (!targetBill) { return JSON.parse(JSON.stringify(sourceBill)); }
+           const newBill = { ...targetBill, title: sourceBill.title, locationId: sourceBill.locationId };
            newBill.items = sourceBill.items.map(sourceItem => {
                const targetItem = targetBill.items.find(i => i.id === sourceItem.id);
-               
-               if (!targetItem) {
-                   return JSON.parse(JSON.stringify(sourceItem));
-               }
-
-               return {
-                   ...targetItem,
-                   description: sourceItem.description,
-                   unit: sourceItem.unit,
-                   rate: sourceItem.rate,
-                   variant: sourceItem.variant,
-                   type: sourceItem.type,
-               };
+               if (!targetItem) { return JSON.parse(JSON.stringify(sourceItem)); }
+               return { ...targetItem, description: sourceItem.description, unit: sourceItem.unit, rate: sourceItem.rate, variant: sourceItem.variant, type: sourceItem.type };
            });
-
            return newBill;
        });
-
-       if (JSON.stringify(syncedData) !== JSON.stringify(targetData)) {
-           setFormData(prev => ({ ...prev, bqDataPelarasan: syncedData }));
-           if (onShowToast) onShowToast("BQ Pelarasan diselaraskan dengan BQ Kontrak.", "info");
-       }
+       if (JSON.stringify(syncedData) !== JSON.stringify(targetData)) { setFormData(prev => ({ ...prev, bqDataPelarasan: syncedData })); if (onShowToast) onShowToast("BQ Pelarasan diselaraskan dengan BQ Kontrak.", "info"); }
     }
   }, [activeTab, formData.bqData]);
 
   useEffect(() => {
-    if (!manualMulaKontrak && formData.tarikhCetakanBpp) {
-       const newDate = addDaysSkippingWeekends(formData.tarikhCetakanBpp, 2);
-       if (newDate && newDate !== formData.tarikhMulaKontrak) {
-         setFormData(prev => ({ ...prev, tarikhMulaKontrak: newDate }));
-       }
-    }
+    if (!manualMulaKontrak && formData.tarikhCetakanBpp) { const newDate = addDaysSkippingWeekends(formData.tarikhCetakanBpp, 2); if (newDate && newDate !== formData.tarikhMulaKontrak) { setFormData(prev => ({ ...prev, tarikhMulaKontrak: newDate })); } }
   }, [formData.tarikhCetakanBpp, manualMulaKontrak]);
 
   useEffect(() => {
-    if (formData.tarikhMulaKontrak && tempohVal > 0) {
-       const newDate = calculateEndDate(formData.tarikhMulaKontrak, tempohVal, tempohUnit);
-       if (newDate && newDate !== formData.tarikhTamatKontrak) {
-         setFormData(prev => ({ ...prev, tarikhTamatKontrak: newDate }));
-       }
-    }
+    if (formData.tarikhMulaKontrak && tempohVal > 0) { const newDate = calculateEndDate(formData.tarikhMulaKontrak, tempohVal, tempohUnit); if (newDate && newDate !== formData.tarikhTamatKontrak) { setFormData(prev => ({ ...prev, tarikhTamatKontrak: newDate })); } }
   }, [formData.tarikhMulaKontrak, tempohVal, tempohUnit]);
 
   useEffect(() => {
-     if (!manualMulaKerja && formData.tarikhSerahTapak) {
-        const newDate = addDaysSkippingWeekends(formData.tarikhSerahTapak, 2);
-        if (newDate && newDate !== formData.tarikhMulaKerja) {
-            setFormData(prev => ({ ...prev, tarikhMulaKerja: newDate }));
-        }
-     }
+     if (!manualMulaKerja && formData.tarikhSerahTapak) { const newDate = addDaysSkippingWeekends(formData.tarikhSerahTapak, 2); if (newDate && newDate !== formData.tarikhMulaKerja) { setFormData(prev => ({ ...prev, tarikhMulaKerja: newDate })); } }
   }, [formData.tarikhSerahTapak, manualMulaKerja]);
 
   useEffect(() => {
-     if (formData.tarikhCetakanBpp && formData.tarikhSerahTapak) {
-         const days = calculateBusinessDays(formData.tarikhCetakanBpp, formData.tarikhSerahTapak);
-         const isoString = `${days} Hari`;
-         if (formData.iso !== isoString) {
-             setFormData(prev => ({ ...prev, iso: isoString }));
-         }
-     }
+     if (formData.tarikhCetakanBpp && formData.tarikhSerahTapak) { const days = calculateBusinessDays(formData.tarikhCetakanBpp, formData.tarikhSerahTapak); const isoString = `${days} Hari`; if (formData.iso !== isoString) { setFormData(prev => ({ ...prev, iso: isoString })); } }
   }, [formData.tarikhCetakanBpp, formData.tarikhSerahTapak]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const finalValue = name === 'namaProjek' ? value.toUpperCase() : value;
+    const { name, value } = e.target; const finalValue = name === 'namaProjek' ? value.toUpperCase() : value;
     setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
 
   const handleBQChange = (bqData: BQGroup[]) => {
-    const totalCost = bqData.reduce((acc, group) => {
-      return acc + group.items.reduce((gTotal, item) => gTotal + (item.amount || 0), 0);
-    }, 0);
-    
-    setFormData(prev => ({ 
-      ...prev, 
-      bqData, 
-      kosProjek: totalCost,
-    }));
+    const totalCost = bqData.reduce((acc, group) => { return acc + group.items.reduce((gTotal, item) => gTotal + (item.amount || 0), 0); }, 0);
+    setFormData(prev => ({ ...prev, bqData, kosProjek: totalCost }));
   };
 
   const handleLocationDimensionsChange = (locationId: string, dims: GlobalDimensions) => {
-    setFormData(prev => ({
-      ...prev,
-      locationDimensions: {
-        ...(prev.locationDimensions || {}),
-        [locationId]: dims
-      }
-    }));
+    setFormData(prev => ({ ...prev, locationDimensions: { ...(prev.locationDimensions || {}), [locationId]: dims } }));
   };
 
   const handleLocationDimensionsPelarasanChange = (locationId: string, dims: GlobalDimensions) => {
-    setFormData(prev => ({
-      ...prev,
-      locationDimensionsPelarasan: {
-        ...(prev.locationDimensionsPelarasan || {}),
-        [locationId]: dims
-      }
-    }));
+    setFormData(prev => ({ ...prev, locationDimensionsPelarasan: { ...(prev.locationDimensionsPelarasan || {}), [locationId]: dims } }));
   };
 
   const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[]) => {
-    const totalCostPelarasan = bqDataPelarasan.reduce((acc, group) => {
-      return acc + group.items.reduce((gTotal, item) => gTotal + (item.amount || 0), 0);
-    }, 0);
-
-    setFormData(prev => ({ 
-      ...prev, 
-      bqDataPelarasan, 
-      kosSebenar: totalCostPelarasan 
-    }));
+    const totalCostPelarasan = bqDataPelarasan.reduce((acc, group) => { return acc + group.items.reduce((gTotal, item) => gTotal + (item.amount || 0), 0); }, 0);
+    setFormData(prev => ({ ...prev, bqDataPelarasan, kosSebenar: totalCostPelarasan }));
   };
 
-  const handleAkuJanjiUpdate = (updates: Partial<Project>) => {
-      setFormData(prev => ({ ...prev, ...updates }));
-  };
-  
-  const handleCoverPageUpdate = (updates: Partial<Project>) => {
-      setFormData(prev => ({ ...prev, ...updates }));
-  };
-
-  // Callback from Prestasi Dialog
-  const handlePrestasiUpdate = (newScores: number[], percentage: number, newSkop: 'BEKALAN'|'PERKHIDMATAN'|'KERJA') => {
-      setFormData(prev => ({
-          ...prev,
-          prestasiScores: newScores,
-          prestasi: `${percentage}%`,
-          skop: newSkop
-      }));
-  };
-
-  const executeSave = async () => {
-    setIsSaving(true);
-    try {
-      const safeData = { ...formData };
-      if (project) await mockService.updateProject(project.id, safeData);
-      else await mockService.createProject(safeData as Project);
-      setIsSaving(false);
-      onSave();
-    } catch (err) { setIsSaving(false); alert('Error saving project'); }
-  };
-
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    handleSaveClick();
-  };
-
-  const handleBackClick = () => setConfirmationState({ isOpen: true, type: 'back' });
-  const handleSaveClick = () => setConfirmationState({ isOpen: true, type: 'save' });
-  const cancelConfirmation = () => setConfirmationState({ isOpen: false, type: null });
-  
-  const confirmAction = () => {
-    if (confirmationState.type === 'back') {
-      onClose();
-    } else if (confirmationState.type === 'save') {
-      executeSave();
-    }
-    setConfirmationState({ isOpen: false, type: null });
-  };
+  const handleAkuJanjiUpdate = (updates: Partial<Project>) => { setFormData(prev => ({ ...prev, ...updates })); };
+  const handleCoverPageUpdate = (updates: Partial<Project>) => { setFormData(prev => ({ ...prev, ...updates })); };
 
   const handleExportPDF = async () => {
     setIsExporting(true);
-    setTimeout(async () => {
-        try {
-            const pages = document.querySelectorAll('.pdf-page');
-            if (pages.length > 0) {
-                 const opt = {
-                    margin: 0,
-                    filename: `Dokumen_Tender_${formData.noFail || 'Projek'}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 }, 
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: 'avoid-all' }
-                };
-                // @ts-ignore
-                let worker = window.html2pdf().set(opt).from(pages[0]).toPdf();
-                for (let i = 1; i < pages.length; i++) {
-                    worker = worker.get('pdf').then((pdf: any) => {
-                        pdf.addPage();
-                    }).from(pages[i]).toContainer().toCanvas().toPdf();
-                }
-                await worker.save();
-            } else {
-                const element = document.getElementById('pdf-export-container');
-                if (element) {
-                    const opt = {
-                        margin: 0,
-                        filename: `Dokumen_Tender_${formData.noFail || 'Projek'}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                    };
-                    // @ts-ignore
-                    await window.html2pdf().set(opt).from(element).save();
-                }
-            }
-        } catch (error) {
-            console.error("PDF Export Error:", error);
-            if (onShowToast) onShowToast("Gagal menjana PDF (Canvas size error). Sila guna 'Ctrl+P' (Save as PDF).", "error");
-        } finally {
-            setIsExporting(false);
-        }
-    }, 100);
+    try {
+        if (activeTab === 'phase1') { await handleExportRealBQPDF(); } 
+        else if (activeTab === 'phase3') { await handleExportRealPelarasanPDF(); } 
+        else { alert("Fungsi eksport PDF natif untuk fasa ini akan datang."); }
+    } catch (e) { console.error(e); if (onShowToast) onShowToast("Gagal menjana PDF", "error"); } finally { setIsExporting(false); }
   };
 
-  const grandTotal = formData.bqData?.reduce((acc, group) => {
-      return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
-  }, 0) || 0;
+  const handleExportRealBQPDF = async () => {
+      // @ts-ignore
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const sealsLogo = await getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
+      const mpsLogo = await getBase64ImageFromURL("https://i.imgur.com/ZB7DFaV.png");
+      const pjaUser = users.find(u => u.id === formData.pjaId);
+      const year = formData.tarikhBuka ? new Date(formData.tarikhBuka).getFullYear() : new Date().getFullYear();
+      const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+      const dateObj = formData.tarikhBuka ? new Date(formData.tarikhBuka) : new Date();
+      const formattedDate = `${monthNames[dateObj.getMonth()]} ${year}`;
+      const settings = mockService.getSettings(year);
+      const meetingDate = settings.meetingDate || '.........................';
 
-  const pelarasanTotal = formData.bqDataPelarasan?.reduce((acc, group) => {
-    return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
-  }, 0) || 0;
+      doc.setFont("helvetica", "bold"); if(sealsLogo) doc.addImage(sealsLogo, 'PNG', 15, 15, 25, 20); if(mpsLogo) doc.addImage(mpsLogo, 'PNG', 170, 15, 25, 20);
+      doc.setFontSize(11); doc.text("JABATAN KEJURUTERAAN", pageWidth/2, 20, { align: "center" });
+      doc.setFontSize(13); doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth/2, 25, { align: "center" });
+      doc.setFontSize(8); doc.setFont("helvetica", "normal");
+      doc.text("Persiaran 3, Bandar Baru Selayang", pageWidth/2, 30, { align: "center" });
+      doc.text("68100 Batu Caves, Selangor.", pageWidth/2, 33, { align: "center" });
+      doc.text("Tel. : 03-61204897/61311426 Fax. : 03-61204879", pageWidth/2, 36, { align: "center" });
+      doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("CADANGAN KERJA", pageWidth/2, 45, { align: "center" });
+      doc.setLineWidth(0.5); doc.line(pageWidth/2 - 20, 46, pageWidth/2 + 20, 46); 
 
-  const finalTotalDisplay = activeTab === 'phase3' 
-    ? pelarasanTotal
-    : undefined;
+      let y = 55;
+      const coverBody = [
+          [{ content: 'Tarikh', styles: { fontStyle: 'bold' } }, { content: `\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 ${formattedDate}`, styles: { fontStyle: 'bold' } }],
+          [{ content: 'Daripada', styles: { fontStyle: 'bold' } }, { content: `${pjaUser?.fullName.toUpperCase() || 'PJA'}\n${pjaUser?.jawatan || ''}\n${pjaUser?.bahagian || ''}\n${pjaUser?.unit || ''}` }],
+          [{ content: 'Kepada', styles: { fontStyle: 'bold' } }, { content: 'Pengarah\nJabatan Kejuruteraan' }],
+          [{ content: 'Tajuk', styles: { fontStyle: 'bold' } }, { content: formData.namaProjek?.toUpperCase() || '', styles: { fontStyle: 'bold' } }],
+          [{ content: 'Blok Perancangan', styles: { fontStyle: 'bold' } }, { content: formData.bp || '' }],
+          [{ content: 'Zon', styles: { fontStyle: 'bold' } }, { content: formData.zon || '' }],
+      ];
+      // @ts-ignore
+      doc.autoTable({ startY: y, body: coverBody, theme: 'plain', styles: { fontSize: 9, cellPadding: 3, lineColor: 0, lineWidth: 0.1, textColor: 0 }, columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 'auto' } }, margin: { left: 20, right: 20 } });
+      // @ts-ignore
+      y = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.text("Perkara di atas adalah dirujuk.", 20, y); y += 10;
+      const p1 = `2.   ${formData.namaProjek?.toUpperCase() || 'CADANGAN KERJA...'}`;
+      const splitP1 = doc.splitTextToSize(p1, 170); doc.setFont("helvetica", "bold"); doc.text(splitP1, 20, y); y += (splitP1.length * 5);
+      doc.setFont("helvetica", "normal"); doc.text("Bersama-sama ini dilampirkan pelan tapak, gambar lokasi aduan serta spesifikasi kerja (BQ)", 28, y); y += 20;
+      doc.text("Sekian, terima kasih.", 20, y); y += 15;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8); const slogans = ["“KITASELANGOR MAJU BERSAMA”", "“MALAYSIA MADANI”", "“BERKHIDMAT UNTUK NEGARA”", "“MAMPAN PROGRESIF SEJAHTERA”"]; slogans.forEach(s => { doc.text(s, 20, y); y += 4; }); y += 20;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text("Saya yang menjalankan amanah,", 20, y); y += 25; doc.text("..................................................................", 20, y); y += 5; doc.setFont("helvetica", "bold"); doc.text(`(${pjaUser?.fullName.toUpperCase() || 'NAMA PJA'})`, 20, y); y += 5; doc.setFont("helvetica", "normal"); doc.text(pjaUser?.jawatan || '', 20, y); y += 4; doc.text(pjaUser?.bahagian || '', 20, y); y += 4; doc.text(pjaUser?.unit || '', 20, y);
+
+      doc.addPage(); doc.rect(20, 20, 170, 120); doc.rect(20, 145, 170, 120); y = 30; doc.setFont("helvetica", "bold"); doc.text("ULASAN JURUTERA", 25, y); y += 10;
+      const titleLines = doc.splitTextToSize(formData.namaProjek?.toUpperCase() || '', 160); doc.text(titleLines, 25, y); y += (titleLines.length * 5) + 10;
+      doc.setFontSize(9); doc.text("Anggaran Kontrak", 25, y); doc.text(":", 60, y); doc.text(formatCurrency(formData.kosProjek), 65, y); y += 8; doc.text("Tempoh Kontrak", 25, y); doc.text(":", 60, y); doc.text(formData.tempohKontrak || '', 65, y); y += 8; doc.text("Lantikan", 25, y); doc.text(":", 60, y); doc.text(formData.namaSyarikat?.toUpperCase() || '', 65, y); 
+      y = 125; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);
+      y = 155; doc.setFontSize(11); doc.text("ULASAN PENGARAH", 25, y); y += 10; doc.setFontSize(9); doc.setFont("helvetica", "normal");
+      const ulasanText = `Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) yang bersidang pada ${meetingDate} dengan rotasi bagi syarikat :-`;
+      const splitUlasan = doc.splitTextToSize(ulasanText, 160); doc.text(splitUlasan, 25, y);
+      y += 40; doc.line(25, y, 185, y); y += 15; doc.line(25, y, 185, y);
+      y = 250; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);
+
+      const bqData = formData.bqData || [];
+      let bqSectionIdx = 0;
+      for (const bill of bqData) {
+          doc.addPage();
+          const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN');
+          let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
+          let aduanText = isPermulaan ? (locationRows || []).map(l => l.aduan).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.aduan || '');
+          const tableBody = []; const sideOnlyBorder = { top: 0, right: 0.1, bottom: 0, left: 0.1 }; const titleBorder = { top: 0.1, right: 0.1, bottom: 0, left: 0.1 }; const fullBorder = 0.1;
+          tableBody.push([{ content: bill.title, colSpan: 6, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder } }]);
+          let itemIndex = 0;
+          for (const item of bill.items) {
+              const autoNum = getAutoNumber(bill.items, itemIndex); const isHeader = item.type === 'HEADER';
+              let descText = item.description; if (item.variant) descText += `\n${item.variant}`;
+              if (!isHeader && item.calculationParts && item.calculationParts.length > 0) {
+                  const dims = item.calculationParts.filter(p => (p.hasLength && p.length>0) || (p.hasWidth && p.width>0) || (p.hasDepth && p.depth>0) || p.multiplier !== 1).map(p => { const parts = []; if (p.hasLength) parts.push(`${p.length}m(P)`); if (p.hasWidth) parts.push(`${p.width}m(L)`); if (p.hasDepth) parts.push(`${p.depth}m(T)`); if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`); return parts.join(' x '); }).join('\n');
+                  if (dims) descText += `\n\n${dims}`;
+              }
+              tableBody.push([ { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } }, { content: descText, styles: { fontStyle: isHeader ? 'bold' : 'normal', lineWidth: sideOnlyBorder } }, { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } }, { content: item.qty || '', styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } }, { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }, { content: item.amount ? formatCurrency(item.amount).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } } ]);
+              itemIndex++;
+          }
+          const billTotal = bill.items.reduce((s, i) => s + (i.amount||0), 0);
+          tableBody.push([ { content: 'TO COLLECTION', colSpan: 5, styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } }, { content: formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } } ]);
+          
+          let tableStartY = 15;
+          if (bqSectionIdx === 0) {
+              // @ts-ignore
+              doc.autoTable({
+                  body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10 } }]],
+                  theme: 'grid',
+                  startY: 15,
+                  tableLineWidth: 0.1,
+                  tableLineColor: [0, 0, 0],
+                  styles: { fontSize: 8, cellPadding: 2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+                  margin: { left: 10, right: 10 }
+              });
+              // @ts-ignore
+              tableStartY = doc.lastAutoTable.finalY;
+          }
+
+          const complexHead = [ [ { content: 'LOKASI ADUAN', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }, { content: 'NO ADUAN', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } } ], [ { content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 8 } }, { content: aduanText, colSpan: 2, styles: { halign: 'center', fontSize: 8 } } ], ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'JUMLAH (RM)'] ];
+          // @ts-ignore
+          doc.autoTable({ head: complexHead, body: tableBody, theme: 'grid', startY: tableStartY, rowPageBreak: 'avoid', tableLineWidth: 0.1, tableLineColor: [0, 0, 0], styles: { fontSize: 8, cellPadding: 2, lineColor: 0, lineWidth: 0.1, textColor: 0 }, headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0 }, columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 13 }, 3: { cellWidth: 17 }, 4: { cellWidth: 25 }, 5: { cellWidth: 25 } }, margin: { top: 15, left: 10, right: 10, bottom: 20 }, showHead: 'everyPage' });
+          bqSectionIdx++;
+      }
+
+      doc.addPage(); const grandTotal = bqData.reduce((acc, g) => acc + g.items.reduce((s, i) => s + (i.amount||0), 0), 0);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text("SENARAI RINGKASAN", pageWidth/2, 20, { align: "center" }); doc.setLineWidth(0.5); doc.line(pageWidth/2 - 20, 21, pageWidth/2 + 20, 21);
+      const summaryBody = bqData.map(b => [ { content: b.title, styles: { fontStyle: 'bold' } }, { content: formatCurrency(b.items.reduce((s,i) => s+(i.amount||0), 0)).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } } ]);
+      summaryBody.push([ { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'center' } }, { content: formatCurrency(grandTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right' } } ]);
+      // @ts-ignore
+      doc.autoTable({ startY: 30, head: [['KETERANGAN', 'JUMLAH (RM)']], body: summaryBody, theme: 'grid', styles: { fontSize: 8, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1, textColor: 0 }, headStyles: { fillColor: 240, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0 }, columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40 } }, margin: { left: 20, right: 20 } });
+      // @ts-ignore
+      y = doc.lastAutoTable.finalY + 15;
+      doc.setFontSize(9); doc.setFont("helvetica", "normal"); const notes = "Sebelum kerja-kerja dimulakan pemborong dikehendaki melawat tapak bersama dengan Penolong Jurutera kawasan untuk mempastikan tempat dan menyelesaikan masalah berbangkit di tapak sebelum memulakan kerja. Kontraktor adalah dikecualikan daripada mengemukakkan Bon Perlaksanaan. Walaubagaimanapun, tempoh tanggungan kecacatan seperti di bawah juga dikenakan kepada kontraktor dan syarat ini hendaklah dinyatakan dalam surat tawaran.\n( Rujuk Kementerian Kewangan Surat Pekeliling Perbendaharaan Bil 3 Tahun 2007)";
+      const splitNotes = doc.splitTextToSize(notes, 170); doc.text(splitNotes, 20, y); y += (splitNotes.length * 5) + 10;
+      doc.setFont("helvetica", "bold"); doc.text("Nilai Projek", 20, y); doc.text("Tempoh Tanggungan Kecacatan", 100, y); y += 5; doc.setFont("helvetica", "normal"); doc.text("RM 10,000 - RM 100,000", 20, y); doc.text("6 Bulan dari tarikh kerja diperakukan siap", 100, y); y += 5; doc.text("Melebihi RM 100,000", 20, y); doc.text("12 bulan dari tarikh kerja diperakukan siap", 100, y);
+      y = 250; doc.setFont("helvetica", "bold"); doc.text("Disediakan oleh", 20, y); doc.text("Disemak oleh,", 120, y); y += 20; doc.line(20, y, 80, y); doc.line(120, y, 180, y);
+      doc.save(`BQ_Dokumen_${formData.noFail || 'Draft'}.pdf`);
+  };
+
+  const handleExportRealPelarasanPDF = async () => {
+      // @ts-ignore
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pjaUser = users.find(u => u.id === formData.pjaId);
+      const year = formData.tarikhBuka ? new Date(formData.tarikhBuka).getFullYear() : new Date().getFullYear();
+
+      // --- BQ PELARASAN PAGES ---
+      const pelarasanData = formData.bqDataPelarasan || [];
+      const originalData = formData.bqData || [];
+      
+      let pelSectionIdx = 0;
+      for (const bill of pelarasanData) {
+          doc.addPage();
+          const originalBill = originalData.find(b => b.id === bill.id);
+          const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN');
+          let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
+          let aduanText = isPermulaan ? (locationRows || []).map(l => l.aduan).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.aduan || '');
+
+          const tableBody = [];
+          const sideOnlyBorder = { top: 0, right: 0.1, bottom: 0, left: 0.1 };
+          const titleBorder = { top: 0.1, right: 0.1, bottom: 0, left: 0.1 };
+          const fullBorder = 0.1;
+
+          tableBody.push([{ content: bill.title, colSpan: 9, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fontSize: 8 } }]);
+
+          let itemIndex = 0;
+          for (const item of bill.items) {
+              const autoNum = getAutoNumber(bill.items, itemIndex);
+              const isHeader = item.type === 'HEADER';
+              const originalItem = originalBill?.items.find(i => i.id === item.id);
+              const origQty = originalItem?.qty || 0;
+              const origAmt = originalItem?.amount || 0;
+              const diff = (item.amount || 0) - origAmt;
+
+              let descText = item.description;
+              if (item.variant) descText += `\n${item.variant}`;
+              
+              if (!isHeader && item.calculationParts && item.calculationParts.length > 0) {
+                  const dims = item.calculationParts.filter(p => (p.hasLength && p.length>0) || (p.hasWidth && p.width>0) || (p.hasDepth && p.depth>0) || p.multiplier !== 1)
+                      .map(p => {
+                          const parts = [];
+                          if (p.hasLength) parts.push(`${p.length}m(P)`);
+                          if (p.hasWidth) parts.push(`${p.width}m(L)`);
+                          if (p.hasDepth) parts.push(`${p.depth}m(T)`);
+                          if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`);
+                          return parts.join(' x ');
+                      }).join('\n');
+                  if (dims) descText += `\n\nKiraan Laras:\n${dims}`;
+              }
+
+              tableBody.push([
+                  { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: descText, styles: { fontStyle: isHeader ? 'bold' : 'normal', lineWidth: sideOnlyBorder } },
+                  { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '').trim() : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: origQty || '', styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fillColor: [245, 245, 245] } },
+                  { content: origAmt ? formatCurrency(origAmt).replace('RM', '').trim() : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, fillColor: [245, 245, 245] } },
+                  { content: item.qty || '', styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: item.amount ? formatCurrency(item.amount).replace('RM', '').trim() : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: diff !== 0 ? (diff > 0 ? '+' : '') + formatCurrency(diff).replace('RM', '').trim() : '-', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: 'bold', textColor: diff > 0 ? [0, 100, 255] : (diff < 0 ? [255, 0, 0] : [0, 0, 0]) } }
+              ]);
+              itemIndex++;
+          }
+
+          const billTotalOrig = originalBill?.items.reduce((s, i) => s + (i.amount||0), 0) || 0;
+          const billTotalLaras = bill.items.reduce((s, i) => s + (i.amount||0), 0);
+          const billTotalDiff = billTotalLaras - billTotalOrig;
+
+          tableBody.push([
+              { content: `JUMLAH ${bill.title}`, colSpan: 5, styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } },
+              { content: formatCurrency(billTotalOrig).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [245, 245, 245] } },
+              { content: '', styles: { lineWidth: fullBorder } },
+              { content: formatCurrency(billTotalLaras).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } },
+              { content: formatCurrency(billTotalDiff).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } }
+          ]);
+
+          let tableStartY = 15;
+          if (pelSectionIdx === 0) {
+              // @ts-ignore
+              doc.autoTable({
+                  body: [[{ content: `JADUAL PELARASAN HARGA - ${formData.namaProjek?.toUpperCase()}`, colSpan: 9, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
+                  theme: 'grid',
+                  startY: 15,
+                  tableLineWidth: 0.1,
+                  tableLineColor: [0, 0, 0],
+                  styles: { fontSize: 7, cellPadding: 1, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+                  margin: { left: 10, right: 10 }
+              });
+              // @ts-ignore
+              tableStartY = doc.lastAutoTable.finalY;
+          }
+
+          const complexHead = [
+              [
+                  { content: 'LOKASI ADUAN', colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } },
+                  { content: 'NO ADUAN', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }
+              ],
+              [
+                  { content: locText, colSpan: 6, styles: { halign: 'center', fontSize: 7 } },
+                  { content: aduanText, colSpan: 3, styles: { halign: 'center', fontSize: 7 } }
+              ],
+              [
+                  { content: 'BIL', styles: { halign: 'center', fontSize: 7 } },
+                  { content: 'KETERANGAN', styles: { halign: 'center', fontSize: 7 } },
+                  { content: 'UNIT', styles: { halign: 'center', fontSize: 7 } },
+                  { content: 'KADAR (RM)', styles: { halign: 'center', fontSize: 7 } },
+                  { content: 'QTY (ASAL)', styles: { halign: 'center', fontSize: 7, fillColor: [230, 230, 230] } },
+                  { content: 'AMAUN (ASAL)', styles: { halign: 'center', fontSize: 7, fillColor: [230, 230, 230] } },
+                  { content: 'QTY (LARAS)', styles: { halign: 'center', fontSize: 7 } },
+                  { content: 'AMAUN (LARAS)', styles: { halign: 'center', fontSize: 7 } },
+                  { content: 'BEZA (RM)', styles: { halign: 'center', fontSize: 7 } }
+              ]
+          ];
+
+          // @ts-ignore
+          doc.autoTable({
+              head: complexHead,
+              body: tableBody,
+              theme: 'grid',
+              startY: tableStartY,
+              rowPageBreak: 'avoid',
+              tableLineWidth: 0.1,
+              tableLineColor: [0, 0, 0],
+              styles: { fontSize: 7, cellPadding: 1, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+              headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0 },
+              columnStyles: {
+                  0: { cellWidth: 8 },
+                  1: { cellWidth: 'auto' },
+                  2: { cellWidth: 10 },
+                  3: { cellWidth: 15 },
+                  4: { cellWidth: 15 },
+                  5: { cellWidth: 15 },
+                  6: { cellWidth: 15 },
+                  7: { cellWidth: 15 },
+                  8: { cellWidth: 15 }
+              },
+              margin: { top: 15, left: 10, right: 10, bottom: 20 },
+              showHead: 'everyPage'
+          });
+          pelSectionIdx++;
+      }
+
+      // --- SUMMARY PAGE ---
+      doc.addPage();
+      const grandTotalOriginal = originalData.reduce((sum, bill) => sum + bill.items.reduce((s, i) => s + (i.amount||0), 0), 0);
+      const grandTotalAdjusted = pelarasanData.reduce((sum, bill) => sum + bill.items.reduce((s, i) => s + (i.amount||0), 0), 0);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text("RINGKASAN PELARASAN HARGA", pageWidth/2, 20, { align: "center" });
+      doc.setLineWidth(0.5);
+      doc.line(pageWidth/2 - 30, 21, pageWidth/2 + 30, 21);
+
+      const summaryTableBody = pelarasanData.map(bill => {
+          const origTotal = originalData.find(b => b.id === bill.id)?.items.reduce((s,i) => s+(i.amount||0), 0) || 0;
+          const larasTotal = bill.items.reduce((s,i) => s+(i.amount||0), 0);
+          const diffTotal = larasTotal - origTotal;
+          return [
+              { content: bill.title, styles: { fontStyle: 'bold' } },
+              { content: formatCurrency(origTotal).replace('RM', '').trim(), styles: { halign: 'right' } },
+              { content: formatCurrency(larasTotal).replace('RM', '').trim(), styles: { halign: 'right' } },
+              { content: (diffTotal > 0 ? '+' : '') + formatCurrency(diffTotal).replace('RM', '').trim(), styles: { halign: 'right', fontStyle: 'bold', textColor: diffTotal > 0 ? [0, 100, 255] : (diffTotal < 0 ? [255, 0, 0] : [0,0,0]) } }
+          ];
+      });
+      
+      summaryTableBody.push([
+          { content: 'JUMLAH KESELURUHAN', styles: { fontStyle: 'bold', halign: 'center' } as any },
+          { content: formatCurrency(grandTotalOriginal).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right' } as any },
+          { content: formatCurrency(grandTotalAdjusted).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right' } as any },
+          { content: formatCurrency(grandTotalAdjusted - grandTotalOriginal).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right' } as any }
+      ]);
+
+      // @ts-ignore
+      doc.autoTable({
+          startY: 30,
+          head: [['KETERANGAN', 'ASAL (RM)', 'LARAS (RM)', 'BEZA (RM)']],
+          body: summaryTableBody,
+          theme: 'grid',
+          styles: { fontSize: 7, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+          headStyles: { fillColor: 240, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0, halign: 'center' },
+          columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 25 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 } },
+          margin: { left: 20, right: 20 }
+      });
+
+      // --- FINAL CONTRACT SUMMARY BLOCK ---
+      // @ts-ignore
+      let y = doc.lastAutoTable.finalY + 15;
+      doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.text("PELARASAN JUMLAH HARGA KONTRAK", 20, y);
+      
+      const cappedTotal = (grandTotalAdjusted > grandTotalOriginal) ? grandTotalOriginal : grandTotalAdjusted;
+      const deductions = (formData.ladAmount || 0) + (formData.wangTahanan || 0);
+      const finalPayment = cappedTotal - deductions;
+
+      const finalSummaryData = [
+          ["HARGA KONTRAK", formatCurrency(grandTotalOriginal).replace('RM', '').trim()],
+          ["HARGA PELARASAN", formatCurrency(grandTotalAdjusted).replace('RM', '').trim()],
+          ["WANG TAHANAN", formData.wangTahanan ? formatCurrency(formData.wangTahanan).replace('RM', '').trim() : '-'],
+          ["LAD", formData.ladAmount ? formatCurrency(formData.ladAmount).replace('RM', '').trim() : '-'],
+          ["LOC", "-"],
+          [{ content: "JUMLAH DIBAYAR KEPADA KONTRAKTOR", styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }, { content: formatCurrency(finalPayment).replace('RM', '').trim(), styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }]
+      ];
+
+      // @ts-ignore
+      doc.autoTable({
+          startY: y + 2,
+          body: finalSummaryData,
+          theme: 'grid',
+          styles: { fontSize: 7, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+          columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 30, halign: 'center', fontStyle: 'bold' } },
+          margin: { left: 20, right: 20 }
+      });
+
+      // --- ADD DLP SUMMARY ---
+      // @ts-ignore
+      y = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(8); doc.setFont("helvetica", "bold");
+      doc.text("Nilai Projek", 20, y);
+      doc.text("Tempoh Tanggungan kecacatan", 100, y);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      doc.text("RM 10, 000 - RM 100,000", 20, y);
+      doc.text("6 Bulan dari tarikh kerja diperakukan siap", 100, y);
+      y += 5;
+      doc.text("Melebihi RM 100,000", 20, y);
+      doc.text("12 bulan dari tarikh kerja diperakukan siap", 100, y);
+
+      // Signatures
+      y += 20;
+      doc.setFont("helvetica", "bold");
+      doc.text("Disediakan oleh", 20, y);
+      doc.text("Disemak oleh,", 120, y);
+      y += 20;
+      doc.line(20, y, 80, y);
+      doc.line(120, y, 180, y);
+      
+      doc.save(`BQ_Pelarasan_${formData.noFail || 'Draft'}.pdf`);
+  };
+
+  const grandTotal = formData.bqData?.reduce((acc, group) => { return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0); }, 0) || 0;
+  const pelarasanTotal = formData.bqDataPelarasan?.reduce((acc, group) => { return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0); }, 0) || 0;
+  const finalTotalDisplay = activeTab === 'phase3' ? pelarasanTotal : undefined;
 
   const actionButtons = (
     <div className="flex items-center gap-2">
-       <button 
-          onClick={handleBackClick} 
-          className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 p-2 rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center"
-          title="Kembali ke Senarai"
-      >
-          <ArrowLeft className="w-4 h-4" /> 
-          <span className="hidden sm:inline ml-1">Kembali</span>
-      </button>
-      <button 
-          onClick={handleSaveClick} 
-          disabled={isSaving} 
-          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white p-2 rounded-lg font-bold text-xs shadow-md shadow-emerald-500/30 transition-all flex items-center justify-center"
-          title="Simpan Projek"
-      >
-          <Save className="w-4 h-4" /> 
-          <span className="hidden sm:inline ml-1">{isSaving ? '...' : 'Simpan'}</span>
-      </button>
+       <button onClick={handleBackClick} className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 p-2 rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center" title="Kembali ke Senarai"> <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline ml-1">Kembali</span> </button>
+      {!isGlobalReadOnly && (
+        <button onClick={handleSaveClick} disabled={isSaving} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white p-2 rounded-lg font-bold text-xs shadow-md shadow-emerald-500/30 transition-all flex items-center justify-center" title="Simpan Projek"> <Save className="w-4 h-4" /> <span className="hidden sm:inline ml-1">{isSaving ? '...' : 'Simpan'}</span> </button>
+      )}
     </div>
   );
 
   const exportButton = (
-     <button 
-        onClick={handleExportPDF}
-        disabled={isExporting}
-        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg font-bold shadow-md transition-all hover:scale-105 disabled:opacity-70 disabled:scale-100 text-xs"
-     >
-        {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <Download className="w-3.5 h-3.5"/>}
-        <span>Muat Turun PDF</span>
-     </button>
+     <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg font-bold shadow-md transition-all hover:scale-105 disabled:opacity-70 disabled:scale-100 text-xs" > {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <Download className="w-3.5 h-3.5"/>} <span>PDF</span> </button>
   );
 
-  // ... [Keep rest of layout] ...
-  const inputClass = "w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700/50 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm shadow-sm dark:shadow-inner";
+  const inputClass = "w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700/50 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm shadow-sm dark:shadow-inner disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:cursor-not-allowed";
   const labelClass = "block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 font-jakarta";
-
   const yellowPhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-yellow-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
   const bluePhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-blue-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
   const orangePhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-orange-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
-  const indigoPhaseClass = "bg-white/80 dark:bg-[#0f172a]/80 border border-indigo-500/30 p-8 rounded-3xl animate-fade-in-up shadow-xl dark:shadow-2xl relative overflow-hidden backdrop-blur-sm";
+
+  const pjaUser = users.find(u => u.id === formData.pjaId);
 
   return (
     <div className={`relative min-h-screen text-slate-900 dark:text-slate-200 ${isPrintView ? 'pb-12 bg-gray-100' : 'pb-20'}`}>
-      
-      {/* Existing CostHUD ... */}
-      <CostHUD 
-          grandTotal={grandTotal}
-          finalTotal={finalTotalDisplay}
-          isPelarasanActive={activeTab === 'phase3'}
-          status={formData.status || ProjectStatus.MENUNGGU_LANTIKAN}
-          progress={formData.peratusSiap || 0}
-          onStatusChange={handleInputChange}
-          onProgressChange={(val) => setFormData(prev => ({ ...prev, peratusSiap: val }))}
-          saveAction={actionButtons}
-          exportAction={exportButton}
-          isPrintView={isPrintView}
-          onToggleView={(view) => setIsPrintView(view === 'print')}
-      />
-
-      {/* Main Content Area */}
+      <CostHUD grandTotal={grandTotal} finalTotal={finalTotalDisplay} isPelarasanActive={activeTab === 'phase3'} status={formData.status || ProjectStatus.MENUNGGU_LANTIKAN} progress={formData.peratusSiap || 0} onStatusChange={handleInputChange} onProgressChange={(val) => setFormData(prev => ({ ...prev, peratusSiap: val }))} saveAction={actionButtons} exportAction={exportButton} isPrintView={isPrintView} onToggleView={(view) => setIsPrintView(view === 'print')} isReadOnly={isGlobalReadOnly} />
       <div className={`${isPrintView ? 'pt-20' : 'pt-24'}`}>
-        {/* ... [Header] ... */}
         {!isPrintView && (
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 px-2 no-print gap-4">
             <div className="flex items-center gap-4">
               <div>
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-1.5 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"></div>
-                  <div>
-                      <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}</h1>
-                      <p className="text-xs text-slate-500 font-mono mt-0.5 uppercase tracking-wider">{formData.noFail || 'No. Fail Belum Ditetapkan'}</p>
-                  </div>
+                  <div> <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}</h1> <p className="text-xs text-slate-500 font-mono mt-0.5 uppercase tracking-wider">{formData.noFail || 'No. Fail Belum Ditetapkan'}</p> </div>
                 </div>
               </div>
             </div>
+            {isGlobalReadOnly && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/50 text-xs font-bold shadow-sm">
+                <Lock className="w-4 h-4" /> Mode Paparan Sahaja
+              </div>
+            )}
           </div>
         )}
-
-        {/* ... [Tabs] ... */}
         {!isPrintView && (
           <div className="mb-6">
               <div className="grid grid-cols-4 bg-slate-100 dark:bg-slate-900/50 p-1 rounded-2xl gap-2 border border-slate-200 dark:border-slate-800">
-                  {TABS.map((tab) => (
-                      <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`px-2 py-3 md:px-4 md:py-3 rounded-xl text-[10px] md:text-xs font-bold transition-all flex flex-col md:flex-row items-center justify-center gap-2 border border-transparent ${
-                          activeTab === tab.id 
-                          ? `${tab.color}` 
-                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
-                      }`}
-                      >
-                      {tab.label}
-                      </button>
-                  ))}
+                  {TABS.map((tab) => ( <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-2 py-3 md:px-4 md:py-3 rounded-xl text-[10px] md:text-xs font-bold transition-all flex flex-col md:flex-row items-center justify-center gap-2 border border-transparent ${ activeTab === tab.id ? `${tab.color}` : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200' }`} > {tab.label} </button> ))}
               </div>
           </div>
         )}
-
-        {/* ... [Phase 1 & 2 content remains same] ... */}
         {activeTab === 'phase1' && (
           <div className="space-y-4">
             <div className={`${yellowPhaseClass} ${isPrintView ? 'hidden' : ''}`}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
-                <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 mb-6 flex items-center gap-3">
-                  <Zap className="h-5 w-5"/> Maklumat Asas (PJA)
-                </h3>
-                
+                <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 mb-6 flex items-center gap-3"> <Zap className="h-5 w-5"/> Maklumat Asas (PJA) </h3>
                 <div className="flex flex-col gap-6">
-                  {/* ... Phase 1 fields ... */}
-                  <div className="group w-full">
-                    <label className={labelClass}>Cadangan Kerja (Nama Projek)</label>
-                    <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} className={`${inputClass} min-h-[60px] text-sm resize-y`} placeholder="CADANGAN KERJA-KERJA..." />
-                  </div>
-                  
+                  <div className="group w-full"> <label className={labelClass}>Cadangan Kerja (Nama Projek)</label> <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} min-h-[60px] text-sm font-bold resize-y`} placeholder="CADANGAN KERJA-KERJA..." /> </div>
                   <div className="group w-full bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm">
                       <div className="flex items-center justify-between mb-3">
-                         <div className="flex items-center gap-2">
-                            <div className="w-1 h-3 bg-emerald-500 rounded-full"></div>
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Lokasi & No. Aduan</label>
-                         </div>
-                         <button 
-                            type="button" 
-                            onClick={addLocationRow}
-                            className="text-[10px] flex items-center gap-1 bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-bold transition-all shadow-sm"
-                         >
-                            <Plus className="w-3 h-3" /> Tambah Lokasi
-                         </button>
+                         <div className="flex items-center gap-2"> <div className="w-1 h-3 bg-emerald-500 rounded-full"></div> <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Lokasi & No. Aduan</label> </div>
+                         {!isGlobalReadOnly && (
+                           <button type="button" onClick={addLocationRow} className="text-[10px] flex items-center gap-1 bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-bold transition-all shadow-sm" > <Plus className="w-3 h-3" /> Tambah Lokasi </button>
+                         )}
                       </div>
                       <div className="space-y-2 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
                           {locationRows.map((row, idx) => (
                               <div key={row.id} className="flex flex-col md:flex-row gap-2 items-start animate-fade-in group/row">
-                                  <div className="w-full md:flex-[2] relative">
-                                      <span className="absolute left-3 top-3.5 text-xs font-bold text-slate-400 select-none">{idx + 1}.</span>
-                                      <input 
-                                          type="text" 
-                                          value={row.lokasi} 
-                                          onChange={(e) => updateLocationRow(row.id, 'lokasi', e.target.value)}
-                                          className={`${inputClass} pl-8 py-2 text-xs ${!row.lokasi ? 'border-red-200 dark:border-red-900/30 focus:border-red-500' : ''}`}
-                                          placeholder="Lokasi"
-                                          required
-                                      />
-                                  </div>
-                                  <div className="w-full md:flex-1 flex gap-2">
-                                      <input 
-                                          type="text" 
-                                          value={row.aduan} 
-                                          onChange={(e) => updateLocationRow(row.id, 'aduan', e.target.value)}
-                                          className={`${inputClass} py-2 text-xs dark:bg-[#162032] dark:border-slate-600 dark:text-white`}
-                                          placeholder="Aduan"
-                                      />
-                                      <button 
-                                          type="button" 
-                                          onClick={() => removeLocationRow(row.id)}
-                                          className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-white/5 border border-transparent hover:border-red-100 dark:hover:border-red-900/30 transition-all shadow-sm"
-                                          title="Padam Baris"
-                                      >
-                                          <X className="w-4 h-4" />
-                                      </button>
-                                  </div>
+                                  <div className="w-full md:flex-[2] relative"> <span className="absolute left-3 top-3.5 text-xs font-bold text-slate-400 select-none">{idx + 1}.</span> <input type="text" value={row.lokasi} onChange={(e) => updateLocationRow(row.id, 'lokasi', e.target.value)} disabled={isGlobalReadOnly} className={`${inputClass} pl-8 py-2 text-xs ${!row.lokasi ? 'border-red-200 dark:border-red-900/30 focus:border-red-500' : ''}`} placeholder="Lokasi" required /> </div>
+                                  <div className="w-full md:flex-1 flex gap-2"> <input type="text" value={row.aduan} onChange={(e) => updateLocationRow(row.id, 'aduan', e.target.value)} disabled={isGlobalReadOnly} className={`${inputClass} py-2 text-xs dark:bg-[#162032] dark:border-slate-600 dark:text-white`} placeholder="Aduan" /> {!isGlobalReadOnly && <button type="button" onClick={() => removeLocationRow(row.id)} className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-white/5 border border-transparent hover:border-red-100 dark:hover:border-red-900/30 transition-all shadow-sm" title="Padam Baris" > <X className="w-4 h-4" /> </button>} </div>
                               </div>
                           ))}
                       </div>
                   </div>
-
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="group">
-                        <label className={labelClass}>BP</label>
-                        <select name="bp" value={formData.bp} onChange={handleInputChange} className={`${inputClass} py-2`}>
-                        <option value="">Pilih...</option>
-                        {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
-                        </select>
-                    </div>
-                    <div className="group">
-                        <label className={labelClass}>Zon</label>
-                        <select name="zon" value={formData.zon} onChange={handleInputChange} className={`${inputClass} py-2`}>
-                        <option value="">Pilih...</option>
-                        {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
-                        </select>
-                    </div>
-                    <div className="group">
-                        <label className={labelClass}>Tarikh Buka</label>
-                        <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} className={`${inputClass} py-2`} />
-                    </div>
-                    <div className="group">
-                        <label className={labelClass}>Pegawai (PJA)</label>
-                        <select 
-                            name="pjaId" 
-                            value={formData.pjaId || ''} 
-                            onChange={handlePjaChange} 
-                            className={`${inputClass} py-2`}
-                        >
-                            <option value="">Pilih...</option>
-                            {users.map(u => (
-                                <option key={u.id} value={u.id}>
-                                    {u.role === Role.ADMIN ? 'PT' : 'PJA'} {u.username.toUpperCase()}
-                                </option>
-                            ))}
-                        </select>
+                    <div className="group"> <label className={labelClass}>BP</label> <select name="bp" value={formData.bp} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)} </select> </div>
+                    <div className="group"> <label className={labelClass}>Zon</label> <select name="zon" value={formData.zon} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)} </select> </div>
+                    <div className="group"> <label className={labelClass}>Tarikh Buka</label> <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`} /> </div>
+                    
+                    {/* UPDATED PJA SELECTION CARD STYLE */}
+                    <div className="group"> 
+                       <label className={labelClass}>Pegawai (PJA)</label> 
+                       <div className="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:border-emerald-300">
+                           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 overflow-hidden shadow-md text-white font-black">
+                               {pjaUser?.avatarUrl ? (
+                                   <img src={pjaUser.avatarUrl} alt="PJA" className="w-full h-full object-cover" />
+                               ) : (
+                                   pjaUser?.username?.substring(0,2).toUpperCase() || 'PJA'
+                               )}
+                           </div>
+                           <div className="flex-1 min-w-0">
+                               <select name="pjaId" value={formData.pjaId || ''} onChange={handlePjaChange} disabled={isPJA || isGlobalReadOnly} className="w-full bg-transparent border-none outline-none text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer p-0 m-0" > 
+                                   <option value="">Pilih PJA...</option> 
+                                   {users.map(u => ( <option key={u.id} value={u.id}> {u.username.toUpperCase()} </option> ))} 
+                               </select>
+                               {pjaUser && <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{pjaUser.role.toLowerCase()}</p>}
+                           </div>
+                       </div>
                     </div>
                   </div>
                 </div>
             </div>
-
             <div id="pdf-export-container" className={`flex flex-col items-center gap-0 ${isPrintView ? 'w-full' : 'w-full'}`}>
-                {isPrintView && (
-                     <CoverPageEditor 
-                        project={formData as Project} 
-                        selectedYear={selectedYear}
-                        pjaUser={users.find(u => u.id === formData.pjaId)}
-                        onUpdate={handleCoverPageUpdate}
-                        isPrintView={true}
-                     />
-                )}
+                {isPrintView && ( <CoverPageEditor project={formData as Project} selectedYear={selectedYear} pjaUser={users.find(u => u.id === formData.pjaId)} onUpdate={handleCoverPageUpdate} isPrintView={true} /> )}
                 <div className={`${isPrintView ? '' : 'rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 flex flex-col h-auto overflow-visible w-full'}`}>
-                    {!isPrintView && (
-                      <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 rounded-t-[2rem]">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                              <Calculator className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight">Penyediaan BQ</h3>
-                              <p className="text-xs text-slate-500 font-medium">Wizard Mode</p>
-                            </div>
-                          </div>
-                      </div>
-                    )}
-                    <div className={`${isPrintView ? '' : 'bg-slate-50/50 dark:bg-[#0f172a]/30 flex-1 relative rounded-b-[2rem]'}`}>
-                      <BQEditor 
-                          initialData={formData.bqData} 
-                          onDataChange={handleBQChange}
-                          projectData={formData as Project}
-                          isPrintView={isPrintView}
-                          onPreviewCostChange={setPreviewCost}
-                          locationRows={locationRows}
-                          onLocationDimensionsChange={handleLocationDimensionsChange}
-                          onShowToast={onShowToast}
-                      />
-                    </div>
+                    {!isPrintView && ( <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 rounded-t-[2rem]"> <div className="flex items-center gap-4"> <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20"> <Calculator className="w-5 h-5" /> </div> <div> <h3 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight">Penyediaan BQ</h3> <p className="text-xs text-slate-500 font-medium">Wizard Mode</p> </div> </div> </div> )}
+                    <div className={`${isPrintView ? '' : 'bg-slate-50/50 dark:bg-[#0f172a]/30 flex-1 relative rounded-b-[2rem]'}`}> <BQEditor initialData={formData.bqData} onDataChange={handleBQChange} projectData={formData as Project} isPrintView={isPrintView} onPreviewCostChange={setPreviewCost} locationRows={locationRows} onLocationDimensionsChange={handleLocationDimensionsChange} onShowToast={onShowToast} readOnly={isGlobalReadOnly} /> </div>
                 </div>
             </div>
           </div>
         )}
-
         {activeTab === 'phase2' && (
           <div className="space-y-6">
             {!isPrintView && (
             <div className={bluePhaseClass}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
-                <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-8 flex items-center gap-3">
-                  <Folder className="h-5 w-5"/> Maklumat Fail & Kontrak (PT)
-                </h3>
-                
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4"> <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 flex items-center gap-3"> <Folder className="h-5 w-5"/> Maklumat Fail & Kontrak (PT) </h3> <button onClick={() => setIsNotisOpen(true)} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all shadow-red-500/20" > <Megaphone className="w-4 h-4" /> Jana Notis </button> </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
-                  {/* 1. No. Fail */}
-                  <div className="group">
-                      <label className={labelClass}>No. Fail</label>
-                      <input type="text" name="noFail" value={formData.noFail} onChange={handleInputChange} className={inputClass} />
-                  </div>
-
-                  {/* 2. Nama Syarikat (remove the name Nama Projek) */}
-                  <div className="group lg:col-span-2">
-                      <label className={labelClass}>Nama Syarikat</label>
-                      <select name="namaSyarikat" value={formData.namaSyarikat} onChange={handleInputChange} className={inputClass}>
-                          <option value="">Pilih Syarikat...</option>
-                          {companies.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                  </div>
-
-                  {/* 3. Bulan */}
-                  <div className="group">
-                      <label className={labelClass}>Bulan</label>
-                      <select name="bulan" value={formData.bulan} onChange={handleInputChange} className={inputClass}>
-                        <option value="">Pilih...</option>
-                        {['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'].map(m => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                  </div>
-
-                  {/* 4. No. Vot (Remove the dropdown text) */}
-                  <div className="group">
-                      <label className={labelClass}>No. Vot</label>
-                      <select name="noVote" value={formData.noVote} onChange={handleInputChange} className={inputClass}>
-                          <option value="">Pilih Vot...</option>
-                          {voteNumbers.map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
-                  </div>
-
-                  {/* 5. Tarikh Lantikan */}
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Lantikan</label>
-                      <StrictDateInput name="tarikhLantikan" value={formData.tarikhLantikan} onChange={handleInputChange} className={inputClass} />
-                  </div>
-
-                  {/* 6. Tarikh BPP */}
-                  <div className="group">
-                      <label className={labelClass}>Tarikh BPP</label>
-                      <StrictDateInput name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp} onChange={handleInputChange} className={inputClass} />
-                  </div>
-
-                  {/* 7. Tempoh Kontrak */}
-                  <div className="group">
-                      <label className={labelClass}>Tempoh Kontrak</label>
-                      <div className="flex gap-2">
-                          <input 
-                              type="number" 
-                              value={tempohVal || ''} 
-                              onChange={(e) => setTempohVal(Number(e.target.value))} 
-                              className={`${inputClass} flex-1`}
-                              placeholder="0" 
-                          />
-                          <select 
-                              value={tempohUnit} 
-                              onChange={(e) => setTempohUnit(e.target.value as any)} 
-                              className={`${inputClass} w-32`}
-                          >
-                              <option value="Minggu">Minggu</option>
-                              <option value="Bulan">Bulan</option>
-                              <option value="Tahun">Tahun</option>
-                          </select>
-                      </div>
-                  </div>
-
-                  {/* 8. Tarikh Mula Kontrak */}
-                  <div className="group">
-                      <div className="flex justify-between items-center mb-1">
-                          <label className={labelClass}>Tarikh Mula Kontrak</label>
-                          <button 
-                            type="button" 
-                            onClick={() => setManualMulaKontrak(!manualMulaKontrak)}
-                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500"
-                            title={manualMulaKontrak ? "Reset to Auto" : "Manual Edit"}
-                          >
-                             {manualMulaKontrak ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>}
-                             {manualMulaKontrak ? "Manual" : "Auto"}
-                          </button>
-                      </div>
-                      <StrictDateInput 
-                        name="tarikhMulaKontrak" 
-                        value={formData.tarikhMulaKontrak} 
-                        onChange={handleInputChange} 
-                        className={`${inputClass} ${!manualMulaKontrak ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-emerald-500/20'}`}
-                        readOnly={!manualMulaKontrak}
-                      />
-                      {!manualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari BPP (Business Days)</p>}
-                  </div>
-
-                  {/* 9. Tarikh Tamat Kontrak */}
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label>
-                      <StrictDateInput 
-                        name="tarikhTamatKontrak" 
-                        value={formData.tarikhTamatKontrak} 
-                        onChange={() => {}} 
-                        className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 cursor-not-allowed`}
-                        readOnly 
-                      />
-                  </div>
-
-                  {/* 10. No. BPP */}
-                  <div className="group">
-                      <label className={labelClass}>No. BPP</label>
-                      <input type="text" name="noBpp" value={formData.noBpp || ''} onChange={handleInputChange} className={inputClass} />
-                  </div>
-
-                  {/* 11. Tarikh Serah Tapak */}
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Serah Tapak</label>
-                      <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak} onChange={handleInputChange} className={inputClass} />
-                  </div>
-
-                  {/* 12. ISO */}
-                  <div className="group">
-                      <label className={labelClass}>ISO (BPP ke Serah Tapak)</label>
-                      <input 
-                        type="text" 
-                        name="iso" 
-                        value={formData.iso} 
-                        className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 font-mono`}
-                        readOnly
-                        placeholder="Auto calc..."
-                      />
-                      <p className="text-[10px] text-slate-400 mt-1 italic">Hari bekerja sahaja</p>
-                  </div>
-
-                  {/* 13. Tarikh Mula Kerja */}
-                  <div className="group">
-                      <div className="flex justify-between items-center mb-1">
-                          <label className={labelClass}>Tarikh Mula Kerja</label>
-                          <button 
-                            type="button" 
-                            onClick={() => setManualMulaKerja(!manualMulaKerja)}
-                            className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500"
-                            title={manualMulaKerja ? "Reset to Auto" : "Manual Edit"}
-                          >
-                             {manualMulaKerja ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>}
-                             {manualMulaKerja ? "Manual" : "Auto"}
-                          </button>
-                      </div>
-                      <StrictDateInput 
-                        name="tarikhMulaKerja" 
-                        value={formData.tarikhMulaKerja} 
-                        onChange={handleInputChange} 
-                        className={`${inputClass} ${!manualMulaKerja ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-emerald-500/20'}`}
-                        readOnly={!manualMulaKerja}
-                      />
-                      {!manualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari Serah Tapak (Business Days)</p>}
-                  </div>
-
-                  {/* 14. No. Inden (remove the Pesanan Rasmi text) */}
-                  <div className="group">
-                      <label className={labelClass}>No. Inden</label>
-                      <input type="text" name="noInden" value={formData.noInden || ''} onChange={handleInputChange} className={inputClass} placeholder="cth: A00321423" />
-                  </div>
-
-                  {/* 15. No. Sebutharga (remove the Dropdown text) */}
-                  <div className="group">
-                      <label className={labelClass}>No. Sebutharga</label>
-                      <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} className={inputClass}>
-                          <option value="">Pilih No. Sebutharga...</option>
-                          {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)}
-                      </select>
-                  </div>
-
+                  <div className="group"> <label className={labelClass}>No. Fail</label> <input type="text" name="noFail" value={formData.noFail} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                  <div className="group lg:col-span-2"> <label className={labelClass}>Nama Syarikat</label> <select name="namaSyarikat" value={formData.namaSyarikat} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih Syarikat...</option> {companies.map(c => <option key={c} value={c}>{c}</option>)} </select> </div>
+                  <div className="group"> <label className={labelClass}>Bulan</label> <select name="bulan" value={formData.bulan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih...</option> {['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'].map(m => ( <option key={m} value={m}>{m}</option> ))} </select> </div>
+                  <div className="group"> <label className={labelClass}>No. Vot</label> <select name="noVote" value={formData.noVote} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih Vot...</option> {voteNumbers.map(v => <option key={v} value={v}>{v}</option>)} </select> </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Lantikan</label> <StrictDateInput name="tarikhLantikan" value={formData.tarikhLantikan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>Tarikh BPP</label> <StrictDateInput name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>Tempoh Kontrak</label> <div className="flex gap-2"> <input type="number" value={tempohVal || ''} onChange={(e) => setTempohVal(Number(e.target.value))} disabled={isPTSectionReadOnly} className={`${inputClass} flex-1`} placeholder="0" /> <select value={tempohUnit} onChange={(e) => setTempohUnit(e.target.value as any)} disabled={isPTSectionReadOnly} className={`${inputClass} w-32`} > <option value="Minggu">Minggu</option> <option value="Bulan">Bulan</option> <option value="Tahun">Tahun</option> </select> </div> </div>
+                  <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kontrak</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setManualMulaKontrak(!manualMulaKontrak)} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={manualMulaKontrak ? "Reset to Auto" : "Manual Edit"} > {manualMulaKontrak ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>} {manualMulaKontrak ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKontrak" value={formData.tarikhMulaKontrak} onChange={handleInputChange} disabled={isPTSectionReadOnly || !manualMulaKontrak} className={`${inputClass} ${(!manualMulaKontrak || isPTSectionReadOnly) ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!manualMulaKontrak} /> {!manualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari BPP (Business Days)</p>} </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label> <StrictDateInput name="tarikhTamatKontrak" value={formData.tarikhTamatKontrak} onChange={() => {}} className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 cursor-not-allowed`} readOnly /> </div>
+                  <div className="group"> <label className={labelClass}>No. BPP</label> <input type="text" name="noBpp" value={formData.noBpp || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Serah Tapak</label> <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>ISO (BPP ke Serah Tapak)</label> <input type="text" name="iso" value={formData.iso} className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 font-mono`} readOnly placeholder="Auto calc..." /> <p className="text-[10px] text-slate-400 mt-1 italic">Hari bekerja sahaja</p> </div>
+                  <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kerja</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setManualMulaKerja(!manualMulaKerja)} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={manualMulaKerja ? "Reset to Auto" : "Manual Edit"} > {manualMulaKerja ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>} {manualMulaKerja ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKerja" value={formData.tarikhMulaKerja} onChange={handleInputChange} disabled={isPTSectionReadOnly || !manualMulaKerja} className={`${inputClass} ${(!manualMulaKerja || isPTSectionReadOnly) ? 'bg-slate-50 dark:bg-slate-800/50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!manualMulaKerja} /> {!manualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari Serah Tapak (Business Days)</p>} </div>
+                  <div className="group"> <label className={labelClass}>No. Inden</label> <input type="text" name="noInden" value={formData.noInden || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} placeholder="cth: A00321423" /> </div>
+                  <div className="group"> <label className={labelClass}>No. Sebutharga</label> <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih No. Sebutharga...</option> {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)} </select> </div>
                 </div>
             </div>
             )}
-
             <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'overflow-hidden'}`}>
-                {!isPrintView && (
-                  <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                          <FileSignature className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Dokumen Aku Janji</h3>
-                          <p className="text-xs text-slate-500 font-medium">Jana dan cetak dokumen rasmi</p>
-                        </div>
-                      </div>
-                  </div>
-                )}
-                
-                <div className="p-6 bg-slate-50/50 dark:bg-[#0f172a]/30">
-                     <AkuJanjiEditor 
-                        project={formData as Project} 
-                        selectedYear={selectedYear}
-                        pjaUser={users.find(u => u.id === formData.pjaId)}
-                        onUpdate={handleAkuJanjiUpdate}
-                        isPrintView={isPrintView}
-                     />
-                </div>
+                {!isPrintView && ( <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10"> <div className="flex items-center gap-4"> <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20"> <FileSignature className="w-6 h-6" /> </div> <div> <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Dokumen Aku Janji</h3> <p className="text-xs text-slate-500 font-medium">Jana dan cetak dokumen rasmi</p> </div> </div> </div> )}
+                <div className="p-6 bg-slate-50/50 dark:bg-[#0f172a]/30"> <AkuJanjiEditor project={formData as Project} selectedYear={selectedYear} pjaUser={users.find(u => u.id === formData.pjaId)} onUpdate={handleAkuJanjiUpdate} isPrintView={isPrintView} readOnly={isGlobalReadOnly} /> </div>
             </div>
           </div>
         )}
-
-        {/* --- PHASE 3: PELARASAN --- */}
         {activeTab === 'phase3' && (
           <div className="space-y-6">
             <div className={`${yellowPhaseClass} ${isPrintView ? 'hidden' : ''}`}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4">
-                    <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 flex items-center gap-3">
-                        <Info className="h-5 w-5"/> BQ Pelarasan Building
-                    </h3>
-                    
+                    <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-500 flex items-center gap-3"> <Info className="h-5 w-5"/> BQ Pelarasan Building </h3>
                     <div className="flex flex-wrap gap-2">
-                        {/* CPC Certificate Button */}
-                        <button 
-                            onClick={() => setIsCPCOpen(true)}
-                            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
-                        >
-                            <Award className="w-4 h-4" />
-                            Jana CPC (Siap Kerja)
-                        </button>
-
-                        {/* LAD Certificate Button */}
-                        <button 
-                            onClick={() => setIsLADOpen(true)}
-                            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
-                        >
-                            <FileWarning className="w-4 h-4" />
-                            Jana Perakuan LAD
-                        </button>
-
-                        {/* Prestasi Button */}
-                        <button 
-                            onClick={() => setIsPrestasiOpen(true)}
-                            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
-                        >
-                            <Star className="w-4 h-4" />
-                            Borang Penilaian Prestasi
-                        </button>
+                        <button onClick={() => setIsCPCOpen(true)} className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all" > <Award className="w-4 h-4" /> CPC (Siap Kerja) </button>
+                        <button onClick={() => setIsLADOpen(true)} className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all" > <FileWarning className="w-4 h-4" /> Perakuan LAD </button>
+                        <button onClick={() => setIsPrestasiOpen(true)} className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all" > <Star className="w-4 h-4" /> Borang Penilaian Prestasi </button>
                     </div>
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Pemeriksaan</label>
-                      <StrictDateInput name="tarikhPemeriksaan" value={formData.tarikhPemeriksaan} onChange={handleInputChange} className={inputClass} />
-                  </div>
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Siap (Sebenar)</label>
-                      <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar} onChange={handleInputChange} className={inputClass} />
-                  </div>
-                  <div className="group">
-                      <label className={labelClass}>Prestasi (%) - Auto</label>
-                      <div className="relative">
-                        <input 
-                            type="text" 
-                            name="prestasi" 
-                            value={formData.prestasi || ''} 
-                            readOnly
-                            className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed`} 
-                            placeholder="0%" 
-                        />
-                      </div>
-                  </div>
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Tuntutan Bayaran</label>
-                      <StrictDateInput name="tarikhTuntutanBayaran" value={formData.tarikhTuntutanBayaran || ''} onChange={handleInputChange} className={inputClass} />
-                  </div>
-                  
-                   <div className="group">
-                      <label className={labelClass}>Hari LAD (Auto)</label>
-                      <input 
-                        type="number" 
-                        name="ladDays" 
-                        value={formData.ladDays || 0} 
-                        onChange={() => {}} // Read-only derived
-                        className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-red-500 font-bold`} 
-                        readOnly
-                      />
-                  </div>
-                  <div className="group">
-                      <label className={labelClass}>Jumlah LAD (RM) (Auto)</label>
-                      <input 
-                        type="text" 
-                        name="ladAmount" 
-                        value={formatCurrency(formData.ladAmount || 0)} 
-                        onChange={() => {}} 
-                        className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-red-500 font-bold`} 
-                        readOnly
-                      />
-                  </div>
-                  
-                  <div className="group">
-                      <label className={labelClass}>Wang Tahanan (RM)</label>
-                      <input type="number" name="wangTahanan" value={formData.wangTahanan} onChange={handleInputChange} className={inputClass} placeholder="0.00" />
-                  </div>
-
-                  <div className="group">
-                      <label className={labelClass}>Kos Sebenar (Auto Calc)</label>
-                      <div className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-slate-600 font-bold flex items-center`}>
-                          {formatCurrency(formData.kosSebenar)}
-                      </div>
-                  </div>
-
+                  <div className="group"> <label className={labelClass}>Tarikh Pemeriksaan</label> <StrictDateInput name="tarikhPemeriksaan" value={formData.tarikhPemeriksaan} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Siap (Sebenar)</label> <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>Prestasi (%) - Auto</label> <div className="relative"> <input type="text" name="prestasi" value={formData.prestasi || ''} readOnly className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed`} placeholder="0%" /> </div> </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Tuntutan Bayaran</label> <StrictDateInput name="tarikhTuntutanBayaran" value={formData.tarikhTuntutanBayaran || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>Hari LAD (Auto)</label> <input type="number" name="ladDays" value={formData.ladDays || 0} onChange={() => {}} className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-red-500 font-bold`} readOnly /> </div>
+                  <div className="group"> <label className={labelClass}>Jumlah LAD (RM) (Auto)</label> <input type="text" name="ladAmount" value={formatCurrency(formData.ladAmount || 0)} onChange={() => {}} className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-red-500 font-bold`} readOnly /> </div>
+                  <div className="group"> <label className={labelClass}>Wang Tahanan (RM)</label> <input type="number" name="wangTahanan" value={formData.wangTahanan} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} placeholder="0.00" /> </div>
+                  <div className="group"> <label className={labelClass}>Kos Sebenar (Auto Calc)</label> <div className={`${inputClass} bg-slate-100 dark:bg-slate-800 text-slate-600 font-bold flex items-center`}> {formatCurrency(formData.kosSebenar)} </div> </div>
                 </div>
             </div>
-
             <div className={`rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/50 dark:bg-[#0f172a]/40 ${isPrintView ? 'min-h-[60vh] bg-white text-black' : 'flex flex-col h-auto overflow-visible w-full'}`}>
-                {!isPrintView && (
-                  <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-                          <Edit className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Pelarasan BQ</h3>
-                          <p className="text-xs text-slate-500 font-medium">Bandingkan dengan kontrak asal & buat pelarasan</p>
-                        </div>
-                      </div>
-                  </div>
-                )}
-                <div className="bg-slate-50/50 dark:bg-[#0f172a]/30">
-                  <BQPelarasanEditor 
-                      originalData={formData.bqData || []}
-                      pelarasanData={formData.bqDataPelarasan || []}
-                      onDataChange={handleBQPelarasanChange}
-                      projectData={formData as Project}
-                      isPrintView={isPrintView}
-                      locationRows={locationRows}
-                      locationDimensionsPelarasan={formData.locationDimensionsPelarasan || {}}
-                      onLocationDimensionsPelarasanChange={handleLocationDimensionsPelarasanChange}
-                  />
-                </div>
+                {!isPrintView && ( <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10"> <div className="flex items-center gap-4"> <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20"> <Edit className="w-6 h-6" /> </div> <div> <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Pelarasan BQ</h3> <p className="text-xs text-slate-500 font-medium">Bandingkan dengan kontrak asal & buat pelarasan</p> </div> </div> </div> )}
+                <div className="bg-slate-50/50 dark:bg-[#0f172a]/30"> <BQPelarasanEditor originalData={formData.bqData || []} pelarasanData={formData.bqDataPelarasan || []} onDataChange={handleBQPelarasanChange} projectData={formData as Project} isPrintView={isPrintView} locationRows={locationRows} locationDimensionsPelarasan={formData.locationDimensionsPelarasan || {}} onLocationDimensionsPelarasanChange={handleLocationDimensionsPelarasanChange} readOnly={isGlobalReadOnly} /> </div>
             </div>
           </div>
         )}
-
-        {/* --- PHASE 4 --- */}
         {!isPrintView && activeTab === 'phase4' && (
           <div className="space-y-6">
             <div className={orangePhaseClass}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
-                
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                  <h3 className="text-lg font-bold text-orange-600 dark:text-orange-400 flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5"/> Closing File / Project
-                  </h3>
-                </div>
-                
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4"> <h3 className="text-lg font-bold text-orange-600 dark:text-orange-400 flex items-center gap-3"> <CheckCircle className="h-5 w-5"/> Closing File / Project  </h3> </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Hantar Kewangan</label>
-                      <StrictDateInput name="tarikhHantarKewangan" value={formData.tarikhHantarKewangan} onChange={handleInputChange} className={inputClass} />
-                  </div>
-                  <div className="group">
-                      <label className={labelClass}>Tarikh Padanan</label>
-                      <StrictDateInput name="tarikhPadanan" value={formData.tarikhPadanan} onChange={handleInputChange} className={inputClass} />
-                  </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Hantar Kewangan</label> <StrictDateInput name="tarikhHantarKewangan" value={formData.tarikhHantarKewangan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Padanan</label> <StrictDateInput name="tarikhPadanan" value={formData.tarikhPadanan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
                 </div>
             </div>
           </div>
         )}
       </div>
-
       {confirmationState.isOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={cancelConfirmation}>
-            <div 
-              className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform scale-100 transition-all animate-slide-up relative" 
-              onClick={e => e.stopPropagation()}
-            >
-                <button onClick={cancelConfirmation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
-                   <X className="w-5 h-5" />
-                </button>
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform scale-100 transition-all animate-slide-up relative" onClick={e => e.stopPropagation()} >
+                <button onClick={cancelConfirmation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"> <X className="w-5 h-5" /> </button>
                 <div className="flex flex-col items-center text-center pt-2">
-                   {/* ... [Modal Content same as before] ... */}
-                   {confirmationState.type === 'back' ? (
-                     <div className="w-20 h-20 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-6 text-yellow-500 animate-pulse-slow">
-                        <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center">
-                          <HelpCircle className="w-8 h-8 stroke-[1.5]" />
-                        </div>
-                     </div>
-                   ) : (
-                     <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mb-6 text-emerald-500 animate-pulse-slow">
-                        <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center">
-                          <CheckCircle className="w-8 h-8 stroke-[1.5]" />
-                        </div>
-                     </div>
-                   )}
-
-                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta">
-                     {confirmationState.type === 'back' ? 'Kembali ke Senarai?' : 'Simpan Projek?'}
-                   </h3>
-                   
-                   <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed px-4">
-                     {confirmationState.type === 'back' 
-                        ? 'Sebarang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu kembali?' 
-                        : 'Adakah anda pasti mahu menyimpan maklumat projek ini? Pastikan semua maklumat adalah tepat.'}
-                   </p>
-                   
-                   <div className="flex gap-3 w-full">
-                      <button 
-                        onClick={cancelConfirmation}
-                        className="flex-1 py-3.5 px-4 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md"
-                      >
-                        Batal
-                      </button>
-                      <button 
-                        onClick={confirmAction}
-                        className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg ${
-                            confirmationState.type === 'back' 
-                            ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' 
-                            : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-                        }`}
-                      >
-                         {confirmationState.type === 'back' ? 'Ya, Kembali' : 'Ya, Simpan'}
-                      </button>
-                   </div>
+                   {confirmationState.type === 'back' ? ( <div className="w-20 h-20 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-6 text-yellow-500 animate-pulse-slow"> <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center"> <HelpCircle className="w-8 h-8 stroke-[1.5]" /> </div> </div> ) : ( <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mb-6 text-emerald-500 animate-pulse-slow"> <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center"> <CheckCircle className="w-8 h-8 stroke-[1.5]" /> </div> </div> )}
+                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta"> {confirmationState.type === 'back' ? 'Kembali ke Senarai?' : 'Simpan Projek?'} </h3>
+                   <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed px-4"> {confirmationState.type === 'back' ? 'Sebuang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu kembali?' : 'Adakah anda pasti mahu menyimpan maklumat projek ini? Pastikan semua maklumat adalah tepat.'} </p>
+                   <div className="flex gap-3 w-full"> <button onClick={cancelConfirmation} className="flex-1 py-3.5 px-4 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md" > Batal </button> <button onClick={confirmAction} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg ${ confirmationState.type === 'back' ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30' }`} > {confirmationState.type === 'back' ? 'Ya, Kembali' : 'Ya, Simpan'} </button> </div>
                 </div>
             </div>
         </div>,
         document.body
       )}
-
-      {/* LAD Certificate Modal */}
-      {isLADOpen && (
-          <LADCertificate 
-              project={formData as Project} 
-              pjaUser={users.find(u => u.id === formData.pjaId)}
-              onClose={() => setIsLADOpen(false)}
-          />
-      )}
-
-      {/* CPC Certificate Modal */}
-      {isCPCOpen && (
-          <CPCCertificate 
-              project={formData as Project} 
-              pjaUser={users.find(u => u.id === formData.pjaId)}
-              onClose={() => setIsCPCOpen(false)}
-          />
-      )}
-
-      {/* Prestasi Dialog (Replaces Certificate Preview) */}
-      {isPrestasiOpen && (
-          <PrestasiCertificate 
-              project={formData as Project} 
-              onClose={() => setIsPrestasiOpen(false)}
-              onUpdate={handlePrestasiUpdate}
-          />
-      )}
-
+      {isLADOpen && ( <LADCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsLADOpen(false)} /> )}
+      {isCPCOpen && ( <CPCCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsCPCOpen(false)} /> )}
+      {isPrestasiOpen && ( <PrestasiCertificate project={formData as Project} onClose={() => setIsPrestasiOpen(false)} onUpdate={handlePrestasiUpdate} /> )}
+      {isNotisOpen && ( <NotisGenerator project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsNotisOpen(false)} /> )}
     </div>
   );
 };
