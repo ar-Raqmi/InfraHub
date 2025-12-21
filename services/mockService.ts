@@ -1,189 +1,93 @@
 
-import { Project, User, Role, ProjectStatus, BQGroup, CompanyDetail } from '../types';
+import { Project, User, Role, ProjectStatus, BQGroup, CompanyDetail, VoteDefinition, ProjectLocation, PresetGroup, BQTemplateDefinition, BulletinItem } from '../types';
+import { INITIAL_LIBRARY_DATA, INITIAL_TEMPLATE_DATA } from '../data/bqPresets';
 
-// --- RAW DATA FROM PROMPT ---
-const RAW_PROJECT_DATA = `
-CADANGAN KERJA-KERJA MEMBAIKPULIH LONGKANG DAN PERABOT JALAN SERTA KERJA-KERJA BERKAITAN DI 1. PEMASANGAN RALLING DI JALAN JU 7, TAMAN JASA UTAMA, 2. TEPI PADANG DI JALAN JU 10, TAMAN JASA UTAMA. DAERAH GOMBAK SELANGOR DARUL EHSAN	MPS 28/PLP-01/25	06/01/2025	FARHAN	MPS.024313, PENDUDUK	BP 4: SELAYANG - GOMBAK BARAT	282090	JENTAYU PERTAMA ENTERPRISE	30,480.19	26,690.34	1/16/2025	13/03/2025	1/24/2025	1/28/2025	100%	05/03/2025	05/03/2025	3/17/2025	3/19/2025	21/03/2025	26/03/2025	70%	27/02/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH SEMULA LONGKANG SEDIA ADA DI NO 19 JALAN SETIA 2 TAMAN SETIA SERTA KERJA-KERJA BERKAITAN, MUKIM RAWANG , DAERAH GOMBAK, SELANGOR DARUL EHSAN.	MPS 28/PLP-02/25	06/01/2025	NURSILMI	AHLI MAJLIS	BP 6: RAWANG TIMUR	282090	RAMI BINA ENTERPRISE	28,277.16	25,520.86	1/22/2025	19/03/2025	1/21/2025	1/27/2025	100%	07/03/2025	07/03/2025			30/04/2025	05/05/2025	73%	04/03/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH SEMULA LONGKANG SEDIA ADA DI NO 3D JALAN SEPAKAT KG MELAYU BT 16 SERTA KERJA- KERJA BERKAITAN, MUKIM RAWANG , DAERAH GOMBAK, SELANGOR DARUL EHSAN.	MPS 28/PLP-03/25	06/01/2025	NURSILMI	MPS.024518	BP 6: RAWANG TIMUR	282090	GGAFIQ ENTERPRISE	32,368.72	32,368.72	1/22/2025	19/03/2025	1/20/2025	1/24/2025	100%	07/03/2025	07/03/2025	3/17/2025	3/26/2025	28/03/2025	07/04/2025	95%	20/02/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH SEMULA LONGKANG SEDIA ADA DI NO 37 JALAN 4/4 TAMAN BUKIT RAWANG JAYA, NO 28 JALAN 2/11 TAMAN BUKIT RAWANG JAYA ,JALAN 2 TAMAN BUKIT RAWANG JAYA SERTA KERJA-KERJA BERKAITAN, MUKIM RAWANG , DAERAH GOMBAK, SELANGOR DARUL EHSAN.	MPS 28/PLP-04/25	06/01/2025	NURSILMI	MPS.023202, MPS.018698, SEL.913776	BP 6: RAWANG TIMUR	282090	SRI MEGA ENTERPRISE	34,175.44	34,163.46	1/16/2025	13/03/2025	1/20/2025	1/24/2025	100%	22/05/2025	22/05/2025	6/3/2025	6/16/2025	18/06/2025	25/06/2025	80%	15/03/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH SEMULA LONGKANG SEDIA ADA DI NO 18 JALAN MAWAR 12, TEPI PADANG TAMAN MAWAR , JALAN 4B TAMAN MUHIBAH SERTA KERJA-KERJA BERKAITAN, MUKIM RAWANG, DAERAH GOMBAK, SELANGOR DARUL EHSAN.	MPS 28/PLP-05/25	06/01/2025	NURSILMI	MPS.024252, MPS.024251, MPS.024127	BP 6: RAWANG TIMUR	282090	MUBARAK MAJU ENTERPRISE	30,927.26	30,927.26	1/16/2025	13/03/2025	1/21/2025	1/27/2025	100%	19/03/2025	19/03/2025	3/24/2025	3/25/2025	26/03/2025	07/04/2025	83%	20/02/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH SEMULA LONGKANG SEDIA ADA DI NO 4612 JALAN RAWANG GARDEN 7, NO 4640,4641,4656,4657 JALAN RAWANG GARDEN 8 TAMAN RAWANG GARDEN .NO 4 JALAN SRI HIJAU 4 TAMAN SRI HIJAU SERTA KERJA-KERJA BERKAITAN, MUKIM RAWANG, DAERAH GOMBAK, SELANGOR DARUL EHSAN.	MPS 28/PLP-06/25	06/01/2025	NURSILMI	MPS.023442, MPS.025878, MPS.025108	BP 6: RAWANG TIMUR	282090	P ONE CONSTRUCTION	27,999.24	27,999.24	1/16/2025	13/03/2025	1/16/2025	1/20/2025	100%	24/02/2025	24/02/2025	3/3/2025	3/7/2025	11/03/2025	17/03/2025	95%	24/01/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH LONGKANG DI LORONG SAMUDERA SELATAN 2 DAN KERJA-KERJA MEMBAIKPULIH LONGKANG DI LORONG SAMUDERA SELATAN 1 SERTA KERJA-KERJA BERKAITAN,MUKIM BATU,DAERAH GOMBAK,SELANGOR DARUL EHSAN	MPS 28/PLP-07/25	07/01/2025	KHAIRUL	AHLI MAJLIS	BP 4: SELAYANG - GOMBAK BARAT	282090	MAZIQ ENGINEERING & SERVICES	29,179.61	29,179.61	1/16/2025	13/03/2025	1/15/2025	1/20/2025	100%	25/02/2025	25/02/2025	1/23/2025	3/4/2025	10/03/2025	17/03/2025	80%	18/02/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH LONGKANG DI JALAN 1 TAMAN JALAN 1 TAMAN GREENWOOD SERTA KERJA-KERJA BERKAITAN,MUKIM BATU,DAERAH GOMBAK,SELANGOR DARUL EHSAN	MPS 28/PLP-08/25	07/01/2025	KHAIRUL	AHLI MAJLIS	BP 3: GOMBAK SELATAN	282090	JUTAAN HASIL ENTERPRISE	27,683.91	19,131.74	1/16/2025	13/03/2025	1/21/2025	1/27/2025	100%	30/05/2025	30/05/2025	6/26/2025	6/26/2025	25/06/2025	26/06/2025	48%	28/03/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH LONGKANG DI JALAN SRI EHSAN 8, TAMAN SRI EHSAN, SERTA KERJA-KERJA BERKAITAN, MUKIM BATU, DAERAH GOMBAK, SELANGOR DARUL EHSAN	MPS 28/PLP-09/25	07/01/2025	SALAM	MEMO DALAMAN JPSPK	BP 5: KEPONG - SUNGAI BULOH	282090	ALPHA CULTURE RESOURCES	59,406.34	59,300.91	1/22/2025	19/03/2025	1/22/2025	1/27/2025	100%	21/03/2025	21/03/2025	4/14/2025	4/16/2025	30/04/2025	05/05/2025	82%	07/03/2025
-CADANGAN KERJA-KERJA MEMBAIKPULIH SEMULA LONGKANG SEDIA ADA DI NO 30 PT4476 JALAN 7 KG SG TERENTANG , NO 182A & 184A LORONG 2 KG SG TERENTANG SERTA KERJA-KERJA BERKAITAN MUKIM RAWANG , DAERAH GOMBAK, SELANGOR DARUL EHSAN.	MPS 28/PLP-10/25	07/01/2025	NURSILMI	MPS.025408, MPS.025196	BP 6: RAWANG TIMUR	282090	PERWAJA MAJU ENTERPRISE	32,623.27	29,620.26	1/16/2025	13/03/2025	1/21/2025	1/27/2025	100%	13/05/2025	13/05/2025	6/3/2025	6/9/2025	18/06/2025	25/06/2025	77%	23/04/2025
-`;
+// --- CONSTANTS ---
 
-// Helper to parse dates (handles DD/MM/YYYY and M/D/YYYY)
-const parseDate = (str: string) => {
-  if (!str) return undefined;
-  const parts = str.trim().split(/[\/-]/);
-  if (parts.length !== 3) return undefined;
-  
-  let d = parseInt(parts[0]);
-  let m = parseInt(parts[1]);
-  let y = parseInt(parts[2]);
-  
-  // Heuristic: If Month > 12, it must be Day (swap)
-  // Example: 1/16/2025 -> d=1, m=16 (Swap to m=1, d=16)
-  if (m > 12) {
-      const temp = d;
-      d = m;
-      m = temp;
-  }
-  
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-};
-
-const parseCurrency = (str: string) => {
-    return parseFloat(str.replace(/,/g, '')) || 0;
-};
-
-// Initial Seed Data
-const INITIAL_USERS: User[] = [
-  { 
-    id: 1, 
-    username: 'syafiq', 
-    fullName: 'Syafiq Daniel Bin Ahmad Firdaus', 
-    role: Role.ADMIN, 
-    password: 'password', 
-    email: 'syafiq@mps.gov.my', 
-    phone: '012-3456789',
-    jawatan: 'Pembantu Tadbir N1',
-    bahagian: 'Bahagian Infrastruktur',
-    unit: 'Unit Selenggara Infrastruktur'
-  },
-  { 
-    id: 2, 
-    username: 'khairul', 
-    fullName: 'Mohamad Khairul Amirin Bin Zainal Abidin', 
-    role: Role.PJA, 
-    password: 'password', 
-    email: 'khairul@mps.gov.my', 
-    phone: '013-9876543',
-    jawatan: 'Penolong Jurutera JA5',
-    bahagian: 'Bahagian Infrastruktur',
-    unit: 'Unit Selenggara Infrastruktur'
-  },
-  { 
-    id: 3, 
-    username: 'farhan', 
-    fullName: 'Muhammad Farhan', 
-    role: Role.PJA, 
-    password: 'password', 
-    email: 'farhan@mps.gov.my', 
-    phone: '014-1234567',
-    jawatan: 'Penolong Jurutera JA5',
-    bahagian: 'Bahagian Infrastruktur',
-    unit: 'Unit Selenggara Infrastruktur'
-  },
-  { 
-    id: 4, 
-    username: 'nursilmi', 
-    fullName: 'Nursilmi Binti Ahmad', 
-    role: Role.PJA, 
-    password: 'password', 
-    email: 'nursilmi@mps.gov.my', 
-    phone: '015-9876543',
-    jawatan: 'Penolong Jurutera JA5',
-    bahagian: 'Bahagian Infrastruktur',
-    unit: 'Unit Selenggara Infrastruktur'
-  },
-  { 
-    id: 5, 
-    username: 'salam', 
-    fullName: 'Abd Salam', 
-    role: Role.PJA, 
-    password: 'password', 
-    email: 'salam@mps.gov.my', 
-    phone: '016-1234567',
-    jawatan: 'Penolong Jurutera JA5',
-    bahagian: 'Bahagian Infrastruktur',
-    unit: 'Unit Selenggara Infrastruktur'
-  }
+const VOTES: VoteDefinition[] = [
+    { code: '282090', name: 'LONGKANG', allocation: 2000000 },
+    { code: '282130', name: 'INFRA & KEMUDAHAN AWAM', allocation: 1500000 },
+    { code: '282050', name: 'PENYELENGGARAAN JALAN & LORONG', allocation: 3000000 },
+    { code: '272040', name: 'PAPAN TANDA', allocation: 500000 },
+    { code: '282180', name: 'PENYELENGGARAAN PERHENTIAN BAS', allocation: 600000 },
+    { code: '331100', name: 'MEMBINA PONDOK BAS', allocation: 800000 }
 ];
 
-// GENERATE PROJECTS FROM RAW DATA
-const INITIAL_PROJECTS: Project[] = RAW_PROJECT_DATA.trim().split('\n').map((line, index) => {
-    const cols = line.split('\t');
-    
-    const namaProjek = cols[0];
-    const noFail = cols[1];
-    const tarikhBuka = parseDate(cols[2]) || '';
-    const pjaName = cols[3]?.toLowerCase();
-    const aduan = cols[4];
-    const bp = cols[5];
-    const noVote = cols[6];
-    const namaSyarikat = cols[7];
-    const kosProjek = parseCurrency(cols[8]);
-    const kosSebenar = parseCurrency(cols[9]);
-    const tarikhMulaKontrak = parseDate(cols[10]);
-    const tarikhTamatKontrak = parseDate(cols[11]);
-    const tarikhSerahTapak = parseDate(cols[12]);
-    const tarikhMulaKerja = parseDate(cols[13]);
-    const peratusSiap = parseInt(cols[14]?.replace('%', '')) || 0;
-    const tarikhTuntutan = parseDate(cols[15]);
-    // cols[16] Dokumen Terima - Ignored or mapped if needed
-    // cols[17] PJA Peraku - Ignored
-    // cols[18] JR Peraku - Ignored
-    const tarikhHantarKewangan = parseDate(cols[19]);
-    const tarikhPadanan = parseDate(cols[20]);
-    const prestasiStr = cols[21]?.replace('%', ''); // "70%"
-    
-    // Map PJA Name to ID
-    let pjaId = 1; // Default Admin
-    const user = INITIAL_USERS.find(u => u.username === pjaName);
-    if (user) pjaId = user.id;
+const MOCK_COMPANIES: CompanyDetail[] = [
+    {
+        name: "MEGA BINA CONSTRUCTIONS",
+        registrationNumber: "0120230101-SL123456",
+        address: "No. 12, Jalan SJ 3, Taman Selayang Jaya, 68100 Batu Caves, Selangor",
+        ownerName: "Ahmad Bin Abdullah",
+        gred: "G1",
+        phone: "012-3456789",
+        phoneAlt: "03-61234567",
+        email: "megabina@gmail.com"
+    },
+    {
+        name: "SINAR HARAPAN ENTERPRISE",
+        registrationNumber: "0120230505-SL654321",
+        address: "Lot 45, Kampung Laksamana, 68100 Batu Caves, Selangor",
+        ownerName: "Siti Binti Kassim",
+        gred: "G1",
+        phone: "019-8765432",
+        phoneAlt: "",
+        email: "sinarharapan@yahoo.com"
+    },
+    {
+        name: "TEGUH BERSATU MAJU",
+        registrationNumber: "0120221112-SL987654",
+        address: "No 5, Jalan 2/3, Bandar Baru Selayang, 68100 Batu Caves, Selangor",
+        ownerName: "Muthu A/L Raman",
+        gred: "G1",
+        phone: "013-5551234",
+        phoneAlt: "03-61389999",
+        email: "teguhbersatu@outlook.com"
+    },
+    {
+        name: "WARISAN TIMUR RESOURCES",
+        registrationNumber: "0120240220-SL112233",
+        address: "Unit B-2-1, Apartmen Cempaka, Taman Gombak Permai, 68100 Batu Caves",
+        ownerName: "Wan Hassan Bin Wan Ismail",
+        gred: "G1",
+        phone: "017-3334444",
+        phoneAlt: "",
+        email: "warisantimur@gmail.com"
+    },
+    {
+        name: "BINAJAYA SOLUSI",
+        registrationNumber: "0120230808-SL445566",
+        address: "No. 88, Jalan SG 4/1, Taman Sri Gombak, 68100 Batu Caves, Selangor",
+        ownerName: "Chong Wei Ming",
+        gred: "G1",
+        phone: "016-7778888",
+        phoneAlt: "03-61891111",
+        email: "binajaya.solusi@gmail.com"
+    }
+];
 
-    // Determine Status
-    let status = ProjectStatus.MENUNGGU_LANTIKAN;
-    if (namaSyarikat) status = ProjectStatus.DALAM_PROSES;
-    if (tarikhTuntutan) status = ProjectStatus.TUNTUTAN_BAYARAN;
-    if (tarikhPadanan) status = ProjectStatus.SIAP;
+// --- USERS ---
+const INITIAL_USERS: User[] = [
+  { id: 1, username: 'syafiq', fullName: 'Syafiq Daniel Bin Ahmad Firdaus', role: Role.ADMIN, password: 'password', email: 'syafiq@mps.gov.my', phone: '012-3456789', jawatan: 'Pembantu Tadbir N1', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
+  { id: 2, username: 'khairul', fullName: 'Mohamad Khairul Amirin Bin Zainal Abidin', role: Role.PJA, password: 'password', email: 'khairul@mps.gov.my', phone: '013-9876543', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
+  { id: 3, username: 'farhan', fullName: 'Muhammad Farhan', role: Role.PJA, password: 'password', email: 'farhan@mps.gov.my', phone: '014-1234567', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
+  { id: 4, username: 'nursilmi', fullName: 'Nursilmi Binti Ahmad', role: Role.PJA, password: 'password', email: 'nursilmi@mps.gov.my', phone: '015-9876543', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
+  { id: 5, username: 'salam', fullName: 'Muhammad Salam', role: Role.PJA, password: 'password', email: 'salam@mps.gov.my', phone: '016-1234567', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
+  { id: 6, username: 'ain', fullName: "A'IN SYAHIRA BINTI RATIMIN", role: Role.JURUTERA, password: 'password', email: 'ain@mps.gov.my', phone: '017-1122334', jawatan: 'Jurutera Awam', bahagian: 'Jabatan Kejuruteraan', unit: 'Majlis Perbandaran Selayang' }
+];
 
-    return {
-        id: Date.now() + index,
-        namaProjek,
-        noFail,
-        tarikhBuka,
-        pjaId,
-        noAduan: aduan,
-        bp,
-        noVote,
-        namaSyarikat,
-        kosProjek,
-        kosSebenar,
-        tarikhMulaKontrak,
-        tarikhTamatKontrak,
-        tarikhSerahTapak,
-        tarikhMulaKerja,
-        peratusSiap,
-        tarikhTuntutanBayaran: tarikhTuntutan,
-        tarikhHantarKewangan,
-        tarikhPadanan,
-        status,
-        prestasi: prestasiStr ? `${prestasiStr}%` : undefined,
-        // Default empty arrays
-        bqData: [],
-        bqDataPelarasan: []
-    } as Project;
-});
-
-// Extract Companies and Votes from parsed projects
-const UNIQUE_COMPANIES = Array.from(new Set(INITIAL_PROJECTS.map(p => p.namaSyarikat).filter(Boolean))) as string[];
-const UNIQUE_VOTES = Array.from(new Set(INITIAL_PROJECTS.map(p => p.noVote).filter(Boolean))) as string[];
-
-const INITIAL_SEBUTHARGA = [
-    "MPS/SH/2024/001",
-    "MPS/SH/2024/002",
-    "MPS/SH/2024/003"
+const INITIAL_BULLETINS: BulletinItem[] = [
+  { id: 'b1', content: 'Semua PJA diingatkan untuk mengemaskini tarikh pemeriksaan tapak bagi fasa pelarasan.', date: '2025-05-15', author: 'Syafiq (Admin)' },
+  { id: 'b2', content: 'Mesyuarat mingguan bahagian akan diadakan pada hari Selasa jam 9:00 pagi.', date: '2025-05-14', author: 'Ain (Jurutera)' }
 ];
 
 class MockService {
   private users: User[] = [];
   private projects: Project[] = [];
-  private systemSettings: Record<string, any> = {}; // Keyed by year string
+  private libraryGroups: PresetGroup[] = [];
+  private templates: BQTemplateDefinition[] = [];
+  private bulletins: BulletinItem[] = [];
+  private systemSettings: Record<string, any> = {}; 
   private currentUser: User | null = null;
 
   constructor() {
@@ -193,40 +97,44 @@ class MockService {
   private loadData() {
     const storedUsers = localStorage.getItem('infrahub_users');
     const storedProjects = localStorage.getItem('infrahub_projects');
+    const storedLibrary = localStorage.getItem('infrahub_library');
+    const storedTemplates = localStorage.getItem('infrahub_templates');
     const storedSession = localStorage.getItem('infrahub_session');
     const storedSettings = localStorage.getItem('infrahub_settings');
+    const storedBulletins = localStorage.getItem('infrahub_bulletins');
 
-    // Use Parsed Users if not in local storage, or merge/reset
     this.users = storedUsers ? JSON.parse(storedUsers) : INITIAL_USERS;
-    
-    // Ensure new PJAs exist if loading from old local storage
-    INITIAL_USERS.forEach(initUser => {
-        if (!this.users.find(u => u.username === initUser.username)) {
-            this.users.push(initUser);
+    this.projects = storedProjects ? JSON.parse(storedProjects) : [];
+    this.libraryGroups = storedLibrary ? JSON.parse(storedLibrary) : INITIAL_LIBRARY_DATA;
+    this.templates = storedTemplates ? JSON.parse(storedTemplates) : INITIAL_TEMPLATE_DATA;
+    this.systemSettings = storedSettings ? JSON.parse(storedSettings) : {};
+    this.bulletins = storedBulletins ? JSON.parse(storedBulletins) : INITIAL_BULLETINS;
+
+    // Prune bulletins if they exceed limit from storage
+    if (this.bulletins.length > 3) {
+      this.bulletins = this.bulletins.slice(0, 3);
+    }
+
+    // Initialize Settings for 2025 (and keep legacy 2024 if needed)
+    ['2024', '2025'].forEach(year => {
+        if (!this.systemSettings[year]) {
+            const companyNames = MOCK_COMPANIES.map(c => c.name);
+            const companyDetailsMap: Record<string, CompanyDetail> = {};
+            MOCK_COMPANIES.forEach(c => {
+                companyDetailsMap[c.name] = c;
+            });
+
+            this.systemSettings[year] = {
+                companies: companyNames,
+                voteNumbers: VOTES,
+                sebuthargaNumbers: ['MPS/SH/2025/001'],
+                meetingDate: '',
+                companyDetails: companyDetailsMap,
+                companyOrder: companyNames,
+                manualFinancials: { outsource: 0, ydp: 0 }
+            };
         }
     });
-
-    // Overwrite projects with the requested mock data for this session to ensure they appear
-    // In a real app, we wouldn't overwrite user data, but for this "Mock" request, we reset.
-    if (!storedProjects || storedProjects.length < 5) {
-         this.projects = INITIAL_PROJECTS;
-    } else {
-         this.projects = JSON.parse(storedProjects);
-         // Optional: Merge new mock data if needed, but let's just stick to what's there if valid
-    }
-
-    this.systemSettings = storedSettings ? JSON.parse(storedSettings) : {};
-
-    const currentYear = "2025"; // Based on mock data year
-    if (!this.systemSettings[currentYear]) {
-        this.systemSettings[currentYear] = {
-            companies: UNIQUE_COMPANIES,
-            voteNumbers: UNIQUE_VOTES,
-            sebuthargaNumbers: INITIAL_SEBUTHARGA,
-            meetingDate: '',
-            companyDetails: {} 
-        };
-    }
 
     if (storedSession) {
       this.currentUser = JSON.parse(storedSession);
@@ -236,7 +144,10 @@ class MockService {
   private saveData() {
     localStorage.setItem('infrahub_users', JSON.stringify(this.users));
     localStorage.setItem('infrahub_projects', JSON.stringify(this.projects));
+    localStorage.setItem('infrahub_library', JSON.stringify(this.libraryGroups));
+    localStorage.setItem('infrahub_templates', JSON.stringify(this.templates));
     localStorage.setItem('infrahub_settings', JSON.stringify(this.systemSettings));
+    localStorage.setItem('infrahub_bulletins', JSON.stringify(this.bulletins));
 
     if (this.currentUser) {
       localStorage.setItem('infrahub_session', JSON.stringify(this.currentUser));
@@ -263,6 +174,54 @@ class MockService {
     return this.currentUser;
   }
 
+  // Bulletin Board
+  getBulletins() {
+    return [...this.bulletins];
+  }
+
+  async addBulletin(content: string, author: string) {
+    const newItem: BulletinItem = {
+      id: Date.now().toString(),
+      content,
+      date: new Date().toISOString().split('T')[0],
+      author
+    };
+    this.bulletins.unshift(newItem);
+    
+    // Auto delete the fourth one to prevent data overload
+    if (this.bulletins.length > 3) {
+      this.bulletins = this.bulletins.slice(0, 3);
+    }
+    
+    this.saveData();
+    return newItem;
+  }
+
+  async deleteBulletin(id: string) {
+    this.bulletins = this.bulletins.filter(b => b.id !== id);
+    this.saveData();
+  }
+
+  // BQ Library
+  getLibraryGroups(): PresetGroup[] {
+    return [...this.libraryGroups];
+  }
+
+  async saveLibraryGroups(groups: PresetGroup[]) {
+    this.libraryGroups = groups;
+    this.saveData();
+  }
+
+  // BQ Templates
+  getTemplates(): BQTemplateDefinition[] {
+      return [...this.templates];
+  }
+
+  async saveTemplates(templates: BQTemplateDefinition[]) {
+      this.templates = templates;
+      this.saveData();
+  }
+
   // Projects
   getProjects() {
     return [...this.projects];
@@ -270,9 +229,11 @@ class MockService {
 
   async createProject(project: Omit<Project, 'id'>) {
     const newId = Date.now();
+    const now = new Date().toISOString();
     const safeProject = {
       ...project,
       id: newId,
+      updatedAt: now,
       kosProjek: Number(project.kosProjek) || 0,
     };
 
@@ -285,7 +246,8 @@ class MockService {
     const index = this.projects.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Project not found');
     
-    const updatedProject = { ...this.projects[index], ...updates };
+    const now = new Date().toISOString();
+    const updatedProject = { ...this.projects[index], ...updates, updatedAt: now };
     if (updates.kosProjek !== undefined) updatedProject.kosProjek = Number(updates.kosProjek);
 
     this.projects[index] = updatedProject;
@@ -317,7 +279,6 @@ class MockService {
       
       this.users[index] = { ...this.users[index], ...updates };
       
-      // Update session if editing current user
       if (this.currentUser && this.currentUser.id === id) {
           this.currentUser = this.users[index];
       }
@@ -337,6 +298,18 @@ class MockService {
     return this.systemSettings[key]?.companies || [];
   }
 
+  getCompanyOrder(year: number): string[] {
+      const key = year.toString();
+      return this.systemSettings[key]?.companyOrder || [];
+  }
+
+  async saveCompanyOrder(year: number, order: string[]) {
+      const key = year.toString();
+      const settings = this.systemSettings[key] || {};
+      this.systemSettings[key] = { ...settings, companyOrder: order };
+      this.saveData();
+  }
+
   async addCompany(year: number, name: string) {
     const key = year.toString();
     const settings = this.systemSettings[key] || {};
@@ -344,7 +317,9 @@ class MockService {
     
     if (!companies.includes(name)) {
       companies.push(name);
-      this.systemSettings[key] = { ...settings, companies };
+      const order = settings.companyOrder || [];
+      order.push(name);
+      this.systemSettings[key] = { ...settings, companies, companyOrder: order };
       this.saveData();
     }
   }
@@ -354,8 +329,8 @@ class MockService {
     const settings = this.systemSettings[key] || {};
     const companies = settings.companies || [];
     const companyDetails = settings.companyDetails || {};
+    const order = settings.companyOrder || [];
     
-    // Also delete details
     if (companyDetails[name]) {
         delete companyDetails[name];
     }
@@ -363,6 +338,7 @@ class MockService {
     this.systemSettings[key] = { 
         ...settings, 
         companies: companies.filter((c: string) => c !== name),
+        companyOrder: order.filter((c: string) => c !== name),
         companyDetails
     };
     this.saveData();
@@ -382,7 +358,6 @@ class MockService {
       
       companyDetails[detail.name] = detail;
       
-      // Also ensure company is in the list
       const companies = settings.companies || [];
       if (!companies.includes(detail.name)) {
           companies.push(detail.name);
@@ -393,31 +368,47 @@ class MockService {
   }
 
   // Dropdown Management (Votes) - Year Binded
-  getVoteNumbers(year: number) {
-    const key = year.toString();
-    return this.systemSettings[key]?.voteNumbers || [];
+  getVoteNumbers(year: number): string[] {
+    const votes = this.getVotes(year);
+    return votes.map(v => v.code);
   }
 
-  async addVoteNumber(year: number, vote: string) {
+  getVotes(year: number): VoteDefinition[] {
+      const key = year.toString();
+      const raw = this.systemSettings[key]?.voteNumbers || [];
+      return raw.map((v: any) => {
+          if (typeof v === 'string') return { code: v, name: 'Vot Am', allocation: 0 };
+          return v;
+      });
+  }
+
+  async saveVote(year: number, vote: VoteDefinition) {
     const key = year.toString();
     const settings = this.systemSettings[key] || {};
-    const voteNumbers = settings.voteNumbers || [];
+    let votes = settings.voteNumbers || [];
+    
+    votes = votes.map((v: any) => typeof v === 'string' ? { code: v, name: 'Vot Am', allocation: 0 } : v);
 
-    if (!voteNumbers.includes(vote)) {
-      voteNumbers.push(vote);
-      this.systemSettings[key] = { ...settings, voteNumbers };
-      this.saveData();
+    const index = votes.findIndex((v: VoteDefinition) => v.code === vote.code);
+    if (index >= 0) {
+        votes[index] = vote;
+    } else {
+        votes.push(vote);
     }
+
+    this.systemSettings[key] = { ...settings, voteNumbers: votes };
+    this.saveData();
   }
 
-  async deleteVoteNumber(year: number, vote: string) {
+  async deleteVoteNumber(year: number, voteCode: string) {
     const key = year.toString();
     const settings = this.systemSettings[key] || {};
-    const voteNumbers = settings.voteNumbers || [];
+    let votes = settings.voteNumbers || [];
+    votes = votes.map((v: any) => typeof v === 'string' ? { code: v, name: 'Vot Am', allocation: 0 } : v);
 
     this.systemSettings[key] = {
         ...settings,
-        voteNumbers: voteNumbers.filter((v: string) => v !== vote)
+        voteNumbers: votes.filter((v: VoteDefinition) => v.code !== voteCode)
     };
     this.saveData();
   }
@@ -452,7 +443,7 @@ class MockService {
     this.saveData();
   }
 
-  // System Settings
+  // System Settings (General & Financials)
   getSettings(year: number) {
     return this.systemSettings[year.toString()] || {};
   }
@@ -461,6 +452,18 @@ class MockService {
     const yearKey = year.toString();
     this.systemSettings[yearKey] = { ...this.systemSettings[yearKey], ...settings };
     this.saveData();
+  }
+
+  getManualFinancials(year: number) {
+      const key = year.toString();
+      return this.systemSettings[key]?.manualFinancials || { outsource: 0, ydp: 0 };
+  }
+
+  async saveManualFinancials(year: number, data: { outsource: number, ydp: number }) {
+      const key = year.toString();
+      const settings = this.systemSettings[key] || {};
+      this.systemSettings[key] = { ...settings, manualFinancials: data };
+      this.saveData();
   }
 }
 
