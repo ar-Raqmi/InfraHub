@@ -91,9 +91,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
         <div className="mt-10 pt-6 border-t border-slate-200 dark:border-white/10 text-center">
            <div className="inline-flex gap-2 text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full">
-             <span>syafiq / password</span>
+             <span>by</span>
              <span className="opacity-30">|</span>
-             <span>khairul / password</span>
+             <span>Syafiq Daniel</span>
            </div>
         </div>
       </div>
