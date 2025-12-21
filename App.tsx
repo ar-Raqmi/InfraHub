@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Project } from './types';
@@ -40,9 +38,14 @@ function App() {
     setToast({ message, type });
   };
 
-  useEffect(() => {
+  const refreshUser = () => {
     const currentUser = mockService.getCurrentUser();
-    setUser(currentUser);
+    // Use spread to ensure reference change triggers re-render
+    setUser(currentUser ? { ...currentUser } : null);
+  };
+
+  useEffect(() => {
+    refreshUser();
     setLoading(false);
   }, []);
 
@@ -64,7 +67,7 @@ function App() {
   });
 
   const handleLogin = (u: User) => {
-    setUser(u);
+    setUser({ ...u });
     setCurrentPage('dashboard');
     showToast(`Selamat kembali, ${u.fullName}!`, 'success');
   };
@@ -104,7 +107,7 @@ function App() {
        return;
     }
 
-    if (['dashboard', 'projects', 'users', 'inbox', 'calendar', 'settings'].includes(page)) {
+    if (['dashboard', 'projects', 'users', 'inbox', 'calendar', 'settings', 'profile'].includes(page)) {
       setCurrentPage(page);
     } else {
       showToast(`Modul ${page} sedang dibangunkan.`, 'info');
@@ -114,7 +117,7 @@ function App() {
   const confirmNavigation = () => {
     if (pendingPage) {
         setIsEditing(false);
-        if (['dashboard', 'projects', 'users', 'inbox', 'calendar', 'settings'].includes(pendingPage)) {
+        if (['dashboard', 'projects', 'users', 'inbox', 'calendar', 'settings', 'profile'].includes(pendingPage)) {
             setCurrentPage(pendingPage);
         } else if (pendingPage === 'logout') {
             handleLogout();
@@ -151,7 +154,7 @@ function App() {
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-teal-300 to-emerald-300 dark:from-teal-900 dark:to-emerald-900 rounded-full opacity-20 animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-emerald-300 to-teal-300 dark:from-emerald-900 dark:to-teal-900 rounded-full opacity-20 animate-float" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-emerald-300 to-teal-300 dark:from-teal-900 dark:to-emerald-900 rounded-full opacity-20 animate-float" style={{ animationDelay: '-3s' }}></div>
       </div>
 
       {/* Toast Notification Container */}
@@ -206,22 +209,23 @@ function App() {
                   {currentPage === 'projects' && (
                      <ProjectsList 
                       projects={filteredProjects} 
+                      selectedYear={selectedYear}
                       onAddProject={handleAddProject}
                       onEditProject={handleEditProject}
                       onDeleteProject={handleDeleteProject}
                     />
                   )}
                   {currentPage === 'users' && (
-                    <Users currentUser={user} />
+                    <Users currentUser={user} onUserUpdate={refreshUser} />
                   )}
                   {currentPage === 'inbox' && (
-                    <Inbox />
+                    <Inbox onProjectClick={handleEditProject} />
                   )}
                   {currentPage === 'calendar' && (
                     <Calendar projects={filteredProjects} />
                   )}
                   {currentPage === 'profile' && (
-                    <Profile user={user} />
+                    <Profile user={user} onUserUpdate={refreshUser} />
                   )}
                   {currentPage === 'settings' && (
                     <AdminSettings user={user} selectedYear={selectedYear} />

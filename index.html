@@ -1,12 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="ms" class="h-full antialiased">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>InfraHub - Nexus Dashboard</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="InfraHub">
+    <meta name="apple-mobile-web-app-title" content="InfraHub">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Real PDF Generators -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
     <script>
       tailwind.config = {
         darkMode: 'class',
@@ -152,6 +167,18 @@
   <body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-x-hidden">
     <div id="root" class="h-full"></div>
     <script type="module" src="./index.tsx"></script>
+    <script>
+      // Service Worker Registration with safe error handling for development environments
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // Register using a standard relative path to avoid "not a valid URL" constructor errors
+          navigator.serviceWorker.register('./sw.js').catch(err => {
+            // Log as info since this is often environment-specific and non-critical during build
+            console.info('Service Worker registration skipped or failed in this preview environment.');
+          });
+        });
+      }
+    </script>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
