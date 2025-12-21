@@ -1,13 +1,14 @@
 
-
 export enum Role {
   ADMIN = 'ADMIN', // "Blue"
   PJA = 'PJA',     // "Yellow"
+  JURUTERA = 'JURUTERA', // New Role for Signers
 }
 
 export enum ProjectStatus {
   MENUNGGU_LANTIKAN = 'MENUNGGU_LANTIKAN', // Phase 1
   DALAM_PROSES = 'DALAM_PROSES',           // Phase 2 (Pelaksanaan)
+  PEMERIKSAAN_TAPAK = 'PEMERIKSAAN_TAPAK', // Phase 2b (Pemeriksaan)
   TUNTUTAN_BAYARAN = 'TUNTUTAN_BAYARAN',   // Phase 3
   SIAP = 'SIAP',                           // Phase 4
 }
@@ -28,6 +29,57 @@ export const BP_OPTIONS = [
 // Generate Zon 1 to Zon 24
 export const ZON_OPTIONS = Array.from({ length: 24 }, (_, i) => `Zon ${i + 1}`);
 
+// --- BQ PRESET TYPES ---
+export type PresetVariant = {
+  id: string;
+  label: string; // e.g. "Dengan tangan"
+  rate: number;
+  unit: string;
+};
+
+export type PresetItem = {
+  id: string;
+  description: string;
+  rate?: number; // Optional: If the item itself has a rate (no variants)
+  unit?: string;
+  variants?: PresetVariant[];
+};
+
+export type PresetGroup = {
+  id: string;
+  title: string; // Header Title (e.g. KERJA PENGOREKAN)
+  category: string; // Main Group Category
+  items: PresetItem[];
+};
+
+// --- DYNAMIC TEMPLATES ---
+export type BQTemplateType = 'PERMULAAN_BASIC' | 'PERMULAAN_EMPTY' | 'LONGKANG' | 'EMPTY' | 'CUSTOM';
+
+export interface BQTemplateItemRef {
+    groupId: string;
+    itemId: string;
+    variantId?: string;
+}
+
+export interface BQTemplateBillDefinition {
+    id: string;
+    title: string;
+    items: BQTemplateItemRef[];
+}
+
+export interface BQTemplateDefinition {
+    id: string;
+    key: BQTemplateType;
+    title: string;
+    subtitle: string;
+    icon: 'file' | 'edit' | 'layout' | 'plus';
+    color: 'blue' | 'indigo' | 'emerald' | 'slate';
+    // Structured bills for multi-bill creation
+    bills: BQTemplateBillDefinition[];
+    // Legacy support
+    groupRefs: string[]; 
+}
+
 export interface User {
   id: number;
   username: string;
@@ -45,6 +97,13 @@ export interface User {
   unit?: string;
 }
 
+export interface BulletinItem {
+  id: string;
+  content: string;
+  date: string;
+  author: string;
+}
+
 export interface CompanyDetail {
   name: string;
   address: string;
@@ -54,6 +113,12 @@ export interface CompanyDetail {
   email: string;
   gred: string; // e.g. "G1"
   registrationNumber?: string; // NEW: Nombor Pembekal / Kontraktor
+}
+
+export interface VoteDefinition {
+  code: string; // No. Vot (e.g. "P.04.123")
+  name: string; // Nama Vot (e.g. "Penyelenggaraan Jalan")
+  allocation: number; // Jumlah Vot (Budget)
 }
 
 export interface GlobalDimensions {
@@ -132,6 +197,7 @@ export interface ProjectLocation {
 
 export interface Project {
   id: number;
+  updatedAt?: string; // Tracking for "Recent Changes"
   
   // --- PHASE 1: BQ BUILDING (Yellow - PJA) ---
   namaProjek: string;
@@ -177,6 +243,7 @@ export interface Project {
   // --- PRESTASI FORM DATA (NEW) ---
   skop?: 'BEKALAN' | 'PERKHIDMATAN' | 'KERJA';
   prestasiScores?: number[]; // Array of 6 scores (1-10)
+  noInbois?: string; // Dedicated field for Invoice No in Prestasi Certificate
 
   // --- PHASE 4: CLOSING FILE/PROJECT (Orange - Admin/PT) ---
   tarikhHantarKewangan?: string; // Tarikh Hantar ke Pemadanan
@@ -248,8 +315,9 @@ export const getStatusColor = (status: ProjectStatus) => {
   switch (status) {
     case ProjectStatus.MENUNGGU_LANTIKAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
     case ProjectStatus.DALAM_PROSES: return 'bg-blue-100 text-blue-700 border-blue-200';
-    case ProjectStatus.TUNTUTAN_BAYARAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    case ProjectStatus.SIAP: return 'bg-orange-100 text-orange-700 border-orange-200';
+    case ProjectStatus.PEMERIKSAAN_TAPAK: return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+    case ProjectStatus.TUNTUTAN_BAYARAN: return 'bg-orange-100 text-orange-700 border-orange-200'; // Kept yellow/orange theme
+    case ProjectStatus.SIAP: return 'bg-emerald-100 text-emerald-700 border-emerald-200'; // Changed to Emerald for Done
     default: return 'bg-gray-100 text-gray-700';
   }
 };
