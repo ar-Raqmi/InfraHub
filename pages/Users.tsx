@@ -1,15 +1,14 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { User, Role } from '../types';
 import { mockService } from '../services/mockService';
-import { Trash2, UserPlus, Shield, User as UserIcon, Edit2, X, Save } from 'lucide-react';
+import { Trash2, UserPlus, Shield, User as UserIcon, Edit2, X, Save, Mail, Phone } from 'lucide-react';
 
 interface UsersProps {
   currentUser: User;
+  onUserUpdate?: () => void;
 }
 
-const Users: React.FC<UsersProps> = ({ currentUser }) => {
+const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -18,6 +17,8 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
     username: '', 
     fullName: '', 
     password: '', 
+    email: '',
+    phone: '',
     role: Role.PJA,
     jawatan: '',
     bahagian: 'Bahagian Infrastruktur',
@@ -45,6 +46,8 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
           username: user.username,
           fullName: user.fullName,
           password: user.password || '',
+          email: user.email || '',
+          phone: user.phone || '',
           role: user.role,
           jawatan: user.jawatan || '',
           bahagian: user.bahagian || '',
@@ -69,6 +72,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
     }
     
     loadUsers();
+    if (onUserUpdate) onUserUpdate();
     resetForm();
   };
 
@@ -76,6 +80,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
     if (window.confirm('Adakah anda pasti mahu memadam pengguna ini?')) {
       await mockService.deleteUser(id);
       loadUsers();
+      if (onUserUpdate) onUserUpdate();
     }
   };
 
@@ -139,6 +144,34 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
                 placeholder={editingId ? "Biarkan kosong jika sama" : "••••••"}
               />
             </div>
+
+            {/* Email & Phone */}
+            <div className="lg:col-span-2">
+              <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Email Rasmi</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input 
+                  type="email" 
+                  value={formData.email}
+                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  placeholder="cth: user@mps.gov.my"
+                />
+              </div>
+            </div>
+            <div className="lg:col-span-2">
+              <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">No. Telefon</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input 
+                  type="text" 
+                  value={formData.phone}
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  placeholder="cth: 012-3456789"
+                />
+              </div>
+            </div>
             
             {/* Extended Details */}
             <div>
@@ -152,7 +185,7 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Bahagian</label>
+              <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Jabatan (Bahagian)</label>
               <input 
                 type="text" 
                 value={formData.bahagian}
@@ -178,8 +211,9 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
                 onChange={e => setFormData({...formData, role: e.target.value as Role})}
                 className="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
               >
-                <option value={Role.PJA}>PJA</option>
                 <option value={Role.ADMIN}>Admin</option>
+                <option value={Role.JURUTERA}>Jurutera</option>
+                <option value={Role.PJA}>PJA</option>
               </select>
             </div>
 
@@ -204,30 +238,34 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {users.map(user => (
-          <div key={user.id} className="glass-effect rounded-3xl p-6 border border-white/20 dark:border-white/5 shadow-lg relative group transition-all hover:scale-[1.01]">
+        {users.map(u => (
+          <div key={u.id} className="glass-effect rounded-3xl p-6 border border-white/20 dark:border-white/5 shadow-lg relative group transition-all hover:scale-[1.01]">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white ${user.role === Role.ADMIN ? 'bg-gradient-to-br from-teal-500 to-emerald-600' : 'bg-gradient-to-br from-blue-400 to-cyan-500'}`}>
-                  {user.role === Role.ADMIN ? <Shield className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />}
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white shrink-0 overflow-hidden ${u.role === Role.ADMIN ? 'bg-gradient-to-br from-teal-500 to-emerald-600' : 'bg-gradient-to-br from-blue-400 to-cyan-500'}`}>
+                  {u.avatarUrl ? (
+                    <img src={u.avatarUrl} alt={u.fullName} className="w-full h-full object-cover" />
+                  ) : (
+                    u.role === Role.ADMIN ? <Shield className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white">{user.fullName}</h3>
-                  <p className="text-sm text-slate-500">@{user.username}</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white break-words">{u.fullName}</h3>
+                  <p className="text-sm text-slate-500">@{u.username}</p>
                 </div>
               </div>
               
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                   <button 
-                    onClick={() => handleEditClick(user)}
+                    onClick={() => handleEditClick(u)}
                     className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all"
                     title="Edit"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  {currentUser.id !== user.id && (
+                  {currentUser.id !== u.id && (
                     <button 
-                      onClick={() => handleDeleteUser(user.id)}
+                      onClick={() => handleDeleteUser(u.id)}
                       className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
                       title="Padam"
                     >
@@ -238,25 +276,25 @@ const Users: React.FC<UsersProps> = ({ currentUser }) => {
             </div>
 
             <div className="mt-6 space-y-2">
-                <div className="flex justify-between text-xs">
-                    <span className="text-slate-400">Jawatan</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{user.jawatan || '-'}</span>
+                <div className="flex justify-between text-xs items-start">
+                    <span className="text-slate-400 shrink-0">Jawatan</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300 text-right break-words ml-4">{u.jawatan || '-'}</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                    <span className="text-slate-400">Bahagian</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{user.bahagian || '-'}</span>
+                <div className="flex justify-between text-xs items-start">
+                    <span className="text-slate-400 shrink-0">Jabatan</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300 text-right break-words ml-4">{u.bahagian || '-'}</span>
                 </div>
-                 <div className="flex justify-between text-xs">
-                    <span className="text-slate-400">Unit</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{user.unit || '-'}</span>
+                 <div className="flex justify-between text-xs items-start">
+                    <span className="text-slate-400 shrink-0">Emel</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300 text-right break-all ml-4" title={u.email}>{u.email || '-'}</span>
                 </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.role === Role.ADMIN ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
-                {user.role}
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.role === Role.ADMIN ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+                {u.role}
               </span>
-              <span className="text-xs text-slate-400">ID: {user.id}</span>
+              <span className="text-xs text-slate-400">ID: {u.id}</span>
             </div>
           </div>
         ))}
