@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Role } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { Trash2, UserPlus, Shield, User as UserIcon, Edit2, X, Save, Mail, Phone } from 'lucide-react';
 
 interface UsersProps {
@@ -31,8 +31,27 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
     loadUsers();
   }, []);
 
-  const loadUsers = () => {
-    setUsers(mockService.getUsers());
+  const loadUsers = async () => {
+    try {
+        const data = await supabaseService.getUsers();
+        
+        // Sort by Hierarchy (ADMIN > JURUTERA > PJA) then Alphabetically by fullName
+        const sortedData = [...data].sort((a, b) => {
+          const roleOrder = { [Role.ADMIN]: 1, [Role.JURUTERA]: 2, [Role.PJA]: 3 };
+          const orderA = roleOrder[a.role as Role] || 99;
+          const orderB = roleOrder[b.role as Role] || 99;
+          
+          if (orderA !== orderB) {
+            return orderA - orderB;
+          }
+          
+          return a.fullName.localeCompare(b.fullName);
+        });
+
+        setUsers(sortedData);
+    } catch (err) {
+        console.error('Failed to load users:', err);
+    }
   };
 
   const resetForm = () => {
@@ -61,46 +80,60 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
     e.preventDefault();
     if (!formData.username || !formData.fullName) return;
     
-    if (editingId) {
-        await mockService.updateUser(editingId, formData);
-    } else {
-        if (!formData.password) {
-            alert('Sila masukkan kata laluan untuk pengguna baru.');
-            return;
+    try {
+        if (editingId) {
+            await supabaseService.updateUser(editingId, formData);
+        } else {
+            if (!formData.password) {
+                alert('Sila masukkan kata laluan untuk pengguna baru.');
+                return;
+            }
+            await supabaseService.addUser(formData);
         }
-        await mockService.addUser(formData);
+        
+        await loadUsers();
+        if (onUserUpdate) onUserUpdate();
+        resetForm();
+    } catch (err) {
+        console.error('Failed to save user:', err);
     }
-    
-    loadUsers();
-    if (onUserUpdate) onUserUpdate();
-    resetForm();
   };
 
   const handleDeleteUser = async (id: number) => {
     if (window.confirm('Adakah anda pasti mahu memadam pengguna ini?')) {
-      await mockService.deleteUser(id);
-      loadUsers();
-      if (onUserUpdate) onUserUpdate();
+      try {
+        await supabaseService.deleteUser(id);
+        await loadUsers();
+        if (onUserUpdate) onUserUpdate();
+      } catch (err) {
+        console.error('Failed to delete user:', err);
+      }
     }
   };
+
+  const isAdmin = currentUser.role === Role.ADMIN;
 
   return (
     <div className="space-y-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-3xl font-bold gradient-text">Pengurusan Pengguna</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Uruskan akaun Admin dan PJA serta butiran jabatan.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            {isAdmin ? 'Uruskan akaun Admin dan PJA serta butiran jabatan.' : 'Lihat maklumat akaun Admin dan PJA.'}
+          </p>
         </div>
-        <button 
-          onClick={() => { resetForm(); setIsFormOpen(!isFormOpen); }}
-          className="bg-emerald-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:bg-emerald-700 transition-all"
-        >
-          {isFormOpen ? <X className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-          <span>{isFormOpen ? 'Tutup' : 'Tambah Pengguna'}</span>
-        </button>
+        {isAdmin && (
+          <button 
+            onClick={() => { resetForm(); setIsFormOpen(!isFormOpen); }}
+            className="bg-emerald-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:bg-emerald-700 transition-all"
+          >
+            {isFormOpen ? <X className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+            <span>{isFormOpen ? 'Tutup' : 'Tambah Pengguna'}</span>
+          </button>
+        )}
       </div>
 
-      {isFormOpen && (
+      {isAdmin && isFormOpen && (
         <div className="glass-effect p-6 rounded-3xl shadow-xl border border-emerald-100 dark:border-emerald-900/30 animate-slide-down relative">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-200 dark:border-white/10">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-lg">
@@ -255,24 +288,26 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 </div>
               </div>
               
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                  <button 
-                    onClick={() => handleEditClick(u)}
-                    className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all"
-                    title="Edit"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  {currentUser.id !== u.id && (
+              {isAdmin && (
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                     <button 
-                      onClick={() => handleDeleteUser(u.id)}
-                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
-                      title="Padam"
+                      onClick={() => handleEditClick(u)}
+                      className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all"
+                      title="Edit"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Edit2 className="w-4 h-4" />
                     </button>
-                  )}
-              </div>
+                    {currentUser.id !== u.id && (
+                      <button 
+                        onClick={() => handleDeleteUser(u.id)}
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                        title="Padam"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                </div>
+              )}
             </div>
 
             <div className="mt-6 space-y-2">
