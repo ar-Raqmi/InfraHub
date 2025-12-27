@@ -1,9 +1,8 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, formatCurrency, formatDate } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { Download, Loader2, X, Star, Save, Eye, ArrowLeft } from 'lucide-react';
 
 interface PrestasiCertificateProps {
@@ -40,20 +39,25 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
     const [isGenerating, setIsGenerating] = useState(false);
     const [companyDetails, setCompanyDetails] = useState<any>(null);
     
-    // Local State for Editing
     const [localScores, setLocalScores] = useState<number[]>(project.prestasiScores || [0,0,0,0,0,0]);
     const [localSkop, setLocalSkop] = useState<'BEKALAN'|'PERKHIDMATAN'|'KERJA'>(project.skop || 'BEKALAN');
     const [localNoInbois, setLocalNoInbois] = useState<string>(project.noInbois || '');
 
     useEffect(() => {
-        if (project.namaSyarikat) {
-            const year = new Date(project.tarikhBuka).getFullYear();
-            const details = mockService.getCompanyDetails(year, project.namaSyarikat);
-            setCompanyDetails(details);
-        }
+        const fetchData = async () => {
+            if (project.namaSyarikat) {
+                try {
+                    const year = new Date(project.tarikhBuka).getFullYear();
+                    const details = await supabaseService.getCompanyDetails(year, project.namaSyarikat);
+                    setCompanyDetails(details);
+                } catch (err) {
+                    console.error('Failed to load company details:', err);
+                }
+            }
+        };
+        fetchData();
     }, [project]);
 
-    // Calculate Final Score
     const totalScore = localScores.reduce((a, b) => a + b, 0);
     const percentage = Math.ceil((totalScore / 60) * 100);
 
@@ -70,16 +74,12 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             
-            const pageWidth = doc.internal.pageSize.getWidth(); // 210
+            const pageWidth = doc.internal.pageSize.getWidth();
             const margin = 15;
             let currentY = 15;
 
-            // Fetch Logos
             const sealLogo = await getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
 
-            // --- PAGE 1 ---
-
-            // Header
             if (sealLogo) {
                 doc.addImage(sealLogo, 'PNG', pageWidth / 2 - 12, currentY, 24, 20);
                 currentY += 25;
@@ -94,12 +94,10 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             doc.line(pageWidth / 2 - 55, currentY + 1, pageWidth / 2 + 55, currentY + 1);
             currentY += 10;
 
-            // A. MAKLUMAT AM
             doc.setFontSize(10);
             doc.text("A. MAKLUMAT AM", margin, currentY);
             currentY += 3;
 
-            // Table A Construction
             const tableABody = [
                 ["Nama Pembekal/Kontraktor :", { content: project.namaSyarikat?.toUpperCase() || '', styles: { fontStyle: 'bold' } }],
                 ["Nombor Pembekal / Kontraktor :", companyDetails?.registrationNumber || ''],
@@ -127,9 +125,8 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             });
 
             // @ts-ignore
-            currentY = doc.lastAutoTable.finalY; // Connect tables
+            currentY = doc.lastAutoTable.finalY;
 
-            // Sub Table A
             const tableA2Body = [
                 [
                     "No. Pesanan Rasmi :", 
@@ -153,7 +150,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
             // @ts-ignore
             doc.autoTable({
-                startY: currentY, // No gap, shared border visually
+                startY: currentY,
                 body: tableA2Body,
                 theme: 'plain',
                 styles: { 
@@ -175,25 +172,21 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             // @ts-ignore
             currentY = doc.lastAutoTable.finalY + 10;
 
-            // B. MAKLUMAT PENILAIAN PRESTASI
             doc.setFont("helvetica", "bold");
             doc.text("B. MAKLUMAT PENILAIAN PRESTASI", margin, currentY);
             currentY += 5;
 
-            // Helper to draw Rating Grid
             const drawRatingGrid = (y: number, selectedScore: number) => {
-                const startX = margin + 10; // Indent
+                const startX = margin + 10;
                 const boxWidth = 160;
                 const boxHeight = 12;
                 const sections = 5;
                 const secWidth = boxWidth / sections;
                 
-                // Draw Outer Box
                 doc.setDrawColor(0);
                 doc.setLineWidth(0.1);
                 doc.rect(startX, y, boxWidth, boxHeight);
 
-                // Labels & Numbers
                 const labels = ["Amat Lemah", "Lemah", "Sederhana", "Baik", "Amat Baik"];
                 const values = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]];
 
@@ -202,26 +195,24 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
                 for (let i = 0; i < sections; i++) {
                     const x = startX + (i * secWidth);
-                    // Vertical Separators
+                    
+                    doc.setTextColor(0, 0, 0);
+                    doc.setDrawColor(0);
+
                     if (i > 0) doc.line(x, y, x, y + boxHeight);
                     
-                    // Horizontal Separator for Label
                     doc.line(x, y + 6, x + secWidth, y + 6);
 
-                    // Label Text
                     doc.text(labels[i], x + (secWidth/2), y + 4, { align: "center" });
 
-                    // Values
                     const val1 = values[i][0];
                     const val2 = values[i][1];
                     const subWidth = secWidth / 2;
 
-                    // Separator between numbers
                     doc.line(x + subWidth, y + 6, x + subWidth, y + boxHeight);
 
-                    // Draw Number 1
                     if (val1 === selectedScore) {
-                        doc.setFillColor(0, 0, 0); // Black highlight
+                        doc.setFillColor(0, 0, 0);
                         doc.rect(x, y + 6, subWidth, 6, 'F');
                         doc.setTextColor(255, 255, 255);
                     } else {
@@ -229,7 +220,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     }
                     doc.text(val1.toString(), x + (subWidth/2), y + 10, { align: "center" });
 
-                    // Draw Number 2
                     if (val2 === selectedScore) {
                         doc.setFillColor(0, 0, 0);
                         doc.rect(x + subWidth, y + 6, subWidth, 6, 'F');
@@ -238,12 +228,11 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                         doc.setTextColor(0, 0, 0);
                     }
                     doc.text(val2.toString(), x + subWidth + (subWidth/2), y + 10, { align: "center" });
+                    
+                    doc.setTextColor(0, 0, 0);
                 }
                 
-                // Reset Text Color
-                doc.setTextColor(0, 0, 0);
-                
-                return y + boxHeight + 8; // Return new Y
+                return y + boxHeight + 8;
             };
 
             const questions = [
@@ -255,10 +244,10 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                 "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
             ];
 
-            // Render Q1-4
             for (let i = 0; i < 4; i++) {
                 doc.setFontSize(9);
                 doc.setFont("helvetica", "normal");
+                doc.setTextColor(0, 0, 0);
                 const qText = `${i + 1}. ${questions[i]}`;
                 const splitText = doc.splitTextToSize(qText, pageWidth - (margin * 2));
                 doc.text(splitText, margin, currentY);
@@ -267,14 +256,13 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                 currentY = drawRatingGrid(currentY, localScores[i]);
             }
 
-            // --- PAGE 2 ---
             doc.addPage();
             currentY = 20;
 
-            // Render Q5-6
             for (let i = 4; i < 6; i++) {
                 doc.setFontSize(9);
                 doc.setFont("helvetica", "normal");
+                doc.setTextColor(0, 0, 0);
                 const qText = `${i + 1}. ${questions[i]}`;
                 const splitText = doc.splitTextToSize(qText, pageWidth - (margin * 2));
                 doc.text(splitText, margin, currentY);
@@ -283,56 +271,45 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                 currentY = drawRatingGrid(currentY, localScores[i]);
             }
 
-            // Divider
             doc.setLineWidth(0.1);
             doc.line(margin, currentY, pageWidth - margin, currentY);
             currentY += 10;
 
-            // C. MARKAH PRESTASI
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
             doc.text("C. MARKAH PRESTASI KONTRAKTOR DAN PEMBEKAL", margin, currentY);
             currentY += 5;
 
-            // Box for Score
             const cBoxY = currentY;
             const cBoxHeight = 45;
             doc.rect(margin, cBoxY, pageWidth - (margin * 2), cBoxHeight);
 
-            // Left Side (Calculation)
             doc.setFontSize(9);
             doc.text("Purata Prestasi Kontraktor/Pembekal", margin + 5, cBoxY + 10);
             
             const eqY = cBoxY + 25;
             doc.setFontSize(11);
             
-            // Formula
             let cursorX = margin + 5;
             doc.text("=", cursorX, eqY); cursorX += 5;
             
-            // Fraction
-            doc.text(totalScore.toString(), cursorX + 3, eqY - 3); // Numerator
-            doc.line(cursorX, eqY, cursorX + 10, eqY); // Bar
-            doc.text("60", cursorX + 3, eqY + 4); // Denominator
+            doc.text(totalScore.toString(), cursorX + 3, eqY - 3);
+            doc.line(cursorX, eqY, cursorX + 10, eqY);
+            doc.text("60", cursorX + 3, eqY + 4);
             cursorX += 15;
 
             doc.text("X 100% =", cursorX, eqY); cursorX += 20;
             doc.setFont("helvetica", "bold");
             doc.text(`${percentage}`, cursorX, eqY); 
             doc.setLineWidth(0.3);
-            doc.line(cursorX, eqY + 1, cursorX + (percentage.toString().length * 3), eqY + 1); // Underline
+            doc.line(cursorX, eqY + 1, cursorX + (percentage.toString().length * 3), eqY + 1);
             cursorX += 10;
             doc.text("%", cursorX, eqY);
 
-            // Big Score
-            doc.setFontSize(14);
-            doc.text(`${percentage}`, margin + 30, cBoxY + 40);
-
-            // Middle Divider Line
             doc.setLineWidth(0.1);
             doc.line(pageWidth / 2, cBoxY, pageWidth / 2, cBoxY + cBoxHeight);
 
-            // Right Side (Scale)
             const rightX = pageWidth / 2 + 5;
             let scaleY = cBoxY + 8;
             doc.setFontSize(9);
@@ -356,8 +333,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
             currentY += cBoxHeight + 15;
 
-            // SIGNATURES
-            const sigBoxHeight = 35;
             const titles = [
                 "PENGESAHAN PEGAWAI PENYELIA TAPAK / PENERIMA BEKALAN",
                 "PENGESAHAN PEGAWAI / JURUTERA",
@@ -365,39 +340,40 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             ];
 
             for (const title of titles) {
-                // Gray Header
                 doc.setFillColor(220, 220, 220);
                 doc.rect(margin, currentY, pageWidth - (margin * 2), 8, 'F');
-                doc.rect(margin, currentY, pageWidth - (margin * 2), 8, 'S'); // Border
+                doc.rect(margin, currentY, pageWidth - (margin * 2), 8, 'S');
                 
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(8);
-                // Handle mixed font in 3rd title
+                doc.setTextColor(0, 0, 0);
+
                 if (title.includes("-")) {
-                    const [boldPart, normalPart] = title.split("-");
-                    doc.text(boldPart.trim(), margin + 2, currentY + 5);
-                    doc.setFont("helvetica", "normal");
+                    const parts = title.split("-");
+                    const boldPart = parts[0].trim();
+                    const normalPart = parts[1].trim();
+                    doc.text(boldPart, margin + 2, currentY + 5);
                     doc.setFont("helvetica", "italic");
-                    doc.text(`- ${normalPart.trim()}`, margin + 2 + doc.getTextWidth(boldPart), currentY + 5);
+                    doc.text(`- ${normalPart}`, margin + 5 + doc.getTextWidth(boldPart), currentY + 5);
                 } else {
                     doc.text(title, pageWidth / 2, currentY + 5, { align: "center" });
                 }
 
                 currentY += 8;
                 
-                // Content Box
                 doc.setFont("helvetica", "normal");
+                doc.setTextColor(0, 0, 0);
                 doc.text("Tandatangan:", margin + 5, currentY + 10);
                 doc.text("Tarikh:", margin + 5, currentY + 20);
                 
-                currentY += 25; // Space for next block
+                currentY += 25;
             }
 
-            // Footer
             const footerY = 285;
             doc.setLineWidth(0.5);
             doc.line(margin, footerY, pageWidth - margin, footerY);
             doc.setFontSize(7);
+            doc.setTextColor(0, 0, 0);
             doc.text("Sila hantar salinan borang ini ke :    Bahagian Perolehan, Majlis Perbandaran Selayang", margin, footerY + 4);
 
             doc.save(`Borang_Prestasi_${project.noFail || 'Draft'}.pdf`);
@@ -416,9 +392,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
         setLocalScores(newArr);
     };
 
-    // --- RENDER HELPERS ---
-
-    // Rating Grid Component matching Image 1 & 2
     const RatingGrid = ({ selected }: { selected: number }) => (
         <div className="flex w-full border border-black text-[10px] h-[35px]">
             {[
@@ -432,8 +405,8 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     <div className="text-center h-[18px] flex items-center justify-center border-b border-black leading-none pt-0.5">
                         {group.label}
                     </div>
-                    <div className="flex flex-1">
-                        {group.vals.map((val, vIdx) => (
+                    <div className="flex-1 flex">
+                        {group.vals.map((val) => (
                             <div 
                                 key={val} 
                                 className={`flex-1 flex items-center justify-center border-r border-black last:border-r-0 text-[11px] ${val === selected ? 'bg-black text-white font-bold' : ''}`}
@@ -447,7 +420,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
         </div>
     );
 
-    // Question Row
     const QuestionRow = ({ num, text, score }: { num: number, text: string, score: number }) => (
         <div className="flex gap-4 mb-4">
             <div className="text-[12px] w-[15px] font-medium text-black">{num}.</div>
@@ -462,7 +434,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" style={{ zIndex: 9999 }}>
             <div className={`bg-white dark:bg-slate-900 w-full rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up transition-all duration-300 ${view === 'PREVIEW' ? 'max-w-[230mm] h-[95vh]' : 'max-w-4xl h-[90vh]'}`}>
                 
-                {/* Modal Header */}
                 <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
                     <div className="flex items-center gap-3">
                         {view === 'PREVIEW' && (
@@ -508,14 +479,11 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     </div>
                 </div>
 
-                {/* Content Area */}
                 <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900/50 p-6 flex flex-col items-center">
                     
-                    {/* FORM VIEW */}
                     {view === 'FORM' && (
                         <div className="w-full max-w-3xl space-y-6">
                             
-                            {/* Header Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Skor Semasa</div>
@@ -532,7 +500,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                 </div>
                             </div>
 
-                            {/* Additional Info Input (No. Inbois) */}
                             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
                                 <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wide">Maklumat Tambahan</h4>
                                 <div className="space-y-4">
@@ -568,7 +535,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                 </div>
                             </div>
 
-                            {/* Questions */}
                             <div className="space-y-4">
                                 {[
                                     "Keupayaan kontraktor/ pembekal memenuhi permintaan dari segi harga berbanding kontraktor/ pembekal lain.",
@@ -604,14 +570,11 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                         </div>
                     )}
 
-                    {/* PREVIEW VIEW */}
                     {view === 'PREVIEW' && (
                         <div className="flex flex-col items-center gap-8 animate-fade-in pb-10">
                             
-                            {/* PAGE 1 */}
                             <div className="w-[210mm] h-[296mm] bg-white p-[15mm] shadow-lg text-black font-sans leading-snug relative box-border pdf-page overflow-hidden flex flex-col">
                                 
-                                {/* HEADER LOGO */}
                                 <div className="flex flex-col items-center mb-6">
                                     <img 
                                         src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png" 
@@ -623,11 +586,9 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                     </h1>
                                 </div>
 
-                                {/* A. MAKLUMAT AM */}
                                 <div className="mb-6">
                                     <h3 className="font-bold text-[12px] uppercase mb-1.5 text-black">A. MAKLUMAT AM</h3>
                                     
-                                    {/* Main Table */}
                                     <table className="w-full border-collapse border border-black text-[11px] text-black">
                                         <tbody>
                                             <tr>
@@ -654,7 +615,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                         </tbody>
                                     </table>
 
-                                    {/* Sub Table */}
                                     <table className="w-full border-collapse border-x border-b border-black text-[11px] text-black">
                                         <tbody>
                                             <tr>
@@ -679,7 +639,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                     </table>
                                 </div>
 
-                                {/* B. MAKLUMAT PENILAIAN PRESTASI (1-4) */}
                                 <div>
                                     <h3 className="font-bold text-[12px] uppercase mb-3 text-black">B. MAKLUMAT PENILAIAN PRESTASI</h3>
                                     
@@ -706,10 +665,8 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                 </div>
                             </div>
 
-                            {/* PAGE 2 */}
                             <div className="w-[210mm] h-[296mm] bg-white p-[15mm] shadow-lg text-black font-sans leading-snug relative box-border pdf-page overflow-hidden flex flex-col">
                                 
-                                {/* B. MAKLUMAT PENILAIAN PRESTASI (5-6) */}
                                 <div className="mb-6 border-b border-black/50 pb-4">
                                     <QuestionRow 
                                         num={5} 
@@ -723,7 +680,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                     />
                                 </div>
 
-                                {/* C. MARKAH PRESTASI */}
                                 <div className="mb-8">
                                     <h3 className="font-bold text-[12px] uppercase mb-2 text-black">C. MARKAH PRESTASI KONTRAKTOR DAN PEMBEKAL</h3>
                                     <div className="border border-black p-3 flex gap-4 items-start text-[12px]">
@@ -738,9 +694,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                                 <span className="text-[16px]">X 100% =</span>
                                                 <div className="font-bold underline text-[16px] px-2">{percentage}</div>
                                                 <span className="text-[16px]">%</span>
-                                            </div>
-                                            <div className="mt-6 text-[16px] text-center font-bold">
-                                                {percentage}
                                             </div>
                                         </div>
                                         
@@ -759,10 +712,8 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                     </div>
                                 </div>
 
-                                {/* SIGNATURES */}
                                 <div className="space-y-6 text-[11px] text-black">
                                     
-                                    {/* SIGNATURE 1 */}
                                     <div>
                                         <div className="bg-[#d1d5db] border border-black p-1 text-center font-bold uppercase mb-6 shadow-sm print:bg-gray-300">
                                             PENGESAHAN PEGAWAI PENYELIA TAPAK / PENERIMA BEKALAN
@@ -773,7 +724,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                         </div>
                                     </div>
 
-                                    {/* SIGNATURE 2 */}
                                     <div>
                                         <div className="bg-[#d1d5db] border border-black p-1 text-center font-bold uppercase mb-6 shadow-sm print:bg-gray-300">
                                             PENGESAHAN PEGAWAI / JURUTERA
@@ -784,7 +734,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                         </div>
                                     </div>
 
-                                    {/* SIGNATURE 3 */}
                                     <div>
                                         <div className="bg-[#d1d5db] border border-black p-1 text-center font-bold uppercase mb-6 shadow-sm print:bg-gray-300">
                                             PERAKUAN PENGARAH JABATAN - <span className="normal-case italic font-normal">Maklumat telah dikemaskini di dalam sistem.</span>
@@ -797,7 +746,6 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
                                 </div>
 
-                                {/* FOOTER */}
                                 <div className="mt-auto pt-2 border-t-[3px] border-black text-[10px] text-black">
                                     Sila hantar salinan borang ini ke : &nbsp;&nbsp; Bahagian Perolehan, Majlis Perbandaran selayang
                                 </div>
