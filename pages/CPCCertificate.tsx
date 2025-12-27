@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, User, formatDateMalay } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { Download, Loader2, X } from 'lucide-react';
 
 interface CPCCertificateProps {
@@ -16,17 +16,22 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
     const [companyDetails, setCompanyDetails] = useState<any>(null);
 
     useEffect(() => {
-        if (project.namaSyarikat) {
-            const year = new Date(project.tarikhBuka).getFullYear();
-            const details = mockService.getCompanyDetails(year, project.namaSyarikat);
-            setCompanyDetails(details);
-        }
+        const fetchData = async () => {
+            if (project.namaSyarikat) {
+                try {
+                    const year = new Date(project.tarikhBuka).getFullYear();
+                    const details = await supabaseService.getCompanyDetails(year, project.namaSyarikat);
+                    setCompanyDetails(details);
+                } catch (err) {
+                    console.error('Failed to load company details:', err);
+                }
+            }
+        };
+        fetchData();
     }, [project]);
 
-    // --- Dates Logic ---
     const tarikhSiap = project.tarikhSiapSebenar ? project.tarikhSiapSebenar : '';
     
-    // Add 1 day to Tarikh Siap for Defect Start
     const getDLPStart = (dateStr: string) => {
         if (!dateStr) return '';
         const d = new Date(dateStr);
@@ -35,7 +40,6 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
     };
     const dlpStart = getDLPStart(tarikhSiap);
 
-    // Add 6 months to DLP Start for DLP End
     const getDLPEnd = (dateStr: string) => {
         if (!dateStr) return '';
         const d = new Date(dateStr);
@@ -47,16 +51,14 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
     const handleDownload = async () => {
         setIsGenerating(true);
         try {
-            // @ts-ignore
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             
-            const pageWidth = doc.internal.pageSize.getWidth(); // 210
-            const margin = 25; // 25mm margin
+            const pageWidth = doc.internal.pageSize.getWidth(); 
+            const margin = 25; 
             const contentWidth = pageWidth - (margin * 2);
             let currentY = 20;
 
-            // --- HEADER ---
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
             doc.text("KERAJAAN MALAYSIA", pageWidth / 2, currentY, { align: "center" });
@@ -76,19 +78,14 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             doc.text("(CERTIFICATE OF PRACTICAL COMPLETION)", pageWidth / 2, currentY, { align: "center" });
             currentY += 15;
 
-            // --- REFERENCES & ADDRESS ---
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9);
 
             const leftColX = margin;
-            const rightColX = pageWidth / 2 + 10; // Start of right column
+            const rightColX = pageWidth / 2 + 10; 
 
-            // Row 1: Ref & Address Title
-            
-            // Left: Rujukan
             doc.text(`Rujukan : Bil (   ) ${project.noFail || ''}`, leftColX, currentY);
             
-            // Right: MPS Address Block
             doc.setFont("helvetica", "bold");
             doc.text("Majlis Perbandaran Selayang", rightColX, currentY);
             currentY += 4;
@@ -99,59 +96,47 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             currentY += 4;
             doc.text("Selangor Darul Ehsan", rightColX, currentY);
             
-            currentY += 12; // Gap before Kepada
+            currentY += 12; 
 
-            // --- RECIPIENT & DATE ---
-            
-            // 1. "Kepada :" Label
             doc.text("Kepada :", leftColX, currentY);
             
-            // 2. Date on Right (Same line as Kepada)
             const dateStr = tarikhSiap ? formatDateMalay(tarikhSiap) : '.........................';
             doc.setFont("helvetica", "bold");
             doc.text(dateStr.toUpperCase(), rightColX, currentY);
             
-            // 3. Company Name (Same line as Kepada, Indented)
             const indentX = leftColX + 25; 
             doc.setFont("helvetica", "bold");
             doc.text(project.namaSyarikat?.toUpperCase() || 'NAMA SYARIKAT', indentX, currentY);
             
-            // Move down for address
             currentY += 5;
 
-            // 4. Company Address
             doc.setFont("helvetica", "normal");
             const address = companyDetails?.address || 'ALAMAT SYARIKAT...';
             const splitAddress = doc.splitTextToSize(address, 90); 
             doc.text(splitAddress, indentX, currentY);
             currentY += (splitAddress.length * 4) + 8;
 
-            // --- CIDB & SEBUTHARGA ---
             doc.setFont("helvetica", "bold");
             doc.text(`Berdaftar dengan CIDB dalam Gred " ${companyDetails?.gred || 'G1'} "`, leftColX, currentY);
             currentY += 5;
             doc.text(`No. Sebutharga : ${project.noSebutharga || '.........................'}`, leftColX, currentY);
             currentY += 10;
 
-            // --- PROJECT TITLE ---
             doc.setFont("helvetica", "normal");
             const labelSebutharga = "Sebutharga Untuk :";
             doc.text(labelSebutharga, leftColX, currentY);
             
-            // Calculate X position for title to start after label
             const labelWidth = doc.getTextWidth(labelSebutharga);
-            const titleX = leftColX + labelWidth + 3; // +3mm padding
+            const titleX = leftColX + labelWidth + 3; 
             
             doc.setFont("helvetica", "bold");
             const title = project.namaProjek?.toUpperCase() || '';
-            // Wrap title to stay within margins
             const maxTitleWidth = pageWidth - margin - titleX;
             const splitTitle = doc.splitTextToSize(title, maxTitleWidth);
             
             doc.text(splitTitle, titleX, currentY);
             currentY += (splitTitle.length * 5) + 10;
 
-            // --- BODY TEXT (Justified with Bold Inserts) ---
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9); 
             
@@ -189,9 +174,8 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                 });
             });
 
-            currentY += 30; // Space before signatures
+            currentY += 30; 
 
-            // --- SIGNATURES ---
             if (currentY > 260) {
                 doc.addPage();
                 currentY = 20;
@@ -203,41 +187,33 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9);
             
-            // Headings
             doc.text("Diperakui di tapak,", sigLeftX, currentY);
             doc.text("Disahkan,", sigRightX, currentY);
             currentY += 25; 
 
-            // Lines
             doc.setLineDash([1, 1], 0);
             doc.line(sigLeftX, currentY, sigLeftX + 80, currentY);
             doc.line(sigRightX, currentY, sigRightX + 80, currentY);
-            doc.setLineDash([]); // Reset
+            doc.setLineDash([]); 
             currentY += 5;
 
-            // Names & Positions
             const pjaName = pjaUser?.fullName?.toUpperCase() || '';
             const pjaRole = pjaUser?.jawatan || ''; 
             
-            // Store Start Y for column alignment
             const sigStartY = currentY;
 
-            // --- Left Column ---
             doc.text(`(Penolong Jurutera/Penyelia Tapak)`, sigLeftX, currentY);
             currentY += 5;
             
-            // Calculate max width for left text to avoid collision with right column
-            const maxLeftWidth = sigRightX - sigLeftX - 10; // 10mm gap buffer
+            const maxLeftWidth = sigRightX - sigLeftX - 10; 
             
             const splitName = doc.splitTextToSize(`Nama Penuh : ${pjaName}`, maxLeftWidth);
             doc.text(splitName, sigLeftX, currentY);
-            currentY += (splitName.length * 5); // Adjust Y based on number of lines
+            currentY += (splitName.length * 5); 
 
             const splitRole = doc.splitTextToSize(`Jawatan : ${pjaRole}`, maxLeftWidth);
             doc.text(splitRole, sigLeftX, currentY);
 
-            // --- Right Column ---
-            // Reset Y to start at the same level as Left Column row 1
             let rightY = sigStartY;
             
             doc.text(`(Jurutera)`, sigRightX, rightY);
@@ -246,7 +222,6 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             rightY += 5;
             doc.text(`Jawatan :`, sigRightX, rightY);
 
-            // Save
             doc.save(`CPC_${project.noFail || 'Cert'}.pdf`);
 
         } catch (e) {
@@ -261,7 +236,6 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" style={{ zIndex: 9999 }}>
             <div className="bg-white dark:bg-slate-900 w-full max-w-[230mm] h-[95vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
                 
-                {/* Modal Header */}
                 <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
                     <h3 className="font-bold text-slate-800 dark:text-white">Pratonton CPC (Perakuan Siap Kerja)</h3>
                     <div className="flex gap-2">
@@ -279,11 +253,9 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                     </div>
                 </div>
 
-                {/* Preview Area (HTML) */}
                 <div className="flex-1 overflow-y-auto bg-gray-100 p-8 flex justify-center">
                     <div id="cpc-cert-container" className="w-[210mm] min-h-[297mm] bg-white px-[25mm] pt-[20mm] pb-[20mm] shadow-lg text-black relative box-border flex flex-col leading-snug" style={{ fontFamily: 'Arial, sans-serif' }}>
                         
-                        {/* HEADER */}
                         <div className="text-center mb-6">
                             <h2 className="text-[11pt] font-bold uppercase tracking-wide">KERAJAAN MALAYSIA</h2>
                             <h1 className="text-[13pt] font-bold uppercase tracking-wide mb-4">MAJLIS PERBANDARAN SELAYANG</h1>
@@ -292,7 +264,6 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                             <p className="text-[9pt] italic">(CERTIFICATE OF PRACTICAL COMPLETION)</p>
                         </div>
 
-                        {/* REF & ADDRESSES */}
                         <div className="flex justify-between items-start mb-6 text-[9pt]">
                             <div className="w-[50%]">
                                 <p>Rujukan : Bil ( &nbsp;&nbsp; ) {project.noFail}</p>
@@ -305,7 +276,6 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                             </div>
                         </div>
 
-                        {/* RECIPIENT - UPDATED LAYOUT */}
                         <div className="flex justify-between items-start mb-6 text-[9pt]">
                             <div className="w-[60%] flex items-start">
                                 <span className="w-[25mm] shrink-0">Kepada :</span>
@@ -319,19 +289,16 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                             </div>
                         </div>
 
-                        {/* CIDB Info */}
                         <div className="mb-6 text-[9pt] font-bold">
                             <p className="mb-1">Berdaftar dengan CIDB dalam Gred " {companyDetails?.gred || 'G1'} "</p>
                             <p>No. Sebutharga : {project.noSebutharga || '.........................'}</p>
                         </div>
 
-                        {/* PROJECT TITLE */}
                         <div className="mb-6 text-[9pt] flex items-start">
                             <span className="font-normal w-[35mm] shrink-0">Sebutharga Untuk :</span> 
                             <span className="font-bold uppercase text-justify leading-snug">{project.namaProjek}</span>
                         </div>
 
-                        {/* BODY */}
                         <div className="text-[9pt] text-justify leading-relaxed mb-12">
                             <p>
                                 Menurut Syarat-Syarat Kontrak, dan tertakluk kepada penyiapan berkaitan dengan pembaikan apa-apa kecacatan, ketidaksempurnaan, kesusutan atau apa-apa dan yang mungkin terzahir dalam Tempoh Tanggungan Kecacatan maka adalah dengan ini di perakui bahawa seluruh Kerja yang tersebut telah siap sejajar dengan syarat-syarat dalam Dokumen Sebut Harga pada &nbsp;
@@ -345,7 +312,6 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                             </p>
                         </div>
 
-                        {/* SIGNATURES */}
                         <div className="flex justify-between items-end mt-auto text-[9pt] font-bold">
                             <div className="w-[45%]">
                                 <p className="mb-12">Diperakui di tapak,</p>
