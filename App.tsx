@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Project } from './types';
-import { mockService } from './services/mockService';
+import { supabaseService } from './services/supabaseService';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import ProjectsList from './pages/ProjectsList';
@@ -9,12 +9,12 @@ import ProjectDetail from './pages/ProjectDetail';
 import Login from './pages/Login';
 import Users from './pages/Users';
 import Inbox from './pages/Inbox';
-import Calendar from './pages/Calendar';
+import ImageReportGenerator from './pages/ImageReportGenerator';
 import Profile from './pages/Profile';
 import AdminSettings from './pages/AdminSettings';
 import YearSelector from './components/YearSelector';
 import Toast from './components/Toast';
-import { HelpCircle, X } from 'lucide-react';
+import { HelpCircle, X, RefreshCw } from 'lucide-react';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,15 +23,13 @@ function App() {
   const [selectedProject, setSelectedProject] = useState<Project | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   
-  // Year Logic
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  // Navigation Guard State
   const [showNavWarning, setShowNavWarning] = useState(false);
   const [pendingPage, setPendingPage] = useState<string | null>(null);
 
-  // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -39,8 +37,7 @@ function App() {
   };
 
   const refreshUser = () => {
-    const currentUser = mockService.getCurrentUser();
-    // Use spread to ensure reference change triggers re-render
+    const currentUser = supabaseService.getCurrentUser();
     setUser(currentUser ? { ...currentUser } : null);
   };
 
@@ -55,8 +52,29 @@ function App() {
     }
   }, [user]);
 
-  const loadProjects = () => {
-    setProjects(mockService.getProjects());
+  const loadProjects = async () => {
+    try {
+      const data = await supabaseService.getProjects();
+      setProjects(data);
+    } catch (err) {
+      console.error('Failed to load projects:', err);
+      showToast('Gagal memuatkan projek.', 'error');
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadProjects();
+      if (currentPage === 'profile' || currentPage === 'users') {
+        refreshUser();
+      }
+      showToast('Data telah dikemaskini.', 'success');
+    } catch (err) {
+      showToast('Gagal mengemaskini data.', 'error');
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
+    }
   };
 
   // Filter Projects by Year
@@ -72,8 +90,8 @@ function App() {
     showToast(`Selamat kembali, ${u.fullName}!`, 'success');
   };
 
-  const handleLogout = () => {
-    mockService.logout();
+  const handleLogout = async () => {
+    await supabaseService.logout();
     setUser(null);
     showToast('Anda telah log keluar.', 'info');
   };
@@ -89,9 +107,14 @@ function App() {
   };
   
   const handleDeleteProject = async (project: Project) => {
-    await mockService.deleteProject(project.id);
-    loadProjects();
-    showToast('Projek berjaya dipadam.', 'success');
+    try {
+      await supabaseService.deleteProject(project.id);
+      await loadProjects();
+      showToast('Projek berjaya dipadam.', 'success');
+    } catch (err) {
+      console.error('Delete failed:', err);
+      showToast('Gagal memadam projek.', 'error');
+    }
   };
 
   const handleProjectSaved = () => {
@@ -107,7 +130,18 @@ function App() {
        return;
     }
 
-    if (['dashboard', 'projects', 'users', 'inbox', 'calendar', 'settings', 'profile'].includes(page)) {
+    // Security & Role check for PJA
+    if (user?.role !== 'ADMIN' && page === 'settings') {
+       showToast(`Hanya Admin dibenarkan akses ke modul ${page}.`, 'error');
+       return;
+    }
+
+    loadProjects(); // Refresh projects on navigation
+    if (page === 'profile' || page === 'users') {
+      refreshUser(); // Refresh user state on relevant pages
+    }
+
+    if (['dashboard', 'projects', 'users', 'inbox', 'report', 'settings', 'profile'].includes(page)) {
       setCurrentPage(page);
     } else {
       showToast(`Modul ${page} sedang dibangunkan.`, 'info');
@@ -117,7 +151,7 @@ function App() {
   const confirmNavigation = () => {
     if (pendingPage) {
         setIsEditing(false);
-        if (['dashboard', 'projects', 'users', 'inbox', 'calendar', 'settings', 'profile'].includes(pendingPage)) {
+        if (['dashboard', 'projects', 'users', 'inbox', 'report', 'settings', 'profile'].includes(pendingPage)) {
             setCurrentPage(pendingPage);
         } else if (pendingPage === 'logout') {
             handleLogout();
@@ -149,12 +183,13 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950 font-sans transition-colors duration-300 relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300 relative overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:text-emerald-50">
       
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-teal-300 to-emerald-300 dark:from-teal-900 dark:to-emerald-900 rounded-full opacity-20 animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-emerald-300 to-teal-300 dark:from-teal-900 dark:to-emerald-900 rounded-full opacity-20 animate-float" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-900/10"></div>
+        <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-teal-100/30 dark:bg-teal-900/10 blur-3xl animate-float"></div>
+        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-emerald-100/30 dark:bg-emerald-900/10 blur-3xl animate-float" style={{ animationDelay: '-2s' }}></div>
       </div>
 
       {/* Toast Notification Container */}
@@ -171,13 +206,22 @@ function App() {
       />
 
       {/* Main Content Area */}
-      <main className="md:ml-20 pb-24 md:pb-6 min-h-screen relative z-10 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="md:pl-32 pb-24 md:pb-10 min-h-screen relative z-10 transition-all duration-300">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Top Bar / Header */}
           <header className="relative z-40 opacity-0 animate-slide-down delay-100 flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
              <div className="flex items-center gap-4">
                <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
+               
+               <button 
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className={`flex items-center gap-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-2xl px-4 py-2 shadow-sm border border-white/20 dark:border-white/5 transition-all hover:bg-white dark:hover:bg-slate-700 group ${refreshing ? 'opacity-70' : ''}`}
+               >
+                 <RefreshCw className={`w-4 h-4 text-emerald-500 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+                 <span className="font-bold text-slate-700 dark:text-slate-200 font-manrope hidden sm:inline">Refresh</span>
+               </button>
              </div>
           </header>
 
@@ -213,6 +257,7 @@ function App() {
                       onAddProject={handleAddProject}
                       onEditProject={handleEditProject}
                       onDeleteProject={handleDeleteProject}
+                      user={user}
                     />
                   )}
                   {currentPage === 'users' && (
@@ -221,8 +266,8 @@ function App() {
                   {currentPage === 'inbox' && (
                     <Inbox onProjectClick={handleEditProject} />
                   )}
-                  {currentPage === 'calendar' && (
-                    <Calendar projects={filteredProjects} />
+                  {currentPage === 'report' && (
+                    <ImageReportGenerator projects={filteredProjects} user={user} />
                   )}
                   {currentPage === 'profile' && (
                     <Profile user={user} onUserUpdate={refreshUser} />
