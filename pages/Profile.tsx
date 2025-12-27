@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Role } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { Camera, Lock, Save, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, X, Info, Trash2, AlertTriangle } from 'lucide-react';
 
 interface ProfileProps {
@@ -25,12 +25,10 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
   const [successMessage, setSuccessMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync local state when prop changes
   useEffect(() => {
     setUser(initialUser);
   }, [initialUser]);
 
-  // --- IMAGE COMPRESSION LOGIC ---
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -87,7 +85,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
     setIsUploading(true);
     try {
       const compressedBase64 = await compressImage(file);
-      const updatedUser = await mockService.updateUser(user.id, { avatarUrl: compressedBase64 });
+      const updatedUser = await supabaseService.updateUser(user.id, { avatarUrl: compressedBase64 });
       setUser(updatedUser);
       if (onUserUpdate) onUserUpdate(); 
       setSuccessMessage('Gambar profil berjaya dikemaskini.');
@@ -104,7 +102,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
     setIsUploading(true);
     setIsDeleteDialogOpen(false);
     try {
-        const updatedUser = await mockService.updateUser(user.id, { avatarUrl: '' });
+        const updatedUser = await supabaseService.updateUser(user.id, { avatarUrl: '' });
         setUser(updatedUser);
         if (onUserUpdate) onUserUpdate();
         setSuccessMessage('Gambar profil telah dipadam.');
@@ -136,7 +134,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
 
     setIsUploading(true);
     try {
-        const updatedUser = await mockService.updateUser(user.id, { password: passwordData.new });
+        const updatedUser = await supabaseService.updateUser(user.id, { password: passwordData.new });
         setUser(updatedUser);
         if (onUserUpdate) onUserUpdate(); 
         setIsChangingPassword(false);
@@ -165,7 +163,6 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
 
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
-          {/* Avatar Section */}
           <div className="relative group">
             {user.avatarUrl && !isUploading && (
                 <button 
