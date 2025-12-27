@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Project, ProjectStatus, Role, User } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { 
   AlertCircle, 
   Search, 
@@ -50,23 +50,31 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentView, setCurrentView] = useState<FilterView>('AKTIF');
   
-  // Persistent tracking for status of notifications
   const [readIds, setReadIds] = useState<string[]>(() => JSON.parse(localStorage.getItem('infrahub_read_notifications') || '[]'));
   
-  // Trash Map: ID -> timestamp when deleted
   const [trashMap, setTrashMap] = useState<Record<string, number>>(() => 
     JSON.parse(localStorage.getItem('infrahub_trash_map_notifications') || '{}')
   );
 
-  // Permanent Delete: IDs that should never show up again
   const [permanentIds, setPermanentIds] = useState<string[]>(() => 
     JSON.parse(localStorage.getItem('infrahub_permanent_notifications') || '[]')
   );
 
   useEffect(() => {
-    setUser(mockService.getCurrentUser());
-    setProjects(mockService.getProjects());
-    setAllUsers(mockService.getUsers());
+    const fetchData = async () => {
+        try {
+            setUser(supabaseService.getCurrentUser());
+            const [projs, users] = await Promise.all([
+                supabaseService.getProjects(),
+                supabaseService.getUsers()
+            ]);
+            setProjects(projs);
+            setAllUsers(users);
+        } catch (err) {
+            console.error('Failed to load inbox data:', err);
+        }
+    };
+    fetchData();
   }, []);
 
   // Auto-delete logic: Remove items from trash that are older than 7 days
@@ -77,7 +85,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
     const newPermanentIds = [...permanentIds];
 
     Object.entries(trashMap).forEach(([id, deletedAt]) => {
-      if (now - deletedAt > SEVEN_DAYS_MS) {
+      if (now - (deletedAt as number) > SEVEN_DAYS_MS) {
         delete newTrashMap[id];
         if (!newPermanentIds.includes(id)) {
           newPermanentIds.push(id);
@@ -373,7 +381,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
               </div>
               <div className="flex items-center gap-4">
                  <div className="text-right hidden sm:block">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem Nexus</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem InfraHub</p>
                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Automated Alert</p>
                  </div>
                  <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-all bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 ${readIds.includes(selectedTask.id) ? 'text-emerald-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">
