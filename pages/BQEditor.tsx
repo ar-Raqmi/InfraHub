@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { createItem, createHeader } from '../data/bqPresets';
-import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput } from 'lucide-react';
+import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool } from 'lucide-react';
 
 interface BQEditorProps {
   initialData?: BQGroup[];
@@ -20,10 +20,53 @@ interface BQEditorProps {
 
 const ICON_MAP = {
     file: FileInput,
+    'file-text': FileText,
     edit: Edit3,
     layout: LayoutTemplate,
-    plus: Plus
+    list: List,
+    grid: Grid,
+    plus: Plus,
+    check: CheckSquare,
+    clipboard: ClipboardList,
+    layers: Layers,
+    box: Box,
+    package: Package,
+    truck: Truck,
+    wrench: Wrench,
+    hammer: Hammer,
+    ruler: Ruler,
+    zap: Zap,
+    briefcase: Briefcase,
+    archive: Archive,
+    star: Star,
+    award: Award,
+    bookmark: Bookmark,
+    tool: PenTool
 };
+
+const getColorStyles = (color: string) => {
+    const colors: Record<string, string> = {
+        slate: "bg-slate-100 text-slate-600 border-slate-200",
+        red: "bg-red-100 text-red-600 border-red-200",
+        orange: "bg-orange-100 text-orange-600 border-orange-200",
+        amber: "bg-amber-100 text-amber-600 border-amber-200",
+        yellow: "bg-yellow-100 text-yellow-600 border-yellow-200",
+        lime: "bg-lime-100 text-lime-600 border-lime-200",
+        green: "bg-green-100 text-green-600 border-green-200",
+        emerald: "bg-emerald-100 text-emerald-600 border-emerald-200",
+        teal: "bg-teal-100 text-teal-600 border-teal-200",
+        cyan: "bg-cyan-100 text-cyan-600 border-cyan-200",
+        sky: "bg-sky-100 text-sky-600 border-sky-200",
+        blue: "bg-blue-100 text-blue-600 border-blue-200",
+        indigo: "bg-indigo-100 text-indigo-600 border-indigo-200",
+        violet: "bg-violet-100 text-violet-600 border-violet-200",
+        purple: "bg-purple-100 text-purple-600 border-purple-200",
+        fuchsia: "bg-fuchsia-100 text-fuchsia-600 border-fuchsia-200",
+        pink: "bg-pink-100 text-pink-600 border-pink-200",
+        rose: "bg-rose-100 text-rose-600 border-rose-200",
+    };
+    return colors[color] || colors['blue'];
+}
 
 // Helper for Roman Numerals
 function toRoman(num: number): string {
@@ -131,23 +174,25 @@ const BQEditor: React.FC<BQEditorProps> = ({
   const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
   const [bqTemplates, setBqTemplates] = useState<BQTemplateDefinition[]>([]);
   const [bills, setBills] = useState<BQGroup[]>(() => {
-    if (initialData && initialData.length > 0) return initialData;
-    return []; 
+    let data = initialData && initialData.length > 0 ? initialData : [];
+    return data.map(b => ({
+        ...b,
+        calculationId: b.calculationId || `calc-${Math.random().toString(36).substr(2, 9)}`
+    }));
   });
 
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
 
-  // Template Wizard State
   const [selectedTemplate, setSelectedTemplate] = useState<BQTemplateDefinition | null>(null);
   const [templateLocation, setTemplateLocation] = useState<string>('');
   const [templateDims, setTemplateDims] = useState<GlobalDimensions>({ length: 0, width: 0, depth: 0 });
   const [step, setStep] = useState(1);
   const [templateError, setTemplateError] = useState(false);
 
-  // INLINE GLOBAL DIMENSION STATE
   const [localDims, setLocalDims] = useState<GlobalDimensions>({ length: 0, width: 0, depth: 0 });
   const [isDimsDirty, setIsDimsDirty] = useState(false);
 
@@ -164,9 +209,19 @@ const BQEditor: React.FC<BQEditorProps> = ({
   } | null>(null);
 
   useEffect(() => {
-    const library = mockService.getLibraryGroups();
-    setBqLibrary(library);
-    setBqTemplates(mockService.getTemplates());
+    const fetchData = async () => {
+        try {
+            const [library, templates] = await Promise.all([
+                supabaseService.getLibraryGroups(),
+                supabaseService.getTemplates()
+            ]);
+            setBqLibrary(library);
+            setBqTemplates(templates);
+        } catch (err) {
+            console.error('Failed to load BQ data:', err);
+        }
+    };
+    fetchData();
   }, []);
 
   useEffect(() => { onDataChange(bills); }, [bills]);
@@ -178,13 +233,16 @@ const BQEditor: React.FC<BQEditorProps> = ({
   useEffect(() => {
       if (!activeBillId) return;
       const bill = bills.find(b => b.id === activeBillId);
-      if (bill && bill.locationId && projectData.locationDimensions?.[bill.locationId]) {
+      if (bill && bill.calculationId && projectData.globalCalculations?.[bill.calculationId]) {
+          setLocalDims(projectData.globalCalculations[bill.calculationId]);
+      } else if (bill && bill.locationId && projectData.locationDimensions?.[bill.locationId]) {
+          // Fallback for old data: if bill has no globalCalc but location has dims, use them as initial
           setLocalDims(projectData.locationDimensions[bill.locationId]);
       } else {
           setLocalDims({ length: 0, width: 0, depth: 0 });
       }
       setIsDimsDirty(false);
-  }, [activeBillId, bills, projectData.locationDimensions]);
+  }, [activeBillId, bills, projectData.globalCalculations, projectData.locationDimensions]);
 
   useEffect(() => {
     if (templateLocation && projectData.locationDimensions?.[templateLocation]) {
@@ -314,26 +372,43 @@ const BQEditor: React.FC<BQEditorProps> = ({
           }
           const itemsToAdd: BQItem[] = [];
           if (needsGroupHeader) { itemsToAdd.push(createHeader(groupHeaderDesc)); }
+          
           if (variantId || (libraryItem.variants && libraryItem.variants.length > 0)) {
               const rawParentDesc = libraryItem.description;
               const parentDesc = rawParentDesc.charAt(0).toUpperCase() + rawParentDesc.slice(1).toLowerCase();
+              
+              // Intelligent Parent Header Check
               let needsParentHeader = true;
-              if (!needsGroupHeader) {
-                  for (let i = level0Index + 1; i < insertionIndex; i++) {
-                      const it = newItems[i];
-                      if (getItemLevel(it) === 1 && it.description.toLowerCase() === parentDesc.toLowerCase()) {
-                          needsParentHeader = false;
-                          let parentBlockEnd = insertionIndex;
-                          for (let j = i + 1; j < insertionIndex; j++) { if (getItemLevel(newItems[j]) <= 1) { parentBlockEnd = j; break; } }
-                          insertionIndex = parentBlockEnd;
-                          break; 
-                      }
-                  }
+              // Check the item immediately before insertion point
+              const prevItem = newItems.length > 0 ? newItems[insertionIndex - 1] : null;
+              
+              if (prevItem) {
+                  // If prev item is a variant of the same parent
+                   if (prevItem.sourceItemId === itemId && prevItem.type === 'ITEM') {
+                       needsParentHeader = false;
+                   }
+                   // If prev item is the header itself
+                   if (prevItem.type === 'HEADER' && prevItem.description === parentDesc) {
+                       needsParentHeader = false;
+                   }
               }
+
               if (needsParentHeader) { itemsToAdd.push(createHeader(parentDesc)); }
-              if (variantId) { const newItem = createItem(bqLibrary, groupId, itemId, variantId); itemsToAdd.push(newItem); }
-          } else { const newItem = createItem(bqLibrary, groupId, itemId); itemsToAdd.push(newItem); }
-          const d = (b.id === activeBillId) ? localDims : (b.locationId && projectData.locationDimensions?.[b.locationId] ? projectData.locationDimensions[b.locationId] : null);
+              if (variantId) { 
+                  const newItem = createItem(bqLibrary, groupId, itemId, variantId); 
+                  newItem.sourceGroupId = groupId;
+                  newItem.sourceItemId = itemId;
+                  newItem.sourceVariantId = variantId;
+                  itemsToAdd.push(newItem); 
+              }
+          } else { 
+              const newItem = createItem(bqLibrary, groupId, itemId); 
+              newItem.sourceGroupId = groupId;
+              newItem.sourceItemId = itemId;
+              itemsToAdd.push(newItem); 
+          }
+
+          const d = localDims;
           if (d) {
                itemsToAdd.forEach(newItem => {
                    if (newItem.type === 'ITEM' && newItem.calculationParts && newItem.isGlobal) {
@@ -356,9 +431,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
       if (onShowToast) onShowToast(`Item ditambah`, 'success');
   };
   
-  const updateBillsWithNewDimensions = (locationId: string, newDims: GlobalDimensions) => {
+  const updateBillsWithNewDimensions = (calculationId: string, newDims: GlobalDimensions) => {
       const updatedBills = bills.map(bill => {
-          if (bill.locationId !== locationId) return bill;
+          if (bill.calculationId !== calculationId) return bill;
           const updatedItems = bill.items.map(item => {
               if (!item.isGlobal || !item.calculationParts) return item;
               const newParts = item.calculationParts.map(part => {
@@ -375,9 +450,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
   const handleSaveGlobalDims = () => {
       if (readOnly) return;
       const bill = bills.find(b => b.id === activeBillId);
-      if (!bill || !bill.locationId) return;
-      if (onLocationDimensionsChange) { onLocationDimensionsChange(bill.locationId, localDims); }
-      updateBillsWithNewDimensions(bill.locationId, localDims);
+      if (!bill || !bill.calculationId) return;
+      if (onLocationDimensionsChange) { onLocationDimensionsChange(bill.calculationId, localDims); }
+      updateBillsWithNewDimensions(bill.calculationId, localDims);
       setIsDimsDirty(false);
   };
 
@@ -386,47 +461,115 @@ const BQEditor: React.FC<BQEditorProps> = ({
       setBills(prev => prev.map(b => b.id === billId ? { ...b, locationId } : b));
   };
 
+  const handleLinkCalculation = (targetCalcId: string) => {
+      if (readOnly) return;
+      setBills(prev => prev.map(b => {
+          if (b.id !== activeBillId) return b;
+          const newBill = { ...b, calculationId: targetCalcId };
+          // Immediately sync dimensions if target already has them
+          const targetDims = projectData.globalCalculations?.[targetCalcId] || { length: 0, width: 0, depth: 0 };
+          setLocalDims(targetDims);
+          const updatedItems = newBill.items.map(item => {
+              if (!item.isGlobal || !item.calculationParts) return item;
+              const newParts = item.calculationParts.map(part => ({
+                  ...part,
+                  length: part.hasLength ? targetDims.length : part.length,
+                  width: part.hasWidth ? targetDims.width : part.width,
+                  depth: part.hasDepth ? targetDims.depth : part.depth
+              }));
+              const newQty = recalculateQtyFromParts(newParts);
+              return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
+          });
+          return { ...newBill, items: updatedItems };
+      }));
+      setIsLinkModalOpen(false);
+      if (onShowToast) onShowToast("Pengiraan telah dihubungkan.", "success");
+  };
+
+  const handleUnlinkCalculation = () => {
+      if (readOnly) return;
+      const newCalcId = `calc-${Math.random().toString(36).substr(2, 9)}`;
+      setBills(prev => prev.map(b => b.id === activeBillId ? { ...b, calculationId: newCalcId } : b));
+      if (onShowToast) onShowToast("Pengiraan telah diasingkan.", "info");
+  };
+
   const handleFinishTemplate = (tplOverride?: BQTemplateDefinition) => {
       if (readOnly) return;
       const tpl = tplOverride || selectedTemplate;
       if (!tpl) return;
       const isMultistep = (tpl.key === 'LONGKANG' || tpl.key === 'EMPTY' || tpl.key === 'CUSTOM');
       if (isMultistep && !templateLocation) { setTemplateError(true); if (onShowToast) onShowToast("Sila pilih lokasi terlebih dahulu.", "error"); return; }
-      if (isMultistep && templateLocation) {
-          if (onLocationDimensionsChange) onLocationDimensionsChange(templateLocation, templateDims);
-          if (isDimsModified) updateBillsWithNewDimensions(templateLocation, templateDims);
-      }
+      
       const newGroups: BQGroup[] = [];
       if (tpl.bills && tpl.bills.length > 0) {
           tpl.bills.forEach((billDef, bIdx) => {
-              const bill: BQGroup = { id: `bil-${Date.now()}-${bIdx}`, title: `BIL NO. 999 - ${billDef.title.toUpperCase()}`, locationId: tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY' ? undefined : templateLocation, items: [] };
+              const billCalcId = `calc-${Math.random().toString(36).substr(2, 9)}`;
+              if (isMultistep && templateLocation) {
+                  if (onLocationDimensionsChange) onLocationDimensionsChange(billCalcId, templateDims);
+              }
+
+              const bill: BQGroup = { 
+                  id: `bil-${Date.now()}-${bIdx}`, 
+                  calculationId: billCalcId,
+                  title: `BIL NO. 999 - ${billDef.title.toUpperCase()}`, 
+                  locationId: tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY' ? undefined : templateLocation, 
+                  items: [] 
+              };
               if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { bill.items.push(createHeader('ALL QUANTITY ARE PROVISIONAL')); }
-              const itemsByGroup: Record<string, typeof billDef.items> = {};
-              billDef.items.forEach(ref => { if (!itemsByGroup[ref.groupId]) itemsByGroup[ref.groupId] = []; itemsByGroup[ref.groupId].push(ref); });
-              Object.keys(itemsByGroup).forEach(groupId => {
-                  const group = bqLibrary.find(g => g.id === groupId);
+              
+              // NEW LOGIC: Iterate linearly to respect template order and avoid duplicate headers
+              let lastGroupId = '';
+              let lastItemId = '';
+              
+              billDef.items.forEach(ref => {
+                  const group = bqLibrary.find(g => g.id === ref.groupId);
                   if (group) {
-                      bill.items.push(createHeader(group.title.toUpperCase()));
-                      itemsByGroup[groupId].forEach(ref => {
-                          const libItem = group.items.find(i => i.id === ref.itemId);
-                          if (libItem) {
-                              if (ref.variantId || (libItem.variants && libItem.variants.length > 0)) { const parentDesc = libItem.description.charAt(0).toUpperCase() + libItem.description.slice(1).toLowerCase(); bill.items.push(createHeader(parentDesc)); }
-                              const bqIt = createItem(bqLibrary, ref.groupId, ref.itemId, ref.variantId);
-                              const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
-                              if (bqIt.isGlobal && currentTplDims) {
-                                  bqIt.calculationParts = bqIt.calculationParts?.map(p => ({ ...p, length: p.hasLength ? currentTplDims.length : p.length, width: p.hasWidth ? currentTplDims.width : p.width, depth: p.hasDepth ? currentTplDims.depth : p.depth }));
-                                  const qty = recalculateQtyFromParts(bqIt.calculationParts || []);
-                                  bqIt.qty = parseFloat(qty.toFixed(2));
-                                  bqIt.amount = parseFloat((qty * bqIt.rate).toFixed(2));
-                              }
-                              bill.items.push(bqIt);
+                      // Add Group Header if changed
+                      if (ref.groupId !== lastGroupId) {
+                          bill.items.push(createHeader(group.title.toUpperCase()));
+                          lastGroupId = ref.groupId;
+                          lastItemId = ''; // Reset item tracker on group change
+                      }
+                      
+                      const libItem = group.items.find(i => i.id === ref.itemId);
+                      if (libItem) {
+                          // Handle Item Header for Variants
+                          if (ref.variantId || (libItem.variants && libItem.variants.length > 0)) {
+                               const parentDesc = libItem.description.charAt(0).toUpperCase() + libItem.description.slice(1).toLowerCase();
+                               // Only add header if we are switching to a new item parent
+                               if (ref.itemId !== lastItemId) {
+                                   bill.items.push(createHeader(parentDesc));
+                                   lastItemId = ref.itemId;
+                               }
+                          } else {
+                              // Reset item id if it's a standard item (no variants) to allow subsequent variants to trigger header
+                              lastItemId = ref.itemId; 
                           }
-                      });
+                          
+                          const bqIt = createItem(bqLibrary, ref.groupId, ref.itemId, ref.variantId);
+                          // Restore source tracking
+                          bqIt.sourceGroupId = ref.groupId;
+                          bqIt.sourceItemId = ref.itemId;
+                          bqIt.sourceVariantId = ref.variantId;
+
+                          const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
+                          if (bqIt.isGlobal && currentTplDims) {
+                              bqIt.calculationParts = bqIt.calculationParts?.map(p => ({ ...p, length: p.hasLength ? currentTplDims.length : p.length, width: p.hasWidth ? currentTplDims.width : p.width, depth: p.hasDepth ? currentTplDims.depth : p.depth }));
+                              const qty = recalculateQtyFromParts(bqIt.calculationParts || []);
+                              bqIt.qty = parseFloat(qty.toFixed(2));
+                              bqIt.amount = parseFloat((qty * bqIt.rate).toFixed(2));
+                          }
+                          bill.items.push(bqIt);
+                      }
                   }
               });
               newGroups.push(bill);
           });
-      } else if (tpl.key === 'EMPTY') { newGroups.push({ id: `bil-${Date.now()}`, title: `BIL NO. 999 - BUTIRAN KERJA-KERJA`, locationId: templateLocation, items: [] }); }
+      } else if (tpl.key === 'EMPTY') { 
+          const billCalcId = `calc-${Math.random().toString(36).substr(2, 9)}`;
+          if (templateLocation && onLocationDimensionsChange) onLocationDimensionsChange(billCalcId, templateDims);
+          newGroups.push({ id: `bil-${Date.now()}`, calculationId: billCalcId, title: `BIL NO. 999 - BUTIRAN KERJA-KERJA`, locationId: templateLocation, items: [] }); 
+      }
       const newBills = [...bills, ...newGroups];
       const renumberedBills = resequenceTitles(newBills);
       setBills(renumberedBills);
@@ -733,7 +876,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
       else if (b.locationId) { if (!billsByLocation[b.locationId]) billsByLocation[b.locationId] = []; billsByLocation[b.locationId].push(b); } 
       else { otherBills.push(b); }
   });
-  const sortedLocationIds = Array.from(new Set(bills.filter(b => b.locationId && !b.title.includes('PERMULAAN') && !b.id.includes('permulaan')).map(b => b.locationId!)));
+  const sortedLocationIds = Array.from(new Set(bills.filter(b => b.locationId && !b.title.includes('PERMULAAN') && !b.id.includes('permulaan')).map(b => b.locationId!))) as string[];
   const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
   const libraryGroups = selectedCategory ? bqLibrary.filter(g => g.category === selectedCategory) : [];
 
@@ -784,24 +927,44 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     <div className="p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/50 sticky top-20 z-20 backdrop-blur-sm">
                         <div className="flex items-center justify-between mb-2">
                              <input value={activeBill.title} onChange={(e) => updateBillTitle(activeBill.id, e.target.value)} disabled={readOnly} className={`text-lg font-bold bg-transparent outline-none w-full text-slate-800 dark:text-white uppercase ${readOnly ? 'cursor-not-allowed' : ''}`} />
-                            <div className="text-right text-xs text-slate-400 shrink-0 ml-4">Total: <span className="text-emerald-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + i.amount, 0))}</span></div>
+                            <div className="text-right text-xs text-slate-400 shrink-0 ml-4">Total: <span className="text-emerald-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + (i.amount||0), 0))}</span></div>
                         </div>
                         {!activeBill.title.toUpperCase().includes('PERMULAAN') && (
                             <div className="mb-2">
                                 <select value={activeBill.locationId || ''} onChange={(e) => updateBillLocation(activeBill.id, e.target.value)} disabled={readOnly} className={`w-full text-xs font-bold bg-transparent text-slate-500 dark:text-slate-400 outline-none flex items-center border border-transparent rounded px-1 py-0.5 transition-colors ${readOnly ? 'cursor-not-allowed' : 'hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer hover:border-slate-200 dark:hover:border-slate-700'}`} ><option value="">-- Tiada Lokasi --</option>{locationRows.filter(r => r.lokasi).map(r => (<option key={r.id} value={r.id}>{r.lokasi}</option>))}</select>
                             </div>
                         )}
-                        {activeBill.locationId && (
+                        {activeBill && (
                             <div className={`mt-2 p-3 rounded-xl border transition-all ${isDimsDirty ? 'bg-orange-50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800/50' : 'bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800/30'}`}>
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase"><Ruler className="w-4 h-4" />Global Calculation</div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase"><Ruler className="w-4 h-4" />Global Calculation</div>
+                                        {!readOnly && (
+                                            <div className="flex items-center gap-1">
+                                                <button onClick={() => setIsLinkModalOpen(true)} className="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
+                                                    <Link className="w-3.5 h-3.5" />
+                                                </button>
+                                                {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
+                                                    <button onClick={handleUnlinkCalculation} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Asingkan pengiraan ini">
+                                                        <Unlink className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-2 w-full sm:w-auto">
                                         <div className="flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">P</span><DimensionInput value={localDims.length || 0} onChange={val => { setLocalDims({...localDims, length: val}); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
                                         <div className="flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">L</span><DimensionInput value={localDims.width || 0} onChange={val => { setLocalDims({...localDims, width: val}); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
                                         <div className="flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">T</span><DimensionInput value={localDims.depth || 0} onChange={val => { setLocalDims({...localDims, depth: val}); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                        {isDimsDirty && !readOnly && (<button onClick={handleSaveGlobalDims} className="ml-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 transition-all" title="Kemaskini Semua Item" ><Save className="w-3 h-3" /> Kemaskini</button>)}
+                                        {isDimsDirty && !readOnly && (<button onClick={handleSaveGlobalDims} className="ml-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 transition-all" title="Kemaskini Semua Item Terhubung" ><Save className="w-3 h-3" /> Kemaskini</button>)}
                                     </div>
                                 </div>
+                                {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
+                                    <div className="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-600 font-bold bg-white/50 px-2 py-1 rounded-lg">
+                                        <Info className="w-3 h-3" />
+                                        Terhubung dengan: {bills.filter(b => b.calculationId === activeBill.calculationId && b.id !== activeBill.id).map(b => parseTitle(b.title).prefix).join(', ')}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -886,9 +1049,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
                           {bqTemplates.map(tpl => {
                               const IconComp = ICON_MAP[tpl.icon as keyof typeof ICON_MAP] || FileText;
                               const isSelected = selectedTemplate?.id === tpl.id;
+                              const colorClass = getColorStyles(tpl.color);
+
                               return (
                                   <div key={tpl.id} onClick={() => { setSelectedTemplate(tpl); if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { handleFinishTemplate(tpl); } else { setStep(2); } }} className={`p-6 rounded-[2rem] border-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-6 group ${isSelected ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10' : 'border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-black/10 hover:border-emerald-200 dark:hover:border-emerald-800'}`}>
-                                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 ${tpl.color === 'blue' ? 'bg-blue-100 text-blue-600' : tpl.color === 'emerald' ? 'bg-emerald-100 text-emerald-600' : tpl.color === 'indigo' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'}`}><IconComp className="w-8 h-8" /></div>
+                                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 ${colorClass}`}><IconComp className="w-8 h-8" /></div>
                                       <div className="flex-1 min-w-0"><h4 className="font-bold text-slate-800 dark:text-white text-lg">{tpl.title}</h4><p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{tpl.subtitle}</p></div>
                                       <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-emerald-500 translate-x-1' : 'text-slate-300'}`} />
                                   </div>
@@ -912,6 +1077,52 @@ const BQEditor: React.FC<BQEditorProps> = ({
                           <div className="flex gap-4 pt-4"><button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 transition-all flex items-center justify-center gap-2 shadow-sm"><RotateCcw className="w-5 h-5" /> Kembali</button><button onClick={() => handleFinishTemplate()} className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 hover:shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 active:scale-95"><Play className="w-5 h-5" /> Jana Template</button></div>
                       </div>
                   )}
+              </div>
+          </div>,
+          document.body
+        )}
+
+        {isLinkModalOpen && createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsLinkModalOpen(false)}>
+              <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 border border-slate-200 dark:border-slate-800 transform scale-100 transition-all animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                  <div className="mb-6">
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <Link className="w-5 h-5 text-emerald-600" />
+                          Hubungkan Pengiraan
+                      </h3>
+                      <p className="text-sm text-slate-500 mt-1">Pilih BIL NO. untuk berkongsi Global Calculation yang sama.</p>
+                  </div>
+                  
+                  <div className="space-y-2 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2 mb-6">
+                      {bills
+                        .filter(b => b.id !== activeBillId && b.calculationId !== activeBill?.calculationId)
+                        .map(b => (
+                          <button 
+                            key={b.id} 
+                            onClick={() => handleLinkCalculation(b.calculationId!)}
+                            className="w-full text-left p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all group"
+                          >
+                              <div className="flex items-center justify-between">
+                                  <div>
+                                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">{parseTitle(b.title).prefix}</div>
+                                      <div className="text-sm font-bold text-slate-700 dark:text-slate-200">{parseTitle(b.title).content || b.title}</div>
+                                  </div>
+                                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-all" />
+                              </div>
+                          </button>
+                      ))}
+                      {bills.filter(b => b.id !== activeBillId && b.calculationId !== activeBill?.calculationId).length === 0 && (
+                          <div className="text-center py-8 text-slate-400">
+                              <Info className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                              <p className="text-xs">Tiada BIL NO. lain yang tersedia untuk dihubungkan.</p>
+                          </div>
+                      )}
+                  </div>
+                  
+                  <button onClick={() => setIsLinkModalOpen(false)} className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-xl hover:bg-slate-200 transition-all">
+                      Batal
+                  </button>
               </div>
           </div>,
           document.body
