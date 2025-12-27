@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Project, User, formatDate, formatCurrency } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 
 interface CoverPageEditorProps {
     project: Project;
@@ -14,22 +14,29 @@ const CoverPageEditor: React.FC<CoverPageEditorProps> = ({ project, selectedYear
     const [meetingDate, setMeetingDate] = useState('');
 
     useEffect(() => {
-        let yearToFetch = selectedYear;
+        const fetchData = async () => {
+            let yearToFetch = selectedYear;
 
-        if (!yearToFetch && project.tarikhBuka) {
-            const yearStr = project.tarikhBuka.split('-')[0];
-            const parsed = parseInt(yearStr);
-            if (!isNaN(parsed)) yearToFetch = parsed;
-        }
+            if (!yearToFetch && project.tarikhBuka) {
+                const yearStr = project.tarikhBuka.split('-')[0];
+                const parsed = parseInt(yearStr);
+                if (!isNaN(parsed)) yearToFetch = parsed;
+            }
 
-        if (!yearToFetch) {
-            yearToFetch = new Date().getFullYear();
-        }
+            if (!yearToFetch) {
+                yearToFetch = new Date().getFullYear();
+            }
 
-        if (yearToFetch) {
-            const settings = mockService.getSettings(yearToFetch);
-            setMeetingDate(settings.meetingDate || '');
-        }
+            if (yearToFetch) {
+                try {
+                    const settings = await supabaseService.getSettings(yearToFetch);
+                    setMeetingDate(settings.meeting_date || '');
+                } catch (err) {
+                    console.error('Failed to load settings for cover page:', err);
+                }
+            }
+        };
+        fetchData();
     }, [selectedYear, project.tarikhBuka]);
 
     const jawatan = project.coverJawatan || pjaUser?.jawatan || "Penolong Jurutera JA29";
