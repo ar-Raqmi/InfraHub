@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate, User, BP_OPTIONS, ZON_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
-import { mockService } from '../services/mockService';
-import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage } from 'lucide-react';
+import { supabaseService } from '../services/supabaseService';
+import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ProjectsListProps {
   projects: Project[];
@@ -10,19 +11,20 @@ interface ProjectsListProps {
   onAddProject: () => void;
   onEditProject: (project: Project) => void;
   onDeleteProject: (project: Project) => void;
+  user: User;
 }
 
 interface CompanyGroupData {
   company: string;
   projects: Project[];
   totalCost: number;
-  totalActualCost: number;
+  totalHargaAkhir: number;
   count: number;
   // Group projects by Vote Code for display
   projectsByVote: Record<string, {
       projects: Project[];
       subtotalContract: number;
-      subtotalActual: number;
+      subtotalAkhir: number;
   }>;
 }
 
@@ -61,49 +63,58 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
   );
 };
 
-const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onAddProject, onEditProject, onDeleteProject }) => {
+const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onAddProject, onEditProject, onDeleteProject, user }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [votesList, setVotesList] = useState<VoteDefinition[]>([]);
   
-  // View & Data States
   const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
   const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
-  const [companyOrder, setCompanyOrder] = useState<string[]>([]); // Custom Sort Order
-  const [costViewMode, setCostViewMode] = useState<'contract' | 'actual' | 'both'>('contract'); // Toggle for financial view
+  const [companyOrder, setCompanyOrder] = useState<string[]>([]); 
+  const [costViewMode, setCostViewMode] = useState<'contract' | 'actual' | 'both'>('contract'); 
   
-  // New States for Syarikat View
-  const [showSiap, setShowSiap] = useState(true); // Toggle for Siap projects in Group view
+  const [showSiap, setShowSiap] = useState(true); 
 
-  // Manual Financials for Summary Footer
   const [manualFinancials, setManualFinancials] = useState<{ outsource: number, ydp: number }>({ outsource: 0, ydp: 0 });
   const [isSavingFinancials, setIsSavingFinancials] = useState(false);
   
-  // Filter States
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'ALL'>('ALL');
   const [filterPja, setFilterPja] = useState<string>('ALL');
   const [filterZon, setFilterZon] = useState<string>('ALL');
   const [filterBp, setFilterBp] = useState<string>('ALL');
-  const [filterVote, setFilterVote] = useState<string>('ALL'); // New Filter State
+  const [filterVote, setFilterVote] = useState<string>('ALL'); 
   
-  // UI States
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleteCountdown, setDeleteCountdown] = useState(0);
 
-  // PDF Export State
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportBilMesyuarat, setExportBilMesyuarat] = useState('');
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
 
-  // Load Data based on Selected Year Prop
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [pageInput, setPageInput] = useState('1');
+
   useEffect(() => {
-    setUsers(mockService.getUsers());
-    // Directly fetch votes and manuals for the explicit year, regardless of project list content
-    setVotesList(mockService.getVotes(selectedYear));
-    setCompanyOrder(mockService.getCompanyOrder(selectedYear));
-    setManualFinancials(mockService.getManualFinancials(selectedYear));
+    const fetchData = async () => {
+        try {
+            const [u, votes, order, financials] = await Promise.all([
+                supabaseService.getUsers(),
+                supabaseService.getVotes(selectedYear),
+                supabaseService.getCompanyOrder(selectedYear),
+                supabaseService.getManualFinancials(selectedYear)
+            ]);
+            setUsers(u);
+            setVotesList(votes);
+            setCompanyOrder(order);
+            setManualFinancials(financials);
+        } catch (err) {
+            console.error('Failed to load projects list data:', err);
+        }
+    };
+    fetchData();
   }, [selectedYear]);
 
   // Column Definitions
@@ -123,8 +134,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     { id: 'noBpp', label: 'No. BPP', group: 'Kontrak', default: false },
     { id: 'tempohKontrak', label: 'Tempoh', group: 'Kontrak', default: false },
     { id: 'status', label: 'Status & Progress', group: 'Status', default: true },
-    { id: 'kosProjek', label: 'Kos Projek', group: 'Kewangan', default: false },
-    { id: 'kosSebenar', label: 'Kos Sebenar', group: 'Kewangan', default: false },
+    { id: 'kosProjek', label: 'Harga Kontrak', group: 'Kewangan', default: false },
+    { id: 'kosSebenar', label: 'Harga Akhir', group: 'Kewangan', default: false },
     { id: 'wangTahanan', label: 'Wang Tahanan', group: 'Kewangan', default: false },
     { id: 'ladAmount', label: 'LAD (RM)', group: 'Kewangan', default: false },
     { id: 'ladDays', label: 'Hari LAD', group: 'Kewangan', default: false },
@@ -197,8 +208,13 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
   const saveManualFinancials = async () => {
       setIsSavingFinancials(true);
-      await mockService.saveManualFinancials(selectedYear, manualFinancials);
-      setTimeout(() => setIsSavingFinancials(false), 500);
+      try {
+        await supabaseService.saveManualFinancials(selectedYear, manualFinancials);
+      } catch (err) {
+        console.error('Failed to save financials:', err);
+      } finally {
+        setIsSavingFinancials(false);
+      }
   };
 
   // Filter Logic
@@ -207,7 +223,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     setFilterPja('ALL');
     setFilterZon('ALL');
     setFilterBp('ALL');
-    setFilterVote('ALL'); // Reset New Filter
+    setFilterVote('ALL');
     setSearchTerm('');
     setShowSiap(true);
     handleResetColumns();
@@ -218,7 +234,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     filterPja !== 'ALL',
     filterZon !== 'ALL',
     filterBp !== 'ALL',
-    filterVote !== 'ALL' // Count New Filter
+    filterVote !== 'ALL'
   ].filter(Boolean).length;
 
   const filteredProjects = useMemo(() => {
@@ -232,11 +248,74 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
       const matchesPja = filterPja === 'ALL' || p.pjaId === Number(filterPja);
       const matchesZon = filterZon === 'ALL' || p.zon === filterZon;
       const matchesBp = filterBp === 'ALL' || p.bp === filterBp;
-      const matchesVote = filterVote === 'ALL' || p.noVote === filterVote; // New Filter logic
+      const matchesVote = filterVote === 'ALL' || p.noVote === filterVote;
       
       return matchesSearch && matchesStatus && matchesPja && matchesZon && matchesBp && matchesVote;
     });
   }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterVote]);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+      setCurrentPage(1);
+      setPageInput('1');
+  }, [filteredProjects.length]);
+
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+
+  const paginatedProjects = useMemo(() => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      return filteredProjects.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProjects, currentPage]);
+
+  const handlePageChange = (page: number) => {
+      const p = Math.max(1, Math.min(page, totalPages));
+      setCurrentPage(p);
+      setPageInput(p.toString());
+  };
+
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPageInput(e.target.value);
+  };
+
+  const handlePageInputBlur = () => {
+      let p = parseInt(pageInput);
+      if (isNaN(p) || p < 1) p = 1;
+      if (p > totalPages) p = totalPages;
+      handlePageChange(p);
+  };
+
+  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+          handlePageInputBlur();
+          e.currentTarget.blur();
+      }
+  };
+
+  /**
+   * getHargaAkhir (The Single Source of Truth for Final Net Cost)
+   * This includes BQ Pelarasan total minus LAD and Wang Tahanan.
+   */
+  const getHargaAkhir = (p: Project) => {
+      // If we are in Phase 3 (Tuntutan) or Phase 4 (Siap), we use the computed net final total.
+      const isPostPelarasan = [ProjectStatus.TUNTUTAN_BAYARAN, ProjectStatus.SIAP].includes(p.status);
+      
+      if (!isPostPelarasan) {
+          return p.kosProjek ?? 0;
+      }
+
+      // If kosSebenar is already pre-calculated in ProjectDetail saving logic, use it.
+      // Otherwise, we calculate it on the fly: BQ Pelarasan Sum - LAD - Wang Tahanan.
+      if (p.kosSebenar !== undefined && p.kosSebenar !== null) {
+          return p.kosSebenar;
+      }
+
+      const pelarasanSum = p.bqDataPelarasan?.reduce((acc, group) => {
+          return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
+      }, 0) || (p.kosProjek ?? 0);
+
+      const netTotal = pelarasanSum - (p.ladAmount || 0) - (p.wangTahanan || 0);
+      return Math.max(0, netTotal);
+  };
 
   // Grouped Projects with Custom Sorting and Vote Breakdown
   const groupedProjects = useMemo(() => {
@@ -254,7 +333,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
-        return a.localeCompare(b);
+        return (a as string).localeCompare(b as string);
     });
 
     sortedCompanies.forEach(compName => {
@@ -265,26 +344,29 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         }
 
         const group: CompanyGroupData = {
-            company: compName,
+            company: compName as string,
             projects: compProjects,
             totalCost: 0,
-            totalActualCost: 0,
+            totalHargaAkhir: 0,
             count: 0,
             projectsByVote: {}
         };
 
         compProjects.forEach(p => {
-            group.totalCost += (p.kosProjek || 0);
-            group.totalActualCost += (p.kosSebenar || 0);
+            const contractVal = p.kosProjek || 0;
+            const akhirVal = getHargaAkhir(p);
+            
+            group.totalCost += contractVal;
+            group.totalHargaAkhir += akhirVal;
             group.count += 1;
 
             const voteCode = p.noVote || 'TIADA VOT';
             if (!group.projectsByVote[voteCode]) {
-                group.projectsByVote[voteCode] = { projects: [], subtotalContract: 0, subtotalActual: 0 };
+                group.projectsByVote[voteCode] = { projects: [], subtotalContract: 0, subtotalAkhir: 0 };
             }
             group.projectsByVote[voteCode].projects.push(p);
-            group.projectsByVote[voteCode].subtotalContract += (p.kosProjek || 0);
-            group.projectsByVote[voteCode].subtotalActual += (p.kosSebenar || 0);
+            group.projectsByVote[voteCode].subtotalContract += contractVal;
+            group.projectsByVote[voteCode].subtotalAkhir += akhirVal;
         });
 
         grouped.push(group);
@@ -294,7 +376,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   }, [filteredProjects, companyOrder, showSiap]);
 
   const exportToExcel = () => {
-    // 1. Build Headers
     const activeCols = columnDefs.filter(c => visibleColumns[c.id]);
     const headers: string[] = [];
     
@@ -307,7 +388,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         }
     });
 
-    // 2. Build Rows
     const rows = filteredProjects.map(p => {
         return activeCols.map(c => {
              if (c.id === 'status') {
@@ -322,6 +402,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
              if (c.id === 'pjaId') {
                  const u = users.find(u => u.id === val);
                  val = u ? u.username : '';
+             }
+
+             if (c.id === 'kosSebenar') {
+                 val = getHargaAkhir(p);
              }
              
              if (val === undefined || val === null) return '""';
@@ -359,12 +443,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const financialSummary = useMemo(() => {
       const summary: Record<string, { allocated: number; used: number }> = {};
       
-      // Init with all vote definitions
       votesList.forEach(v => {
           summary[v.code] = { allocated: v.allocation, used: 0 };
       });
 
-      // Sum usage from filtered projects based on TOGGLE STATE
       filteredProjects.forEach(p => {
           if (p.noVote) {
               if (!summary[p.noVote]) {
@@ -374,11 +456,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               let costToAdd = 0;
               if (costViewMode === 'contract') {
                   costToAdd = p.kosProjek || 0;
-              } else if (costViewMode === 'actual') {
-                  costToAdd = p.kosSebenar || 0;
               } else {
-                  // Both/Default: Use actual if available as it represents truer spending, else contract
-                  costToAdd = p.kosSebenar || p.kosProjek || 0;
+                  // actual (Harga Akhir) or both - uses unified actual cost logic
+                  costToAdd = getHargaAkhir(p);
               }
 
               summary[p.noVote].used += costToAdd;
@@ -388,14 +468,13 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
       return summary;
   }, [filteredProjects, votesList, costViewMode]);
 
-  // --- Handle "REAL" PDF Generation using jsPDF + AutoTable ---
   const handleExportRealPDF = async () => {
       if (!exportBilMesyuarat) {
           alert('Sila masukkan Bil. Mesyuarat.');
           return;
       }
       setIsGeneratingPdf(true);
-      setGenerationProgress(10); // Start progress
+      setGenerationProgress(10);
 
       try {
           // @ts-ignore
@@ -407,20 +486,13 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
           const marginX = 10;
           let currentY = 10;
 
-          // Helper: Header
           const printHeader = (pageNum: number) => {
               if (pageNum === 1) {
-                  // Logo Placeholder (Using text if image fails or complicated)
-                  // If you have a base64 logo, use: doc.addImage(imgData, 'PNG', x, y, w, h);
-                  // Using the one from index.html if possible, or just text for reliability
-                  
-                  // Title
                   doc.setFont("helvetica", "bold");
-                  doc.setFontSize(10);
+                  doc.setFontSize(8);
                   doc.text(`SENARAI KONTRAKTOR PANEL YANG TELAH DILANTIK`, pageWidth / 2, 20, { align: "center" });
                   doc.text(`UNTUK KERJA INFRASTRUKTUR BAGI TAHUN ${selectedYear}`, pageWidth / 2, 25, { align: "center" });
                   
-                  // Metadata
                   doc.setFont("helvetica", "normal");
                   doc.setFontSize(8);
                   doc.text(`Tarikh Kemaskini: ${new Date().toLocaleDateString('en-GB')}`, marginX, 35);
@@ -428,82 +500,90 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                   
                   doc.setLineWidth(0.5);
                   doc.line(marginX, 38, pageWidth - marginX, 38);
-                  return 45; // New Y
+                  return 45;
               }
-              return 15; // Standard Y for subsequent pages
+              return 15;
           };
 
           currentY = printHeader(1);
 
-          // Iterate Groups
           let totalItemsProcessed = 0;
           const totalItems = groupedProjects.reduce((acc, g) => acc + g.projects.length, 0);
 
           for (const group of groupedProjects) {
               if (group.projects.length === 0) continue;
 
-              // Check space for header
               if (currentY > pageHeight - 40) {
                   doc.addPage();
                   currentY = printHeader(doc.getNumberOfPages());
               }
 
-              // Company Header
-              doc.setFillColor(230, 230, 230); // Light Gray
+              doc.setFillColor(230, 230, 230);
               doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'F');
-              doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'S'); // Border
+              doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'S');
               doc.setFont("helvetica", "bold");
-              doc.setFontSize(9);
+              doc.setFontSize(8);
               doc.setTextColor(0, 0, 0);
               doc.text(group.company, marginX + 2, currentY + 5);
               currentY += 10;
 
-              // Sort Projects
               const sortedProjects = [...group.projects].sort((a, b) => {
                   const dateA = new Date(a.tarikhMulaKontrak || '9999-12-31').getTime();
                   const dateB = new Date(b.tarikhMulaKontrak || '9999-12-31').getTime();
                   return dateA - dateB;
               });
 
-              // Prepare Table Data
               const tableBody = sortedProjects.map((p, idx) => {
-                  const cost = costViewMode === 'actual' ? p.kosSebenar : p.kosProjek;
-                  const displayCost = formatCurrency(cost).replace('RM', '').trim();
+                  const hargaAkhir = getHargaAkhir(p);
+                  const contractCost = p.kosProjek || 0;
+                  
+                  let displayCostStr = '';
+                  if (costViewMode === 'contract') {
+                      displayCostStr = formatCurrency(contractCost).replace('RM', '').trim();
+                  } else if (costViewMode === 'actual') {
+                      displayCostStr = formatCurrency(hargaAkhir).replace('RM', '').trim();
+                  } else { // both
+                      displayCostStr = `${formatCurrency(contractCost).replace('RM', '').trim()}\n${formatCurrency(hargaAkhir).replace('RM', '').trim()}`;
+                  }
                   
                   let dateStr = '';
                   if (p.tarikhMulaKontrak) dateStr += `Mula: ${formatDate(p.tarikhMulaKontrak)}\n`;
                   if (p.tarikhTamatKontrak) dateStr += `Tamat: ${formatDate(p.tarikhTamatKontrak)}`;
 
+                  const pjaUser = getPjaUser(p.pjaId);
+                  const pjaName = pjaUser ? pjaUser.username.toUpperCase() : '-';
+
                   return [
                       idx + 1,
-                      `${p.namaProjek}\n\n${p.lokasi}\n${dateStr}`,
+                      `${p.namaProjek}\n\n${dateStr}`,
+                      pjaName,
                       `${p.status.replace(/_/g, ' ')}\n(${p.peratusSiap}%)`,
                       `${p.noVote || '-'}\n${getVoteName(p.noVote || '')}`,
-                      displayCost
+                      displayCostStr
                   ];
               });
 
-              // Render Project Table
+              // Terminology standardization for PDF header
+              const costHeaderLabel = costViewMode === 'both' ? 'KOS (ASAL/AKHIR)' : (costViewMode === 'actual' ? 'HARGA AKHIR' : 'HARGA KONTRAK');
+
               // @ts-ignore
               doc.autoTable({
                   startY: currentY,
-                  head: [['Bil', 'Tajuk Projek & Lokasi', 'Status', 'Vot', 'Kos (RM)']],
+                  head: [['BIL', 'PROJEK', 'PJA', 'STATUS', 'VOT', costHeaderLabel]],
                   body: tableBody,
                   theme: 'grid',
-                  styles: { fontSize: 8, cellPadding: 2, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
+                  styles: { fontSize: 6, cellPadding: 1, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
                   headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center' },
                   columnStyles: {
                       0: { cellWidth: 10, halign: 'center' },
-                      1: { cellWidth: 100 }, // Main content width
-                      2: { cellWidth: 25, halign: 'center' },
-                      3: { cellWidth: 25, halign: 'center', fontSize: 7 },
-                      4: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
+                      1: { cellWidth: 80 },
+                      2: { cellWidth: 20, halign: 'center' },
+                      3: { cellWidth: 25, halign: 'center' },
+                      4: { cellWidth: 25, halign: 'center', fontSize: 7 },
+                      5: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
                   },
                   margin: { left: marginX, right: marginX },
-                  rowPageBreak: 'avoid',
-                  didDrawPage: (data: any) => {
-                      // currentY = data.cursor.y; // Update Y not needed here as autoTable returns finalY
-                  }
+                  rowPageBreak: 'avoid'
               });
 
               // @ts-ignore
@@ -511,16 +591,30 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               totalItemsProcessed += group.projects.length;
               setGenerationProgress(10 + Math.round((totalItemsProcessed / totalItems) * 80));
 
-              // Vote Summary Table (Right Aligned)
               const voteSummaryBody = Object.keys(group.projectsByVote).sort().map(voteCode => {
                   const vData = group.projectsByVote[voteCode];
-                  const vCost = costViewMode === 'actual' ? vData.subtotalActual : vData.subtotalContract;
-                  return [voteCode, getVoteName(voteCode), formatCurrency(vCost).replace('RM', '').trim()];
+                  let voteDisplayVal = '';
+                  if (costViewMode === 'contract') {
+                      voteDisplayVal = formatCurrency(vData.subtotalContract).replace('RM', '').trim();
+                  } else if (costViewMode === 'actual') {
+                      voteDisplayVal = formatCurrency(vData.subtotalAkhir).replace('RM', '').trim();
+                  } else {
+                      voteDisplayVal = `${formatCurrency(vData.subtotalContract).replace('RM', '').trim()}\n${formatCurrency(vData.subtotalAkhir).replace('RM', '').trim()}`;
+                  }
+                  return [voteCode, getVoteName(voteCode), voteDisplayVal];
               });
-              voteSummaryBody.push(['', 'JUMLAH BESAR', formatCurrency(costViewMode === 'actual' ? group.totalActualCost : group.totalCost).replace('RM', '').trim()]);
 
-              // Check space for summary
-              const summaryHeight = (voteSummaryBody.length + 2) * 6; // Approx
+              let groupTotalDisplay = '';
+              if (costViewMode === 'contract') {
+                  groupTotalDisplay = formatCurrency(group.totalCost).replace('RM', '').trim();
+              } else if (costViewMode === 'actual') {
+                  groupTotalDisplay = formatCurrency(group.totalHargaAkhir).replace('RM', '').trim();
+              } else {
+                  groupTotalDisplay = `${formatCurrency(group.totalCost).replace('RM', '').trim()}\n${formatCurrency(group.totalHargaAkhir).replace('RM', '').trim()}`;
+              }
+              voteSummaryBody.push(['', 'JUMLAH BESAR', groupTotalDisplay]);
+
+              const summaryHeight = (voteSummaryBody.length + 2) * 6;
               if (currentY + summaryHeight > pageHeight - 15) {
                   doc.addPage();
                   currentY = 15;
@@ -529,17 +623,17 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               // @ts-ignore
               doc.autoTable({
                   startY: currentY,
-                  head: [['Vot', 'Butiran', 'Jum (RM)']],
+                  head: [['VOT', 'PERUNTUKAN', 'JUMLAH (RM)']],
                   body: voteSummaryBody,
                   theme: 'grid',
-                  styles: { fontSize: 7, cellPadding: 1, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
+                  styles: { fontSize: 6, cellPadding: 1, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
                   headStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold', halign: 'center' },
                   columnStyles: {
                       0: { cellWidth: 20, halign: 'center' },
                       1: { cellWidth: 50 },
                       2: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }
                   },
-                  margin: { left: pageWidth - 105 }, // Align right (Width approx 95 + margin)
+                  margin: { left: pageWidth - 105 },
                   tableWidth: 95,
               });
 
@@ -547,10 +641,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               currentY = doc.lastAutoTable.finalY + 10;
           }
 
-          // --- GLOBAL FINANCIAL SUMMARY ---
           doc.addPage();
           currentY = 20;
-          
           doc.setFontSize(10);
           doc.setFont("helvetica", "bold");
           doc.text(`RUMUSAN KEWANGAN KESELURUHAN (${selectedYear})`, marginX, currentY);
@@ -560,21 +652,20 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               return [
                   voteCode,
                   getVoteName(voteCode),
-                  formatCurrency(data.allocated).replace('RM',''),
-                  formatCurrency(data.used).replace('RM',''),
-                  formatCurrency(data.allocated - data.used).replace('RM','')
+                  formatCurrency((data as any).allocated).replace('RM',''),
+                  formatCurrency((data as any).used).replace('RM',''),
+                  formatCurrency((data as any).allocated - (data as any).used).replace('RM','')
               ];
           });
 
-          // Add Total Row
-          const totalAlloc = Object.values(financialSummary).reduce((a,b) => a + b.allocated, 0);
-          const totalUsed = Object.values(financialSummary).reduce((a,b) => a + b.used, 0);
+          const totalAlloc = (Object.values(financialSummary) as any[]).reduce((a,b) => a + b.allocated, 0);
+          const totalUsed = (Object.values(financialSummary) as any[]).reduce((a,b) => a + b.used, 0);
           const totalBal = totalAlloc - totalUsed;
 
           // @ts-ignore
           doc.autoTable({
               startY: currentY,
-              head: [['KOD VOT', 'BUTIRAN', 'PERUNTUKAN', 'BELANJA', 'BAKI']],
+              head: [['VOT', 'PERUNTUKAN', 'JUMLAH', 'PERBELANJAAN', 'BAKI']],
               body: [
                   ...globalSummaryBody,
                   [
@@ -589,7 +680,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center' },
               columnStyles: {
                   0: { cellWidth: 20, halign: 'center' },
-                  1: { cellWidth: 'auto' },
+                  1: { cellWidth: "auto" },
                   2: { cellWidth: 35, halign: 'right' },
                   3: { cellWidth: 35, halign: 'right' },
                   4: { cellWidth: 35, halign: 'right' }
@@ -600,7 +691,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
           // @ts-ignore
           currentY = doc.lastAutoTable.finalY + 10;
 
-          // Manual Deductions Summary
           const netBalance = totalBal - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0);
           const deductionData = [
               ['TOLAK LAIN-LAIN (SEBUTHARGA)', formatCurrency(manualFinancials.outsource || 0)],
@@ -621,7 +711,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               margin: { left: pageWidth - 150 }
           });
 
-          // Save
           setGenerationProgress(100);
           doc.save(`Senarai_Kontraktor_Panel_${selectedYear}.pdf`);
           setIsExportModalOpen(false);
@@ -657,7 +746,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
       {/* Advanced Filter Bar */}
       <div className="glass-effect p-5 rounded-3xl shadow-xl border border-white/20 dark:border-white/5 space-y-4 relative z-30">
-          {/* Top Row: Search & View Toggle */}
           <div className="flex flex-col lg:flex-row gap-4">
               {viewMode === 'list' && (
                   <div className="relative flex-1">
@@ -691,7 +779,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     </button>
                   </div>
 
-                  {/* Toggle Unified Filter Panel */}
                   <button 
                     onClick={() => setShowFilterPanel(!showFilterPanel)}
                     className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-all relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border-emerald-200 ring-2 ring-emerald-500/20' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}
@@ -716,7 +803,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               </div>
           </div>
 
-          {/* Unified Filter Panel (Collapsible) */}
           {showFilterPanel && (
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 animate-slide-down">
                 <div className="flex items-center justify-between mb-6">
@@ -827,8 +913,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         <div className="flex gap-4 items-center">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kos:</span>
                             <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                                <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Projek</button>
-                                <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Kos Sebenar</button>
+                                <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
+                                <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
                                 <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
                             </div>
                         </div>
@@ -846,10 +932,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
           )}
       </div>
 
-      {/* List View */}
+      {/* List View with Pagination */}
       {viewMode === 'list' && (
-        <div className="glass-effect rounded-3xl shadow-xl border border-white/20 dark:border-white/5 overflow-hidden min-h-[400px]">
-            <div className="overflow-x-auto">
+        <div className="glass-effect rounded-3xl shadow-xl border border-white/20 dark:border-white/5 overflow-hidden min-h-[400px] flex flex-col">
+            <div className="overflow-x-auto flex-1">
                 <table className="w-full">
                     <thead className="bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200 dark:border-slate-700">
                         <tr>
@@ -860,66 +946,115 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {filteredProjects.map((project) => (
-                            <tr key={project.id} onClick={() => onEditProject(project)} className="group hover:bg-slate-50/80 dark:hover:bg-white/5 transition-all duration-200 cursor-pointer">
-                                {visibleColumns.noFail && <td className="px-6 py-4 whitespace-nowrap"><div className="font-bold text-slate-900 dark:text-white text-sm">{project.noFail}</div><div className="text-[10px] text-slate-400 font-mono mt-0.5">{formatDate(project.tarikhBuka)}</div></td>}
-                                {visibleColumns.namaProjek && <td className="px-6 py-4 min-w-[300px]"><div className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{project.namaProjek}</div></td>}
-                                {visibleColumns.pjaId && <td className="px-6 py-4 whitespace-nowrap">
-                                    {(() => {
-                                        const pja = getPjaUser(project.pjaId);
-                                        return (
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
-                                                    {pja?.avatarUrl ? (
-                                                        <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        pja?.username?.charAt(0).toUpperCase() || 'P'
-                                                    )}
+                        {paginatedProjects.length > 0 ? (
+                            paginatedProjects.map((project) => (
+                                <tr key={project.id} onClick={() => onEditProject(project)} className="group hover:bg-slate-50/80 dark:hover:bg-white/5 transition-all duration-200 cursor-pointer">
+                                    {visibleColumns.noFail && <td className="px-6 py-4 whitespace-nowrap"><div className="font-bold text-slate-900 dark:text-white text-sm">{project.noFail}</div><div className="text-[10px] text-slate-400 font-mono mt-0.5">{formatDate(project.tarikhBuka)}</div></td>}
+                                    {visibleColumns.namaProjek && <td className="px-6 py-4 min-w-[300px]"><div className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{project.namaProjek}</div></td>}
+                                    {visibleColumns.pjaId && <td className="px-6 py-4 whitespace-nowrap">
+                                        {(() => {
+                                            const pja = getPjaUser(project.pjaId);
+                                            return (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
+                                                        {pja?.avatarUrl ? (
+                                                            <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            pja?.username?.charAt(0).toUpperCase() || 'P'
+                                                        )}
+                                                    </div>
+                                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{pja?.username?.toUpperCase() || '-'}</span>
                                                 </div>
-                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{pja?.username?.toUpperCase() || '-'}</span>
-                                            </div>
-                                        );
-                                    })()}
-                                </td>}
-                                {visibleColumns.noAduan && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[100px] overflow-y-auto custom-scrollbar">{project.noAduan ? project.noAduan.split(/[,;\n]/).map((aduan, idx) => { const cleanAduan = aduan.trim(); if (!cleanAduan) return null; return <div key={idx} className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight">{cleanAduan}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
-                                {visibleColumns.lokasi && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto custom-scrollbar min-w-[200px]">{project.lokasi ? project.lokasi.split('\n').map((loc, idx) => { const cleanLoc = loc.trim(); if (!cleanLoc) return null; return <div key={idx} className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-1 whitespace-pre-wrap">{cleanLoc}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
-                                {visibleColumns.bp && <td className="px-6 py-4 text-xs text-slate-500">{project.bp}</td>}
-                                {visibleColumns.zon && <td className="px-6 py-4 text-xs text-slate-500">{project.zon}</td>}
-                                {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhBuka)}</td>}
-                                {visibleColumns.namaSyarikat && <td className="px-6 py-4 min-w-[200px]"><div className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{project.namaSyarikat || <span className="text-slate-400 italic font-normal">Belum Lantik</span>}</div></td>}
-                                {visibleColumns.noVote && <td className="px-6 py-4 text-xs text-slate-500">{project.noVote}</td>}
-                                {visibleColumns.noSebutharga && <td className="px-6 py-4 text-xs text-slate-500">{project.noSebutharga}</td>}
-                                {visibleColumns.noInden && <td className="px-6 py-4 text-xs text-slate-500">{project.noInden}</td>}
-                                {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
-                                {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
-                                {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? 'animate-pulse' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{project.status.replace(/_/g, ' ')}</span></div></td>}
-                                {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
-                                {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.kosSebenar)}</td>}
-                                {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
-                                {visibleColumns.ladAmount && <td className="px-6 py-4 text-right text-xs font-bold text-red-500">{formatCurrency(project.ladAmount)}</td>}
-                                {visibleColumns.ladDays && <td className="px-6 py-4 text-center text-xs text-slate-500">{project.ladDays || 0}</td>}
-                                {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhLantikan)}</td>}
-                                {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhCetakanBpp)}</td>}
-                                {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhMulaKontrak)}</td>}
-                                {visibleColumns.tarikhTamatKontrak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhTamatKontrak)}</td>}
-                                {visibleColumns.tarikhSerahTapak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhSerahTapak)}</td>}
-                                {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhMulaKerja)}</td>}
-                                {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhSiapSebenar)}</td>}
-                                {visibleColumns.tarikhTuntutanBayaran && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhTuntutanBayaran)}</td>}
-                                {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhHantarKewangan)}</td>}
-                                {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhPadanan)}</td>}
-                                {visibleColumns.iso && <td className="px-6 py-4 text-xs text-slate-500">{project.iso}</td>}
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white dark:bg-slate-700 rounded-lg text-emerald-600 hover:bg-emerald-50 shadow-sm border border-slate-100 dark:border-slate-600"><ArrowUpRight className="w-4 h-4" /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }} className="p-2 bg-white dark:bg-slate-700 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 shadow-sm border border-slate-100 dark:border-slate-600"><Trash2 className="w-4 h-4" /></button>
-                                    </div>
+                                            );
+                                        })()}
+                                    </td>}
+                                    {visibleColumns.noAduan && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[100px] overflow-y-auto custom-scrollbar">{project.noAduan ? project.noAduan.split(/[,;\n]/).map((aduan, idx) => { const cleanAduan = aduan.trim(); if (!cleanAduan) return null; return <div key={idx} className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight">{cleanAduan}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
+                                    {visibleColumns.lokasi && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto custom-scrollbar min-w-[200px]">{project.lokasi ? project.lokasi.split('\n').map((loc, idx) => { const cleanLoc = loc.trim(); if (!cleanLoc) return null; return <div key={idx} className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-1 whitespace-pre-wrap">{cleanLoc}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
+                                    {visibleColumns.bp && <td className="px-6 py-4 text-xs text-slate-500">{project.bp}</td>}
+                                    {visibleColumns.zon && <td className="px-6 py-4 text-xs text-slate-500">{project.zon}</td>}
+                                    {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhBuka)}</td>}
+                                    {visibleColumns.namaSyarikat && <td className="px-6 py-4 min-w-[200px]"><div className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{project.namaSyarikat || <span className="text-slate-400 italic font-normal">Belum Lantik</span>}</div></td>}
+                                    {visibleColumns.noVote && <td className="px-6 py-4 text-xs text-slate-500">{project.noVote}</td>}
+                                    {visibleColumns.noSebutharga && <td className="px-6 py-4 text-xs text-slate-500">{project.noSebutharga}</td>}
+                                    {visibleColumns.noInden && <td className="px-6 py-4 text-xs text-slate-500">{project.noInden}</td>}
+                                    {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
+                                    {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
+                                    {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? 'animate-pulse' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{project.status.replace(/_/g, ' ')}</span></div></td>}
+                                    {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
+                                    {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(getHargaAkhir(project))}</td>}
+                                    {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
+                                    {visibleColumns.ladAmount && <td className="px-6 py-4 text-right text-xs font-bold text-red-500">{formatCurrency(project.ladAmount)}</td>}
+                                    {visibleColumns.ladDays && <td className="px-6 py-4 text-center text-xs text-slate-500">{project.ladDays || 0}</td>}
+                                    {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhLantikan)}</td>}
+                                    {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhCetakanBpp)}</td>}
+                                    {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhMulaKontrak)}</td>}
+                                    {visibleColumns.tarikhTamatKontrak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhTamatKontrak)}</td>}
+                                    {visibleColumns.tarikhSerahTapak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhSerahTapak)}</td>}
+                                    {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhMulaKerja)}</td>}
+                                    {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhSiapSebenar)}</td>}
+                                    {visibleColumns.tarikhTuntutanBayaran && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhTuntutanBayaran)}</td>}
+                                    {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhHantarKewangan)}</td>}
+                                    {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhPadanan)}</td>}
+                                    {visibleColumns.iso && <td className="px-6 py-4 text-xs text-slate-500">{project.iso}</td>}
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white dark:bg-slate-700 rounded-lg text-emerald-600 hover:bg-emerald-50 shadow-sm border border-slate-100 dark:border-slate-600"><ArrowUpRight className="w-4 h-4" /></button>
+                                            {user.role !== 'PJA' && (
+                                              <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }} className="p-2 bg-white dark:bg-slate-700 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 shadow-sm border border-slate-100 dark:border-slate-600"><Trash2 className="w-4 h-4" /></button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={Object.values(visibleColumns).filter(Boolean).length + 1} className="px-6 py-12 text-center text-slate-400">
+                                    Tiada projek dijumpai.
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination Controls */}
+            {filteredProjects.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
+                    <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        Paparan <span className="font-bold text-slate-700 dark:text-slate-200">{Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)}</span> hingga <span className="font-bold text-slate-700 dark:text-slate-200">{Math.min(filteredProjects.length, currentPage * itemsPerPage)}</span> dari <span className="font-bold text-slate-700 dark:text-slate-200">{filteredProjects.length}</span> projek
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                        </button>
+                        
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Muka</span>
+                            <input
+                                type="number"
+                                value={pageInput}
+                                onChange={handlePageInputChange}
+                                onBlur={handlePageInputBlur}
+                                onKeyDown={handlePageInputKeyDown}
+                                className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 dark:text-slate-200"
+                            />
+                            <span className="text-xs text-slate-500 dark:text-slate-400">dari {totalPages}</span>
+                        </div>
+
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
       )}
 
@@ -937,8 +1072,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate flex items-center gap-3">{group.company} {group.count > 0 ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider">{group.count} Fail</span> : <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider italic">Tiada Projek</span>}</h3>
                             <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
                                 <div className="flex gap-4 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
-                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Kontrak:</span> <strong className="text-emerald-700 dark:text-emerald-400 font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
-                                    {(costViewMode === 'actual' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div><span className="opacity-80">Sebenar:</span><strong className="text-blue-700 dark:text-blue-400 font-mono text-sm">{formatCurrency(group.totalActualCost)}</strong></span>}
+                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-emerald-700 dark:text-emerald-400 font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
+                                    {(costViewMode === 'actual' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div><span className="opacity-80">Harga Akhir:</span><strong className="text-blue-700 dark:text-blue-400 font-mono text-sm">{formatCurrency(group.totalHargaAkhir)}</strong></span>}
                                 </div>
                             </div>
                          </div>
@@ -946,7 +1081,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                       <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${expandedCompanies[group.company] ? 'rotate-180' : ''}`} />
                    </div>
 
-                   {/* Inner Table - Grouped by Vote */}
                    {expandedCompanies[group.company] && group.count > 0 && (
                       <div className="border-t border-slate-100 dark:border-white/5 animate-slide-down bg-slate-50/30 dark:bg-black/10 overflow-x-auto">
                          <div className="w-full">
@@ -962,6 +1096,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                 <tr>
                                                     <th className="px-6 py-3 text-left font-extrabold w-[350px]">No. Fail / Tajuk Projek</th>
                                                     <th className="px-6 py-3 text-center font-extrabold w-[100px]">Bulan</th>
+                                                    <th className="px-6 py-3 text-center font-extrabold w-[80px]">PJA</th>
                                                     <th className="px-6 py-3 text-left font-extrabold">Lokasi</th>
                                                     <th className="px-6 py-3 text-center font-extrabold">Tarikh (Mula - Tamat)</th>
                                                     <th className="px-6 py-3 text-right font-extrabold">Kos</th>
@@ -970,21 +1105,30 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                                                {voteData.projects.map(p => (
-                                                    <tr key={p.id} className="hover:bg-white/60 dark:hover:bg-white/5 cursor-pointer transition-colors group/row" onClick={() => onEditProject(p)}>
-                                                        <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600 dark:text-slate-300 mb-1">{p.noFail}</div><div className="font-medium text-slate-800 dark:text-white leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
-                                                        <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm">{p.bulan || '-'}</span></td>
-                                                        <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
-                                                        <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br/>-<br/>{formatDate(p.tarikhTamatKontrak)}</td>
-                                                        <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top"><div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600 dark:text-emerald-400'}>{formatCurrency(p.kosProjek)}</div><div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600 dark:text-blue-400'}>{formatCurrency(p.kosSebenar)}</div></td>
-                                                        <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{p.status.replace(/_/g, ' ')}</span></div></td>
-                                                        <td className="px-6 py-3 text-right align-top"><button className="p-2 rounded-lg bg-white dark:bg-slate-800 text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"><ArrowUpRight className="w-4 h-4" /></button></td>
-                                                    </tr>
-                                                ))}
+                                                {voteData.projects.map(p => {
+                                                    const pjaUser = getPjaUser(p.pjaId);
+                                                    const hargaAkhir = getHargaAkhir(p);
+                                                    
+                                                    return (
+                                                        <tr key={p.id} className="hover:bg-white/60 dark:hover:bg-white/5 cursor-pointer transition-colors group/row" onClick={() => onEditProject(p)}>
+                                                            <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600 dark:text-slate-300 mb-1">{p.noFail}</div><div className="font-medium text-slate-800 dark:text-white leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
+                                                            <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm">{p.bulan || '-'}</span></td>
+                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
+                                                            <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
+                                                            <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br/>-<br/>{formatDate(p.tarikhTamatKontrak)}</td>
+                                                            <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
+                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600 dark:text-emerald-400'}>{formatCurrency(p.kosProjek)}</div>
+                                                                <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600 dark:text-blue-400'}>{formatCurrency(hargaAkhir)}</div>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{p.status.replace(/_/g, ' ')}</span></div></td>
+                                                            <td className="px-6 py-3 text-right align-top"><button className="p-2 rounded-lg bg-white dark:bg-slate-800 text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"><ArrowUpRight className="w-4 h-4" /></button></td>
+                                                        </tr>
+                                                    );
+                                                })}
                                                 <tr className="bg-slate-50 dark:bg-slate-800/30 font-bold border-t border-slate-200 dark:border-slate-700">
-                                                    <td colSpan={4} className="px-6 py-3 text-right text-[10px] uppercase text-slate-500 tracking-wider">Jumlah</td>
+                                                    <td colSpan={5} className="px-6 py-3 text-right text-[10px] uppercase text-slate-500 tracking-wider">Jumlah</td>
                                                     <td className="px-6 py-3 text-right font-mono text-xs text-slate-800 dark:text-white">
-                                                        {costViewMode === 'contract' ? formatCurrency(voteData.subtotalContract) : costViewMode === 'actual' ? formatCurrency(voteData.subtotalActual) : (<div><div>{formatCurrency(voteData.subtotalContract)}</div><div className="text-[10px] opacity-60">{formatCurrency(voteData.subtotalActual)}</div></div>)}
+                                                        {costViewMode === 'contract' ? formatCurrency(voteData.subtotalContract) : costViewMode === 'actual' ? formatCurrency(voteData.subtotalAkhir) : (<div><div>{formatCurrency(voteData.subtotalContract)}</div><div className="text-[10px] opacity-60">{formatCurrency(voteData.subtotalAkhir)}</div></div>)}
                                                     </td>
                                                     <td colSpan={2}></td>
                                                 </tr>
@@ -995,7 +1139,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             })}
                             <div className="px-6 py-4 bg-emerald-50/50 dark:bg-emerald-900/10 flex justify-end items-center gap-6 border-t border-emerald-100 dark:border-emerald-800/30">
                                 <span className="text-[11px] font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">Jumlah Keseluruhan ({group.company})</span>
-                                <span className="text-sm font-black font-mono text-emerald-700 dark:text-emerald-300">{costViewMode === 'actual' ? formatCurrency(group.totalActualCost) : formatCurrency(group.totalCost)}</span>
+                                <span className="text-sm font-black font-mono text-emerald-700 dark:text-emerald-300">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
                             </div>
                          </div>
                       </div>
@@ -1006,7 +1150,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
              
              {/* Integrated Summary Card (Vertical) */}
              {groupedProjects.length > 0 && (
-                <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-6 mt-8 w-full mx-auto">
+                <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-6 mt-8 w-full mx-auto">
                     <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800"><div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl shadow-sm text-emerald-600 dark:text-emerald-400"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
                     <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
                         <table className="w-full text-xs">
@@ -1016,10 +1160,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {Object.entries(financialSummary).map(([voteCode, data]) => (
                                     <tr key={voteCode} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                        <td className="py-3 px-4 font-mono font-bold text-slate-600 dark:text-slate-300">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-200">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-right font-mono text-slate-600 dark:text-slate-400">{formatCurrency(data.allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency(data.used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(data.allocated - data.used)}</td>
+                                        <td className="py-3 px-4 font-mono font-bold text-slate-600 dark:text-slate-300">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-200">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-right font-mono text-slate-600 dark:text-slate-400">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency((data as any).allocated - (data as any).used)}</td>
                                     </tr>
                                 ))}
-                                <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold border-t-2 border-slate-200 dark:border-slate-700"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-right font-mono text-slate-800 dark:text-white">{formatCurrency(Object.values(financialSummary).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency(Object.values(financialSummary).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400">{formatCurrency(Object.values(financialSummary).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
+                                <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold border-t-2 border-slate-200 dark:border-slate-700"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-right font-mono text-slate-800 dark:text-white">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1028,7 +1172,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
                         <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700 bg-emerald-50/50 dark:bg-emerald-900/10 -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
                             <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="px-4 py-2 bg-slate-800 dark:bg-white text-white dark:text-slate-900 rounded-lg text-[10px] font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
-                            <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600 dark:text-emerald-400 leading-none">{formatCurrency(Object.values(financialSummary).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
+                            <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600 dark:text-emerald-400 leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
                         </div>
                     </div>
                 </div>
