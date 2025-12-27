@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { User } from '../types';
 import { Hexagon, ArrowRight } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
@@ -16,7 +17,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const user = await mockService.login(username, password);
+      const user = await supabaseService.login(username, password);
       onLogin(user);
     } catch (err) {
       setError('Nama pengguna atau kata laluan salah.');
@@ -26,12 +27,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   return (
     <div className="h-screen w-full bg-slate-50 relative overflow-hidden flex items-center justify-center p-4 font-manrope">
       
-      {/* Theme Toggle Top Right */}
       <div className="absolute top-6 right-6 z-50">
          <ThemeToggle />
       </div>
 
-      {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-pink-50 dark:from-slate-900 dark:to-slate-950">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
           <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-teal-300/30 rounded-full blur-[80px] animate-float"></div>
