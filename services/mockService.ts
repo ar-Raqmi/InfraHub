@@ -2,8 +2,6 @@
 import { Project, User, Role, ProjectStatus, BQGroup, CompanyDetail, VoteDefinition, ProjectLocation, PresetGroup, BQTemplateDefinition, BulletinItem } from '../types';
 import { INITIAL_LIBRARY_DATA, INITIAL_TEMPLATE_DATA } from '../data/bqPresets';
 
-// --- CONSTANTS ---
-
 const VOTES: VoteDefinition[] = [
     { code: '282090', name: 'LONGKANG', allocation: 2000000 },
     { code: '282130', name: 'INFRA & KEMUDAHAN AWAM', allocation: 1500000 },
@@ -66,7 +64,6 @@ const MOCK_COMPANIES: CompanyDetail[] = [
     }
 ];
 
-// --- USERS ---
 const INITIAL_USERS: User[] = [
   { id: 1, username: 'syafiq', fullName: 'Syafiq Daniel Bin Ahmad Firdaus', role: Role.ADMIN, password: 'password', email: 'syafiq@mps.gov.my', phone: '012-3456789', jawatan: 'Pembantu Tadbir N1', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
   { id: 2, username: 'khairul', fullName: 'Mohamad Khairul Amirin Bin Zainal Abidin', role: Role.PJA, password: 'password', email: 'khairul@mps.gov.my', phone: '013-9876543', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
