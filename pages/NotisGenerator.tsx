@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, User, Role, formatDateMalay, formatCurrency } from '../types';
-import { mockService } from '../services/mockService';
+import { supabaseService } from '../services/supabaseService';
 import { Download, Loader2, X, FileText, Calendar, User as UserIcon, Settings } from 'lucide-react';
 
 interface NotisGeneratorProps {
@@ -19,32 +19,35 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
     const [isGenerating, setIsGenerating] = useState(false);
     const [noticeType, setNoticeType] = useState<NoticeType>('PEMBERITAHUAN');
     
-    // Dates for Pemberitahuan
     const [startDate, setStartDate] = useState(project.tarikhMulaKerja || '');
     const [endDate, setEndDate] = useState(project.tarikhTamatKontrak || '');
 
-    // Dates for Peringatan
-    const [letterMonthYear, setLetterMonthYear] = useState(''); // e.g. "November 2025"
+    const [letterMonthYear, setLetterMonthYear] = useState(''); 
     
-    // Signer (Jurutera)
     const [juruteraList, setJuruteraList] = useState<User[]>([]);
     const [selectedJuruteraId, setSelectedJuruteraId] = useState<number | string>('');
     const [companyDetails, setCompanyDetails] = useState<any>(null);
 
-    // Initial Data Fetching
     useEffect(() => {
-        const users = mockService.getUsers();
-        const jrs = users.filter(u => u.role === Role.JURUTERA);
-        setJuruteraList(jrs);
-        if (jrs.length > 0) {
-            setSelectedJuruteraId(jrs[0].id);
-        }
+        const fetchData = async () => {
+            try {
+                const users = await supabaseService.getUsers();
+                const jrs = users.filter(u => u.role === Role.JURUTERA);
+                setJuruteraList(jrs);
+                if (jrs.length > 0) {
+                    setSelectedJuruteraId(jrs[0].id);
+                }
 
-        if (project.namaSyarikat) {
-            const year = project.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : new Date().getFullYear();
-            const details = mockService.getCompanyDetails(year, project.namaSyarikat);
-            setCompanyDetails(details);
-        }
+                if (project.namaSyarikat) {
+                    const year = project.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : new Date().getFullYear();
+                    const details = await supabaseService.getCompanyDetails(year, project.namaSyarikat);
+                    setCompanyDetails(details);
+                }
+            } catch (err) {
+                console.error('Failed to load notis generator data:', err);
+            }
+        };
+        fetchData();
     }, [project]);
 
     // Date Logic Handling based on Notice Type
@@ -128,6 +131,8 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                 await generatePeringatanKeduaPDF(doc);
             } else if (noticeType === 'PERINGATAN_3') {
                 await generatePeringatanKetigaPDF(doc);
+            } else if (noticeType === 'KERJA_TIDAK_SIAP') {
+                await generateKerjaTidakSiapPDF(doc);
             }
 
         } catch (e) {
@@ -510,7 +515,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                 const textToPrint = word + (index === words.length - 1 ? "" : " ");
                 const wordWidth = doc.getTextWidth(textToPrint);
 
-                // Check if word fits on current line
+                // Check if we need to wrap to a new line
                 if (currentX + wordWidth > margin + contentWidth) {
                     currentX = margin;
                     currentY += lineHeight;
@@ -700,6 +705,266 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         doc.save(`Notis_Peringatan_3_${project.noFail}.pdf`);
     };
 
+    // --- PDF GENERATOR 5: PERAKUAN KERJA TIDAK SIAP (FIXED WRAP & INDENT) ---
+    const generateKerjaTidakSiapPDF = async (doc: any) => {
+        const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+        const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+        const margin = 25;
+        const contentWidth = pageWidth - (margin * 2);
+        let y = 30;
+
+        // Helper updated to accept maxWidth to handle indents correctly
+        const getStyledLines = (parts: { text: string, bold?: boolean, italic?: boolean }[], maxWidth = contentWidth) => {
+            const lines: { text: string, bold?: boolean, italic?: boolean }[][] = [];
+            let currentLine: { text: string, bold?: boolean, italic?: boolean }[] = [];
+            let currentLineWidth = 0;
+
+            parts.forEach(part => {
+                const style = part.bold ? (part.italic ? "bolditalic" : "bold") : (part.italic ? "italic" : "normal");
+                doc.setFont("helvetica", style);
+
+                const words = part.text.split(/(\s+)/).filter(w => w.length > 0);
+
+                words.forEach((word) => {
+                    const wordWidth = doc.getTextWidth(word);
+
+                    // Use the passed maxWidth for calculation
+                    if (currentLineWidth + wordWidth > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = [];
+                        currentLineWidth = 0;
+                        if (/^\s+$/.test(word)) return;
+                    }
+
+                    currentLine.push({ text: word, bold: part.bold, italic: part.italic });
+                    currentLineWidth += wordWidth;
+                });
+            });
+            if (currentLine.length > 0) lines.push(currentLine);
+            return lines;
+        };
+
+        // --- PAGE 1 ---
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text("KERAJAAN MALAYSIA", pageWidth / 2, y, { align: "center" });
+        y += 5;
+        doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, y, { align: "center" });
+        y += 5;
+        doc.text("JABATAN KEJURUTERAAN", pageWidth / 2, y, { align: "center" });
+        y += 10;
+
+        doc.setFontSize(12);
+        doc.text("PERAKUAN KERJA TIDAK SIAP", pageWidth / 2, y, { align: "center" });
+        y += 5;
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(10);
+        doc.text("(CERTIFICATE OF NON-COMPLETION)", pageWidth / 2, y, { align: "center" });
+        y += 15;
+
+        const refNo = `Bil (   ) ${project.noFail || ''}`;
+        const addressData = [
+            [
+                `Rujukan : ${refNo}`,
+                {
+                    content: `Pejabat : Majlis Perbandaran Selayang\nPersiaran 3, Bandar Baru Selayang,\n68100 Batu Caves,\nSelangor Darul Ehsan.\nTarikh...................................................`,
+                    styles: { halign: 'left' }
+                }
+            ]
+        ];
+
+        doc.autoTable({
+            startY: y,
+            body: addressData,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 1, overflow: 'visible', font: 'helvetica' },
+            columnStyles: {
+                0: { cellWidth: contentWidth * 0.55 },
+                1: { cellWidth: contentWidth * 0.45 }
+            },
+            margin: { left: margin, right: margin },
+        });
+
+        y = doc.lastAutoTable.finalY + 10;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text("Kepada:", margin, y);
+
+        const recipientX = margin + 20;
+        doc.setFont("helvetica", "bold");
+        doc.text(project.namaSyarikat?.toUpperCase() || 'NAMA SYARIKAT', recipientX, y);
+        y += 5;
+
+        doc.setFont("helvetica", "normal");
+        const addr = companyDetails?.address || "ALAMAT SYARIKAT...";
+        const splitAddr = doc.splitTextToSize(addr, 80);
+        doc.text(splitAddr, recipientX, y);
+        y += (splitAddr.length * 4) + 8;
+
+        doc.text(`Berdaftar dengan C.I.D.B. dalam Gred "${companyDetails?.gred || 'G1'}"`, margin, y);
+        y += 6;
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`No. Sebutharga : ${project.noSebutharga || ''}`, margin, y);
+        y += 10;
+
+        const title = project.namaProjek ? project.namaProjek.toUpperCase() : "TAJUK PROJEK...";
+        const splitTitle = doc.splitTextToSize(title, contentWidth);
+        doc.text(splitTitle, margin, y, { align: 'justify', maxWidth: contentWidth });
+        y += (splitTitle.length * 5) + 10;
+
+        const completionDate = project.tarikhTamatKontrak ? formatMalayDateLong(project.tarikhTamatKontrak) : '................................';
+
+        const malayParts1 = [
+            { text: "Dengan ini adalah diperakui bahawa tuan telah gagal menyiapkan Kerja / Sebahagian daripada Kerja* yang tersebut di atas pada \"Tarikh Siap\" yang dinyatakan dalam Lampiran kepada Syarat-Syarat Kontrak ataupun dalam tempoh lanjutan masa yang telah dibenarkan di bawah Klausa 43 Syarat-Syarat Kontrak, iaitu pada " },
+            { text: completionDate, bold: true },
+            { text: " dan mengikut pendapat saya Kerja / Sebahagian daripada Kerja* tersebut itu sepatutnya telah disiapkan pada tarikh ini." }
+        ];
+
+        const englishParts1 = [
+            { text: "It is hereby certified that you have failed to complete the Works / Section of the Works* as mentioned above by the \"Date for Completion\" stated in the Appendix to the Conditions of Contract or within any extended time approved under Clause 43 of the Conditions of Contract, i.e. on ", italic: true },
+            { text: completionDate, bold: true, italic: true },
+            { text: " and in my opinion the said Works / Section of the Works* ought to have been completed.", italic: true }
+        ];
+
+        doc.setFontSize(9);
+        const linesM1 = getStyledLines(malayParts1, contentWidth); // No indent here
+        const linesE1 = getStyledLines(englishParts1, contentWidth);
+        const count1 = Math.max(linesM1.length, linesE1.length);
+        const lineHeightM = 4;
+        const lineHeightE = 4;
+        const gap = 3;
+
+        for (let i = 0; i < count1; i++) {
+            if (y > pageHeight - 30) { doc.addPage(); y = 20; }
+            if (linesM1[i]) {
+                let x = margin;
+                linesM1[i].forEach(chunk => {
+                    doc.setFont("helvetica", chunk.bold ? "bold" : "normal");
+                    doc.text(chunk.text, x, y);
+                    x += doc.getTextWidth(chunk.text);
+                });
+            }
+            if (linesE1[i]) {
+                let x = margin;
+                linesE1[i].forEach(chunk => {
+                    doc.setFont("helvetica", chunk.bold ? (chunk.italic ? "bolditalic" : "bold") : "italic");
+                    doc.text(chunk.text, x, y + lineHeightM);
+                    x += doc.getTextWidth(chunk.text);
+                });
+            }
+            y += lineHeightM + lineHeightE + gap;
+        }
+
+        doc.setFont("helvetica", "normal");
+        doc.text("1", pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+        // --- PAGE 2 ---
+        doc.addPage();
+        y = 30;
+
+        const indent = 10;
+        const para2Width = contentWidth - indent; // FIX: Calculate width minus the indent
+
+        const ladRate = calculateLAD();
+        const ladStr = `RM${ladRate.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+        doc.setFont("helvetica", "normal");
+        doc.text("2.", margin, y);
+
+        const malayParts2 = [
+            { text: "Menurut Klausa 40 Syarat-Syarat Kontrak, tuan adalah dengan ini diberitahu bahawa tuan kenalah membayar atau membenarkan kepada Kerajaan sejumlah wang yang dikira atas kadar yang dinyatakan dalam Lampiran kepada Syarat-Syarat Kontrak, iaitu " },
+            { text: ladStr, bold: true },
+            { text: " setiap hari sebagai Ganti Rugi Tertentu dan Ditetapkan banyaknya sepanjang tempoh yang Kerja / Sebahagian daripada Kerja* tersebut itu tidak disiapkan sepenuhnya dan saya akan memperakukan supaya potongan sewajarnya dibuat dari apa-apa wang yang kena dibayar atau yang akan kena dibayar kepada tuan di bawah Kontrak ini." }
+        ];
+
+        const englishParts2 = [
+            { text: "In accordance with Clause 40 of the Conditions of Contract, you are hereby informed that you are liable to pay or allow to the Government a sum calculated at the rate stated in the Appendix to the Conditions of Contract, i.e. ", italic: true },
+            { text: ladStr, bold: true, italic: true },
+            { text: " per day as Liquidated and Ascertained Damages for the period during which the said Works / Section of the Works* shall so remain and have remain incomplete and I shall certify for deduction such damages from any money due or which may become due to you under this Contract.", italic: true }
+        ];
+
+        // Pass para2Width so wrap logic knows there is less space
+        const linesM2 = getStyledLines(malayParts2, para2Width);
+        const linesE2 = getStyledLines(englishParts2, para2Width);
+        const count2 = Math.max(linesM2.length, linesE2.length);
+
+        for (let i = 0; i < count2; i++) {
+            if (y > pageHeight - 100) { doc.addPage(); y = 30; }
+
+            if (linesM2[i]) {
+                let x = margin + indent;
+                linesM2[i].forEach(chunk => {
+                    doc.setFont("helvetica", chunk.bold ? "bold" : "normal");
+                    doc.text(chunk.text, x, y);
+                    x += doc.getTextWidth(chunk.text);
+                });
+            }
+
+            if (linesE2[i]) {
+                let x = margin + indent;
+                linesE2[i].forEach(chunk => {
+                    doc.setFont("helvetica", chunk.bold ? (chunk.italic ? "bolditalic" : "bold") : "italic");
+                    doc.text(chunk.text, x, y + lineHeightM);
+                    x += doc.getTextWidth(chunk.text);
+                });
+            }
+            y += lineHeightM + lineHeightE + gap;
+        }
+
+        y += 30; 
+
+        // Signature Section
+        const sigStartX = pageWidth / 2 + 10;
+        doc.setLineDash([1, 1], 0);
+        doc.line(sigStartX, y, pageWidth - margin, y);
+        doc.setLineDash([]);
+        y += 5;
+
+        doc.setFont("helvetica", "normal");
+        doc.text("Wakil Pegawai Penguasa", sigStartX + 15, y);
+        y += 5;
+        doc.setFont("helvetica", "italic");
+        doc.text("(Deputy Superintending Officer)", sigStartX + 12, y);
+        y += 15;
+
+        const labelX = sigStartX;
+        const valueX = sigStartX + 30;
+
+        doc.setFont("helvetica", "normal");
+        doc.text("Nama Penuh", labelX, y);
+        doc.setLineDash([1, 1], 0);
+        doc.line(valueX, y, pageWidth - margin, y);
+        doc.setLineDash([]);
+        y += 4;
+        doc.setFont("helvetica", "italic");
+        doc.text("Name in full", labelX, y);
+        y += 10;
+        doc.setFont("helvetica", "normal");
+        doc.text("Nama Jawatan", labelX, y);
+        doc.setLineDash([1, 1], 0);
+        doc.line(valueX, y, pageWidth - margin, y);
+        doc.setLineDash([]);
+        y += 4;
+        doc.setFont("helvetica", "italic");
+        doc.text("Designation", labelX, y);
+
+        const footerY = pageHeight - 30;
+        doc.setLineWidth(0.5);
+        doc.line(margin, footerY, pageWidth - margin, footerY);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.text("* Potong jika tidak berkenaan.", margin + 10, footerY + 5);
+        doc.setFont("helvetica", "italic");
+        doc.text("        Delete if not applicable.", margin + 10, footerY + 10);
+
+        doc.setFont("helvetica", "normal");
+        doc.text("2", pageWidth / 2, pageHeight - 15, { align: 'center' });
+
+        doc.save(`Perakuan_Kerja_Tidak_Siap_${project.noFail}.pdf`);
+    };
+
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" style={{ zIndex: 9999 }}>
             <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
@@ -735,7 +1000,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                             <option value="PERINGATAN_1">Notis Peringatan Pertama</option>
                             <option value="PERINGATAN_2">Notis Peringatan Kedua</option>
                             <option value="PERINGATAN_3">Notis Peringatan Ketiga</option>
-                            <option value="KERJA_TIDAK_SIAP" disabled>Perakuan Kerja Tidak Siap (Coming Soon)</option>
+                            <option value="KERJA_TIDAK_SIAP">Perakuan Kerja Tidak Siap</option>
                         </select>
                     </div>
 
@@ -768,7 +1033,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                         </div>
                     )}
 
-                    {(noticeType === 'PERINGATAN_1' || noticeType === 'PERINGATAN_2' || noticeType === 'PERINGATAN_3') && (
+                    {(noticeType === 'PERINGATAN_1' || noticeType === 'PERINGATAN_2' || noticeType === 'PERINGATAN_3' || noticeType === 'KERJA_TIDAK_SIAP') && (
                         <div className="space-y-4 animate-fade-in">
                             <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-200 dark:border-yellow-700/50">
                                 <h4 className="text-xs font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -783,35 +1048,43 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                                         <span className="text-slate-500">Tarikh Mula (SST):</span>
                                         <span className="font-mono font-bold text-slate-700 dark:text-white">{project.tarikhMulaKerja ? project.tarikhMulaKerja.split('-').reverse().join('/') : '-'}</span>
                                     </div>
+                                    {noticeType === 'KERJA_TIDAK_SIAP' && (
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-500">Tarikh Tamat Kontrak:</span>
+                                            <span className="font-mono font-bold text-red-600 dark:text-red-400">{project.tarikhTamatKontrak ? project.tarikhTamatKontrak.split('-').reverse().join('/') : '-'}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-
-                            <div>
-                                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Bulan & Tahun Surat</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <select
-                                        value={currentMonth}
-                                        onChange={handleMonthChange}
-                                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-red-500 text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
-                                    >
-                                        {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                                    </select>
-                                    <select
-                                        value={currentYear}
-                                        onChange={handleYearChange}
-                                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-red-500 text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
-                                    >
-                                        {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
-                                    </select>
+                            
+                            {noticeType !== 'KERJA_TIDAK_SIAP' && (
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Bulan & Tahun Surat</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <select
+                                            value={currentMonth}
+                                            onChange={handleMonthChange}
+                                            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-red-500 text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
+                                        >
+                                            {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                        <select
+                                            value={currentYear}
+                                            onChange={handleYearChange}
+                                            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-red-500 text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
+                                        >
+                                            {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
+                                        </select>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 italic mt-1">
+                                        {noticeType === 'PERINGATAN_2' 
+                                            ? '*Tarikh default adalah 1 minggu SELEPAS tamat kontrak.' 
+                                            : noticeType === 'PERINGATAN_3'
+                                            ? '*Tarikh default adalah 2 minggu SELEPAS tamat kontrak.'
+                                            : '*Tarikh default adalah 1 minggu SEBELUM tamat kontrak.'}
+                                    </p>
                                 </div>
-                                <p className="text-[10px] text-slate-400 italic mt-1">
-                                    {noticeType === 'PERINGATAN_2' 
-                                        ? '*Tarikh default adalah 1 minggu SELEPAS tamat kontrak.' 
-                                        : noticeType === 'PERINGATAN_3'
-                                        ? '*Tarikh default adalah 2 minggu SELEPAS tamat kontrak.'
-                                        : '*Tarikh default adalah 1 minggu SEBELUM tamat kontrak.'}
-                                </p>
-                            </div>
+                            )}
                         </div>
                     )}
 
