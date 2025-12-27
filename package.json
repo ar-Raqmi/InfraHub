@@ -6,17 +6,26 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
-    "react": "^19.2.0",
+    "@react-pdf/renderer": "^4.3.1",
+    "@supabase/supabase-js": "^2.89.0",
+    "jspdf": "^3.0.4",
+    "konva": "^10.0.12",
     "lucide-react": "^0.554.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-konva": "^19.2.1",
     "recharts": "^3.5.0",
-    "react-dom": "^19.2.0"
+    "use-image": "^1.1.4"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "dotenv": "^17.2.3",
+    "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

@@ -180,12 +180,18 @@ export interface BQItem {
   // Calculated
   qty: number;
   amount: number;
+
+  // Template Source Tracking (Optional)
+  sourceGroupId?: string;
+  sourceItemId?: string;
+  sourceVariantId?: string;
 }
 
 export interface BQGroup {
   id: string;
-  title: string; // e.g., "BIL NO. 1 - KERJA-KERJA PERMULAAN"
+  title: string; // e.g., "KERJA-KERJA PERMULAAN"
   locationId?: string; // Links to a specific locationRow ID
+  calculationId?: string; // NEW: Links to a unique Global Calculation ID
   items: BQItem[];
 }
 
@@ -227,6 +233,8 @@ export interface Project {
   tarikhSerahTapak?: string; // Tarikh Serah Tapak
   iso?: string; // ISO
   tarikhMulaKerja?: string; // Auto or manual type (Mula + tempoh)
+  isManualMulaKontrak?: boolean; // Persisted manual toggle
+  isManualMulaKerja?: boolean; // Persisted manual toggle
 
   // --- PHASE 3: BQ PELARASAN BUILDING (Yellow - PJA) ---
   tarikhPemeriksaan?: string; // Tarikh Pemeriksaan
@@ -234,7 +242,8 @@ export interface Project {
   prestasi?: string; // Changed to string for % input
   tarikhTuntutanBayaran?: string; // Changed from number amount to date
   
-  kosSebenar?: number; // Calculated from BQPelarasan
+  kosSebenar?: number; // Calculated from BQPelarasan (Capped at kosProjek)
+  bqPelarasanExtra?: number; // Extra price overflow (uncapped amount above kosProjek)
   
   ladAmount?: number;
   ladDays?: number;
@@ -259,6 +268,10 @@ export interface Project {
   globalDimensions?: GlobalDimensions; // DEPRECATED: Keep for backward compat
   locationDimensions?: Record<string, GlobalDimensions>; // Map location string to dims (Contract)
   locationDimensionsPelarasan?: Record<string, GlobalDimensions>; // NEW: Map location string to dims (Pelarasan)
+  
+  // NEW DIMENSIONS (BINDED BY BIL NO / CALCULATION ID)
+  globalCalculations?: Record<string, GlobalDimensions>;
+  globalCalculationsPelarasan?: Record<string, GlobalDimensions>;
 
   // AKU JANJI
   akuJanjiMonth?: string; // The selected month string e.g. "November"
