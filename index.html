@@ -3,12 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>InfraHub - Nexus Dashboard</title>
+    <title>InfraHub | by Syafiq Daniel</title>
     
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2827/2827469.png" />
+
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#10b981">
-    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2827/2827469.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
@@ -54,6 +56,12 @@
     <style>
       body { font-family: 'Manrope', sans-serif; }
       
+      /* Firefox Scrollbar Support */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(16, 185, 129, 0.2) transparent;
+      }
+
       /* Nexus Theme Animations */
       @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(30px); }
@@ -149,20 +157,22 @@
         }
       } catch (e) {}
     </script>
-    <script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "recharts": "https://aistudiocdn.com/recharts@^3.5.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
+    "path": "https://esm.sh/path@^0.12.7",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "url": "https://esm.sh/url@^0.11.4"
   }
 }
 </script>
-  <link rel="stylesheet" href="/index.css">
+<link rel="stylesheet" href="/index.css">
 </head>
   <body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-x-hidden">
     <div id="root" class="h-full"></div>
@@ -179,6 +189,6 @@
         });
       }
     </script>
-  <script type="module" src="/index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
