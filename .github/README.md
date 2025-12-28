@@ -47,7 +47,7 @@ InfraHub is a comprehensive project management documentation system designed to 
   - Prestasi Certificate (Borang Penilaian Prestasi) with scoring system.
 - **Project List** - Advanced filtering (Status, PJA, Zon, BP), column visibility toggle, and data export.
 - **Admin Settings** - Year-based management of companies, vote numbers (Vot), BQ templates, and system configurations.
-- **Role-Based Access** - Admin, PJA (Penolong Jurutera), and Jurutera (Signers) roles.
+- **Role-Based Access** - Admin, PJA (Penolong Jurutera), and Jurutera roles.
 - **Dark Mode** - Full dark theme support for all modules.
 
 ### Project Phases
