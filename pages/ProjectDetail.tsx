@@ -673,20 +673,28 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       const settings = await supabaseService.getSettings(year);
       const meetingDate = settings.meeting_date || '.........................';
 
-      // --- PAGE 1: COVER LETTER ---
+// --- PAGE 1: COVER LETTER ---
       doc.setFont("helvetica","bold"); 
       if(sealsLogo) doc.addImage(sealsLogo, 'PNG', 15, 15, 25, 20); 
       if(mpsLogo) doc.addImage(mpsLogo, 'PNG', 170, 15, 25, 20);
-      doc.setFontSize(11); doc.text("JABATAN KEJURUTERAAN", pageWidth/2, 20, { align:"center" });
-      doc.setFontSize(13); doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth/2, 25, { align:"center" });
-      doc.setFontSize(8); doc.setFont("helvetica","normal");
+      
+      // Adjusted: 11 -> 12
+      doc.setFontSize(12); doc.text("JABATAN KEJURUTERAAN", pageWidth/2, 20, { align:"center" });
+      
+      // Adjusted: 13 -> 14
+      doc.setFontSize(14); doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth/2, 25, { align:"center" });
+      
+      // Adjusted: 8 -> 9
+      doc.setFontSize(9); doc.setFont("helvetica","normal");
       doc.text("Persiaran 3, Bandar Baru Selayang", pageWidth/2, 30, { align:"center" });
-      doc.text("68100 Batu Caves, Selangor.", pageWidth/2, 33, { align:"center" });
-      doc.text("Tel. : 03-61204897/61311426 Fax. : 03-61204879", pageWidth/2, 36, { align:"center" });
-      doc.setFontSize(12); doc.setFont("helvetica","bold"); doc.text("CADANGAN KERJA", pageWidth/2, 45, { align:"center" });
-      doc.setLineWidth(0.5); doc.line(pageWidth/2 - 20, 46, pageWidth/2 + 20, 46); 
+      doc.text("68100 Batu Caves, Selangor.", pageWidth/2, 33.5, { align:"center" });
+      doc.text("Tel. : 03-61204897/61311426 Fax. : 03-61204879", pageWidth/2, 37, { align:"center" });
+      
+      // Adjusted: 12 -> 13
+      doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text("CADANGAN KERJA", pageWidth/2, 46, { align:"center" });
+      doc.setLineWidth(0.5); doc.line(pageWidth/2 - 20, 47, pageWidth/2 + 20, 47); 
 
-      let y = 55;
+      let y = 56;
       const coverBody = [
           [{ content: 'Tarikh', styles: { fontStyle: 'bold' } }, { content: `\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 ${formattedDate}`, styles: { fontStyle: 'bold' } }],
           [{ content: 'Daripada', styles: { fontStyle: 'bold' } }, { content: `${pjaUser?.fullName.toUpperCase() || 'PJA'}\n${pjaUser?.jawatan || ''}\n${pjaUser?.bahagian || ''}\n${pjaUser?.unit || ''}` }],
@@ -695,38 +703,47 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           [{ content: 'Blok Perancangan', styles: { fontStyle: 'bold' } }, { content: formData.bp || '' }],
           [{ content: 'Zon', styles: { fontStyle: 'bold' } }, { content: formData.zon || '' }],
       ];
+      
+      // AutoTable fontSize: 9 -> 10
       // @ts-ignore
-      doc.autoTable({ startY: y, body: coverBody, theme: 'plain', styles: { fontSize: 9, cellPadding: 3, lineColor: 0, lineWidth: 0.1, textColor: 0 }, columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 'auto' } }, margin: { left: 20, right: 20 } });
+      doc.autoTable({ 
+        startY: y, 
+        body: coverBody, 
+        theme: 'plain', 
+        styles: { fontSize: 10, cellPadding: 3, lineColor: 0, lineWidth: 0.1, textColor: 0 }, 
+        columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 'auto' } }, 
+        margin: { left: 20, right: 20 } 
+      });
       
       // @ts-ignore
-      y = doc.lastAutoTable.finalY + 10;
+      y = doc.lastAutoTable.finalY + 11;
 
       const pageHeight = doc.internal.pageSize.getHeight();
       const marginBottom = 15;
 
-      // 2. Reference Text
-      doc.setFontSize(9); 
+      // 2. Reference Text: 9 -> 10
+      doc.setFontSize(10); 
       doc.setFont("helvetica","normal"); 
       doc.text("Perkara di atas adalah dirujuk.", 20, y); 
-      y += 8;
+      y += 9;
 
       // 3. Project Title 
       const p1 = `2.   ${(formData.namaProjek || '').toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}`;
       doc.setFont("helvetica","bold");
       doc.text(p1, 20, y, { maxWidth: 170, align:"justify" });
       const lineCount = doc.splitTextToSize(p1, 170).length;
-      y += (lineCount * 4.5);
+      y += (lineCount * 5); // Balanced spacing multiplier
 
       // 4. Attachments
       doc.setFont("helvetica","normal"); 
       doc.text("Bersama-sama ini dilampirkan pelan tapak, gambar lokasi aduan serta spesifikasi kerja (BQ)", 28, y); 
-      y += 10; 
+      y += 11; 
       doc.text("Sekian, terima kasih.", 20, y); 
-      y += 10;
+      y += 11;
 
-      // 5. Slogans
+      // 5. Slogans: 8 -> 9
       doc.setFont("helvetica","bold"); 
-      doc.setFontSize(8); 
+      doc.setFontSize(9); 
       const slogans = [
        "\u201cKITASELANGOR MAJU BERSAMA\u201d", 
        "\u201cMALAYSIA MADANI\u201d", 
@@ -735,40 +752,41 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       ]; 
       slogans.forEach(s => { 
           doc.text(s, 20, y); 
-          y += 4;
+          y += 4.5;
       }); 
 
       y += 8;
 
-      if (y + 40 > pageHeight - marginBottom) {
+      if (y + 45 > pageHeight - marginBottom) {
           doc.addPage();
           y = 20; 
       }
 
-      // 6. Signature Details
+      // 6. Signature Details: 9 -> 10
       doc.setFont("helvetica","normal"); 
-      doc.setFontSize(9); 
+      doc.setFontSize(10); 
       doc.text("Saya yang menjalankan amanah,", 20, y); 
 
-      y += 18;
+      y += 19;
       doc.text("..................................................................", 20, y); 
 
-      y += 5; 
+      y += 6; 
       doc.setFont("helvetica","bold"); 
       doc.text(`(${pjaUser?.fullName.toUpperCase() || 'NAMA PJA'})`, 20, y); 
 
-      y += 5; 
+      y += 6; 
       doc.setFont("helvetica","normal"); 
       doc.text(pjaUser?.jawatan || '', 20, y);
 
-      y += 4; 
+      y += 4.5; 
       doc.text(pjaUser?.bahagian || '', 20, y);
 
-      y += 4; 
+      y += 4.5; 
       doc.text(pjaUser?.unit || '', 20, y);
 
       // --- PAGE 2: ULASAN ---
-      doc.addPage(); doc.rect(20, 20, 170, 120); doc.rect(20, 145, 170, 120); y = 30; doc.setFont("helvetica","bold"); doc.text("ULASAN JURUTERA", 25, y); y += 10;
+      doc.addPage(); doc.rect(20, 20, 170, 120); doc.rect(20, 145, 170, 120); y = 30; doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.text("ULASAN JURUTERA", 25, y); y += 10;
+      doc.setFontSize(8);
       const titleLines = doc.splitTextToSize(formData.namaProjek?.toUpperCase() || '', 160); doc.text(titleLines, 25, y); y += (titleLines.length * 5) + 10;
       doc.setFontSize(9); doc.text("Anggaran Kontrak", 25, y); doc.text(":", 60, y); y += 8; doc.text("Tempoh Kontrak", 25, y); doc.text(":", 60, y); y += 8; doc.text("Lantikan", 25, y); doc.text(":", 60, y);
       y = 125; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);
