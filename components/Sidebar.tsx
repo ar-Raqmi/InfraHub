@@ -85,36 +85,59 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-6 left-6 right-6 h-20 bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl z-50 px-6 flex items-center justify-between">
-        <button onClick={() => onNavigate('dashboard')} className="p-2 relative">
-          <div className={`p-2 rounded-xl transition-colors ${currentPage === 'dashboard' ? 'bg-emerald-100' : ''}`}>
-            <LayoutDashboard className={`w-6 h-6 ${currentPage === 'dashboard' ? 'text-emerald-600' : 'text-slate-400'}`} />
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-20 bg-slate-50/80 backdrop-blur-md z-[60] px-6 flex items-center justify-between border-b border-slate-200/50">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-600/20">
+            <HardHat className="w-6 h-6" />
           </div>
-        </button>
-
-        <button onClick={() => onNavigate('projects')} className="p-2 relative">
-          <div className={`p-2 rounded-xl transition-colors ${currentPage === 'projects' ? 'bg-emerald-100' : ''}`}>
-            <Briefcase className={`w-6 h-6 ${currentPage === 'projects' ? 'text-emerald-600' : 'text-slate-400'}`} />
-          </div>
-        </button>
-
+          <span className="font-bold text-slate-800 font-jakarta tracking-tight">InfraHub</span>
+        </div>
         <button 
-          onClick={() => onNavigate('dashboard')}
-          className="w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/40 flex items-center justify-center text-white active:scale-95 transition-transform"
+          onClick={onLogout}
+          className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 text-slate-600 active:scale-95 transition-all hover:bg-red-50 hover:border-red-100 group"
         >
-          <Plus className="w-8 h-8" />
+          <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-500 transition-colors" />
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-red-600 transition-colors">Log Keluar</span>
         </button>
+      </div>
 
-        <button onClick={() => onNavigate('report')} className="p-2 relative">
-          <div className={`p-2 rounded-xl transition-colors ${currentPage === 'report' ? 'bg-emerald-100' : ''}`}>
-            <ImageIcon className={`w-6 h-6 ${currentPage === 'report' ? 'text-emerald-600' : 'text-slate-400'}`} />
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-6 left-6 right-6 h-20 bg-white/90 backdrop-blur-lg border border-slate-100 rounded-[2.5rem] shadow-2xl z-50 px-4 flex items-center justify-around">
+        <button onClick={() => onNavigate('projects')} className="flex-1 flex justify-center">
+          <div className={`p-3 rounded-2xl transition-all ${currentPage === 'projects' ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400'}`}>
+            <Briefcase className="w-6 h-6" />
           </div>
         </button>
 
-        <button onClick={() => onNavigate('profile')} className="p-2 relative">
-          <div className={`p-2 rounded-xl transition-colors ${currentPage === 'profile' ? 'bg-emerald-100' : ''}`}>
-            <UserIcon className={`w-6 h-6 ${currentPage === 'profile' ? 'text-emerald-600' : 'text-slate-400'}`} />
+        <button onClick={() => onNavigate('users')} className="flex-1 flex justify-center">
+          <div className={`p-3 rounded-2xl transition-all ${currentPage === 'users' ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400'}`}>
+            <Users className="w-6 h-6" />
+          </div>
+        </button>
+
+        <div className="flex-1 flex justify-center -translate-y-6">
+          <button 
+            onClick={() => onNavigate('dashboard')}
+            className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white active:scale-90 transition-all border-4 border-white shadow-xl ${
+              currentPage === 'dashboard' 
+                ? 'bg-gradient-to-tr from-emerald-600 to-teal-600 shadow-emerald-500/40' 
+                : 'bg-slate-800 shadow-slate-900/40'
+            }`}
+          >
+            <HardHat className="w-8 h-8" />
+          </button>
+        </div>
+
+        <button onClick={() => onNavigate('report')} className="flex-1 flex justify-center">
+          <div className={`p-3 rounded-2xl transition-all ${currentPage === 'report' ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400'}`}>
+            <ImageIcon className="w-6 h-6" />
+          </div>
+        </button>
+
+        <button onClick={() => onNavigate('profile')} className="flex-1 flex justify-center">
+          <div className={`p-3 rounded-2xl transition-all ${currentPage === 'profile' ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400'}`}>
+            <UserIcon className="w-6 h-6" />
           </div>
         </button>
       </nav>
