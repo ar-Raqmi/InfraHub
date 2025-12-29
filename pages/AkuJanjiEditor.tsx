@@ -13,8 +13,8 @@ interface AkuJanjiEditorProps {
 }
 
 const MONTHS = [
-    "Januari", "Februari", "Mac", "April", "Mei", "Jun", 
-    "Julai", "Ogos", "September", "Oktober", "November", "Disember"
+ "Januari","Februari","Mac","April","Mei","Jun", 
+ "Julai","Ogos","September","Oktober","November","Disember"
 ];
 
 const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, pjaUser, onUpdate, isPrintView, readOnly = false }) => {
@@ -27,15 +27,15 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             onUpdate({ akuJanjiMonth: MONTHS[currentMonthIndex] });
         }
         if (!project.akuJanjiPanelTitle) {
-            onUpdate({ akuJanjiPanelTitle: "Kontraktor Panel" });
+            onUpdate({ akuJanjiPanelTitle:"Kontraktor Panel" });
         }
     }, []);
 
     const currentMonth = project.akuJanjiMonth || MONTHS[new Date().getMonth()];
     
     // Dynamic Footer Values
-    const pjaName = pjaUser ? `PJA ${pjaUser.username.toUpperCase()}` : "PJA";
-    const companyName = project.namaSyarikat ? project.namaSyarikat.toUpperCase() : "NAMA SYARIKAT";
+    const pjaName = pjaUser ? `PJA ${pjaUser.username.toUpperCase()}` :"PJA";
+    const companyName = project.namaSyarikat ? project.namaSyarikat.toUpperCase() :"NAMA SYARIKAT";
 
     // Date formatting for body
     const formattedSerahTapak = project.tarikhSerahTapak 
@@ -62,7 +62,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             const contentWidth = pageWidth - (margin * 2);
             
             // --- DOCUMENT HEADER ---
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.setFontSize(11);
 
             // Ref No & Date (Top Right)
@@ -81,7 +81,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             yPos += lineHeight;
             doc.text("Majlis Perbandaran Selayang.", margin, yPos);
 
-            // Title "AKU JANJI"
+            // Title"AKU JANJI"
             yPos += 25;
             doc.setFontSize(16);
             doc.text("AKU JANJI", pageWidth / 2, yPos, { align: 'center' });
@@ -90,14 +90,14 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             yPos += 20;
             doc.setFontSize(11);
             
-            const title = project.namaProjek ? project.namaProjek.toUpperCase() : "TAJUK PROJEK...";
+            const title = project.namaProjek ? project.namaProjek.toUpperCase() :"TAJUK PROJEK...";
             const splitTitle = doc.splitTextToSize(title, contentWidth);
             doc.text(splitTitle, margin, yPos, { align: 'justify', maxWidth: contentWidth });
             
             const titleHeight = doc.getTextDimensions(splitTitle).h;
             yPos += titleHeight + 10;
 
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             const para1 = `Adalah dimaklumkan bahawa, saya memperakukan bahawa kerja-kerja di tapak akan dimulakan dalam tempoh lima (5) hari selepas tarikh penyerahan tapak iaitu pada ${formattedSerahTapak}`;
             const splitPara1 = doc.splitTextToSize(para1, contentWidth);
             doc.text(splitPara1, margin, yPos, { align: 'justify', maxWidth: contentWidth });
@@ -105,7 +105,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             const para1Height = doc.getTextDimensions(splitPara1).h;
             yPos += para1Height + 10;
 
-            const para2 = "Sekiranya kerja-kerja tersebut gagal dimulakan dalam tempoh lima (5) hari, pihak MPS berhak menarik semula perlantikan syarikat saya dan melantik semula syarikat lain bagi kerja tersebut.";
+            const para2 ="Sekiranya kerja-kerja tersebut gagal dimulakan dalam tempoh lima (5) hari, pihak MPS berhak menarik semula perlantikan syarikat saya dan melantik semula syarikat lain bagi kerja tersebut.";
             const splitPara2 = doc.splitTextToSize(para2, contentWidth);
             doc.text(splitPara2, margin, yPos, { align: 'justify', maxWidth: contentWidth });
             
@@ -146,13 +146,13 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
 
             // --- FOOTER ---
             const footerY = pageHeight - 25;
-            doc.setFont("helvetica", "bolditalic");
+            doc.setFont("helvetica","bolditalic");
             doc.setFontSize(6);
             
             const footerText = `${project.akuJanjiPanelTitle || 'KONTRAKTOR PANEL'} ${selectedYear} ${pjaName} - ${companyName}`;
             doc.text(footerText, margin, footerY);
             
-            doc.setFont("helvetica", "bold"); 
+            doc.setFont("helvetica","bold"); 
             doc.text(`ADUAN: ${formattedAduan}`, margin, footerY + 5);
 
             doc.save(`Aku_Janji_${project.noFail || 'Dokumen'}.pdf`);
@@ -167,19 +167,19 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
     return (
         <div className="flex flex-col gap-6">
             {!isPrintView && (
-                <div className={`glass-effect p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm animate-fade-in-up ${readOnly ? 'bg-slate-50/50' : ''}`}>
+                <div className={`bg-white/95  border border-white/10 shadow-xl p-6 rounded-2xl border border-slate-200  shadow-sm animate-fade-in ${readOnly ? 'bg-slate-50/50' : ''}`}>
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                              <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
                                 <FilePenLine className="w-5 h-5" />
                              </div>
-                             <h3 className="font-bold text-slate-800 dark:text-white">Tetapan Dokumen</h3>
+                             <h3 className="font-bold text-slate-800">Tetapan Dokumen</h3>
                         </div>
                         <button 
                             type="button" 
                             onClick={handleDownloadPDF} 
                             disabled={isGeneratingPdf} 
-                            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 text-sm"
+                            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 text-sm"
                         >
                             {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                             <span>PDF</span>
@@ -193,7 +193,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                                 value={project.akuJanjiMonth || ''}
                                 onChange={(e) => onUpdate({ akuJanjiMonth: e.target.value })}
                                 disabled={readOnly}
-                                className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm disabled:cursor-not-allowed"
+                                className="w-full p-2 rounded-lg border border-slate-300  bg-white  text-sm disabled:cursor-not-allowed"
                              >
                                  {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                              </select>
@@ -205,7 +205,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                                 value={project.akuJanjiPanelTitle || ''}
                                 onChange={(e) => onUpdate({ akuJanjiPanelTitle: e.target.value })}
                                 disabled={readOnly}
-                                className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm disabled:cursor-not-allowed"
+                                className="w-full p-2 rounded-lg border border-slate-300  bg-white  text-sm disabled:cursor-not-allowed"
                                 placeholder="Kontraktor Panel"
                              />
                          </div>
@@ -213,10 +213,10 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                 </div>
             )}
 
-            <div className="flex justify-center bg-gray-100 py-4 overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-center bg-gray-100 py-4 overflow-auto rounded-2xl border border-slate-200">
                 <div 
                     id="aku-janji-doc" 
-                    className="w-[210mm] min-h-[297mm] bg-white text-black dark:text-black p-[25mm] shadow-xl relative box-border mx-auto font-sans leading-relaxed"
+                    className="w-[210mm] min-h-[297mm] bg-white text-black  p-[25mm] shadow-xl relative box-border mx-auto font-sans leading-relaxed"
                     style={{ fontFamily: 'Arial, sans-serif' }}
                 >
                     <div className="flex flex-col items-end text-[13px] mb-8 font-bold">

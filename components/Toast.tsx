@@ -30,7 +30,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
 
   // Render using portal to ensure it sits on top of all other elements (modals, overlays)
   return createPortal(
-    <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] flex items-center gap-3 px-6 py-3.5 rounded-2xl shadow-2xl shadow-black/10 ${styles[type]} backdrop-blur-md transition-all duration-300 animate-in slide-in-from-top-4 fade-in`}>
+    <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] flex items-center gap-3 px-6 py-3.5 rounded-2xl shadow-2xl shadow-black/10 ${styles[type]}  transition-colors duration-300 animate-in slide-in-from-top-4 fade-in`}>
       <div className="shrink-0">
         {icons[type]}
       </div>

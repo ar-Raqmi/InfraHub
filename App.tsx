@@ -176,20 +176,18 @@ function App() {
     }
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center font-manrope text-slate-500 bg-slate-50 dark:bg-slate-900">Memuatkan...</div>;
+  if (loading) return <div className="h-screen flex items-center justify-center font-manrope text-slate-500 bg-slate-50">Memuatkan...</div>;
 
   if (!user) {
     return <Login onLogin={handleLogin} />;
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300 relative overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:text-emerald-50">
+    <div className="min-h-screen bg-slate-50  font-sans transition-colors duration-200 relative overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-900">
       
-      {/* Animated Background Elements */}
+      {/* Static Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-900/10"></div>
-        <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-teal-100/30 dark:bg-teal-900/10 blur-3xl animate-float"></div>
-        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-emerald-100/30 dark:bg-emerald-900/10 blur-3xl animate-float" style={{ animationDelay: '-2s' }}></div>
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent"></div>
       </div>
 
       {/* Toast Notification Container */}
@@ -206,29 +204,29 @@ function App() {
       />
 
       {/* Main Content Area */}
-      <main className="md:pl-32 pb-24 md:pb-10 min-h-screen relative z-10 transition-all duration-300">
+      <main className="md:pl-32 pb-24 md:pb-10 min-h-screen relative z-10">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Top Bar / Header */}
-          <header className="relative z-40 opacity-0 animate-slide-down delay-100 flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
+          <header className="relative z-40 opacity-0 animate-fade-in flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
              <div className="flex items-center gap-4">
                <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
                
                <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className={`flex items-center gap-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-2xl px-4 py-2 shadow-sm border border-white/20 dark:border-white/5 transition-all hover:bg-white dark:hover:bg-slate-700 group ${refreshing ? 'opacity-70' : ''}`}
+                className={`flex items-center gap-2 bg-white  rounded-2xl px-4 py-2 shadow-sm border border-slate-200  transition-colors hover:bg-slate-50  group ${refreshing ? 'opacity-70' : ''}`}
                >
-                 <RefreshCw className={`w-4 h-4 text-emerald-500 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
-                 <span className="font-bold text-slate-700 dark:text-slate-200 font-manrope hidden sm:inline">Refresh</span>
+                 <RefreshCw className={`w-4 h-4 text-emerald-500 ${refreshing ? 'animate-spin' : ''}`} />
+                 <span className="font-bold text-slate-700  font-manrope hidden sm:inline">Refresh</span>
                </button>
              </div>
           </header>
 
           {/* Page Content */}
-          <div className="animate-fade-in-up delay-200">
+          <div className="animate-slide-up">
              {isEditing ? (
-                <div className="glass-effect rounded-3xl p-4 md:p-6 shadow-xl border border-white/20 dark:border-white/5">
+                <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl p-4 md:p-6 shadow-xl border border-white/20">
                   <ProjectDetail 
                     project={selectedProject} 
                     onClose={() => setIsEditing(false)} 
@@ -284,39 +282,39 @@ function App() {
 
       {/* Navigation Warning Modal */}
       {showNavWarning && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={cancelNavigation}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 animate-fade-in" onClick={cancelNavigation}>
             <div 
-              className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform scale-100 transition-all animate-slide-up relative" 
+              className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  animate-slide-up relative" 
               onClick={e => e.stopPropagation()}
             >
-                <button onClick={cancelNavigation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                <button onClick={cancelNavigation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100">
                    <X className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center text-center pt-2">
-                   <div className="w-20 h-20 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-6 text-yellow-500 animate-pulse-slow">
-                      <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center">
+                   <div className="w-20 h-20 bg-yellow-50  rounded-full flex items-center justify-center mb-6 text-yellow-500">
+                      <div className="w-14 h-14 bg-yellow-100  rounded-full flex items-center justify-center">
                         <HelpCircle className="w-8 h-8 stroke-[1.5]" />
                       </div>
                    </div>
 
-                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta">
+                   <h3 className="text-xl font-bold text-slate-900  mb-2 font-jakarta">
                      Kembali ke Senarai?
                    </h3>
                    
-                   <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed px-4">
+                   <p className="text-slate-500  mb-8 text-sm leading-relaxed px-4">
                      Sebarang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu meninggalkan halaman ini?
                    </p>
                    
                    <div className="flex gap-3 w-full">
                       <button 
                         onClick={cancelNavigation}
-                        className="flex-1 py-3.5 px-4 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md"
+                        className="flex-1 py-3.5 px-4 bg-white  text-slate-700  rounded-xl font-bold hover:bg-slate-50  transition-colors border border-slate-200  shadow-sm hover:shadow-md"
                       >
                         Batal
                       </button>
                       <button 
                         onClick={confirmNavigation}
-                        className="flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30"
+                        className="flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30"
                       >
                          Ya, Kembali
                       </button>

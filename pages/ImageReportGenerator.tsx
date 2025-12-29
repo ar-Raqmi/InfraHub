@@ -448,7 +448,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 
   if (!initialImage) {
     return (
-      <div className="w-full h-full min-h-[400px] bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col items-center justify-center text-slate-400 gap-4">
+      <div className="w-full h-full min-h-[400px] bg-slate-50  border-2 border-dashed border-slate-200  rounded-3xl flex flex-col items-center justify-center text-slate-400 gap-4">
         <MapIcon size={48} className="opacity-20" />
         <p className="font-bold uppercase tracking-widest text-xs">Sila Pilih Imej</p>
       </div>
@@ -456,13 +456,13 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative">
-      <div className="bg-slate-50 dark:bg-slate-800/50 p-3 border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-2 items-center justify-between z-10">
+    <div className="flex flex-col h-full bg-white  rounded-3xl overflow-hidden border border-slate-200  shadow-sm relative">
+      <div className="bg-slate-50  p-3 border-b border-slate-200  flex flex-wrap gap-2 items-center justify-between z-10">
         <div className="flex gap-1 items-center">
           <ToolBtn active={selectedTool === 'select'} onClick={() => setSelectedTool('select')} icon={<MousePointer2 size={16} />} title="View" />
-          <div className="w-px h-5 bg-slate-300 dark:bg-slate-700 mx-1" />
+          <div className="w-px h-5 bg-slate-300  mx-1" />
           <ToolBtn active={selectedTool === 'crop'} onClick={() => setSelectedTool('crop')} icon={<Crop size={16} />} title="Crop Area" />
-          <div className="w-px h-5 bg-slate-300 dark:bg-slate-700 mx-1" />
+          <div className="w-px h-5 bg-slate-300  mx-1" />
           <ToolBtn active={selectedTool === 'rect'} onClick={() => setSelectedTool('rect')} icon={<Square size={16} />} title="Rectangle" />
           <ToolBtn active={selectedTool === 'circle'} onClick={() => setSelectedTool('circle')} icon={<Circle size={16} />} title="Circle" />
           <ToolBtn active={selectedTool === 'line'} onClick={() => setSelectedTool('line')} icon={<Minus size={16} />} title="Line" />
@@ -485,20 +485,20 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
                />
              ))}
           </div>
-          <div className="w-px h-5 bg-slate-300 dark:bg-slate-700 mx-1" />
-          <button onClick={() => setShapes(prev => prev.slice(0, -1))} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><Undo size={16}/></button>
+          <div className="w-px h-5 bg-slate-300  mx-1" />
+          <button onClick={() => setShapes(prev => prev.slice(0, -1))} className="p-1.5 hover:bg-slate-200  rounded transition-colors"><Undo size={16}/></button>
           <button onClick={() => setShapes([])} className="p-1.5 hover:bg-red-100 hover:text-red-500 rounded transition-colors"><Trash2 size={16}/></button>
         </div>
       </div>
 
       {selectedTool === 'crop' && cropRect && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 p-2 rounded-2xl animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-white  shadow-xl border border-slate-200  p-2 rounded-2xl animate-in fade-in slide-in-from-top-2">
            <button onClick={applyCrop} className="bg-emerald-500 text-white p-1.5 rounded-xl hover:bg-emerald-600 transition-colors"><Check size={18}/></button>
            <button onClick={() => { setCropRect(null); setSelectedTool('select'); }} className="bg-red-500 text-white p-1.5 rounded-xl hover:bg-red-600 transition-colors"><X size={18}/></button>
         </div>
       )}
 
-      <div ref={containerRef} className="flex-1 relative bg-slate-100 dark:bg-slate-950 overflow-hidden cursor-crosshair">
+      <div ref={containerRef} className="flex-1 relative bg-slate-100  overflow-hidden cursor-crosshair">
         <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} className="block" />
       </div>
     </div>
@@ -506,10 +506,11 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 });
 
 const ToolBtn = ({ active, onClick, icon, title }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string }) => (
-  <button
-    onClick={onClick} title={title}
-    className={`p-2 rounded-xl transition-all ${active ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700'}`}
-  >
+      <button
+        onClick={onClick} title={title}
+        className={`p-2 rounded-xl transition-colors ${active ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'}`}
+      >
+  
     {icon}
   </button>
 );
@@ -657,12 +658,12 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   };
 
   return (
-    <div className="flex flex-col h-full gap-8 animate-fade-in-up custom-scrollbar overflow-y-auto pb-10">
+    <div className="flex flex-col h-full gap-8 animate-fade-in custom-scrollbar overflow-y-auto pb-10">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-4xl font-black tracking-tight text-slate-900  flex items-center gap-3">
             <Briefcase className="w-10 h-10 text-emerald-600" />
             Laporan Bergambar
           </h1>
@@ -671,14 +672,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         <div className="flex items-center gap-3">
            <button 
             onClick={() => confirm('Padam semua data dan mula semula?') && window.location.reload()}
-            className="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+            className="px-6 py-3 rounded-2xl bg-white  text-slate-600  font-bold shadow-sm border border-slate-200  hover:bg-slate-50  transition-colors flex items-center gap-2"
            >
             <RefreshCw className="w-4 h-4" /> Reset
            </button>
            <button 
             onClick={handleExportPDF}
             disabled={isExporting}
-            className="px-8 py-3 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
+            className="px-8 py-3 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/20 hover:shadow-xl   transition-colors flex items-center gap-2 disabled:opacity-50"
            >
              {isExporting ? <RefreshCw className="w-5 h-5 animate-spin" /> : <FileDown className="w-5 h-5" />}
              Eksport PDF
@@ -687,14 +688,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       </div>
 
       {/* Project Section (Table & Details) */}
-      <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-        <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+      <section className="bg-white  rounded-[2.5rem] shadow-sm border border-slate-100  overflow-hidden">
+        <div className="p-8 border-b border-slate-100  bg-slate-50/50  flex flex-col xl:flex-row xl:items-center justify-between gap-6">
            <div className="flex items-center gap-4">
              <div className="bg-emerald-500 p-3 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
                <Briefcase size={24} />
              </div>
              <div>
-               <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Maklumat Projek & Lokasi</h2>
+               <h2 className="text-xl font-black text-slate-900  uppercase tracking-tight">Maklumat Projek & Lokasi</h2>
                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pilih Projek Untuk Import Data Secara Automatik</p>
              </div>
            </div>
@@ -704,12 +705,12 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input 
                   type="text" placeholder="Cari..."
-                  className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-white dark:bg-slate-800 border-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm dark:text-white shadow-inner border border-slate-100 dark:border-slate-700"
+                  className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-white  border-none focus:ring-2 focus:ring-emerald-500 transition-colors text-sm  shadow-inner border border-slate-100"
                   value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 />
               </div>
               <select 
-                className="w-full md:w-96 px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-800 border-none focus:ring-2 focus:ring-emerald-500 transition-all text-xs appearance-none cursor-pointer dark:text-white font-bold shadow-sm border border-slate-100 dark:border-slate-700 truncate"
+                className="w-full md:w-96 px-6 py-3.5 rounded-2xl bg-white  border-none focus:ring-2 focus:ring-emerald-500 transition-colors text-xs appearance-none cursor-pointer  font-bold shadow-sm border border-slate-100  truncate"
                 value={selectedProjectId} onChange={handleProjectChange}
               >
                 <option value="">-- PILIH PROJEK --</option>
@@ -723,24 +724,24 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         </div>
 
         <div className="p-8">
-           <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800">
+           <div className="overflow-x-auto rounded-2xl border border-slate-100">
              <table className="w-full text-left">
                 <thead>
-                   <tr className="bg-slate-50 dark:bg-slate-800/50">
+                   <tr className="bg-slate-50">
                       <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-16 text-center">Bil</th>
                       <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-1/3">Lokasi</th>
                       <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Aduan</th>
                       <th className="px-6 py-4 w-20"></th>
                    </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-slate-100">
                    {complaints.map((row, idx) => (
-                      <tr key={row.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                        <td className="px-6 py-4 text-center font-black text-slate-300 dark:text-slate-600">{idx + 1}</td>
+                      <tr key={row.id} className="group hover:bg-slate-50  transition-colors">
+                        <td className="px-6 py-4 text-center font-black text-slate-300">{idx + 1}</td>
                         <td className="px-4 py-4">
                            <input 
                               placeholder="TAIP LOKASI..."
-                              className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-xs font-bold focus:ring-2 focus:ring-emerald-500 uppercase dark:text-white"
+                              className="w-full bg-slate-50/50  border-none rounded-xl px-4 py-2.5 text-xs font-bold focus:ring-2 focus:ring-emerald-500 uppercase"
                               value={row.location}
                               onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, location: e.target.value } : c))}
                            />
@@ -748,7 +749,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                         <td className="px-4 py-4">
                            <input 
                               placeholder="TAIP ADUAN..."
-                              className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 uppercase dark:text-white text-slate-600 dark:text-slate-300"
+                              className="w-full bg-slate-50/50  border-none rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 uppercase  text-slate-600"
                               value={row.description}
                               onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, description: e.target.value } : c))}
                            />
@@ -757,7 +758,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                            {complaints.length > 1 && (
                               <button 
                                 onClick={() => setComplaints(complaints.filter(c => c.id !== row.id))}
-                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50  rounded-xl transition-colors"
                               >
                                  <Trash2 size={16} />
                               </button>
@@ -771,12 +772,12 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
            <div className="mt-6 flex justify-between items-center">
               <button 
                 onClick={() => setComplaints([...complaints, { id: Date.now().toString(), location: '', description: '' }])}
-                className="flex items-center gap-2 px-6 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-all border border-emerald-100 dark:border-emerald-900/30 uppercase tracking-widest"
+                className="flex items-center gap-2 px-6 py-2.5 bg-emerald-50  text-emerald-600 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors border border-emerald-100  uppercase tracking-widest"
               >
                 <Plus size={16} /> Tambah
               </button>
               
-              <div className="flex items-center gap-3 px-4 py-2 bg-amber-50 dark:bg-amber-900/10 text-amber-800 dark:text-amber-500 rounded-2xl text-[10px] border border-amber-100 dark:border-amber-900/30 font-black uppercase tracking-widest">
+              <div className="flex items-center gap-3 px-4 py-2 bg-amber-50  text-amber-800  rounded-2xl text-[10px] border border-amber-100  font-black uppercase tracking-widest">
                  <AlertTriangle size={14} />
                  Data Tidak Akan Simpan
               </div>
@@ -788,21 +789,21 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 min-h-[1200px]">
         
         {/* Map Editor */}
-        <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-            <h2 className="font-black text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-tight">
+        <section className="bg-white  rounded-[2.5rem] shadow-sm border border-slate-100  overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-slate-100  flex items-center justify-between bg-slate-50/50">
+            <h2 className="font-black text-slate-800  flex items-center gap-2 uppercase tracking-tight">
                <MapIcon className="text-emerald-500" size={20} />
                Pelan Lokasi
             </h2>
             {!mapImage ? (
               <button 
                 onClick={() => fileInputMapRef.current?.click()} 
-                className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 uppercase tracking-widest"
+                className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 uppercase tracking-widest"
               >
                 Muat Naik
               </button>
             ) : (
-              <button onClick={() => setMapImage(null)} className="px-6 py-2.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-all border border-red-100 uppercase tracking-widest">Padam</button>
+              <button onClick={() => setMapImage(null)} className="px-6 py-2.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors border border-red-100 uppercase tracking-widest">Padam</button>
             )}
           </div>
           <div className="flex-1 p-6">
@@ -812,33 +813,33 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         </section>
 
         {/* Site Images */}
-        <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col">
-           <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+        <section className="bg-white  rounded-[2.5rem] shadow-sm border border-slate-100  overflow-hidden flex flex-col">
+           <div className="p-6 border-b border-slate-100  flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-3">
-                <h2 className="font-black text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-tight">
+                <h2 className="font-black text-slate-800  flex items-center gap-2 uppercase tracking-tight">
                    <ImageIcon className="text-blue-500" size={20} />
                    Gambar Tapak
                 </h2>
-                <span className="bg-slate-200 dark:bg-slate-800 text-slate-500 px-3 py-1 rounded-xl text-[10px] font-black tracking-widest">{siteImages.length} / 4</span>
+                <span className="bg-slate-200  text-slate-500 px-3 py-1 rounded-xl text-[10px] font-black tracking-widest">{siteImages.length} / 4</span>
               </div>
               
               <div className="flex items-center gap-3">
                 {siteImages.length === 2 && (
-                   <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1">
-                     <button onClick={() => setLayout('horizontal')} className={`p-2 rounded-lg ${layout === 'horizontal' ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Side by Side"><Columns size={16}/></button>
-                     <button onClick={() => setLayout('vertical')} className={`p-2 rounded-lg ${layout === 'vertical' ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Stacked"><Rows size={16}/></button>
+                   <div className="flex bg-slate-100  p-1 rounded-xl gap-1">
+                     <button onClick={() => setLayout('horizontal')} className={`p-2 rounded-lg ${layout === 'horizontal' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Side by Side"><Columns size={16}/></button>
+                     <button onClick={() => setLayout('vertical')} className={`p-2 rounded-lg ${layout === 'vertical' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Stacked"><Rows size={16}/></button>
                    </div>
                 )}
                 {siteImages.length === 3 && (
-                   <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1">
-                     <button onClick={() => setLayout('big-left')} className={`p-2 rounded-lg ${layout === 'big-left' ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Large Left"><LayoutTemplate size={16} className="-rotate-90"/></button>
-                     <button onClick={() => setLayout('big-top')} className={`p-2 rounded-lg ${layout === 'big-top' ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Large Top"><LayoutTemplate size={16}/></button>
+                   <div className="flex bg-slate-100  p-1 rounded-xl gap-1">
+                     <button onClick={() => setLayout('big-left')} className={`p-2 rounded-lg ${layout === 'big-left' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Large Left"><LayoutTemplate size={16} className="-rotate-90"/></button>
+                     <button onClick={() => setLayout('big-top')} className={`p-2 rounded-lg ${layout === 'big-top' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Large Top"><LayoutTemplate size={16}/></button>
                    </div>
                 )}
                 {siteImages.length < 4 && (
                   <button 
                     onClick={() => fileInputSiteRef.current?.click()} 
-                    className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest"
+                    className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 uppercase tracking-widest"
                   >
                     Tambah Foto
                   </button>
@@ -848,18 +849,18 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
            <div className="flex-1 p-8">
               {siteImages.length === 0 ? (
-                <div className="w-full h-full min-h-[400px] bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] flex flex-col items-center justify-center text-slate-400 gap-4">
+                <div className="w-full h-full min-h-[400px] bg-slate-50  border-2 border-dashed border-slate-200  rounded-[2rem] flex flex-col items-center justify-center text-slate-400 gap-4">
                   <ImageIcon size={64} className="opacity-20" />
                   <p className="font-bold uppercase tracking-widest text-xs">Sila Pilih Imej Tapak</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-6 h-fit">
                    {siteImages.map((img, idx) => (
-                     <div key={idx} className="relative group aspect-square rounded-[2rem] overflow-hidden bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-700 shadow-sm">
+                     <div key={idx} className="relative group aspect-square rounded-[2rem] overflow-hidden bg-slate-100  border-4 border-white  shadow-sm">
                         <img src={img} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4 backdrop-blur-sm">
-                           <button onClick={() => setEditingImageIndex(idx)} className="p-4 bg-white text-blue-600 rounded-[1.25rem] hover:scale-110 transition-transform shadow-xl"><Pencil size={24} /></button>
-                           <button onClick={() => setSiteImages(siteImages.filter((_, i) => i !== idx))} className="p-4 bg-white text-red-600 rounded-[1.25rem] hover:scale-110 transition-transform shadow-xl"><Trash2 size={24} /></button>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-colors flex items-center justify-center gap-4">
+                           <button onClick={() => setEditingImageIndex(idx)} className="p-4 bg-white text-blue-600 rounded-[1.25rem]  transition-transform shadow-xl"><Pencil size={24} /></button>
+                           <button onClick={() => setSiteImages(siteImages.filter((_, i) => i !== idx))} className="p-4 bg-white text-red-600 rounded-[1.25rem]  transition-transform shadow-xl"><Trash2 size={24} /></button>
                         </div>
                         <div className="absolute top-4 left-4 bg-black/60 text-white text-xs font-black px-3 py-1.5 rounded-xl">#{idx + 1}</div>
                      </div>
@@ -873,19 +874,19 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
       {/* Edit Image Modal */}
       {editingImageIndex !== null && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden border border-white/20">
-            <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60  animate-fade-in">
+          <div className="bg-white  rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden border border-white/20">
+            <div className="p-8 border-b border-slate-100  flex items-center justify-between bg-slate-50/50">
               <div>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Edit Gambar Tapak #{editingImageIndex + 1}</h3>
+                <h3 className="text-2xl font-black text-slate-900  uppercase tracking-tight">Edit Gambar Tapak #{editingImageIndex + 1}</h3>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan Alat Crop & Anotasi Di Bawah</p>
               </div>
               <div className="flex gap-4">
-                <button onClick={() => setEditingImageIndex(null)} className="px-8 py-3 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all uppercase tracking-widest text-xs">Batal</button>
-                <button onClick={saveEditedImage} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Simpan Perubahan</button>
+                <button onClick={() => setEditingImageIndex(null)} className="px-8 py-3 text-slate-600  font-bold hover:bg-slate-100  rounded-2xl transition-colors uppercase tracking-widest text-xs">Batal</button>
+                <button onClick={saveEditedImage} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors uppercase tracking-widest text-xs">Simpan Perubahan</button>
               </div>
             </div>
-            <div className="flex-1 bg-slate-100 dark:bg-slate-950 p-8 overflow-hidden flex items-center justify-center">
+            <div className="flex-1 bg-slate-100  p-8 overflow-hidden flex items-center justify-center">
                <CanvasMapEditor ref={modalEditorRef} initialImage={siteImages[editingImageIndex]} />
             </div>
           </div>

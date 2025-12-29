@@ -34,8 +34,8 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (value / 100) * circumference;
   
-  const colorClass = "text-emerald-500";
-  const strokeClass = "stroke-emerald-500";
+  const colorClass ="text-emerald-500";
+  const strokeClass ="stroke-emerald-500";
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
@@ -44,14 +44,14 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          className="stroke-slate-200 dark:stroke-slate-700 fill-none"
+          className="stroke-slate-200  fill-none"
           strokeWidth={strokeWidth}
         />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          className={`${strokeClass} fill-none transition-all duration-1000 ease-out`}
+          className={`${strokeClass} fill-none transition-colors duration-1000 ease-out`}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -417,8 +417,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         }).join(",");
     });
 
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + headers.join(",") + "\n"
+    const csvContent ="data:text/csv;charset=utf-8," 
+      + headers.join(",") +"\n"
       + rows.join("\n");
 
     const encodedUri = encodeURI(csvContent);
@@ -488,15 +488,15 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
           const printHeader = (pageNum: number) => {
               if (pageNum === 1) {
-                  doc.setFont("helvetica", "bold");
+                  doc.setFont("helvetica","bold");
                   doc.setFontSize(8);
-                  doc.text(`SENARAI KONTRAKTOR PANEL YANG TELAH DILANTIK`, pageWidth / 2, 20, { align: "center" });
-                  doc.text(`UNTUK KERJA INFRASTRUKTUR BAGI TAHUN ${selectedYear}`, pageWidth / 2, 25, { align: "center" });
+                  doc.text(`SENARAI KONTRAKTOR PANEL YANG TELAH DILANTIK`, pageWidth / 2, 20, { align:"center" });
+                  doc.text(`UNTUK KERJA INFRASTRUKTUR BAGI TAHUN ${selectedYear}`, pageWidth / 2, 25, { align:"center" });
                   
-                  doc.setFont("helvetica", "normal");
+                  doc.setFont("helvetica","normal");
                   doc.setFontSize(8);
                   doc.text(`Tarikh Kemaskini: ${new Date().toLocaleDateString('en-GB')}`, marginX, 35);
-                  doc.text(`Kertas Mesyuarat. Bil. ${exportBilMesyuarat}`, pageWidth - marginX, 35, { align: "right" });
+                  doc.text(`Kertas Mesyuarat. Bil. ${exportBilMesyuarat}`, pageWidth - marginX, 35, { align:"right" });
                   
                   doc.setLineWidth(0.5);
                   doc.line(marginX, 38, pageWidth - marginX, 38);
@@ -521,7 +521,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               doc.setFillColor(230, 230, 230);
               doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'F');
               doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'S');
-              doc.setFont("helvetica", "bold");
+              doc.setFont("helvetica","bold");
               doc.setFontSize(8);
               doc.setTextColor(0, 0, 0);
               doc.text(group.company, marginX + 2, currentY + 5);
@@ -644,7 +644,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
           doc.addPage();
           currentY = 20;
           doc.setFontSize(10);
-          doc.setFont("helvetica", "bold");
+          doc.setFont("helvetica","bold");
           doc.text(`RUMUSAN KEWANGAN KESELURUHAN (${selectedYear})`, marginX, currentY);
           currentY += 5;
 
@@ -680,7 +680,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center' },
               columnStyles: {
                   0: { cellWidth: 20, halign: 'center' },
-                  1: { cellWidth: "auto" },
+                  1: { cellWidth:"auto" },
                   2: { cellWidth: 35, halign: 'right' },
                   3: { cellWidth: 35, halign: 'right' },
                   4: { cellWidth: 35, halign: 'right' }
@@ -725,19 +725,19 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   };
 
   return (
-    <div className="space-y-6 animate-fade-in-up pb-40">
+    <div className="space-y-6 animate-fade-in pb-40">
       
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-3xl font-bold gradient-text">Senarai Projek</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-slate-500  mt-1">
             <span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai
           </p>
         </div>
         <button 
           onClick={onAddProject}
-          className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:scale-105 transition-all duration-300 w-full md:w-auto justify-center"
+          className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40  transition-colors duration-300 w-full md:w-auto justify-center"
         >
           <Plus className="h-5 w-5" />
           <span>Tambah Projek</span>
@@ -745,7 +745,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
       </div>
 
       {/* Advanced Filter Bar */}
-      <div className="glass-effect p-5 rounded-3xl shadow-xl border border-white/20 dark:border-white/5 space-y-4 relative z-30">
+      <div className="bg-white/95  border border-white/10 shadow-xl p-5 rounded-3xl shadow-xl border border-white/20  space-y-4 relative z-30">
           <div className="flex flex-col lg:flex-row gap-4">
               {viewMode === 'list' && (
                   <div className="relative flex-1">
@@ -755,24 +755,24 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                       placeholder="Cari No. Fail, Projek, Syarikat..." 
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border-transparent focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-white placeholder-slate-400 font-medium"
+                      className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50  border-transparent focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-colors text-slate-900  placeholder-slate-400 font-medium"
                     />
                   </div>
               )}
               {viewMode === 'group' && <div className="flex-1"></div>}
               
               <div className="flex flex-wrap gap-2">
-                  <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
+                  <div className="flex bg-slate-100  p-1 rounded-xl shrink-0">
                     <button 
                         onClick={() => setViewMode('list')}
-                        className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         title="Pandangan Senarai"
                     >
                         <List className="w-4 h-4" /> <span className="hidden md:inline">Senarai</span>
                     </button>
                     <button 
                         onClick={() => setViewMode('group')}
-                        className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${viewMode === 'group' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'group' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         title="Pandangan Kumpulan Syarikat"
                     >
                         <Grid className="w-4 h-4" /> <span className="hidden md:inline">Syarikat</span>
@@ -781,7 +781,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                   <button 
                     onClick={() => setShowFilterPanel(!showFilterPanel)}
-                    className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-all relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border-emerald-200 ring-2 ring-emerald-500/20' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}
+                    className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-colors relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-emerald-50  text-emerald-600 border-emerald-200 ring-2 ring-emerald-500/20' : 'bg-white  border-slate-200  text-slate-600 hover:bg-slate-50'}`}
                   >
                       <Filter className="w-4 h-4" />
                       <span>Filter</span>
@@ -794,8 +794,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                   <button 
                     onClick={viewMode === 'group' ? () => setIsExportModalOpen(true) : exportToExcel}
-                    className="h-full px-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 flex items-center gap-2 transition-colors font-bold text-sm"
-                    title={viewMode === 'group' ? "Jana Laporan Panel" : "Export CSV"}
+                    className="h-full px-4 rounded-xl bg-emerald-50  text-emerald-600  hover:bg-emerald-100  flex items-center gap-2 transition-colors font-bold text-sm"
+                    title={viewMode === 'group' ?"Jana Laporan Panel" :"Export CSV"}
                   >
                       {viewMode === 'group' ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
                       <span className="hidden sm:inline">{viewMode === 'group' ? 'Laporan PDF' : 'CSV'}</span>
@@ -804,15 +804,15 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
           </div>
 
           {showFilterPanel && (
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 animate-slide-down">
+            <div className="pt-6 border-t border-slate-100  animate-slide-up">
                 <div className="flex items-center justify-between mb-6">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-slate-800  flex items-center gap-2">
                         <Settings2 className="w-4 h-4 text-emerald-500" />
                         Tetapan Data & Paparan
                     </h4>
                     <button 
                         onClick={resetAllFilters}
-                        className="text-[11px] font-bold flex items-center gap-1.5 text-slate-500 hover:text-red-500 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-lg transition-colors"
+                        className="text-[11px] font-bold flex items-center gap-1.5 text-slate-500 hover:text-red-500 bg-slate-100  hover:bg-red-50  px-3 py-1.5 rounded-lg transition-colors"
                     >
                         <RotateCcw className="w-3 h-3" /> Reset Semua
                     </button>
@@ -828,7 +828,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <select 
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                                className="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                                className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                             >
                                 <option value="ALL">Semua Status</option>
                                 <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
@@ -841,7 +841,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         </div>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                            <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                 <option value="ALL">Semua PJA</option>
                                 {users.filter(u => u.role === 'PJA').map(u => <option key={u.id} value={u.id}>{u.username.toUpperCase()}</option>)}
                             </select>
@@ -849,7 +849,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         </div>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                            <select value={filterZon} onChange={(e) => setFilterZon(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <select value={filterZon} onChange={(e) => setFilterZon(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                 <option value="ALL">Semua Zon</option>
                                 {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
                             </select>
@@ -857,7 +857,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         </div>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                            <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                 <option value="ALL">Semua BP</option>
                                 {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
                             </select>
@@ -868,7 +868,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <select 
                                 value={filterVote} 
                                 onChange={(e) => setFilterVote(e.target.value)} 
-                                className="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                                className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                             >
                                 <option value="ALL">Semua Vot</option>
                                 {votesList.map(v => (
@@ -880,27 +880,28 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     </div>
                 </div>
 
-                <div className="border-t border-slate-100 dark:border-slate-800 my-6"></div>
+                <div className="border-t border-slate-100  my-6"></div>
 
                 {viewMode === 'list' && (
                     <div>
                         <div className="flex items-center justify-between mb-3">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kolum</div>
                             <div className="flex gap-2">
-                                <button onClick={handleSelectAllColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center gap-1"><Eye className="w-3 h-3" /> Semua</button>
-                                <button onClick={handleDeselectAllColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center gap-1"><EyeOff className="w-3 h-3" /> Kosong</button>
-                                <button onClick={handleResetColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center gap-1"><Layout className="w-3 h-3" /> Asal</button>
+                                <button onClick={handleSelectAllColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Eye className="w-3 h-3" /> Semua</button>
+                                <button onClick={handleDeselectAllColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><EyeOff className="w-3 h-3" /> Kosong</button>
+                                <button onClick={handleResetColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Layout className="w-3 h-3" /> Asal</button>
                             </div>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50">
+                        <div className="bg-slate-50  p-4 rounded-2xl border border-slate-200">
                             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                                 {columnDefs.map(col => (
-                                    <label key={col.id} className="flex items-center gap-2 cursor-pointer group p-1.5 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors select-none">
-                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${visibleColumns[col.id] ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 group-hover:border-emerald-400'}`}>
+                                    <label key={col.id} className="flex items-center gap-2 cursor-pointer group p-1.5 rounded-lg hover:bg-white  transition-colors select-none">
+                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-emerald-500 border-emerald-500' : 'bg-white  border-slate-300  group-hover:border-emerald-400'}`}>
                                             {visibleColumns[col.id] && <Check className="w-3 h-3 text-white stroke-[3]" />}
                                         </div>
-                                        <input type="checkbox" className="hidden" checked={visibleColumns[col.id]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col.id]: !prev[col.id] }))} />
-                                        <span className={`text-[11px] font-bold truncate ${visibleColumns[col.id] ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400'}`}>{col.label}</span>
+                                                                                  <input type="checkbox" className="hidden" checked={visibleColumns[col.id]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col.id]: !prev[col.id] }))} />
+                                                                                  <span className={`text-[11px] font-bold truncate ${visibleColumns[col.id] ? 'text-slate-700' : 'text-slate-400'}`}>{col.label}</span>
+                                        
                                     </label>
                                 ))}
                             </div>
@@ -912,18 +913,21 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     <div className="flex flex-col gap-4">
                         <div className="flex gap-4 items-center">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kos:</span>
-                            <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                                <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
-                                <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
-                                <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
+                            <div className="flex bg-slate-100  rounded-lg p-1">
+                                <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
+                                <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
+                                <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
                             </div>
                         </div>
                         <div className="flex gap-4 items-center">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tapis Projek:</span>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}><div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showSiap ? 'translate-x-5' : ''}`}></div></div>
-                                <input type="checkbox" className="hidden" checked={showSiap} onChange={() => setShowSiap(!showSiap)} />
-                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Tunjuk Projek Siap</span>
+                                                          <label className="flex items-center gap-2 cursor-pointer">
+                                                              <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                                                  <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showSiap ? 'translate-x-5' : ''}`}></div>
+                                                              </div>
+                                                              <input type="checkbox" className="hidden" checked={showSiap} onChange={() => setShowSiap(!showSiap)} />
+                            
+                                <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
                             </label>
                         </div>
                     </div>
@@ -934,23 +938,23 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
       {/* List View with Pagination */}
       {viewMode === 'list' && (
-        <div className="glass-effect rounded-3xl shadow-xl border border-white/20 dark:border-white/5 overflow-hidden min-h-[400px] flex flex-col">
+        <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl shadow-xl border border-white/20  overflow-hidden min-h-[400px] flex flex-col">
             <div className="overflow-x-auto flex-1">
                 <table className="w-full">
-                    <thead className="bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200 dark:border-slate-700">
+                    <thead className="bg-slate-50/80   sticky top-0 z-20 border-b border-slate-200">
                         <tr>
                             {columnDefs.filter(c => visibleColumns[c.id]).map(col => (
-                                <th key={col.id} className="px-6 py-4 text-left text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{col.label}</th>
+                                <th key={col.id} className="px-6 py-4 text-left text-xs font-extrabold text-slate-500  uppercase tracking-wider whitespace-nowrap">{col.label}</th>
                             ))}
                             <th className="px-6 py-4 w-16"></th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100">
                         {paginatedProjects.length > 0 ? (
                             paginatedProjects.map((project) => (
-                                <tr key={project.id} onClick={() => onEditProject(project)} className="group hover:bg-slate-50/80 dark:hover:bg-white/5 transition-all duration-200 cursor-pointer">
-                                    {visibleColumns.noFail && <td className="px-6 py-4 whitespace-nowrap"><div className="font-bold text-slate-900 dark:text-white text-sm">{project.noFail}</div><div className="text-[10px] text-slate-400 font-mono mt-0.5">{formatDate(project.tarikhBuka)}</div></td>}
-                                    {visibleColumns.namaProjek && <td className="px-6 py-4 min-w-[300px]"><div className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{project.namaProjek}</div></td>}
+                                <tr key={project.id} onClick={() => onEditProject(project)} className="group hover:bg-slate-50/80  transition-colors duration-200 cursor-pointer">
+                                    {visibleColumns.noFail && <td className="px-6 py-4 whitespace-nowrap"><div className="font-bold text-slate-900  text-sm">{project.noFail}</div><div className="text-[10px] text-slate-400 font-mono mt-0.5">{formatDate(project.tarikhBuka)}</div></td>}
+                                    {visibleColumns.namaProjek && <td className="px-6 py-4 min-w-[300px]"><div className="text-sm font-medium text-slate-800  leading-relaxed whitespace-pre-wrap">{project.namaProjek}</div></td>}
                                     {visibleColumns.pjaId && <td className="px-6 py-4 whitespace-nowrap">
                                         {(() => {
                                             const pja = getPjaUser(project.pjaId);
@@ -963,23 +967,23 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                             pja?.username?.charAt(0).toUpperCase() || 'P'
                                                         )}
                                                     </div>
-                                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{pja?.username?.toUpperCase() || '-'}</span>
+                                                    <span className="text-xs font-bold text-slate-600">{pja?.username?.toUpperCase() || '-'}</span>
                                                 </div>
                                             );
                                         })()}
                                     </td>}
-                                    {visibleColumns.noAduan && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[100px] overflow-y-auto custom-scrollbar">{project.noAduan ? project.noAduan.split(/[,;\n]/).map((aduan, idx) => { const cleanAduan = aduan.trim(); if (!cleanAduan) return null; return <div key={idx} className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight">{cleanAduan}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
-                                    {visibleColumns.lokasi && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto custom-scrollbar min-w-[200px]">{project.lokasi ? project.lokasi.split('\n').map((loc, idx) => { const cleanLoc = loc.trim(); if (!cleanLoc) return null; return <div key={idx} className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-1 whitespace-pre-wrap">{cleanLoc}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
+                                    {visibleColumns.noAduan && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[100px] overflow-y-auto custom-scrollbar">{project.noAduan ? project.noAduan.split(/[,;\n]/).map((aduan, idx) => { const cleanAduan = aduan.trim(); if (!cleanAduan) return null; return <div key={idx} className="text-[11px] text-slate-600  leading-tight">{cleanAduan}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
+                                    {visibleColumns.lokasi && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto custom-scrollbar min-w-[200px]">{project.lokasi ? project.lokasi.split('\n').map((loc, idx) => { const cleanLoc = loc.trim(); if (!cleanLoc) return null; return <div key={idx} className="text-[11px] text-slate-600  leading-tight mb-1 whitespace-pre-wrap">{cleanLoc}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
                                     {visibleColumns.bp && <td className="px-6 py-4 text-xs text-slate-500">{project.bp}</td>}
                                     {visibleColumns.zon && <td className="px-6 py-4 text-xs text-slate-500">{project.zon}</td>}
                                     {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhBuka)}</td>}
-                                    {visibleColumns.namaSyarikat && <td className="px-6 py-4 min-w-[200px]"><div className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{project.namaSyarikat || <span className="text-slate-400 italic font-normal">Belum Lantik</span>}</div></td>}
+                                    {visibleColumns.namaSyarikat && <td className="px-6 py-4 min-w-[200px]"><div className="text-xs font-bold text-slate-700  leading-relaxed">{project.namaSyarikat || <span className="text-slate-400 italic font-normal">Belum Lantik</span>}</div></td>}
                                     {visibleColumns.noVote && <td className="px-6 py-4 text-xs text-slate-500">{project.noVote}</td>}
                                     {visibleColumns.noSebutharga && <td className="px-6 py-4 text-xs text-slate-500">{project.noSebutharga}</td>}
                                     {visibleColumns.noInden && <td className="px-6 py-4 text-xs text-slate-500">{project.noInden}</td>}
                                     {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
                                     {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
-                                    {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? 'animate-pulse' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{project.status.replace(/_/g, ' ')}</span></div></td>}
+                                    {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{project.status.replace(/_/g, ' ')}</span></div></td>}
                                     {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
                                     {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(getHargaAkhir(project))}</td>}
                                     {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
@@ -998,9 +1002,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     {visibleColumns.iso && <td className="px-6 py-4 text-xs text-slate-500">{project.iso}</td>}
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white dark:bg-slate-700 rounded-lg text-emerald-600 hover:bg-emerald-50 shadow-sm border border-slate-100 dark:border-slate-600"><ArrowUpRight className="w-4 h-4" /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white  rounded-lg text-emerald-600 hover:bg-emerald-50 shadow-sm border border-slate-100"><ArrowUpRight className="w-4 h-4" /></button>
                                             {user.role !== 'PJA' && (
-                                              <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }} className="p-2 bg-white dark:bg-slate-700 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 shadow-sm border border-slate-100 dark:border-slate-600"><Trash2 className="w-4 h-4" /></button>
+                                              <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }} className="p-2 bg-white  rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 shadow-sm border border-slate-100"><Trash2 className="w-4 h-4" /></button>
                                             )}
                                         </div>
                                     </td>
@@ -1019,38 +1023,38 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
             {/* Pagination Controls */}
             {filteredProjects.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
-                    <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                        Paparan <span className="font-bold text-slate-700 dark:text-slate-200">{Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)}</span> hingga <span className="font-bold text-slate-700 dark:text-slate-200">{Math.min(filteredProjects.length, currentPage * itemsPerPage)}</span> dari <span className="font-bold text-slate-700 dark:text-slate-200">{filteredProjects.length}</span> projek
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-slate-200  bg-slate-50/50">
+                    <div className="text-xs font-medium text-slate-500">
+                        Paparan <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)}</span> hingga <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, currentPage * itemsPerPage)}</span> dari <span className="font-bold text-slate-700">{filteredProjects.length}</span> projek
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                            <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                            <ChevronLeft className="w-4 h-4 text-slate-600" />
                         </button>
                         
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500 dark:text-slate-400">Muka</span>
+                            <span className="text-xs text-slate-500">Muka</span>
                             <input
                                 type="number"
                                 value={pageInput}
                                 onChange={handlePageInputChange}
                                 onBlur={handlePageInputBlur}
                                 onKeyDown={handlePageInputKeyDown}
-                                className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 dark:text-slate-200"
+                                className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700"
                             />
-                            <span className="text-xs text-slate-500 dark:text-slate-400">dari {totalPages}</span>
+                            <span className="text-xs text-slate-500">dari {totalPages}</span>
                         </div>
 
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                            <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                            <ChevronRight className="w-4 h-4 text-slate-600" />
                         </button>
                     </div>
                 </div>
@@ -1064,16 +1068,16 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
              {groupedProjects.map((group) => {
                 const votesInGroup = Object.keys(group.projectsByVote).sort();
                 return (
-                <div key={group.company} className="relative overflow-hidden rounded-3xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-sm transition-all hover:shadow-md">
-                   <div className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors gap-4" onClick={() => toggleCompany(group.company)}>
+                <div key={group.company} className="relative overflow-hidden rounded-3xl bg-white/60   border border-white/20  shadow-sm transition-colors hover:shadow-md">
+                   <div className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer hover:bg-slate-50  transition-colors gap-4" onClick={() => toggleCompany(group.company)}>
                       <div className="flex items-center gap-4 flex-1">
                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 shrink-0"><Building2 className="w-6 h-6" /></div>
                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate flex items-center gap-3">{group.company} {group.count > 0 ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider">{group.count} Fail</span> : <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider italic">Tiada Projek</span>}</h3>
-                            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                                <div className="flex gap-4 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
-                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-emerald-700 dark:text-emerald-400 font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
-                                    {(costViewMode === 'actual' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div><span className="opacity-80">Harga Akhir:</span><strong className="text-blue-700 dark:text-blue-400 font-mono text-sm">{formatCurrency(group.totalHargaAkhir)}</strong></span>}
+                            <h3 className="text-lg font-bold text-slate-900  truncate flex items-center gap-3">{group.company} {group.count > 0 ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-600  font-bold uppercase tracking-wider">{group.count} Fail</span> : <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-400  font-bold uppercase tracking-wider italic">Tiada Projek</span>}</h3>
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-xs font-medium text-slate-500">
+                                <div className="flex gap-4 border-l border-slate-200  pl-4 ml-2">
+                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-emerald-700  font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
+                                    {(costViewMode === 'actual' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div><span className="opacity-80">Harga Akhir:</span><strong className="text-blue-700  font-mono text-sm">{formatCurrency(group.totalHargaAkhir)}</strong></span>}
                                 </div>
                             </div>
                          </div>
@@ -1082,17 +1086,17 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                    </div>
 
                    {expandedCompanies[group.company] && group.count > 0 && (
-                      <div className="border-t border-slate-100 dark:border-white/5 animate-slide-down bg-slate-50/30 dark:bg-black/10 overflow-x-auto">
+                      <div className="border-t border-slate-100  animate-slide-up bg-slate-50/30  overflow-x-auto">
                          <div className="w-full">
                             {votesInGroup.map(voteCode => {
                                 const voteData = group.projectsByVote[voteCode];
                                 return (
-                                    <div key={voteCode} className="border-b border-slate-200 dark:border-slate-800 last:border-b-0">
-                                        <div className="px-6 py-2 bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-between">
-                                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><span className="bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">{voteCode}</span><span>{getVoteName(voteCode)}</span></div>
+                                    <div key={voteCode} className="border-b border-slate-200  last:border-b-0">
+                                        <div className="px-6 py-2 bg-slate-100/50  flex items-center justify-between">
+                                            <div className="text-[11px] font-bold text-slate-500  uppercase tracking-widest flex items-center gap-2"><span className="bg-slate-200  px-2 py-0.5 rounded text-slate-700">{voteCode}</span><span>{getVoteName(voteCode)}</span></div>
                                         </div>
                                         <table className="w-full text-sm">
-                                            <thead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-white/5">
+                                            <thead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
                                                 <tr>
                                                     <th className="px-6 py-3 text-left font-extrabold w-[350px]">No. Fail / Tajuk Projek</th>
                                                     <th className="px-6 py-3 text-center font-extrabold w-[100px]">Bulan</th>
@@ -1104,30 +1108,31 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     <th className="px-6 py-3"></th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                            <tbody className="divide-y divide-slate-100">
                                                 {voteData.projects.map(p => {
                                                     const pjaUser = getPjaUser(p.pjaId);
                                                     const hargaAkhir = getHargaAkhir(p);
                                                     
                                                     return (
-                                                        <tr key={p.id} className="hover:bg-white/60 dark:hover:bg-white/5 cursor-pointer transition-colors group/row" onClick={() => onEditProject(p)}>
-                                                            <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600 dark:text-slate-300 mb-1">{p.noFail}</div><div className="font-medium text-slate-800 dark:text-white leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
-                                                            <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm">{p.bulan || '-'}</span></td>
-                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
-                                                            <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
+                                                        <tr key={p.id} className="hover:bg-white/60  cursor-pointer transition-colors group/row" onClick={() => onEditProject(p)}>
+                                                            <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600  mb-1">{p.noFail}</div><div className="font-medium text-slate-800  leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
+                                                            <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white  border border-slate-200  text-xs font-bold text-slate-600  shadow-sm">{p.bulan || '-'}</span></td>
+                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
+                                                            <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600  whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
                                                             <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br/>-<br/>{formatDate(p.tarikhTamatKontrak)}</td>
-                                                            <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
-                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600 dark:text-emerald-400'}>{formatCurrency(p.kosProjek)}</div>
-                                                                <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600 dark:text-blue-400'}>{formatCurrency(hargaAkhir)}</div>
-                                                            </td>
-                                                            <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{p.status.replace(/_/g, ' ')}</span></div></td>
-                                                            <td className="px-6 py-3 text-right align-top"><button className="p-2 rounded-lg bg-white dark:bg-slate-800 text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"><ArrowUpRight className="w-4 h-4" /></button></td>
+                                                                                                                          <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
+                                                                                                                              <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600'}>{formatCurrency(p.kosProjek)}</div>
+                                                                                                                              <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600'}>{formatCurrency(calculateActualCost(p))}</div>
+                                                                                                                          </td>
+                                                            
+                                                            <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{p.status.replace(/_/g, ' ')}</span></div></td>
+                                                            <td className="px-6 py-3 text-right align-top"><button className="p-2 rounded-lg bg-white  text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"><ArrowUpRight className="w-4 h-4" /></button></td>
                                                         </tr>
                                                     );
                                                 })}
-                                                <tr className="bg-slate-50 dark:bg-slate-800/30 font-bold border-t border-slate-200 dark:border-slate-700">
+                                                <tr className="bg-slate-50  font-bold border-t border-slate-200">
                                                     <td colSpan={5} className="px-6 py-3 text-right text-[10px] uppercase text-slate-500 tracking-wider">Jumlah</td>
-                                                    <td className="px-6 py-3 text-right font-mono text-xs text-slate-800 dark:text-white">
+                                                    <td className="px-6 py-3 text-right font-mono text-xs text-slate-800">
                                                         {costViewMode === 'contract' ? formatCurrency(voteData.subtotalContract) : costViewMode === 'actual' ? formatCurrency(voteData.subtotalAkhir) : (<div><div>{formatCurrency(voteData.subtotalContract)}</div><div className="text-[10px] opacity-60">{formatCurrency(voteData.subtotalAkhir)}</div></div>)}
                                                     </td>
                                                     <td colSpan={2}></td>
@@ -1137,63 +1142,63 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     </div>
                                 );
                             })}
-                            <div className="px-6 py-4 bg-emerald-50/50 dark:bg-emerald-900/10 flex justify-end items-center gap-6 border-t border-emerald-100 dark:border-emerald-800/30">
-                                <span className="text-[11px] font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">Jumlah Keseluruhan ({group.company})</span>
-                                <span className="text-sm font-black font-mono text-emerald-700 dark:text-emerald-300">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
+                            <div className="px-6 py-4 bg-emerald-50/50  flex justify-end items-center gap-6 border-t border-emerald-100">
+                                <span className="text-[11px] font-bold uppercase text-emerald-600  tracking-wider">Jumlah Keseluruhan ({group.company})</span>
+                                <span className="text-sm font-black font-mono text-emerald-700">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
                             </div>
                          </div>
                       </div>
                    )}
-                   {expandedCompanies[group.company] && group.count === 0 && <div className="p-8 text-center text-slate-400 italic text-sm bg-slate-50/30 dark:bg-black/10 border-t border-slate-100 dark:border-white/5">Tiada projek untuk syarikat ini.</div>}
+                   {expandedCompanies[group.company] && group.count === 0 && <div className="p-8 text-center text-slate-400 italic text-sm bg-slate-50/30  border-t border-slate-100">Tiada projek untuk syarikat ini.</div>}
                 </div>
              );})}
              
              {/* Integrated Summary Card (Vertical) */}
              {groupedProjects.length > 0 && (
-                <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-6 mt-8 w-full mx-auto">
-                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800"><div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl shadow-sm text-emerald-600 dark:text-emerald-400"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
-                    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="relative overflow-hidden rounded-3xl bg-white  border border-slate-200  shadow-xl p-6 mt-8 w-full mx-auto">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100"><div className="p-3 bg-slate-100  rounded-xl shadow-sm text-emerald-600"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800  uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
+                    <div className="overflow-hidden rounded-xl border border-slate-200">
                         <table className="w-full text-xs">
-                            <thead className="bg-slate-50 dark:bg-slate-800">
-                                <tr><th className="py-3 px-4 text-left font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20">Kod Vot</th><th className="py-3 px-4 text-left font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Butiran</th><th className="py-3 px-4 text-right font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Peruntukan</th><th className="py-3 px-4 text-right font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Belanja</th><th className="py-3 px-4 text-right font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Baki</th></tr>
+                            <thead className="bg-slate-50">
+                                <tr><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider w-20">Kod Vot</th><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider">Butiran</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Peruntukan</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Belanja</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Baki</th></tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tbody className="divide-y divide-slate-100">
                                 {Object.entries(financialSummary).map(([voteCode, data]) => (
-                                    <tr key={voteCode} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                        <td className="py-3 px-4 font-mono font-bold text-slate-600 dark:text-slate-300">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-200">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-right font-mono text-slate-600 dark:text-slate-400">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency((data as any).allocated - (data as any).used)}</td>
+                                    <tr key={voteCode} className="hover:bg-slate-50">
+                                        <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
                                     </tr>
                                 ))}
-                                <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold border-t-2 border-slate-200 dark:border-slate-700"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-right font-mono text-slate-800 dark:text-white">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
+                                <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
                             </tbody>
                         </table>
                     </div>
-                    <div className="mt-6 flex flex-col gap-4 border-t border-slate-200 dark:border-slate-700 pt-4">
-                        <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
-                        <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700 bg-emerald-50/50 dark:bg-emerald-900/10 -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
-                            <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="px-4 py-2 bg-slate-800 dark:bg-white text-white dark:text-slate-900 rounded-lg text-[10px] font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
-                            <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600 dark:text-emerald-400 leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
+                    <div className="mt-6 flex flex-col gap-4 border-t border-slate-200  pt-4">
+                        <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
+                        <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
+                        <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-emerald-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
+                            <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="px-4 py-2 bg-slate-800  text-white  rounded-lg text-[10px] font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
+                            <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600  leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
                         </div>
                     </div>
                 </div>
              )}
 
-             {groupedProjects.length === 0 && <div className="text-center text-slate-400 italic py-12 glass-effect rounded-3xl">Tiada data syarikat untuk dipaparkan.</div>}
+             {groupedProjects.length === 0 && <div className="text-center text-slate-400 italic py-12 bg-white/95  border border-white/10 shadow-xl rounded-3xl">Tiada data syarikat untuk dipaparkan.</div>}
           </div>
       )}
 
       {/* Delete Modal */}
       {projectToDelete && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={cancelDelete}>
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform scale-100 transition-all animate-slide-up relative" onClick={e => e.stopPropagation()}>
-                <button onClick={cancelDelete} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50  animate-fade-in" onClick={cancelDelete}>
+            <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
+                <button onClick={cancelDelete} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
                 <div className="flex flex-col items-center text-center pt-2">
-                   <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-6 text-red-500 animate-pulse-slow"><div className="w-14 h-14 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center"><AlertTriangle className="w-8 h-8 stroke-[1.5]" /></div></div>
-                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta">Padam Projek?</h3>
-                   <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed px-4">Adakah anda pasti mahu memadam <span className="font-bold text-slate-900 dark:text-white block mt-1 p-2 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 break-words">{projectToDelete.noFail}</span></p>
+                   <div className="w-20 h-20 bg-red-50  rounded-full flex items-center justify-center mb-6 text-red-500"><div className="w-14 h-14 bg-red-100  rounded-full flex items-center justify-center"><AlertTriangle className="w-8 h-8 stroke-[1.5]" /></div></div>
+                   <h3 className="text-xl font-bold text-slate-900  mb-2 font-jakarta">Padam Projek?</h3>
+                   <p className="text-slate-500  mb-8 text-sm leading-relaxed px-4">Adakah anda pasti mahu memadam <span className="font-bold text-slate-900  block mt-1 p-2 bg-slate-50  rounded-lg border border-slate-200  break-words">{projectToDelete.noFail}</span></p>
                    <div className="flex gap-3 w-full">
-                      <button onClick={cancelDelete} className="flex-1 py-3.5 px-4 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md">Batal</button>
-                      <button onClick={confirmDelete} disabled={deleteCountdown > 0} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg ${deleteCountdown > 0 ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 shadow-red-600/30 hover:-translate-y-0.5'}`}>
+                      <button onClick={cancelDelete} className="flex-1 py-3.5 px-4 bg-white  text-slate-700  rounded-xl font-bold hover:bg-slate-50  transition-colors border border-slate-200  shadow-sm hover:shadow-md">Batal</button>
+                      <button onClick={confirmDelete} disabled={deleteCountdown > 0} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${deleteCountdown > 0 ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 shadow-red-600/30 hover:-translate-y-0.5'}`}>
                          <Trash2 className="w-4 h-4" />
                          <span>{deleteCountdown > 0 ? `Tunggu (${deleteCountdown})` : 'Ya, Padam'}</span>
                       </button>
@@ -1206,14 +1211,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
       {/* PDF Export Modal with Progress */}
       {isExportModalOpen && createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsExportModalOpen(false)}>
-              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform scale-100 transition-all animate-slide-up relative" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsExportModalOpen(false)}>
+              <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
                   <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-slate-900  flex items-center gap-2">
                           <FileText className="w-6 h-6 text-emerald-600" />
                           Laporan Panel Kontraktor
                       </h3>
-                      <button onClick={() => setIsExportModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                      <button onClick={() => setIsExportModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors">
                           <X className="w-6 h-6" />
                       </button>
                   </div>
@@ -1222,9 +1227,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                       {isGeneratingPdf ? (
                           <div className="flex flex-col items-center justify-center py-4">
                               <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-2" />
-                              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Menjana PDF... {generationProgress}%</p>
-                              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-2 overflow-hidden">
-                                  <div className="bg-emerald-500 h-full transition-all duration-300" style={{ width: `${generationProgress}%` }}></div>
+                              <p className="text-sm font-bold text-slate-700">Menjana PDF... {generationProgress}%</p>
+                              <div className="w-full bg-slate-100  h-2 rounded-full mt-2 overflow-hidden">
+                                  <div className="bg-emerald-500 h-full transition-colors duration-300" style={{ width: `${generationProgress}%` }}></div>
                               </div>
                           </div>
                       ) : (
@@ -1237,7 +1242,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     type="text" 
                                     value={exportBilMesyuarat} 
                                     onChange={e => setExportBilMesyuarat(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                                    className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                                     placeholder="cth: 01/01/2025"
                                     autoFocus
                                 />

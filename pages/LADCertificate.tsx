@@ -50,7 +50,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             let y = 20;
 
             // --- TITLE ---
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.setFontSize(9);
             
             doc.text("TAJUK KERJA :", margin, y);
@@ -62,7 +62,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             y += (titleLines.length * 5) + 8; // Adjust spacing based on lines
 
             doc.setFontSize(10);
-            const subTitle = "DENDA KELEWATAN MENYIAPKAN KERJA";
+            const subTitle ="DENDA KELEWATAN MENYIAPKAN KERJA";
             doc.text(subTitle, margin, y);
             const textWidth = doc.getTextWidth(subTitle);
             doc.setLineWidth(0.3);
@@ -76,12 +76,12 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             const lineHeight = 7; // Increased line height for spacing
 
             const drawRow = (label: string, value: string, bold = false, boxed = false) => {
-                doc.setFont("helvetica", "normal");
+                doc.setFont("helvetica","normal");
                 doc.setFontSize(9);
                 doc.text(label, labelX, y);
                 doc.text(":", colonX, y);
                 
-                doc.setFont("helvetica", bold ? "bold" : "normal");
+                doc.setFont("helvetica", bold ?"bold" :"normal");
                 if (boxed) {
                     const w = doc.getTextWidth(value) + 6;
                     doc.setDrawColor(0);
@@ -102,7 +102,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             drawRow("KOS PROJEK", formatCurrency(contractSum), false, true);
             drawRow("NO FAIL", project.noFail || '-');
             drawRow("ADUN/ ZON", `${project.bp || ''} / ${project.zon || ''}`);
-            drawRow("MUKIM", "BATU");
+            drawRow("MUKIM","BATU");
             
             y += 5; // Spacer
 
@@ -112,7 +112,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             
             // TEMPOH KERJA (Custom Layout)
             const tempohNum = project.tempohKontrak?.replace(/\D/g,'') || '0';
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.text("TEMPOH KERJA", labelX, y);
             doc.text(":", colonX, y);
             const tW = doc.getTextWidth(tempohNum) + 10;
@@ -123,26 +123,26 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             y += lineHeight;
 
             y += 2;
-            drawRow("TARIKH SURAT PERMOHONAN EOT", "-");
-            drawRow("NO RUJUKAN", "-");
+            drawRow("TARIKH SURAT PERMOHONAN EOT","-");
+            drawRow("NO RUJUKAN","-");
             y += 2;
 
             // EOT (Empty Box)
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.text("TAMBAHAN TEMPOH EOT", labelX, y);
             doc.text(":", colonX, y);
             doc.rect(valueX, y - 4, 20, 5.5); // Empty box
             doc.text("MINGGU/HARI", valueX + 23, y);
             y += lineHeight + 3;
 
-            drawRow("TARIKH TAMAT TEMPOH EOT", "-");
+            drawRow("TARIKH TAMAT TEMPOH EOT","-");
             y += 2;
             drawRow("TARIKH MULA L.A.D", project.tarikhTamatKontrak ? formatDate(project.tarikhTamatKontrak) : '-');
             drawRow("TARIKH SIAP KERJA SEBENAR DI TAPAK", project.tarikhSiapSebenar ? formatDate(project.tarikhSiapSebenar) : '-');
             
             // KELEWATAN
             const lateDays = Math.max(0, daysLate).toString();
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.text("TEMPOH KELEWATAN KERJA SELEPAS EOT", labelX, y);
             doc.text(":", colonX, y);
             const lW = doc.getTextWidth(lateDays) + 10;
@@ -157,10 +157,10 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             let boxY = y + boxPadding + 3;
 
             doc.setFontSize(9);
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
 
             const note = isSmallProject 
-                ? "Bagi Kontrak bernilai kurang RM 20,000.00, kadar Denda (LAD) adalah RM 20.00/hari rata."
+                ?"Bagi Kontrak bernilai kurang RM 20,000.00, kadar Denda (LAD) adalah RM 20.00/hari rata."
                 : `BLR ${BLR} ( Maklumat daripada Bahagian Perolehan )`;
             doc.text(note, margin + boxPadding, boxY);
             boxY += 12;
@@ -219,7 +219,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
 
                 boxY += 15;
             } else {
-                doc.setFont("helvetica", "bold");
+                doc.setFont("helvetica","bold");
                 doc.text("KADAR DENDA (LAD) = RM 20.00 / HARI", centerX, boxY, { align: 'center' });
                 boxY += 15;
             }
@@ -230,11 +230,11 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             const dW = doc.getTextWidth(dStr) + 10;
             
             // Estimate total width to center
-            const rateTxt = fmt(dailyRate) + " / HARI";
+            const rateTxt = fmt(dailyRate) +" / HARI";
             const estWidth = dW + 3 + 10 + 5 + 5 + 8 + doc.getTextWidth(rateTxt);
             let startX = (pageWidth - estWidth) / 2;
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.setLineWidth(0.1);
             doc.rect(startX, boxY - 4, dW, 6);
             doc.text(dStr, startX + (dW/2), boxY, { align: 'center' });
@@ -252,8 +252,8 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
 
             // TOTAL LAD
             doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            const finalRM = "RM";
+            doc.setFont("helvetica","bold");
+            const finalRM ="RM";
             const finalVal = fmt(totalLAD);
             
             // Indent from left margin + padding
@@ -286,22 +286,22 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
     );
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" style={{ zIndex: 9999 }}>
-            <div className="bg-white dark:bg-slate-900 w-full max-w-[230mm] h-[95vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  animate-fade-in" style={{ zIndex: 9999 }}>
+            <div className="bg-white  w-full max-w-[230mm] h-[95vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
                 
                 {/* Modal Header */}
-                <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
-                    <h3 className="font-bold text-slate-800 dark:text-white">Pratonton Perakuan LAD</h3>
+                <div className="p-4 border-b border-slate-200  flex justify-between items-center bg-white  shrink-0">
+                    <h3 className="font-bold text-slate-800">Pratonton Perakuan LAD</h3>
                     <div className="flex gap-2">
                         <button 
                             onClick={handleDownload}
                             disabled={isGenerating}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-all text-sm disabled:opacity-50"
+                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
                         >
                             {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
                             PDF
                         </button>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500">
+                        <button onClick={onClose} className="p-2 hover:bg-slate-100  rounded-lg text-slate-500">
                             <X className="w-5 h-5"/>
                         </button>
                     </div>
@@ -353,7 +353,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
                         <div className="border-2 border-black p-6 font-bold text-[12px] mb-8">
                             <div className="mb-6 italic font-normal">
                                 {isSmallProject 
-                                    ? "Bagi Kontrak bernilai kurang RM 20,000.00, kadar Denda (LAD) adalah RM 20.00/hari rata."
+                                    ?"Bagi Kontrak bernilai kurang RM 20,000.00, kadar Denda (LAD) adalah RM 20.00/hari rata."
                                     : `BLR ${BLR} ( Maklumat daripada Bahagian Perolehan )`
                                 }
                             </div>

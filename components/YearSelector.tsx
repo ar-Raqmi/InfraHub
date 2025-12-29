@@ -57,33 +57,33 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-2xl px-4 py-2 shadow-sm border transition-all group ${
+        className={`flex items-center gap-2 bg-white/50 rounded-2xl px-4 py-2 shadow-sm border transition-colors group ${
           isOpen 
-            ? 'ring-2 ring-emerald-500 border-emerald-500 bg-white dark:bg-slate-800' 
-            : 'border-white/20 dark:border-white/5 hover:bg-white dark:hover:bg-slate-700'
+            ? 'ring-2 ring-emerald-500 border-emerald-500 bg-white' 
+            : 'border-white/20 hover:bg-white'
         }`}
       >
-        <Calendar className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
-        <span className="font-bold text-slate-700 dark:text-slate-200 font-manrope">{selectedYear}</span>
+        <Calendar className="w-4 h-4 text-emerald-500 group- transition-transform" />
+        <span className="font-bold text-slate-700  font-manrope">{selectedYear}</span>
         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-emerald-500' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-[100] animate-slide-down ring-1 ring-black/5 dark:ring-white/10">
+        <div className="absolute top-full left-0 mt-2 w-72 bg-white  rounded-2xl shadow-2xl border border-slate-200  p-4 z-[100] animate-slide-up ring-1 ring-black/5">
           
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <button 
               onClick={handlePrevRange}
-              className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors"
+              className="p-1.5 hover:bg-slate-100  rounded-lg text-slate-500  transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm font-bold text-slate-900 dark:text-white font-manrope">
+            <span className="text-sm font-bold text-slate-900  font-manrope">
               {startDecade} - {endDecade}
             </span>
             <button 
               onClick={handleNextRange}
-              className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors"
+              className="p-1.5 hover:bg-slate-100  rounded-lg text-slate-500  transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -98,10 +98,10 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
                 <button
                   key={year}
                   onClick={() => handleYearSelect(year)}
-                  className={`py-2 rounded-xl text-sm font-bold transition-all ${
+                  className={`py-2 rounded-xl text-sm font-bold transition-colors ${
                     isSelected
                       ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105'
+                      : 'text-slate-600  hover:bg-slate-100  '
                   } ${isOutsideDecade ? 'opacity-40' : ''}`}
                 >
                   {year}

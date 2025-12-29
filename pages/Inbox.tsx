@@ -273,15 +273,15 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
   };
 
   return (
-    <div className="h-[calc(100vh-140px)] flex gap-6 animate-fade-in-up">
+    <div className="h-[calc(100vh-140px)] flex gap-6 animate-fade-in">
       {/* Left List: Tugasan */}
-      <div className="w-full md:w-[400px] glass-effect rounded-[2.5rem] shadow-xl border border-white/20 dark:border-white/5 overflow-hidden flex flex-col shrink-0">
-        <div className="p-6 border-b border-slate-100 dark:border-white/5">
+      <div className="w-full md:w-[400px] bg-white/95  border border-white/10 shadow-xl rounded-[2.5rem] shadow-xl border border-white/20  overflow-hidden flex flex-col shrink-0">
+        <div className="p-6 border-b border-slate-100">
           <div className="flex items-center justify-between mb-4">
-             <h2 className="text-xl font-bold text-slate-800 dark:text-white">Inbox</h2>
-             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                 <button onClick={() => setCurrentView('AKTIF')} className={`p-1.5 rounded-lg transition-all ${currentView === 'AKTIF' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-400'}`} title="Aktif"><InboxIcon className="w-4 h-4"/></button>
-                 <button onClick={() => setCurrentView('SAMPAH')} className={`p-1.5 rounded-lg transition-all ${currentView === 'SAMPAH' ? 'bg-white dark:bg-slate-700 text-red-600 shadow-sm' : 'text-slate-400'}`} title="Tong Sampah"><Trash2 className="w-4 h-4"/></button>
+             <h2 className="text-xl font-bold text-slate-800">Inbox</h2>
+             <div className="flex bg-slate-100  p-1 rounded-xl">
+                 <button onClick={() => setCurrentView('AKTIF')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'AKTIF' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-400'}`} title="Aktif"><InboxIcon className="w-4 h-4"/></button>
+                 <button onClick={() => setCurrentView('SAMPAH')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'SAMPAH' ? 'bg-white  text-red-600 shadow-sm' : 'text-slate-400'}`} title="Tong Sampah"><Trash2 className="w-4 h-4"/></button>
              </div>
           </div>
           <div className="relative">
@@ -291,7 +291,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
               placeholder="Cari fail atau tajuk..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border-0 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white font-medium" 
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50  border-0 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900  font-medium" 
             />
           </div>
         </div>
@@ -302,26 +302,27 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
             return (
               <div 
                 key={task.id} 
-                onClick={() => setSelectedTask(task)}
-                className={`p-5 border-b border-slate-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-all relative ${selectedTask?.id === task.id ? 'bg-emerald-50/50 dark:bg-emerald-900/10 ring-1 ring-inset ring-emerald-500/20' : ''} ${!readIds.includes(task.id) ? 'bg-white dark:bg-white/5' : 'opacity-70'}`}
-              >
+                                  onClick={() => setSelectedTask(task)}
+                                  className={`p-5 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors relative ${selectedTask?.id === task.id ? 'bg-emerald-50/50 ring-1 ring-inset ring-emerald-500/20' : ''} ${!readIds.includes(task.id) ? 'bg-white' : 'opacity-70'}`}
+                                >
+                
                 {selectedTask?.id === task.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>}
                 
                 <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-2">
-                    {!readIds.includes(task.id) && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm animate-pulse"></div>}
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${task.severity === 'error' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'}`}>
-                      {task.type.replace(/_/g, ' ')}
-                    </span>
-                  </div>
+                                      <div className="flex items-center gap-2">
+                                        {!readIds.includes(task.id) && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>}
+                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${task.severity === 'error' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
+                                          {task.type.replace(/_/g, ' ')}
+                                        </span>
+                                      </div>
+                  
                   <span className="text-[10px] font-bold text-slate-400 font-mono">{task.date.split('-').reverse().join('/')}</span>
                 </div>
                 
-                <h4 className={`text-sm mb-1 line-clamp-1 ${!readIds.includes(task.id) ? 'font-black text-slate-900 dark:text-white' : 'font-medium text-slate-600 dark:text-slate-400'}`}>
-                  {task.title}
-                </h4>
-                
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-3 truncate">
+                                  <h4 className={`text-sm mb-1 line-clamp-1 ${!readIds.includes(task.id) ? 'font-black text-slate-900' : 'font-medium text-slate-600'}`}>
+                                    {task.title}
+                                  </h4>
+                                <p className="text-xs text-slate-500  font-medium mb-3 truncate">
                   {task.projectNoFail} - {task.projectName}
                 </p>
 
@@ -347,23 +348,23 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
       </div>
 
       {/* Right Content: Details */}
-      <div className="flex-1 glass-effect rounded-[2.5rem] shadow-xl border border-white/20 dark:border-white/5 flex flex-col overflow-hidden">
+      <div className="flex-1 bg-white/95  border border-white/10 shadow-xl rounded-[2.5rem] shadow-xl border border-white/20  flex flex-col overflow-hidden">
         {selectedTask ? (
           <>
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
+            <div className="p-6 border-b border-slate-100  flex justify-between items-center bg-white/50">
               <div className="flex gap-2">
                 {currentView === 'SAMPAH' ? (
                   <>
                     <button 
                       onClick={() => restoreTaskFromTrash(selectedTask.id)} 
-                      className="p-2.5 rounded-xl transition-all shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-emerald-600 hover:bg-emerald-50" 
+                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-emerald-600 hover:bg-emerald-50" 
                       title="Pulihkan ke Inbox"
                     >
                       <History className="w-5 h-5"/>
                     </button>
                     <button 
                       onClick={() => deletePermanently(selectedTask.id)} 
-                      className="p-2.5 rounded-xl transition-all shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-red-600 hover:bg-red-50" 
+                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-red-600 hover:bg-red-50" 
                       title="Padam Selamanya"
                     >
                       <Trash2 className="w-5 h-5"/>
@@ -372,7 +373,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                 ) : (
                   <button 
                     onClick={() => moveTaskToTrash(selectedTask.id)} 
-                    className="p-2.5 rounded-xl transition-all shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 hover:text-red-500 hover:bg-red-50" 
+                    className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-slate-400 hover:text-red-500 hover:bg-red-50" 
                     title="Pindah ke Tong Sampah"
                   >
                     <Trash className="w-5 h-5"/>
@@ -382,9 +383,9 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
               <div className="flex items-center gap-4">
                  <div className="text-right hidden sm:block">
                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem InfraHub</p>
-                   <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Automated Alert</p>
+                   <p className="text-xs font-bold text-slate-600">Automated Alert</p>
                  </div>
-                 <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-all bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 ${readIds.includes(selectedTask.id) ? 'text-emerald-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">
+                 <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-colors bg-white  border border-slate-100  ${readIds.includes(selectedTask.id) ? 'text-emerald-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">
                     {readIds.includes(selectedTask.id) ? <CheckCircle2 className="w-5 h-5"/> : <Circle className="w-5 h-5"/>}
                  </button>
               </div>
@@ -393,9 +394,9 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
             <div className="p-10 flex-1 overflow-y-auto">
               <div className="max-w-3xl">
                 {currentView === 'SAMPAH' && (
-                  <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3">
+                  <div className="mb-6 p-4 bg-red-50  border border-red-100  rounded-2xl flex items-center gap-3">
                     <ShieldAlert className="w-5 h-5 text-red-500 shrink-0" />
-                    <p className="text-xs text-red-600 dark:text-red-300 font-medium">
+                    <p className="text-xs text-red-600  font-medium">
                       Item di dalam tong sampah akan dipadam secara automatik selepas 7 hari.
                     </p>
                   </div>
@@ -405,28 +406,28 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                     {selectedTask.severity === 'error' ? <FileWarning className="w-8 h-8" /> : <AlertTriangle className="w-8 h-8" />}
                   </div>
                   <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white leading-tight mb-1">{selectedTask.title}</h1>
+                    <h1 className="text-2xl font-black text-slate-900  leading-tight mb-1">{selectedTask.title}</h1>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-lg border border-emerald-100 dark:border-emerald-800/50 uppercase">{selectedTask.projectNoFail}</span>
+                      <span className="text-sm font-bold text-emerald-600 bg-emerald-50  px-3 py-1 rounded-lg border border-emerald-100  uppercase">{selectedTask.projectNoFail}</span>
                       <span className="text-xs text-slate-400 font-medium">Dijana secara automatik pada {selectedTask.date.split('-').reverse().join('/')}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-700 mb-10 shadow-inner">
+                <div className="bg-slate-50  p-8 rounded-[2rem] border border-slate-100  mb-10 shadow-inner">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Butiran Projek</span>
                   </div>
                   
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 leading-relaxed uppercase">
+                  <h3 className="text-lg font-bold text-slate-800  mb-6 leading-relaxed uppercase">
                     {selectedTask.projectName}
                   </h3>
 
                   <div className="grid grid-cols-2 gap-8 mb-8">
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Status Projek</p>
-                      <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold uppercase tracking-wider">
+                      <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700   text-xs font-bold uppercase tracking-wider">
                         {selectedTask.status.replace(/_/g, ' ')}
                       </span>
                     </div>
@@ -443,14 +444,14 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                                           selectedTask.pjaName.charAt(0).toUpperCase()
                                       )}
                                   </div>
-                                  <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{selectedTask.pjaName}</p>
+                                  <p className="text-sm font-bold text-slate-700">{selectedTask.pjaName}</p>
                               </div>
                           );
                       })()}
                     </div>
                   </div>
 
-                  <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-loose">
+                  <div className="prose  max-w-none text-slate-600  leading-loose">
                     <p className="font-medium">{selectedTask.message}</p>
                     <p className="mt-4 italic text-sm">Sila layari modul Projek untuk mengemaskini maklumat atau menjana notis PDF yang berkaitan untuk dihantar kepada pihak kontraktor melalui emel atau serahan tangan.</p>
                   </div>
@@ -459,7 +460,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                 <div className="flex gap-4">
                   <button 
                     onClick={() => toggleRead(selectedTask.id)}
-                    className="flex-1 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95"
+                    className="flex-1 py-4 bg-slate-900  text-white  rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-colors hover:scale-[1.02]"
                   >
                     {readIds.includes(selectedTask.id) ? (
                         <><Circle className="w-5 h-5" /> Tandakan Belum Baca</>
@@ -469,7 +470,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                   </button>
                   <button 
                     onClick={handleOpenProject}
-                    className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95"
+                    className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-colors hover:scale-[1.02]"
                   >
                     <FileText className="w-5 h-5" /> Buka Fail Projek
                   </button>
@@ -478,11 +479,11 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-slate-50/50 dark:bg-slate-950/20">
-            <div className="w-24 h-24 bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl flex items-center justify-center mb-6">
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-slate-50/50">
+            <div className="w-24 h-24 bg-white  rounded-[2rem] shadow-xl flex items-center justify-center mb-6">
               <Zap className="w-10 h-10 text-emerald-500 opacity-20" />
             </div>
-            <h3 className="text-xl font-bold text-slate-600 dark:text-slate-400">Pilih Tugasan</h3>
+            <h3 className="text-xl font-bold text-slate-600">Pilih Tugasan</h3>
             <p className="text-sm max-w-xs mt-2">Pilih tugasan dari senarai di sebelah kiri untuk melihat butiran dan tindakan yang perlu diambil.</p>
           </div>
         )}

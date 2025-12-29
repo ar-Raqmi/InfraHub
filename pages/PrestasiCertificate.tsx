@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, formatCurrency, formatDate } from '../types';
@@ -14,7 +13,7 @@ interface PrestasiCertificateProps {
 const getBase64ImageFromURL = (url: string): Promise<string | null> => {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = "Anonymous";
+    img.crossOrigin ="Anonymous";
     img.onload = () => {
       const canvas = document.createElement("canvas");
       canvas.width = img.width;
@@ -87,9 +86,9 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                 currentY += 5;
             }
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.setFontSize(12);
-            doc.text("BORANG PRESTASI KONTRAKTOR / PEMBEKAL", pageWidth / 2, currentY, { align: "center" });
+            doc.text("BORANG PRESTASI KONTRAKTOR / PEMBEKAL", pageWidth / 2, currentY, { align:"center" });
             doc.setLineWidth(0.5);
             doc.line(pageWidth / 2 - 55, currentY + 1, pageWidth / 2 + 55, currentY + 1);
             currentY += 10;
@@ -129,21 +128,21 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
             const tableA2Body = [
                 [
-                    "No. Pesanan Rasmi :", 
+                 "No. Pesanan Rasmi :", 
                     project.noInden || '-', 
-                    "Kos (RM) :", 
+                 "Kos (RM) :", 
                     project.kosProjek ? formatCurrency(project.kosProjek).replace('RM', '').trim() : ''
                 ],
                 [
-                    "Tarikh Mula Kerja /Pesanan :", 
+                 "Tarikh Mula Kerja /Pesanan :", 
                     project.tarikhMulaKerja ? formatDate(project.tarikhMulaKerja) : '-',
-                    "Tarikh siap kerja / Terima Pesanan :",
+                 "Tarikh siap kerja / Terima Pesanan :",
                     project.tarikhSiapSebenar ? formatDate(project.tarikhSiapSebenar) : '-'
                 ],
                 [
-                    "Lanjutan Masa (Sehingga) :",
-                    "-",
-                    "No. Inbois :",
+                 "Lanjutan Masa (Sehingga) :",
+                 "-",
+                 "No. Inbois :",
                     localNoInbois || ''
                 ]
             ];
@@ -172,7 +171,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             // @ts-ignore
             currentY = doc.lastAutoTable.finalY + 10;
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.text("B. MAKLUMAT PENILAIAN PRESTASI", margin, currentY);
             currentY += 5;
 
@@ -187,11 +186,11 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                 doc.setLineWidth(0.1);
                 doc.rect(startX, y, boxWidth, boxHeight);
 
-                const labels = ["Amat Lemah", "Lemah", "Sederhana", "Baik", "Amat Baik"];
+                const labels = ["Amat Lemah","Lemah","Sederhana","Baik","Amat Baik"];
                 const values = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]];
 
                 doc.setFontSize(7);
-                doc.setFont("helvetica", "normal");
+                doc.setFont("helvetica","normal");
 
                 for (let i = 0; i < sections; i++) {
                     const x = startX + (i * secWidth);
@@ -203,7 +202,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     
                     doc.line(x, y + 6, x + secWidth, y + 6);
 
-                    doc.text(labels[i], x + (secWidth/2), y + 4, { align: "center" });
+                    doc.text(labels[i], x + (secWidth/2), y + 4, { align:"center" });
 
                     const val1 = values[i][0];
                     const val2 = values[i][1];
@@ -218,7 +217,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     } else {
                         doc.setTextColor(0, 0, 0);
                     }
-                    doc.text(val1.toString(), x + (subWidth/2), y + 10, { align: "center" });
+                    doc.text(val1.toString(), x + (subWidth/2), y + 10, { align:"center" });
 
                     if (val2 === selectedScore) {
                         doc.setFillColor(0, 0, 0);
@@ -227,7 +226,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     } else {
                         doc.setTextColor(0, 0, 0);
                     }
-                    doc.text(val2.toString(), x + subWidth + (subWidth/2), y + 10, { align: "center" });
+                    doc.text(val2.toString(), x + subWidth + (subWidth/2), y + 10, { align:"center" });
                     
                     doc.setTextColor(0, 0, 0);
                 }
@@ -236,17 +235,17 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             };
 
             const questions = [
-                "Keupayaan kontraktor/ pembekal memenuhi permintaan dari segi harga berbanding kontraktor/ pembekal lain.",
-                "Keupayaan kontraktor/ pembekal untuk membekalkan barangan /perkhidmatan/kerja mengikut spesifikasi yang ditetapkan.",
-                "Keupayaan kontraktor/ pembekal untuk membekalkan barangan/ perkhidmatan dalam jangkamasa yang ditetapkan.",
-                "Keupayaan kontraktor/ pembekal untuk membuat tindakan pembetulan sekiranya barangan/ perkhidmatan yang dibekalkan tidak memenuhi spesifikasi yang ditetapkan.",
-                "Penilaian terhadap kontraktor/pembekal dari segi sikap dan kerjasama yang ditunjukkan oleh kontraktor/pembekal.",
-                "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
+             "Keupayaan kontraktor/ pembekal memenuhi permintaan dari segi harga berbanding kontraktor/ pembekal lain.",
+             "Keupayaan kontraktor/ pembekal untuk membekalkan barangan /perkhidmatan/kerja mengikut spesifikasi yang ditetapkan.",
+             "Keupayaan kontraktor/ pembekal untuk membekalkan barangan/ perkhidmatan dalam jangkamasa yang ditetapkan.",
+             "Keupayaan kontraktor/ pembekal untuk membuat tindakan pembetulan sekiranya barangan/ perkhidmatan yang dibekalkan tidak memenuhi spesifikasi yang ditetapkan.",
+             "Penilaian terhadap kontraktor/pembekal dari segi sikap dan kerjasama yang ditunjukkan oleh kontraktor/pembekal.",
+             "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
             ];
 
             for (let i = 0; i < 4; i++) {
                 doc.setFontSize(9);
-                doc.setFont("helvetica", "normal");
+                doc.setFont("helvetica","normal");
                 doc.setTextColor(0, 0, 0);
                 const qText = `${i + 1}. ${questions[i]}`;
                 const splitText = doc.splitTextToSize(qText, pageWidth - (margin * 2));
@@ -261,7 +260,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
             for (let i = 4; i < 6; i++) {
                 doc.setFontSize(9);
-                doc.setFont("helvetica", "normal");
+                doc.setFont("helvetica","normal");
                 doc.setTextColor(0, 0, 0);
                 const qText = `${i + 1}. ${questions[i]}`;
                 const splitText = doc.splitTextToSize(qText, pageWidth - (margin * 2));
@@ -275,7 +274,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             doc.line(margin, currentY, pageWidth - margin, currentY);
             currentY += 10;
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
             doc.text("C. MARKAH PRESTASI KONTRAKTOR DAN PEMBEKAL", margin, currentY);
@@ -300,7 +299,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             cursorX += 15;
 
             doc.text("X 100% =", cursorX, eqY); cursorX += 20;
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.text(`${percentage}`, cursorX, eqY); 
             doc.setLineWidth(0.3);
             doc.line(cursorX, eqY + 1, cursorX + (percentage.toString().length * 3), eqY + 1);
@@ -313,18 +312,18 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             const rightX = pageWidth / 2 + 5;
             let scaleY = cBoxY + 8;
             doc.setFontSize(9);
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.text("Skala Penilaian:-", rightX, scaleY);
             scaleY += 5;
             
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.setFontSize(8);
             const scales = [
-                "0 - 20%  =  Amat Lemah",
-                "21 - 40%  =  Lemah",
-                "41 - 60%  =  Sederhana",
-                "61 - 80%  =  Baik",
-                "81 - 100% =  Amat Baik"
+             "0 - 20%  =  Amat Lemah",
+             "21 - 40%  =  Lemah",
+             "41 - 60%  =  Sederhana",
+             "61 - 80%  =  Baik",
+             "81 - 100% =  Amat Baik"
             ];
             scales.forEach(s => {
                 doc.text(s, rightX, scaleY);
@@ -334,9 +333,9 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
             currentY += cBoxHeight + 15;
 
             const titles = [
-                "PENGESAHAN PEGAWAI PENYELIA TAPAK / PENERIMA BEKALAN",
-                "PENGESAHAN PEGAWAI / JURUTERA",
-                "PERAKUAN PENGARAH JABATAN - Maklumat telah dikemaskini di dalam sistem."
+             "PENGESAHAN PEGAWAI PENYELIA TAPAK / PENERIMA BEKALAN",
+             "PENGESAHAN PEGAWAI / JURUTERA",
+             "PERAKUAN PENGARAH JABATAN - Maklumat telah dikemaskini di dalam sistem."
             ];
 
             for (const title of titles) {
@@ -344,7 +343,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                 doc.rect(margin, currentY, pageWidth - (margin * 2), 8, 'F');
                 doc.rect(margin, currentY, pageWidth - (margin * 2), 8, 'S');
                 
-                doc.setFont("helvetica", "bold");
+                doc.setFont("helvetica","bold");
                 doc.setFontSize(8);
                 doc.setTextColor(0, 0, 0);
 
@@ -353,15 +352,15 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     const boldPart = parts[0].trim();
                     const normalPart = parts[1].trim();
                     doc.text(boldPart, margin + 2, currentY + 5);
-                    doc.setFont("helvetica", "italic");
+                    doc.setFont("helvetica","italic");
                     doc.text(`- ${normalPart}`, margin + 5 + doc.getTextWidth(boldPart), currentY + 5);
                 } else {
-                    doc.text(title, pageWidth / 2, currentY + 5, { align: "center" });
+                    doc.text(title, pageWidth / 2, currentY + 5, { align:"center" });
                 }
 
                 currentY += 8;
                 
-                doc.setFont("helvetica", "normal");
+                doc.setFont("helvetica","normal");
                 doc.setTextColor(0, 0, 0);
                 doc.text("Tandatangan:", margin + 5, currentY + 10);
                 doc.text("Tarikh:", margin + 5, currentY + 20);
@@ -395,11 +394,11 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
     const RatingGrid = ({ selected }: { selected: number }) => (
         <div className="flex w-full border border-black text-[10px] h-[35px]">
             {[
-                { label: "Amat Lemah", vals: [1, 2] },
-                { label: "Lemah", vals: [3, 4] },
-                { label: "Sederhana", vals: [5, 6] },
-                { label: "Baik", vals: [7, 8] },
-                { label: "Amat Baik", vals: [9, 10] },
+                { label:"Amat Lemah", vals: [1, 2] },
+                { label:"Lemah", vals: [3, 4] },
+                { label:"Sederhana", vals: [5, 6] },
+                { label:"Baik", vals: [7, 8] },
+                { label:"Amat Baik", vals: [9, 10] },
             ].map((group, idx) => (
                 <div key={idx} className="flex-1 flex flex-col border-r border-black last:border-r-0">
                     <div className="text-center h-[18px] flex items-center justify-center border-b border-black leading-none pt-0.5">
@@ -431,17 +430,17 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
     );
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" style={{ zIndex: 9999 }}>
-            <div className={`bg-white dark:bg-slate-900 w-full rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up transition-all duration-300 ${view === 'PREVIEW' ? 'max-w-[230mm] h-[95vh]' : 'max-w-4xl h-[90vh]'}`}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  animate-fade-in" style={{ zIndex: 9999 }}>
+            <div className={`bg-white  w-full rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up transition-colors duration-300 ${view === 'PREVIEW' ? 'max-w-[230mm] h-[95vh]' : 'max-w-4xl h-[90vh]'}`}>
                 
-                <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
+                <div className="p-4 border-b border-slate-200  flex justify-between items-center bg-white  shrink-0">
                     <div className="flex items-center gap-3">
                         {view === 'PREVIEW' && (
-                            <button onClick={() => setView('FORM')} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300"/>
+                            <button onClick={() => setView('FORM')} className="p-2 hover:bg-slate-100  rounded-full transition-colors">
+                                <ArrowLeft className="w-5 h-5 text-slate-600"/>
                             </button>
                         )}
-                        <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <h3 className="font-bold text-slate-800  flex items-center gap-2">
                             {view === 'FORM' ? <><Star className="w-5 h-5 text-violet-500" /> Penilaian Prestasi</> : 'Pratonton Borang'}
                         </h3>
                     </div>
@@ -450,14 +449,14 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                             <>
                                 <button 
                                     onClick={() => { handleSave(); setView('PREVIEW'); }}
-                                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm shadow-md"
+                                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-md"
                                 >
                                     <Eye className="w-4 h-4"/>
                                     Pratonton
                                 </button>
                                 <button 
                                     onClick={() => { handleSave(); onClose(); }}
-                                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm shadow-md"
+                                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-md"
                                 >
                                     <Save className="w-4 h-4"/>
                                     Simpan & Tutup
@@ -467,41 +466,41 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                             <button 
                                 onClick={handleDownload}
                                 disabled={isGenerating}
-                                className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-all text-sm disabled:opacity-50"
+                                className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
                             >
                                 {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
                                 PDF
                             </button>
                         )}
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500">
+                        <button onClick={onClose} className="p-2 hover:bg-slate-100  rounded-lg text-slate-500">
                             <X className="w-5 h-5"/>
                         </button>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900/50 p-6 flex flex-col items-center">
+                <div className="flex-1 overflow-y-auto bg-gray-50  p-6 flex flex-col items-center">
                     
                     {view === 'FORM' && (
                         <div className="w-full max-w-3xl space-y-6">
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                <div className="bg-white  p-5 rounded-2xl shadow-sm border border-slate-200">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Skor Semasa</div>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-black text-violet-600 dark:text-violet-400">{totalScore}</span>
+                                        <span className="text-3xl font-black text-violet-600">{totalScore}</span>
                                         <span className="text-slate-400 font-bold">/ 60</span>
                                     </div>
                                 </div>
-                                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                <div className="bg-white  p-5 rounded-2xl shadow-sm border border-slate-200">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Prestasi (%)</div>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{percentage}%</span>
+                                        <span className="text-3xl font-black text-emerald-600">{percentage}%</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                                <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wide">Maklumat Tambahan</h4>
+                            <div className="bg-white  p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <h4 className="font-bold text-slate-900  mb-4 text-sm uppercase tracking-wide">Maklumat Tambahan</h4>
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">No. Inbois</label>
@@ -509,7 +508,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                             type="text" 
                                             value={localNoInbois} 
                                             onChange={(e) => setLocalNoInbois(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-violet-500 transition-all text-sm text-slate-900 dark:text-white"
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-violet-500 transition-colors text-sm text-slate-900"
                                             placeholder="Masukkan No. Inbois..."
                                         />
                                     </div>
@@ -518,7 +517,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Skop Perkhidmatan</label>
                                         <div className="flex flex-wrap gap-4">
                                             {['BEKALAN', 'PERKHIDMATAN', 'KERJA'].map((scope) => (
-                                                <label key={scope} className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${localSkop === scope ? 'bg-violet-50 border-violet-500 ring-1 ring-violet-500 dark:bg-violet-900/20' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                                                <label key={scope} className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${localSkop === scope ? 'bg-violet-50 border-violet-500 ring-1 ring-violet-500' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
                                                     <input 
                                                         type="radio" 
                                                         name="skop" 
@@ -527,7 +526,9 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                                         onChange={() => setLocalSkop(scope as any)}
                                                         className="hidden"
                                                     />
-                                                    <span className={`font-bold text-sm ${localSkop === scope ? 'text-violet-700 dark:text-violet-300' : 'text-slate-600 dark:text-slate-400'}`}>{scope}</span>
+                                                    <span className={`font-bold text-sm ${localSkop === scope ? 'text-violet-700' : 'text-slate-600'}`}>
+                                                        {scope}
+                                                    </span>
                                                 </label>
                                             ))}
                                         </div>
@@ -537,27 +538,27 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
                             <div className="space-y-4">
                                 {[
-                                    "Keupayaan kontraktor/ pembekal memenuhi permintaan dari segi harga berbanding kontraktor/ pembekal lain.",
-                                    "Keupayaan kontraktor/ pembekal untuk membekalkan barangan /perkhidmatan/kerja mengikut spesifikasi yang ditetapkan.",
-                                    "Keupayaan kontraktor/ pembekal untuk membekalkan barangan/ perkhidmatan dalam jangkamasa yang ditetapkan.",
-                                    "Keupayaan kontraktor/ pembekal untuk membuat tindakan pembetulan sekiranya barangan/ perkhidmatan yang dibekalkan tidak memenuhi spesifikasi yang ditetapkan.",
-                                    "Penilaian terhadap kontraktor/pembekal dari segi sikap dan kerjasama yang ditunjukkan oleh kontraktor/pembekal.",
-                                    "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
+                                 "Keupayaan kontraktor/ pembekal memenuhi permintaan dari segi harga berbanding kontraktor/ pembekal lain.",
+                                 "Keupayaan kontraktor/ pembekal untuk membekalkan barangan /perkhidmatan/kerja mengikut spesifikasi yang ditetapkan.",
+                                 "Keupayaan kontraktor/ pembekal untuk membekalkan barangan/ perkhidmatan dalam jangkamasa yang ditetapkan.",
+                                 "Keupayaan kontraktor/ pembekal untuk membuat tindakan pembetulan sekiranya barangan/ perkhidmatan yang dibekalkan tidak memenuhi spesifikasi yang ditetapkan.",
+                                 "Penilaian terhadap kontraktor/pembekal dari segi sikap dan kerjasama yang ditunjukkan oleh kontraktor/pembekal.",
+                                 "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
                                 ].map((q, idx) => (
-                                    <div key={idx} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                    <div key={idx} className="bg-white  p-6 rounded-2xl shadow-sm border border-slate-200">
                                         <div className="flex gap-4 mb-4">
-                                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300 shrink-0">{idx + 1}</div>
-                                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed pt-1">{q}</p>
+                                            <div className="w-8 h-8 rounded-full bg-slate-100  flex items-center justify-center font-bold text-slate-600  shrink-0">{idx + 1}</div>
+                                            <p className="text-sm font-medium text-slate-800  leading-relaxed pt-1">{q}</p>
                                         </div>
                                         <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
                                             {[1,2,3,4,5,6,7,8,9,10].map(score => (
                                                 <button
                                                     key={score}
                                                     onClick={() => updateScore(idx, score)}
-                                                    className={`h-10 rounded-lg font-bold text-sm transition-all border ${
+                                                    className={`h-10 rounded-lg font-bold text-sm transition-colors border ${
                                                         localScores[idx] === score 
                                                         ? 'bg-violet-600 text-white border-violet-600 shadow-lg transform scale-110' 
-                                                        : 'bg-slate-50 dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-violet-300'
+                                                        : 'bg-slate-50  text-slate-500 border-slate-200  hover:border-violet-300'
                                                     }`}
                                                 >
                                                     {score}

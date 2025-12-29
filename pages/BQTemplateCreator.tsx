@@ -357,36 +357,36 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
     const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
     const currentCategoryGroups = bqLibrary.filter(g => g.category === selectedCategory);
 
-    const inputClass = "w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 outline-none focus:ring-2 focus:ring-blue-500 text-sm";
-    const labelClass = "block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1";
+    const inputClass ="w-full px-4 py-2.5 rounded-lg bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 text-sm";
+    const labelClass ="block text-xs font-bold text-slate-500  uppercase tracking-wide mb-1";
 
     const IconComponent = ICON_MAP[templateInfo.icon as keyof typeof ICON_MAP] || FileText;
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden">
+        <div className="flex flex-col h-full bg-white  rounded-[2.5rem] overflow-hidden">
              {/* Header */}
-             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
+             <div className="p-6 border-b border-slate-200  flex justify-between items-center bg-white  shrink-0">
                   <div className="flex items-center gap-4">
                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-${templateInfo.color}-100 text-${templateInfo.color}-600`}>
                           <IconComponent className="w-7 h-7" />
                       </div>
                       <div>
-                          <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Penyunting Template BQ</h3>
+                          <h3 className="text-2xl font-bold text-slate-900">Penyunting Template BQ</h3>
                           <p className="text-sm text-slate-500">Bina struktur template dan pilih item dari pustaka.</p>
                       </div>
                   </div>
-                  <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                  <button onClick={onCancel} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors">
                       <X className="w-7 h-7" />
                   </button>
              </div>
 
-             <div className="flex-1 flex flex-col lg:flex-row gap-8 p-6 overflow-hidden bg-gray-50 dark:bg-black/20">
+             <div className="flex-1 flex flex-col lg:flex-row gap-8 p-6 overflow-hidden bg-gray-50">
                  {/* Left Panel: Settings & Bills */}
                  <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0 overflow-y-auto custom-scrollbar">
                       
                       {/* Template Settings Card */}
-                      <div className="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                          <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 border-b border-slate-100 dark:border-slate-700 pb-2">Maklumat Template</h5>
+                      <div className="bg-white  p-5 rounded-3xl border border-slate-200  shadow-sm space-y-4">
+                          <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 border-b border-slate-100  pb-2">Maklumat Template</h5>
                           <div><label className={labelClass}>Tajuk</label><input value={templateInfo.title} onChange={e => setTemplateInfo({...templateInfo, title: e.target.value})} className={inputClass} /></div>
                           <div><label className={labelClass}>Sub-tajuk</label><input value={templateInfo.subtitle} onChange={e => setTemplateInfo({...templateInfo, subtitle: e.target.value})} className={inputClass} /></div>
                           <div>
@@ -410,7 +410,7 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                           <button
                                               key={iconKey}
                                               onClick={() => setTemplateInfo({ ...templateInfo, icon: iconKey })}
-                                              className={`p-2 rounded-xl flex items-center justify-center transition-all ${templateInfo.icon === iconKey ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900 shadow-md scale-105' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-slate-200'}`}
+                                              className={`p-2 rounded-xl flex items-center justify-center transition-colors ${templateInfo.icon === iconKey ? 'bg-slate-800 text-white   shadow-md scale-105' : 'bg-slate-100  text-slate-400 hover:bg-slate-200'}`}
                                               title={iconKey}
                                           >
                                               <IconComp className="w-4 h-4" />
@@ -428,7 +428,7 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                        <button
                                           key={colorKey}
                                           onClick={() => setTemplateInfo({ ...templateInfo, color: colorKey })}
-                                          className={`h-8 rounded-xl transition-all border-2 ${templateInfo.color === colorKey ? 'border-slate-900 dark:border-white scale-105 ring-2 ring-offset-1 ring-slate-400' : 'border-transparent hover:scale-105'} bg-${colorKey}-500`}
+                                          className={`h-8 rounded-xl transition-colors border-2 ${templateInfo.color === colorKey ? 'border-slate-900  scale-105 ring-2 ring-offset-1 ring-slate-400' : 'border-transparent '} bg-${colorKey}-500`}
                                           title={colorKey}
                                        />
                                   ))}
@@ -447,7 +447,7 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                    <div 
                                       key={bill.id} 
                                       onClick={() => setActiveBillId(bill.id)}
-                                      className={`group flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer shadow-sm ${activeBillId === bill.id ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-500/30 transform scale-[1.02]' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-300'}`}
+                                      className={`group flex items-center justify-between p-4 rounded-2xl border transition-colors cursor-pointer shadow-sm ${activeBillId === bill.id ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-500/30 transform scale-[1.02]' : 'bg-white  border-slate-200  text-slate-600  hover:border-emerald-300'}`}
                                    >
                                        <div className="min-w-0">
                                            <p className={`text-[10px] font-black uppercase leading-none mb-1 ${activeBillId === bill.id ? 'text-emerald-200' : 'text-slate-400'}`}>BIL {index + 1}</p>
@@ -455,7 +455,8 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                        </div>
                                        <button 
                                           onClick={(e) => { e.stopPropagation(); handleDeleteBill(bill.id); }}
-                                          className={`opacity-0 group-hover:opacity-100 p-2 rounded-lg transition-all ${activeBillId === bill.id ? 'text-white hover:bg-white/20' : 'text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
+                                                                                      className={`opacity-0 group-hover:opacity-100 p-2 rounded-lg transition-colors ${activeBillId === bill.id ? 'text-white hover:bg-white/20' : 'text-red-400 hover:bg-red-50'}`}
+                                           
                                        >
                                            <Trash2 className="w-4 h-4" />
                                        </button>
@@ -466,20 +467,20 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                  </div>
 
                  {/* Right Panel: Bill Editor */}
-                 <div className="flex-1 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col shadow-xl">
+                 <div className="flex-1 bg-white  rounded-[2.5rem] border border-slate-200  overflow-hidden flex flex-col shadow-xl">
                       {activeBill ? (
                           <>
-                              <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                              <div className="p-6 border-b border-slate-100  bg-slate-50/50">
                                   <label className={labelClass}>Tajuk Bil</label>
                                   <input 
                                       value={activeBill.title} 
                                       onChange={e => updateBillTitle(activeBill.id, e.target.value)}
-                                      className="text-xl font-black bg-transparent outline-none w-full border-b border-emerald-500/20 focus:border-emerald-500 transition-colors text-slate-800 dark:text-white uppercase"
+                                      className="text-xl font-black bg-transparent outline-none w-full border-b border-emerald-500/20 focus:border-emerald-500 transition-colors text-slate-800  uppercase"
                                       placeholder="BUTIRAN KERJA-KERJA..."
                                   />
                               </div>
 
-                              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-black/10">
+                              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-50/30">
                                    <div className="space-y-3">
                                        {(() => {
                                             let currentLevel0Collapsed = false; 
@@ -503,19 +504,21 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                                 if (isHidden) return null;
 
                                                 return (
-                                                    <div key={idx} className={`relative flex items-center gap-4 p-4 rounded-2xl border transition-all group ${isHeader ? (level === 0 ? 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 ml-4') : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm hover:border-emerald-300 ml-8'}`}>
+                                                                                                          <div key={idx} className={`relative flex items-center gap-4 p-4 rounded-2xl border transition-colors group ${isHeader ? (level === 0 ? 'bg-slate-100 border-slate-200' : 'bg-slate-50 border-slate-100 ml-4') : 'bg-white border-slate-100 shadow-sm hover:border-emerald-300 ml-8'}`}>
+                                                    
                                                         {isHeader && (
-                                                            <button onClick={() => toggleCollapse(activeBill.id, item.id)} className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 transition-colors">
+                                                            <button onClick={() => toggleCollapse(activeBill.id, item.id)} className="p-1 rounded hover:bg-slate-200  text-slate-400 transition-colors">
                                                                 {item.isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                             </button>
                                                         )}
                                                         <div className="pt-1 text-slate-300"><GripVertical className="w-4 h-4" /></div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className={`text-sm ${isHeader ? (level === 0 ? 'font-black uppercase text-slate-700 dark:text-slate-300' : 'font-bold text-slate-600 dark:text-slate-400') : 'font-medium text-slate-800 dark:text-slate-200'} leading-relaxed`}>{item.description}</p>
+                                                                                                                          <p className={`text-sm ${isHeader ? (level === 0 ? 'font-black uppercase text-slate-700' : 'font-bold text-slate-600') : 'font-medium text-slate-800'} leading-relaxed`}>{item.description}</p>
+                                                            
                                                             {item.variant && <p className="text-xs text-slate-500 italic mt-1">{item.variant}</p>}
                                                             {!isHeader && (
                                                                 <div className="mt-2 flex items-center gap-2">
-                                                                    <span className="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 font-mono font-bold uppercase">{item.unit}</span>
+                                                                    <span className="text-[10px] bg-slate-100  px-2 py-0.5 rounded text-slate-500 font-mono font-bold uppercase">{item.unit}</span>
                                                                     {item.sourceGroupId && <span className="text-[9px] text-slate-400 font-mono">SRC: {item.sourceItemId}</span>}
                                                                 </div>
                                                             )}
@@ -523,13 +526,13 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                                         
                                                         {/* Controls */}
                                                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <button onClick={() => moveItem(activeBill.id, item.id, 'up')} disabled={idx === 0} className="text-slate-400 hover:text-emerald-500 p-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-30">
+                                                            <button onClick={() => moveItem(activeBill.id, item.id, 'up')} disabled={idx === 0} className="text-slate-400 hover:text-emerald-500 p-1 rounded hover:bg-emerald-50  disabled:opacity-30">
                                                                 <ChevronUp className="w-4 h-4" />
                                                             </button>
-                                                            <button onClick={() => moveItem(activeBill.id, item.id, 'down')} disabled={idx === activeBill.items.length - 1} className="text-slate-400 hover:text-emerald-500 p-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-30">
+                                                            <button onClick={() => moveItem(activeBill.id, item.id, 'down')} disabled={idx === activeBill.items.length - 1} className="text-slate-400 hover:text-emerald-500 p-1 rounded hover:bg-emerald-50  disabled:opacity-30">
                                                                 <ChevronDown className="w-4 h-4" />
                                                             </button>
-                                                            <button onClick={() => handleDeleteItem(activeBill.id, idx)} className="text-slate-300 hover:text-red-500 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                                            <button onClick={() => handleDeleteItem(activeBill.id, idx)} className="text-slate-300 hover:text-red-500 p-1 rounded hover:bg-red-50  transition-colors">
                                                                 <X className="w-5 h-5" />
                                                             </button>
                                                         </div>
@@ -539,7 +542,7 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                        })()}
                                        
                                        {activeBill.items.length === 0 && (
-                                           <div className="py-20 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl bg-slate-50/50 dark:bg-slate-800/50">
+                                           <div className="py-20 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200  rounded-3xl bg-slate-50/50">
                                                <FolderPlus className="w-16 h-16 mb-4 opacity-20 text-slate-500" />
                                                <p className="text-sm font-medium">Senarai kosong.</p>
                                                <button onClick={openAddItemModal} className="mt-4 text-emerald-600 hover:text-emerald-700 font-bold text-sm">Tambah Item dari Pustaka</button>
@@ -548,8 +551,8 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
                                    </div>
                               </div>
 
-                              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                                  <button onClick={openAddItemModal} className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 font-bold text-sm hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
+                              <div className="p-4 border-t border-slate-200  bg-white">
+                                  <button onClick={openAddItemModal} className="w-full py-3 border-2 border-dashed border-slate-200  rounded-xl text-slate-400 font-bold text-sm hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50  transition-colors flex items-center justify-center gap-2">
                                       <Plus className="w-5 h-5" /> Tambah Item Pustaka
                                   </button>
                               </div>
@@ -564,51 +567,52 @@ const BQTemplateCreator: React.FC<BQTemplateCreatorProps> = ({
              </div>
 
              {/* Footer Actions */}
-             <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-end gap-4">
-                  <button onClick={onCancel} className="px-8 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Batal</button>
-                  <button onClick={handleSaveTemplate} className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/20 flex items-center gap-2 active:scale-95">
+             <div className="p-6 border-t border-slate-200  bg-white  flex justify-end gap-4">
+                  <button onClick={onCancel} className="px-8 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100  transition-colors">Batal</button>
+                  <button onClick={handleSaveTemplate} className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/20 flex items-center gap-2">
                       <Save className="w-5 h-5" /> Simpan Template
                   </button>
              </div>
 
              {/* Add Item Modal */}
              {isAddItemModalOpen && createPortal(
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
-                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 transform scale-100 transition-all animate-slide-up" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
+                    <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden border border-slate-200  transform scale-100 transition-colors animate-slide-up" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b border-slate-100  flex justify-between items-center bg-white  shrink-0">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><Plus className="w-5 h-5" /></div>
-                                <div><h3 className="font-bold text-slate-900 dark:text-white">Pilih Item dari Pustaka</h3><p className="text-xs text-slate-500">Klik item untuk menambahnya ke dalam template.</p></div>
+                                <div><h3 className="font-bold text-slate-900">Pilih Item dari Pustaka</h3><p className="text-xs text-slate-500">Klik item untuk menambahnya ke dalam template.</p></div>
                             </div>
-                            <button onClick={() => setIsAddItemModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
+                            <button onClick={() => setIsAddItemModalOpen(false)} className="p-2 hover:bg-slate-100  rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
                         </div>
                         <div className="flex-1 flex overflow-hidden">
-                            <div className="w-64 bg-slate-50 dark:bg-slate-900/50 border-r border-slate-100 dark:border-slate-800 p-4 space-y-1 overflow-y-auto custom-scrollbar shrink-0">
-                                {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${selectedCategory === cat ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'}`}>{cat}</button>))}
+                            <div className="w-64 bg-slate-50  border-r border-slate-100  p-4 space-y-1 overflow-y-auto custom-scrollbar shrink-0">
+                                                                  {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50'}`}>{cat}</button>))}
+                                 
                             </div>
-                            <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
+                            <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
                                 <div className="space-y-6">
                                     {currentCategoryGroups.map(group => (
                                         <div key={group.id} className="space-y-3">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">{group.title}</h4>
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100  pb-1">{group.title}</h4>
                                             <div className="grid grid-cols-1 gap-2">
                                                 {group.items.map(item => (
-                                                    <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-white/5 transition-all hover:border-emerald-300 dark:hover:border-emerald-700 group/item">
+                                                    <div key={item.id} className="p-3 bg-slate-50  rounded-2xl border border-slate-100  transition-colors hover:border-emerald-300  group/item">
                                                         <div className="flex justify-between items-start gap-4">
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="text-sm font-bold text-slate-800 dark:text-white leading-tight">{item.description}</p>
+                                                                <p className="text-sm font-bold text-slate-800  leading-tight">{item.description}</p>
                                                                 <div className="mt-2 flex gap-2 flex-wrap">
                                                                     {(!item.variants || item.variants.length === 0) ? (
-                                                                        <button onClick={() => handleLibraryAddItem(group.id, item.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-all shadow-sm"><Plus className="w-3.5 h-3.5" /> Pilih Item</button>
+                                                                        <button onClick={() => handleLibraryAddItem(group.id, item.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"><Plus className="w-3.5 h-3.5" /> Pilih Item</button>
                                                                     ) : (
                                                                         item.variants.map(v => (
-                                                                            <button key={v.id} onClick={() => handleLibraryAddItem(group.id, item.id, v.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-all shadow-sm"><Plus className="w-3.5 h-3.5" /> {v.label}</button>
+                                                                            <button key={v.id} onClick={() => handleLibraryAddItem(group.id, item.id, v.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"><Plus className="w-3.5 h-3.5" /> {v.label}</button>
                                                                         ))
                                                                     )}
                                                                 </div>
                                                             </div>
                                                             <div className="text-right shrink-0">
-                                                                <span className="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase mt-2 inline-block">{item.unit}</span>
+                                                                <span className="text-[10px] bg-slate-200  px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase mt-2 inline-block">{item.unit}</span>
                                                             </div>
                                                         </div>
                                                     </div>

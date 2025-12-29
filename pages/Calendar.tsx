@@ -34,7 +34,7 @@ const Calendar: React.FC<CalendarProps> = ({ projects }) => {
   // Adjust for Monday start (0 = Sunday, 1 = Monday)
   const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
-  const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+  const monthNames = ["Januari","Februari","Mac","April","Mei","Jun","Julai","Ogos","September","Oktober","November","Disember"];
 
   const nextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
@@ -50,26 +50,26 @@ const Calendar: React.FC<CalendarProps> = ({ projects }) => {
   };
 
   return (
-    <div className="animate-fade-in-up">
+    <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold gradient-text">Kalendar Projek</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Jadual pelaksanaan projek dan tarikh penting</p>
+          <p className="text-slate-500  mt-1">Jadual pelaksanaan projek dan tarikh penting</p>
         </div>
-        <div className="flex items-center gap-4 bg-white/50 dark:bg-slate-800/50 p-2 rounded-2xl shadow-sm border border-white/20">
-          <button onClick={prevMonth} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all">
-            <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+        <div className="flex items-center gap-4 bg-white/50  p-2 rounded-2xl shadow-sm border border-white/20">
+          <button onClick={prevMonth} className="p-2 hover:bg-white  rounded-xl transition-colors">
+            <ChevronLeft className="w-5 h-5 text-slate-600" />
           </button>
-          <span className="text-lg font-bold text-slate-800 dark:text-white min-w-[150px] text-center">
+          <span className="text-lg font-bold text-slate-800  min-w-[150px] text-center">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </span>
-          <button onClick={nextMonth} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all">
-            <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+          <button onClick={nextMonth} className="p-2 hover:bg-white  rounded-xl transition-colors">
+            <ChevronRight className="w-5 h-5 text-slate-600" />
           </button>
         </div>
       </div>
 
-      <div className="glass-effect rounded-3xl shadow-xl border border-white/20 dark:border-white/5 overflow-hidden p-6">
+      <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl shadow-xl border border-white/20  overflow-hidden p-6">
         
         {/* Days Header */}
         <div className="grid grid-cols-7 mb-4">
@@ -85,7 +85,7 @@ const Calendar: React.FC<CalendarProps> = ({ projects }) => {
           
           {/* Empty slots for previous month */}
           {Array.from({ length: startDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-32 md:h-40 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-transparent"></div>
+            <div key={`empty-${i}`} className="h-32 md:h-40 rounded-2xl bg-slate-50/50  border border-transparent"></div>
           ))}
 
           {/* Days */}
@@ -98,8 +98,8 @@ const Calendar: React.FC<CalendarProps> = ({ projects }) => {
               currentDate.getFullYear() === new Date().getFullYear();
 
             return (
-              <div key={day} className={`h-32 md:h-40 rounded-2xl p-3 border transition-all hover:shadow-md flex flex-col overflow-hidden ${isToday ? 'bg-white dark:bg-slate-800 border-emerald-500 shadow-emerald-500/20 ring-2 ring-emerald-500/20' : 'bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-white/5 hover:bg-white dark:hover:bg-slate-800'}`}>
-                <span className={`text-sm font-bold mb-2 w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-emerald-600 text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+              <div key={day} className={`h-32 md:h-40 rounded-2xl p-3 border transition-colors hover:shadow-md flex flex-col overflow-hidden ${isToday ? 'bg-white  border-emerald-500 shadow-emerald-500/20 ring-2 ring-emerald-500/20' : 'bg-white/60  border-white/20  hover:bg-white 
+                <span className={`text-sm font-bold mb-2 w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-emerald-600 text-white' : 'text-slate-700 
                   {day}
                 </span>
                 
@@ -119,15 +119,15 @@ const Calendar: React.FC<CalendarProps> = ({ projects }) => {
       <div className="mt-6 flex gap-6 justify-center flex-wrap">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span className="text-sm text-slate-600 dark:text-slate-300">Mula Kontrak</span>
+          <span className="text-sm text-slate-600">Mula Kontrak</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <span className="text-sm text-slate-600 dark:text-slate-300">Tamat Kontrak</span>
+          <span className="text-sm text-slate-600">Tamat Kontrak</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-          <span className="text-sm text-slate-600 dark:text-slate-300">Serah Tapak</span>
+          <span className="text-sm text-slate-600">Serah Tapak</span>
         </div>
       </div>
     </div>

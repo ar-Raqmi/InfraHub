@@ -59,26 +59,26 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             const contentWidth = pageWidth - (margin * 2);
             let currentY = 20;
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.setFontSize(11);
-            doc.text("KERAJAAN MALAYSIA", pageWidth / 2, currentY, { align: "center" });
+            doc.text("KERAJAAN MALAYSIA", pageWidth / 2, currentY, { align:"center" });
             currentY += 6;
             
             doc.setFontSize(13);
-            doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, currentY, { align: "center" });
+            doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, currentY, { align:"center" });
             currentY += 8;
 
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.setFontSize(10);
-            doc.text("PERAKUAN SIAP KERJA", pageWidth / 2, currentY, { align: "center" });
+            doc.text("PERAKUAN SIAP KERJA", pageWidth / 2, currentY, { align:"center" });
             currentY += 5;
 
-            doc.setFont("helvetica", "italic");
+            doc.setFont("helvetica","italic");
             doc.setFontSize(9);
-            doc.text("(CERTIFICATE OF PRACTICAL COMPLETION)", pageWidth / 2, currentY, { align: "center" });
+            doc.text("(CERTIFICATE OF PRACTICAL COMPLETION)", pageWidth / 2, currentY, { align:"center" });
             currentY += 15;
 
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.setFontSize(9);
 
             const leftColX = margin;
@@ -86,10 +86,10 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
 
             doc.text(`Rujukan : Bil (   ) ${project.noFail || ''}`, leftColX, currentY);
             
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.text("Majlis Perbandaran Selayang", rightColX, currentY);
             currentY += 4;
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.text("Persiaran 3, Bandar Baru Selayang,", rightColX, currentY);
             currentY += 4;
             doc.text("68100 Batu Caves,", rightColX, currentY);
@@ -101,35 +101,35 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             doc.text("Kepada :", leftColX, currentY);
             
             const dateStr = tarikhSiap ? formatDateMalay(tarikhSiap) : '.........................';
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.text(dateStr.toUpperCase(), rightColX, currentY);
             
             const indentX = leftColX + 25; 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.text(project.namaSyarikat?.toUpperCase() || 'NAMA SYARIKAT', indentX, currentY);
             
             currentY += 5;
 
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             const address = companyDetails?.address || 'ALAMAT SYARIKAT...';
             const splitAddress = doc.splitTextToSize(address, 90); 
             doc.text(splitAddress, indentX, currentY);
             currentY += (splitAddress.length * 4) + 8;
 
-            doc.setFont("helvetica", "bold");
-            doc.text(`Berdaftar dengan CIDB dalam Gred " ${companyDetails?.gred || 'G1'} "`, leftColX, currentY);
+            doc.setFont("helvetica","bold");
+            doc.text(`Berdaftar dengan CIDB dalam Gred" ${companyDetails?.gred || 'G1'}"`, leftColX, currentY);
             currentY += 5;
             doc.text(`No. Sebutharga : ${project.noSebutharga || '.........................'}`, leftColX, currentY);
             currentY += 10;
 
-            doc.setFont("helvetica", "normal");
-            const labelSebutharga = "Sebutharga Untuk :";
+            doc.setFont("helvetica","normal");
+            const labelSebutharga ="Sebutharga Untuk :";
             doc.text(labelSebutharga, leftColX, currentY);
             
             const labelWidth = doc.getTextWidth(labelSebutharga);
             const titleX = leftColX + labelWidth + 3; 
             
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             const title = project.namaProjek?.toUpperCase() || '';
             const maxTitleWidth = pageWidth - margin - titleX;
             const splitTitle = doc.splitTextToSize(title, maxTitleWidth);
@@ -137,7 +137,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             doc.text(splitTitle, titleX, currentY);
             currentY += (splitTitle.length * 5) + 10;
 
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica","normal");
             doc.setFontSize(9); 
             
             const date1 = tarikhSiap ? formatDateMalay(tarikhSiap) : '...................';
@@ -145,22 +145,22 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             const date3 = dlpEnd ? formatDateMalay(dlpEnd) : '...................';
 
             const tokens = [
-                { text: "Menurut Syarat-Syarat Kontrak, dan tertakluk kepada penyiapan berkaitan dengan pembaikan apa-apa kecacatan, ketidaksempurnaan, kesusutan atau apa-apa dan yang mungkin terzahir dalam Tempoh Tanggungan Kecacatan maka adalah dengan ini di perakui bahawa seluruh Kerja yang tersebut telah siap sejajar dengan syarat-syarat dalam Dokumen Sebut Harga pada ", bold: false },
+                { text:"Menurut Syarat-Syarat Kontrak, dan tertakluk kepada penyiapan berkaitan dengan pembaikan apa-apa kecacatan, ketidaksempurnaan, kesusutan atau apa-apa dan yang mungkin terzahir dalam Tempoh Tanggungan Kecacatan maka adalah dengan ini di perakui bahawa seluruh Kerja yang tersebut telah siap sejajar dengan syarat-syarat dalam Dokumen Sebut Harga pada", bold: false },
                 { text: date1, bold: true },
-                { text: " dan diambil milik pada ", bold: false },
+                { text:" dan diambil milik pada", bold: false },
                 { text: date2, bold: true },
-                { text: " dan dengan itu Tempoh Tanggungan Kecacatan untuk kerja kerja tersebut bermula pada ", bold: false },
+                { text:" dan dengan itu Tempoh Tanggungan Kecacatan untuk kerja kerja tersebut bermula pada", bold: false },
                 { text: date2, bold: true },
-                { text: " dan berakhir pada ", bold: false },
+                { text:" dan berakhir pada", bold: false },
                 { text: date3, bold: true },
-                { text: ".", bold: false }
+                { text:".", bold: false }
             ];
 
             const lineHeight = 5; 
             let cursorX = leftColX;
             
             tokens.forEach(token => {
-                doc.setFont("helvetica", token.bold ? "bold" : "normal");
+                doc.setFont("helvetica", token.bold ?"bold" :"normal");
                 const words = token.text.split(/(\s+)/).filter(e => e.length > 0);
                 
                 words.forEach(word => {
@@ -184,7 +184,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             const sigLeftX = margin;
             const sigRightX = pageWidth / 2 + 10;
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("helvetica","bold");
             doc.setFontSize(9);
             
             doc.text("Diperakui di tapak,", sigLeftX, currentY);
@@ -233,21 +233,21 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" style={{ zIndex: 9999 }}>
-            <div className="bg-white dark:bg-slate-900 w-full max-w-[230mm] h-[95vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  animate-fade-in" style={{ zIndex: 9999 }}>
+            <div className="bg-white  w-full max-w-[230mm] h-[95vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
                 
-                <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
-                    <h3 className="font-bold text-slate-800 dark:text-white">Pratonton CPC (Perakuan Siap Kerja)</h3>
+                <div className="p-4 border-b border-slate-200  flex justify-between items-center bg-white  shrink-0">
+                    <h3 className="font-bold text-slate-800">Pratonton CPC (Perakuan Siap Kerja)</h3>
                     <div className="flex gap-2">
                         <button 
                             onClick={handleDownload}
                             disabled={isGenerating}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-all text-sm disabled:opacity-50"
+                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
                         >
                             {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
                             PDF
                         </button>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500">
+                        <button onClick={onClose} className="p-2 hover:bg-slate-100  rounded-lg text-slate-500">
                             <X className="w-5 h-5"/>
                         </button>
                     </div>
@@ -290,7 +290,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                         </div>
 
                         <div className="mb-6 text-[9pt] font-bold">
-                            <p className="mb-1">Berdaftar dengan CIDB dalam Gred " {companyDetails?.gred || 'G1'} "</p>
+                            <p className="mb-1">Berdaftar dengan CIDB dalam Gred" {companyDetails?.gred || 'G1'}"</p>
                             <p>No. Sebutharga : {project.noSebutharga || '.........................'}</p>
                         </div>
 
