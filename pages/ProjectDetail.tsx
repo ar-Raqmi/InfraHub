@@ -233,126 +233,125 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
   };
 
   return createPortal(
-        <div className="fixed top-0 left-0 md:left-28 right-0 z-[90] transition-transform duration-200 animate-slide-up no-print">
-          <div className="bg-white border-b border-slate-200 shadow-2xl px-3 md:px-8 py-3 md:py-4 flex items-center justify-between gap-4 md:gap-12">
-    
-          <div className="flex-1 flex justify-center max-w-3xl border-l border-r border-slate-200 mx-2 md:mx-6 px-4 md:px-8">
-                <div className="w-full max-w-lg flex flex-col gap-2">
-                     <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <div className="relative group shrink-0">
-                                <select 
-                                  name="status" 
-                                  value={status} 
-                                  onChange={onStatusChange} 
-                                  disabled={isReadOnly}
-                                  className={`appearance-none bg-slate-100 border border-slate-200 rounded-xl py-1.5 px-3 md:pl-4 md:pr-10 text-[10px] md:text-xs font-black text-slate-700 focus:ring-2 focus:ring-emerald-500 transition-colors uppercase tracking-wider ${isReadOnly ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-slate-200 hover:border-emerald-500/50'}`}
-                                >
-                                    <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Lantikan</option>
-                                    <option value={ProjectStatus.DALAM_PROSES}>Proses</option>
-                                    <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Tapak</option>
-                                    <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Bayaran</option>
-                                    <option value={ProjectStatus.SIAP}>Siap</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover:text-emerald-500 transition-colors" />
-                            </div>
-                            {!isReadOnly && <div className="scale-100">{saveAction}</div>}
-                            <div className="scale-100">{exportAction}</div>
-                         </div>
-                         
-                         <div 
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-colors group ${isReadOnly ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-emerald-50'}`}
-                            onClick={toggleEdit}
-                         >
-                            <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest hidden xs:inline group-hover:text-emerald-500 transition-colors">Siap</span>
-                            <div className="flex items-baseline gap-1">
-                                <input 
-                                    ref={inputRef}
-                                    id="progress-input" 
-                                    type="number" 
-                                    inputMode="decimal"
-                                    value={localProgress} 
-                                    onChange={(e) => setLocalProgress(e.target.value)} 
-                                    onBlur={handleBlur} 
-                                    onKeyDown={handleKeyDown} 
-                                    disabled={isReadOnly} 
-                                    className={`w-10 md:w-14 text-right bg-transparent border-b-2 p-0 text-sm md:text-lg font-black text-emerald-600 focus:ring-0 outline-none transition-colors ${isEditingProgress ? 'border-emerald-500 bg-white px-2 rounded-t-md' : 'border-transparent'}`}
-                                />
-                                <span className="text-xs md:text-sm font-black text-emerald-500/50">%</span>
-                            </div>
-                         </div>
-                     </div>
-                     <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-                        <div className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-colors duration-700 ease-out relative" style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }} >
-                        </div>
-                     </div>
-                </div>
+    <div className="fixed top-0 left-0 md:left-28 right-0 z-[90] bg-white border-b border-slate-300 shadow-xl no-print">
+      <div className="md:hidden w-full bg-slate-50 border-b border-slate-200 px-4 py-2 flex flex-col items-center">
+          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Ringkasan Kewangan</span>
+          <div className="flex items-center gap-4">
+              <div className="flex flex-col items-center">
+                  <span className="text-[8px] font-bold text-slate-400 uppercase leading-none">{isPelarasanActive ? 'Asal' : 'Kos'}</span>
+                  <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-xl text-emerald-600'}`}>{formatCurrency(grandTotal)}</p>
+              </div>
+              {isPelarasanActive && finalTotal !== undefined && (
+                  <>
+                    <div className="w-[1px] h-6 bg-slate-300 mx-1" />
+                    <div className="flex flex-col items-center">
+                        <span className="text-[8px] font-black text-emerald-600 uppercase leading-none">Akhir</span>
+                        <p className={`text-xl font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600'}`}>{formatCurrency(finalTotal)}</p>
+                    </div>
+                  </>
+              )}
           </div>
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(0,2fr)_1fr] items-center px-3 py-2 md:px-8 md:py-4 gap-2 md:gap-0">
+        
+        <div className="flex items-center gap-2 md:gap-3 justify-between md:justify-start w-full overflow-hidden">
+          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+             <div className="relative group">
+                <select 
+                  name="status" 
+                  value={status} 
+                  onChange={onStatusChange} 
+                  disabled={isReadOnly}
+                  className="appearance-none bg-slate-100 border-2 border-slate-200 rounded-xl py-1.5 md:py-2 pl-3 md:pl-4 pr-8 md:pr-10 text-[10px] md:text-[11px] font-black text-slate-700 focus:ring-2 focus:ring-emerald-500 transition-all uppercase tracking-wider cursor-pointer hover:bg-white hover:border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Lantikan</option>
+                    <option value={ProjectStatus.DALAM_PROSES}>Proses</option>
+                    <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Tapak</option>
+                    <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Bayaran</option>
+                    <option value={ProjectStatus.SIAP}>Siap</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400 pointer-events-none group-hover:text-emerald-500 transition-colors" />
+             </div>
+             {!isReadOnly && <div className="scale-90 md:scale-100">{saveAction}</div>}
+             <div className="scale-90 md:scale-100">{exportAction}</div>
+          </div>
+          
+          <div className="md:hidden flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100" onClick={toggleEdit}>
+             <span className="text-[10px] font-black text-emerald-600">{localProgress}%</span>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-4 md:gap-10 shrink-0">
-              <div className="text-right hidden xs:block">
-                  <div className="flex flex-col">
-                      <p className="text-[10px] md:text-xs font-black text-emerald-500 uppercase tracking-[0.2em] mb-1.5 leading-none"> 
-                        {isPelarasanActive ? 'Ringkasan Kos Akhir' : 'Jumlah Kos Projek'} 
-                      </p>
-                      <div className="flex items-center gap-6 justify-end">
-                        <div className="flex flex-col items-end">
-                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">{isPelarasanActive ? 'Harga Asal' : ''}</span>
-                           <p className={`font-mono font-bold leading-none transition-colors ${isPelarasanActive ? 'text-slate-400 line-through text-xs md:text-lg' : 'text-xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 drop-shadow-sm'}`}> 
-                             {formatCurrency(grandTotal)} 
-                           </p>
-                        </div>
-                        {isPelarasanActive && finalTotal !== undefined && (
-                          <>
-                            <div className="flex flex-col items-end border-l-2 border-slate-200 pl-6 ml-2">
-                               <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">Harga Akhir</span>
-                               <p className={`text-xl md:text-3xl font-black font-mono leading-none transition-colors ${ finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600' }`}> 
-                                 {formatCurrency(finalTotal)} 
-                               </p>
-                            </div>
-                            <div className="flex flex-col items-end border-l border-slate-200 pl-4 ml-2">
-                               <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Deductions</span>
-                               <p className="text-xs md:text-sm font-bold font-mono leading-none text-red-400">
-                                 -{formatCurrency((Math.min(grandTotal + (extraTotal || 0), grandTotal)) - (finalTotal || 0))}
-                               </p>
-                            </div>
-                            {extraTotal !== undefined && extraTotal > 0 && (
-                              <div className="flex flex-col items-end border-l border-slate-200 pl-4 ml-2">
-                                 <span className="text-[8px] font-bold text-blue-500 uppercase tracking-wider mb-1">Extra (Capped)</span>
-                                 <p className="text-xs md:text-sm font-bold font-mono leading-none text-blue-500">
-                                   +{formatCurrency(extraTotal)}
-                                 </p>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
+        <div className="hidden md:flex flex-col items-center justify-center w-full max-w-md mx-auto px-4">
+            <div className="flex items-center justify-between w-full mb-1.5 px-1">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prestasi Projek</span>
+                <div 
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-lg transition-all ${isReadOnly ? '' : 'hover:bg-emerald-50 cursor-pointer group'}`}
+                  onClick={toggleEdit}
+                >
+                  <div className="flex items-baseline">
+                      <input 
+                          ref={inputRef}
+                          type="number" 
+                          value={localProgress} 
+                          onChange={(e) => setLocalProgress(e.target.value)} 
+                          onBlur={handleBlur} 
+                          onKeyDown={handleKeyDown} 
+                          disabled={isReadOnly} 
+                          className={`w-10 text-right bg-transparent border-b-2 border-transparent p-0 text-lg font-black text-emerald-600 focus:ring-0 outline-none transition-all ${isEditingProgress ? 'border-emerald-500 bg-white shadow-inner rounded-t px-1' : ''}`}
+                      />
+                      <span className="text-sm font-black text-emerald-500/50">%</span>
                   </div>
+                  {!isReadOnly && <Edit className="w-3 h-3 text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                </div>
+            </div>
+            <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5 shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 rounded-full transition-all duration-1000 ease-out relative" 
+                  style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }} 
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                </div>
+            </div>
+        </div>
+
+        {/* Column 3: Price Breakdown (Right) */}
+        <div className="hidden md:flex items-center justify-end gap-6 w-full overflow-hidden">
+            <div className="flex flex-col items-end shrink-0">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none text-right">
+                  {isPelarasanActive ? 'Harga Kontrak' : 'Jumlah Kos'}
+                </p>
+                <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-lg' : 'text-2xl text-emerald-600'}`}>
+                  {formatCurrency(grandTotal)}
+                </p>
+            </div>
+            
+            {isPelarasanActive && finalTotal !== undefined && (
+              <div className="flex items-center gap-6 border-l-2 border-slate-100 pl-6 shrink-0">
+                <div className="flex flex-col items-end">
+                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1 leading-none text-right">Harga Akhir</span>
+                   <p className={`text-2xl font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600'}`}>
+                     {formatCurrency(finalTotal)}
+                   </p>
+                </div>
+                
+                <div className="flex flex-col items-end">
+                   <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1 leading-none text-right">Varian</span>
+                   <p className={`text-sm font-bold font-mono leading-none ${ (finalTotal - grandTotal) < 0 ? 'text-red-500' : 'text-blue-500'}`}>
+                     { (finalTotal - grandTotal) > 0 ? '+' : '' }{formatCurrency(finalTotal - grandTotal)}
+                   </p>
+                </div>
               </div>
-              <div className="xs:hidden text-right flex flex-col items-end">
-                  {isPelarasanActive && finalTotal !== undefined ? (
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col items-end">
-                            <span className="text-[7px] font-bold text-slate-400 uppercase leading-none mb-0.5">H. Asal</span>
-                            <p className="text-[10px] font-bold text-slate-400 line-through leading-none">{formatCurrency(grandTotal)}</p>
-                        </div>
-                        <div className="flex flex-col items-end">
-                            <span className="text-[7px] font-black text-emerald-500 uppercase leading-none mb-0.5">H. Akhir</span>
-                            <p className={`text-sm font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600'}`}>
-                              {formatCurrency(finalTotal)}
-                            </p>
-                        </div>
-                      </div>
-                  ) : (
-                      <>
-                          <p className="text-[8px] font-black text-slate-400 uppercase mb-1 tracking-widest">KOS PROJEK</p>
-                          <p className="text-base font-black font-mono text-emerald-600">{formatCurrency(grandTotal)}</p>
-                      </>
-                  )}
-              </div>
-          </div>
-       </div>
+            )}
+        </div>
+      </div>
+      
+      <div className="md:hidden h-1 w-full bg-slate-100 relative">
+          <div 
+            className="h-full bg-emerald-500 transition-all duration-1000 ease-out" 
+            style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }} 
+          />
+      </div>
     </div>,
     document.body
   );
