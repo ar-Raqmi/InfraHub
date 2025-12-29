@@ -479,20 +479,64 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* Meeting Settings */}
-        <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl xl:col-span-2 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5  rounded-full  -mr-16 -mt-16 pointer-events-none opacity-50"></div>
+        {/* Row 1: Meeting Settings & No. Sebutharga */}
+        <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full -mr-16 -mt-16 pointer-events-none opacity-50"></div>
             <div className="flex items-center gap-4 mb-8 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100   flex items-center justify-center text-orange-600  shadow-sm border border-orange-100">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 shadow-sm border border-orange-100">
                     <Calendar className="w-7 h-7" />
                 </div>
-                <div><h3 className="text-xl font-bold text-slate-900">Tetapan Mesyuarat</h3><div className="flex items-center gap-2 mt-1"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700   border border-orange-200">Tahun {selectedYear}</span></div></div>
+                <div><h3 className="text-xl font-bold text-slate-900">Tetapan Mesyuarat</h3><div className="flex items-center gap-2 mt-1"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200">Tahun {selectedYear}</span></div></div>
             </div>
             <div className="relative z-10 mt-2">
-                <label className="block text-[10px] font-bold text-slate-500  uppercase tracking-widest mb-2 font-jakarta pl-1">Tarikh Sidang Jawatankuasa Sebutharga</label>
-                <div className="flex flex-col md:flex-row gap-4 items-stretch"><div className="flex-1"><DatePickerInput value={meetingDate} onChange={setMeetingDate} placeholder="DD/MM/YYYY" /></div><button onClick={handleSaveSettings} disabled={isSavingSettings} className="h-14 px-8 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg transition-colors font-bold shadow-lg shadow-orange-500/20  disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0 md:w-auto w-full text-base">{isSavingSettings ? 'Menyimpan...' : 'Simpan Tetapan'}</button></div>
-                <p className="text-[11px] text-slate-400 mt-3 pl-1 italic flex items-center gap-1.5"><Info className="w-3.5 h-3.5" />Tarikh ini akan dipaparkan dalam dokumen"Ulasan Pengarah".</p>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-jakarta pl-1">Tarikh Sidang Jawatankuasa Sebutharga</label>
+                <div className="flex flex-col md:flex-row gap-4 items-stretch"><div className="flex-1"><DatePickerInput value={meetingDate} onChange={setMeetingDate} placeholder="DD/MM/YYYY" /></div><button onClick={handleSaveSettings} disabled={isSavingSettings} className="h-14 px-8 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg transition-colors font-bold shadow-lg shadow-orange-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0 md:w-auto w-full text-base">{isSavingSettings ? 'Menyimpan...' : 'Simpan'}</button></div>
+                <p className="text-[11px] text-slate-400 mt-3 pl-1 italic flex items-center gap-1.5"><Info className="w-3.5 h-3.5" />Tarikh bagi dokumen "Ulasan Pengarah".</p>
             </div>
+        </div>
+
+        {/* No. Sebutharga Manager */}
+        <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+              <Award className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">Senarai No. Sebutharga ({selectedYear})</h3>
+              <p className="text-xs text-slate-500 mt-1">Uruskan nombor sebutharga sedia ada.</p>
+            </div>
+          </div>
+          <div className="flex gap-2 mb-6">
+            <input 
+              type="text" 
+              value={newSebutharga} 
+              onChange={(e) => setNewSebutharga(e.target.value)} 
+              className="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500" 
+              placeholder="Tambah No. Sebutharga Baru..." 
+              onKeyDown={(e) => e.key === 'Enter' && handleAddSebutharga()}
+            />
+            <button onClick={handleAddSebutharga} className="px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors">
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="space-y-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
+            {sebuthargaNumbers.length > 0 ? (
+              sebuthargaNumbers.map((sh, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group">
+                  <span className="font-mono font-bold text-slate-700 truncate pr-2 flex-1">{sh}</span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors">
+                    <button onClick={() => initiateDelete('SEBUTHARGA', sh)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Padam">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-slate-400 italic text-sm">
+                Tiada rekod.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* --- BQ TEMPLATE MANAGER --- */}
@@ -755,21 +799,21 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         </div>
 
         {/* Companies Manager */}
-        <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl">
-          <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-blue-100  flex items-center justify-center text-blue-600"><Building2 className="w-6 h-6" /></div><div><h3 className="text-xl font-bold text-slate-900">Senarai Syarikat ({selectedYear})</h3><p className="text-xs text-slate-500  mt-1">Susun keutamaan paparan untuk senarai projek.</p></div></div>
-          <div className="flex gap-2 mb-6"><input type="text" value={newCompany} onChange={(e) => setNewCompany(e.target.value)} className="flex-1 px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tambah Syarikat Baru..." /><button onClick={handleAddCompany} className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"><Plus className="w-5 h-5" /></button></div>
-          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
+          <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600"><Building2 className="w-6 h-6" /></div><div><h3 className="text-xl font-bold text-slate-900">Senarai Syarikat ({selectedYear})</h3><p className="text-xs text-slate-500 mt-1">Susun keutamaan paparan syarikat.</p></div></div>
+          <div className="flex gap-2 mb-6"><input type="text" value={newCompany} onChange={(e) => setNewCompany(e.target.value)} className="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tambah Syarikat Baru..." /><button onClick={handleAddCompany} className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"><Plus className="w-5 h-5" /></button></div>
+          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
             {companyOrder.map((company, idx) => (
-              <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50  hover:bg-slate-100  transition-colors group"><span className="font-medium text-slate-700  truncate pr-2 flex-1">{company}</span><div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors"><button onClick={() => moveCompany(idx, 'up')} disabled={idx === 0} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ArrowUp className="w-3.5 h-3.5" /></button><button onClick={() => moveCompany(idx, 'down')} disabled={idx === companyOrder.length - 1} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ArrowDown className="w-3.5 h-3.5" /></button><div className="w-px h-4 bg-slate-200  mx-1"></div><button onClick={() => openCompanyModal(company)} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors" title="Edit Maklumat"><Edit2 className="w-4 h-4" /></button><button onClick={() => initiateDelete('COMPANY', company)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50  rounded-lg transition-colors" title="Padam"><Trash2 className="w-4 h-4" /></button></div></div>
+              <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group"><span className="font-medium text-slate-700 truncate pr-2 flex-1">{company}</span><div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors"><button onClick={() => moveCompany(idx, 'up')} disabled={idx === 0} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30"><ArrowUp className="w-3.5 h-3.5" /></button><button onClick={() => moveCompany(idx, 'down')} disabled={idx === companyOrder.length - 1} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30"><ArrowDown className="w-3.5 h-3.5" /></button><div className="w-px h-4 bg-slate-200 mx-1"></div><button onClick={() => openCompanyModal(company)} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Maklumat"><Edit2 className="w-4 h-4" /></button><button onClick={() => initiateDelete('COMPANY', company)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Padam"><Trash2 className="w-4 h-4" /></button></div></div>
             ))}
           </div>
         </div>
 
         {/* Vote Numbers Manager */}
-        <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl">
-          <div className="flex items-center justify-between mb-6"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-indigo-100  flex items-center justify-center text-indigo-600"><FileDigit className="w-6 h-6" /></div><h3 className="text-xl font-bold text-slate-900">Senarai No. Vot ({selectedYear})</h3></div><button onClick={() => openVoteModal()} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-bold"><Plus className="w-4 h-4" /> Tambah Vot</button></div>
+        <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between mb-6"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600"><FileDigit className="w-6 h-6" /></div><h3 className="text-xl font-bold text-slate-900">Senarai No. Vot ({selectedYear})</h3></div><button onClick={() => openVoteModal()} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-bold"><Plus className="w-4 h-4" /> Tambah Vot</button></div>
           <div className="overflow-x-auto">
-              <table className="w-full text-sm"><thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50  border-b border-slate-200"><tr><th className="px-4 py-3 text-left">No. Vot</th><th className="px-4 py-3 text-left">Nama Vot</th><th className="px-4 py-3 text-right">Peruntukan (RM)</th><th className="px-4 py-3 w-20"></th></tr></thead>
+              <table className="w-full text-sm"><thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200"><tr><th className="px-4 py-3 text-left">No. Vot</th><th className="px-4 py-3 text-left">Nama Vot</th><th className="px-4 py-3 text-right">Peruntukan (RM)</th><th className="px-4 py-3 w-20"></th></tr></thead>
                   <tbody className="divide-y divide-slate-100">
                       {votes.map((vote) => (
                           <tr key={vote.code} className="group hover:bg-slate-50"><td className="px-4 py-3 font-mono font-bold text-slate-700">{vote.code}</td><td className="px-4 py-3 text-slate-600">{vote.name || '-'}</td><td className="px-4 py-3 text-right font-mono text-emerald-600">{new Intl.NumberFormat('en-MY', { style: 'currency', currency: 'MYR' }).format(vote.allocation || 0)}</td><td className="px-4 py-3 text-right"><div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-colors"><button onClick={() => openVoteModal(vote)} className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => initiateDelete('VOTE', vote.code)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button></div></td></tr>
