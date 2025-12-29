@@ -121,47 +121,47 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'GJ-1-01',
                 description: 'Membekal segala peralatan, bahan-bahan, jentera dan tenaga buruh untuk mengecat jalan jenis Thermoplastic termasuk Prime Coat dan Glass bead serta membersihkan permukaan jalan seperti yang tercatat di dalam penentuan kerja dan Arahan Teknik Jalan 2D/85. Kerja mengecat Roadmarking merangkumi semua jenis garisan kecuali Tulisan Abjad.\n\nGARISAN PUTIH',
                 variants: [
-                    { id: 'GJ-1-01-v1', label: 'i. Garisan Berhenti', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-01-v2', label: 'ii. Garisan Tengah (100mm lebar)', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-01-v3', label: 'iii. Garisan Tepi (150mm lebar)', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-01-v4', label: 'iv. Single Arrow', rate: 68.00, unit: 'Nos' },
-                    { id: 'GJ-1-01-v5', label: 'v. Double Arrow', rate: 106.25, unit: 'Nos' },
-                    { id: 'GJ-1-01-v6', label: 'vi. Triple Arrow', rate: 127.50, unit: 'Nos' }
+                    { id: 'GJ-1-01-v1', label: 'Garisan Berhenti', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-01-v2', label: 'Garisan Tengah (100mm lebar)', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-01-v3', label: 'Garisan Tepi (150mm lebar)', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-01-v4', label: 'Single Arrow', rate: 68.00, unit: 'Nos' },
+                    { id: 'GJ-1-01-v5', label: 'Double Arrow', rate: 106.25, unit: 'Nos' },
+                    { id: 'GJ-1-01-v6', label: 'Triple Arrow', rate: 127.50, unit: 'Nos' }
                 ]
             },
             {
                 id: 'GJ-1-02',
                 description: 'GARISAN KUNING',
                 variants: [
-                    { id: 'GJ-1-02-v1', label: 'i. Petak kuning', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-02-v2', label: 'ii. Garisan bonggol jalan', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-02-v3', label: 'iii. Lot tempat meletak kenderaan & Nombor petak parking (sila rujuk spesifikasi pelan)', rate: 27.20, unit: 'Nos' },
-                    { id: 'GJ-1-02-v4', label: 'iv. Transverse Bar (5mm Tebal)', rate: 27.20, unit: 'm²' },
-                    { id: 'GJ-1-02-v5', label: 'v. Lot tempat meletak motorsikal', rate: 10.20, unit: 'Nos' }
+                    { id: 'GJ-1-02-v1', label: 'Petak kuning', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-02-v2', label: 'Garisan bonggol jalan', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-02-v3', label: 'Lot tempat meletak kenderaan & Nombor petak parking (sila rujuk spesifikasi pelan)', rate: 27.20, unit: 'Nos' },
+                    { id: 'GJ-1-02-v4', label: 'Transverse Bar (5mm Tebal)', rate: 27.20, unit: 'm²' },
+                    { id: 'GJ-1-02-v5', label: 'Lot tempat meletak motorsikal', rate: 10.20, unit: 'Nos' }
                 ]
             },
             {
                 id: 'GJ-1-03',
                 description: 'GARISAN HITAM',
                 variants: [
-                    { id: 'GJ-1-03-v1', label: 'i. Garisan Berhenti', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-03-v2', label: 'ii. Garisan Tengah (100mm lebar)', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-03-v3', label: 'iii. Garisan Tepi (150mm lebar)', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-03-v4', label: 'iv. Single/Double/Triple Arrow', rate: 61.20, unit: 'Nos' },
-                    { id: 'GJ-1-03-v5', label: 'v. Petak kuning', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-03-v6', label: 'vi. Garisan bonggol jalan', rate: 21.25, unit: 'm²' },
-                    { id: 'GJ-1-03-v7', label: 'vii. Lot tempat meletak kenderaan & Nombor petak parking', rate: 23.80, unit: 'Nos' },
-                    { id: 'GJ-1-03-v8', label: 'viii. Lot tempat meletak motorsikal', rate: 10.20, unit: 'Nos' }
+                    { id: 'GJ-1-03-v1', label: 'Garisan Berhenti', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-03-v2', label: 'Garisan Tengah (100mm lebar)', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-03-v3', label: 'Garisan Tepi (150mm lebar)', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-03-v4', label: 'Single/Double/Triple Arrow', rate: 61.20, unit: 'Nos' },
+                    { id: 'GJ-1-03-v5', label: 'Petak kuning', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-03-v6', label: 'Garisan bonggol jalan', rate: 21.25, unit: 'm²' },
+                    { id: 'GJ-1-03-v7', label: 'Lot tempat meletak kenderaan & Nombor petak parking', rate: 23.80, unit: 'Nos' },
+                    { id: 'GJ-1-03-v8', label: 'Lot tempat meletak motorsikal', rate: 10.20, unit: 'Nos' }
                 ]
             },
             {
                 id: 'GJ-1-04',
                 description: 'GARISAN JALAN YANG LAIN',
                 variants: [
-                    { id: 'GJ-1-04-v1', label: 'i. Garisan Chevron Hatching (300mm lebar)', rate: 23.46, unit: 'm²' },
-                    { id: 'GJ-1-04-v2', label: 'ii. Cat Merah Ghost Island', rate: 19.55, unit: 'm²' },
-                    { id: 'GJ-1-04-v3', label: 'iii. Petak Parking OKU', rate: 450.50, unit: 'Nos' },
-                    { id: 'GJ-1-04-v4', label: 'iv. Cat Merah Petak Sewa Khas', rate: 27.20, unit: 'm²' }
+                    { id: 'GJ-1-04-v1', label: 'Garisan Chevron Hatching (300mm lebar)', rate: 23.46, unit: 'm²' },
+                    { id: 'GJ-1-04-v2', label: 'Cat Merah Ghost Island', rate: 19.55, unit: 'm²' },
+                    { id: 'GJ-1-04-v3', label: 'Petak Parking OKU', rate: 450.50, unit: 'Nos' },
+                    { id: 'GJ-1-04-v4', label: 'Cat Merah Petak Sewa Khas', rate: 27.20, unit: 'm²' }
                 ]
             }
         ]
@@ -188,12 +188,12 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'GJ-3-01',
                 description: 'Kerja-kerja membekal dan mengecat jalan jenis All Weather Thermoplastic (AWT) seperti yang tercatat di dalam penentuan kerja.',
                 variants: [
-                    { id: 'GJ-3-01-v1', label: 'i. Garisan Berhenti', rate: 68.00, unit: 'm²' },
-                    { id: 'GJ-3-01-v2', label: 'ii. Garisan Tengah (100mm lebar)', rate: 68.00, unit: 'm²' },
-                    { id: 'GJ-3-01-v3', label: 'iii. Garisan Tepi (150mm lebar)', rate: 68.00, unit: 'm²' },
-                    { id: 'GJ-3-01-v4', label: 'iv. Single Arrow', rate: 127.50, unit: 'Nos' },
-                    { id: 'GJ-3-01-v5', label: 'v. Double Arrow', rate: 170.00, unit: 'Nos' },
-                    { id: 'GJ-3-01-v6', label: 'vi. Triple Arrow', rate: 212.50, unit: 'Nos' }
+                    { id: 'GJ-3-01-v1', label: 'Garisan Berhenti', rate: 68.00, unit: 'm²' },
+                    { id: 'GJ-3-01-v2', label: 'Garisan Tengah (100mm lebar)', rate: 68.00, unit: 'm²' },
+                    { id: 'GJ-3-01-v3', label: 'Garisan Tepi (150mm lebar)', rate: 68.00, unit: 'm²' },
+                    { id: 'GJ-3-01-v4', label: 'Single Arrow', rate: 127.50, unit: 'Nos' },
+                    { id: 'GJ-3-01-v5', label: 'Double Arrow', rate: 170.00, unit: 'Nos' },
+                    { id: 'GJ-3-01-v6', label: 'Triple Arrow', rate: 212.50, unit: 'Nos' }
                 ]
             }
         ]
@@ -292,16 +292,16 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '2-01',
                 description: 'Kerja-kerja menggali dan membuang tembok longkang sedia ada tidak melebihi 1500mm ukuran termasuk membuang sisa di tempat yang dibenarkan oleh pegawai penguasa.',
                 variants: [
-                    { id: '2-01-v1', label: "i) Dengan jentera", rate: 21.17, unit: "m³" },
-                    { id: '2-01-v2', label: "ii) Dengan tangan", rate: 59.42, unit: "m³" }
+                    { id: '2-01-v1', label: "Dengan jentera", rate: 21.17, unit: "m³" },
+                    { id: '2-01-v2', label: "Dengan tangan", rate: 59.42, unit: "m³" }
                 ]
             },
             {
                 id: '2-02',
                 description: 'Kerja-kerja menggali dan membuang tembok longkang sedia ada melebihi 1500mm tetapi tidak melebihi 3000mm ukuran (dengan jentera/tangan) termasuk membuang sisa di tempat yang dibenarkan oleh penguasa.',
                 variants: [
-                    { id: '2-02-v1', label: "a) dengan jentera", rate: 21.76, unit: "m³" },
-                    { id: '2-02-v2', label: "b) dengan tangan", rate: 94.32, unit: "m³" }
+                    { id: '2-02-v1', label: "dengan jentera", rate: 21.76, unit: "m³" },
+                    { id: '2-02-v2', label: "dengan tangan", rate: 94.32, unit: "m³" }
                 ]
             }
         ]
@@ -347,8 +347,8 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '5-01',
                 description: 'Kerja-kerja membekal, memotong dan memasang acuan konkrit daripada papan tidak berketam pada muka-muka yang pugak (Vertical) termasuk kerja-kerja menanggal dan membuang.',
                 variants: [
-                    { id: '5-01-v1', label: "i. 1 kali penggunaan - (20m ke bawah)", rate: 61.71, unit: "m²" },
-                    { id: '5-01-v2', label: "ii. 2 kali penggunaan - (21m ke atas)", rate: 30.86, unit: "m²" }
+                    { id: '5-01-v1', label: "1 kali penggunaan - (20m ke bawah)", rate: 61.71, unit: "m²" },
+                    { id: '5-01-v2', label: "2 kali penggunaan - (21m ke atas)", rate: 30.86, unit: "m²" }
                 ]
             }
         ]
@@ -362,16 +362,16 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '6-01',
                 description: 'Kerja-kerja membekal, menuang dan memadat konkrit Ready Mixed /tuang disitu gred 20 bertetulang tuang disitu untuk lantai dan tembok longkang tebal 100mm/150mm/ Ready Mixed /tuang disitu.',
                 variants: [
-                    { id: '6-01-v1', label: "i. 50mm tebal (Ready Mix)", rate: 17.38, unit: "m²" },
-                    { id: '6-01-v2', label: "ii. 50mm tebal (Tuang Disitu)", rate: 25.25, unit: "m²" },
-                    { id: '6-01-v3', label: "iii. 75mm tebal (Ready Mix)", rate: 26.07, unit: "m²" },
-                    { id: '6-01-v4', label: "iv. 75mm tebal (Tuang Disitu)", rate: 37.99, unit: "m²" },
-                    { id: '6-01-v5', label: "v. 100mm tebal (Ready Mix)", rate: 34.77, unit: "m²" },
-                    { id: '6-01-v6', label: "vi. 100mm tebal (Tuang Disitu)", rate: 50.61, unit: "m²" },
-                    { id: '6-01-v7', label: "vii. 150mm tebal (Ready Mix)", rate: 52.14, unit: "m²" },
-                    { id: '6-01-v8', label: "viii. 150mm tebal (Tuang Disitu)", rate: 75.85, unit: "m²" },
-                    { id: '6-01-v9', label: "ix. 200mm tebal (Ready Mix)", rate: 69.52, unit: "m²" },
-                    { id: '6-01-v10', label: "x. 200mm tebal (Tuang Disitu)", rate: 101.10, unit: "m²" }
+                    { id: '6-01-v1', label: "50mm tebal (Ready Mix)", rate: 17.38, unit: "m²" },
+                    { id: '6-01-v2', label: "50mm tebal (Tuang Disitu)", rate: 25.25, unit: "m²" },
+                    { id: '6-01-v3', label: "75mm tebal (Ready Mix)", rate: 26.07, unit: "m²" },
+                    { id: '6-01-v4', label: "75mm tebal (Tuang Disitu)", rate: 37.99, unit: "m²" },
+                    { id: '6-01-v5', label: "100mm tebal (Ready Mix)", rate: 34.77, unit: "m²" },
+                    { id: '6-01-v6', label: "100mm tebal (Tuang Disitu)", rate: 50.61, unit: "m²" },
+                    { id: '6-01-v7', label: "150mm tebal (Ready Mix)", rate: 52.14, unit: "m²" },
+                    { id: '6-01-v8', label: "150mm tebal (Tuang Disitu)", rate: 75.85, unit: "m²" },
+                    { id: '6-01-v9', label: "200mm tebal (Ready Mix)", rate: 69.52, unit: "m²" },
+                    { id: '6-01-v10', label: "200mm tebal (Tuang Disitu)", rate: 101.10, unit: "m²" }
                 ]
             }
         ]
@@ -385,9 +385,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '7-01',
                 description: 'Kerja-kerja membekal dan memasang longkang jenis separuh bulatan jenis tembikar bergilap (HRGW) dan di sambung dengan simen motar 1:3 saiz :-',
                 variants: [
-                    { id: '7-01-v1', label: "i. 225mm", rate: 23.04, unit: "m" },
-                    { id: '7-01-v2', label: "ii. 300mm", rate: 30.60, unit: "m" },
-                    { id: '7-01-v3', label: "iii. 450mm", rate: 45.90, unit: "m" }
+                    { id: '7-01-v1', label: "225mm", rate: 23.04, unit: "m" },
+                    { id: '7-01-v2', label: "300mm", rate: 30.60, unit: "m" },
+                    { id: '7-01-v3', label: "450mm", rate: 45.90, unit: "m" }
                 ]
             }
         ]
@@ -401,7 +401,7 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '7-02',
                 description: 'Kerja-kerja membekal dan memasang longkang jenis Pudu Cut dan disambung dengan simen motar 1:3 saiz :-',
                 variants: [
-                    { id: '7-02-v1', label: "i. 1050mm x 760mm", rate: 128.56, unit: "m" }
+                    { id: '7-02-v1', label: "1050mm x 760mm", rate: 128.56, unit: "m" }
                 ]
             }
         ]
@@ -415,14 +415,14 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '8-01-L',
                 description: 'Kerja-kerja membekal dan memasang longkang jenis U-Shape with Dry weather flow serta mempunyai starter bar termasuk kerja-kerja konkrit 1:2:4 - 19mm agg sebagai asas.',
                 variants: [
-                    { id: '8-01-L-v1', label: "i. 300mm x 300mm", rate: 169.33, unit: "m" },
-                    { id: '8-01-L-v2', label: "ii. 450mm x 450mm", rate: 254.00, unit: "m" },
-                    { id: '8-01-L-v3', label: "iii. 600mm x 600mm", rate: 314.60, unit: "m" },
-                    { id: '8-01-L-v4', label: "iv. 750mm x 750mm", rate: 410.20, unit: "m" },
-                    { id: '8-01-L-v5', label: "v. 900mm x 900mm", rate: 505.80, unit: "m" },
-                    { id: '8-01-L-v6', label: "vi. 1200mm x 1200mm", rate: 677.94, unit: "m" },
-                    { id: '8-01-L-v7', label: "vii. 1500mm x 1500mm", rate: 846.67, unit: "m" },
-                    { id: '8-01-L-v8', label: "viii. 2100mm x 2100mm", rate: 1108.90, unit: "m" }
+                    { id: '8-01-L-v1', label: "300mm x 300mm", rate: 169.33, unit: "m" },
+                    { id: '8-01-L-v2', label: "450mm x 450mm", rate: 254.00, unit: "m" },
+                    { id: '8-01-L-v3', label: "600mm x 600mm", rate: 314.60, unit: "m" },
+                    { id: '8-01-L-v4', label: "750mm x 750mm", rate: 410.20, unit: "m" },
+                    { id: '8-01-L-v5', label: "900mm x 900mm", rate: 505.80, unit: "m" },
+                    { id: '8-01-L-v6', label: "1200mm x 1200mm", rate: 677.94, unit: "m" },
+                    { id: '8-01-L-v7', label: "1500mm x 1500mm", rate: 846.67, unit: "m" },
+                    { id: '8-01-L-v8', label: "2100mm x 2100mm", rate: 1108.90, unit: "m" }
                 ]
             }
         ]
@@ -436,14 +436,14 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '9-01-L',
                 description: 'Kerja-kerja membekal dan memasang longkang jenis L-Shape termasuk kerja-kerja konkrit 1:2:4 - 19mm agg sebagai asas.',
                 variants: [
-                    { id: '9-01-L-v1', label: "i. 900mm x 450mm", rate: 1262.25, unit: "Nos" },
-                    { id: '9-01-L-v2', label: "ii. 1200mm x 750mm", rate: 1683.00, unit: "Nos" },
-                    { id: '9-01-L-v3', label: "iii. 1500mm x 1050mm", rate: 2103.75, unit: "Nos" },
-                    { id: '9-01-L-v4', label: "iv. 1800mm x 1350mm", rate: 2524.50, unit: "Nos" },
-                    { id: '9-01-L-v5', label: "v. 2100mm x 1650mm", rate: 2945.25, unit: "Nos" },
-                    { id: '9-01-L-v6', label: "vi. 2400mm x 1950mm", rate: 3366.00, unit: "Nos" },
-                    { id: '9-01-L-v7', label: "vii. 2700mm x 2100mm", rate: 3786.75, unit: "Nos" },
-                    { id: '9-01-L-v8', label: "viii. 3000mm x 2400mm", rate: 4207.50, unit: "Nos" }
+                    { id: '9-01-L-v1', label: "900mm x 450mm", rate: 1262.25, unit: "Nos" },
+                    { id: '9-01-L-v2', label: "1200mm x 750mm", rate: 1683.00, unit: "Nos" },
+                    { id: '9-01-L-v3', label: "1500mm x 1050mm", rate: 2103.75, unit: "Nos" },
+                    { id: '9-01-L-v4', label: "1800mm x 1350mm", rate: 2524.50, unit: "Nos" },
+                    { id: '9-01-L-v5', label: "2100mm x 1650mm", rate: 2945.25, unit: "Nos" },
+                    { id: '9-01-L-v6', label: "2400mm x 1950mm", rate: 3366.00, unit: "Nos" },
+                    { id: '9-01-L-v7', label: "2700mm x 2100mm", rate: 3786.75, unit: "Nos" },
+                    { id: '9-01-L-v8', label: "3000mm x 2400mm", rate: 4207.50, unit: "Nos" }
                 ]
             }
         ]
@@ -457,14 +457,14 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '10-01-L',
                 description: 'Kerja-kerja membekal dan memasang pembentung kekotak (Box Culvert) with Dry weather flow termasuk penutup dan kerja-kerja konkrit 1:2:4 - 19mm agg sebagai asas.',
                 variants: [
-                    { id: '10-01-L-v1', label: "i. 300mm x 300mm", rate: 395.95, unit: "m" },
-                    { id: '10-01-L-v2', label: "ii. 450mm x 450mm", rate: 593.93, unit: "m" },
-                    { id: '10-01-L-v3', label: "iii. 600mm x 600mm", rate: 989.88, unit: "m" },
-                    { id: '10-01-L-v4', label: "iv. 750mm x 750mm", rate: 791.90, unit: "m" },
-                    { id: '10-01-L-v5', label: "v. 900mm x 900mm", rate: 1187.85, unit: "m" },
-                    { id: '10-01-L-v6', label: "vi. 1200mm x 1200mm", rate: 1583.80, unit: "m" },
-                    { id: '10-01-L-v7', label: "vii. 1500mm x 1500mm", rate: 1979.75, unit: "m" },
-                    { id: '10-01-L-v8', label: "viii. 2100mm x 2100mm", rate: 2771.65, unit: "m" }
+                    { id: '10-01-L-v1', label: "300mm x 300mm", rate: 395.95, unit: "m" },
+                    { id: '10-01-L-v2', label: "450mm x 450mm", rate: 593.93, unit: "m" },
+                    { id: '10-01-L-v3', label: "600mm x 600mm", rate: 989.88, unit: "m" },
+                    { id: '10-01-L-v4', label: "750mm x 750mm", rate: 791.90, unit: "m" },
+                    { id: '10-01-L-v5', label: "900mm x 900mm", rate: 1187.85, unit: "m" },
+                    { id: '10-01-L-v6', label: "1200mm x 1200mm", rate: 1583.80, unit: "m" },
+                    { id: '10-01-L-v7', label: "1500mm x 1500mm", rate: 1979.75, unit: "m" },
+                    { id: '10-01-L-v8', label: "2100mm x 2100mm", rate: 2771.65, unit: "m" }
                 ]
             }
         ]
@@ -478,9 +478,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '11-01-L',
                 description: 'Kerja-kerja membekal dan memasang pembentung konkrit bertetulang kitar termasuk 150mm tebal penggalas konkrit (1:3:6-38mm) dan dipasang dengan simpai (collar) dan ruang di sekeliling paip ditutup dengan lepa simen serta pasir (1:3) dengan bersaiz :-',
                 variants: [
-                    { id: '11-01-L-v1', label: "i. 600mm", rate: 375.12, unit: "m" },
-                    { id: '11-01-L-v2', label: "ii. 900mm", rate: 636.40, unit: "m" },
-                    { id: '11-01-L-v3', label: "iii. 1200mm", rate: 995.90, unit: "m" }
+                    { id: '11-01-L-v1', label: "600mm", rate: 375.12, unit: "m" },
+                    { id: '11-01-L-v2', label: "900mm", rate: 636.40, unit: "m" },
+                    { id: '11-01-L-v3', label: "1200mm", rate: 995.90, unit: "m" }
                 ]
             }
         ]
@@ -494,9 +494,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '12-01-L',
                 description: 'Kerja-kerja membekal dan membina Capping Beam pada kedua belah bibir dan diikat pada Starter Bar dengan ketebalan 150mm, 200mm, 300mm termasuk kerja-kerja memasang tetulang 4Y12, R6 150mm c/c, menuang konkrit gred 20 dan memasang papan acuan termasuk menanggal dan membuang.',
                 variants: [
-                    { id: '12-01-L-v1', label: "i. 150mm", rate: 74.05, unit: "m" },
-                    { id: '12-01-L-v2', label: "ii. 200mm", rate: 90.51, unit: "m" },
-                    { id: '12-01-L-v3', label: "iii. 300mm", rate: 121.36, unit: "m" }
+                    { id: '12-01-L-v1', label: "150mm", rate: 74.05, unit: "m" },
+                    { id: '12-01-L-v2', label: "200mm", rate: 90.51, unit: "m" },
+                    { id: '12-01-L-v3', label: "300mm", rate: 121.36, unit: "m" }
                 ]
             }
         ]
@@ -510,17 +510,17 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '13-01-L',
                 description: 'Kerja-kerja membekal dan membina Struct konkrit bertetulang 4Y12, R6 150mm c/c termasuk menuang konkrit Gred 20 dan memasang papan acuan termasuk menanggal dan membuang serta dibina setiap 3m c/c panjang dengan kelebaran bersaiz :-',
                 variants: [
-                    { id: '13-01-L-v1', label: "i. 300mm", rate: 28.29, unit: "Nos" },
-                    { id: '13-01-L-v2', label: "ii. 400mm", rate: 37.71, unit: "Nos" },
-                    { id: '13-01-L-v3', label: "iii. 450mm", rate: 42.43, unit: "Nos" },
-                    { id: '13-01-L-v4', label: "iv. 500mm", rate: 47.13, unit: "Nos" },
-                    { id: '13-01-L-v5', label: "v. 600mm", rate: 56.57, unit: "Nos" },
-                    { id: '13-01-L-v6', label: "vi. 750mm", rate: 70.72, unit: "Nos" },
-                    { id: '13-01-L-v7', label: "vii. 800mm", rate: 75.44, unit: "Nos" },
-                    { id: '13-01-L-v8', label: "viii. 900mm", rate: 87.42, unit: "Nos" },
-                    { id: '13-01-L-v9', label: "ix. 1000mm", rate: 94.29, unit: "Nos" },
-                    { id: '13-01-L-v10', label: "x. 1200mm", rate: 113.14, unit: "Nos" },
-                    { id: '13-01-L-v11', label: "xi. 1500mm", rate: 133.71, unit: "Nos" }
+                    { id: '13-01-L-v1', label: "300mm", rate: 28.29, unit: "Nos" },
+                    { id: '13-01-L-v2', label: "400mm", rate: 37.71, unit: "Nos" },
+                    { id: '13-01-L-v3', label: "450mm", rate: 42.43, unit: "Nos" },
+                    { id: '13-01-L-v4', label: "500mm", rate: 47.13, unit: "Nos" },
+                    { id: '13-01-L-v5', label: "600mm", rate: 56.57, unit: "Nos" },
+                    { id: '13-01-L-v6', label: "750mm", rate: 70.72, unit: "Nos" },
+                    { id: '13-01-L-v7', label: "800mm", rate: 75.44, unit: "Nos" },
+                    { id: '13-01-L-v8', label: "900mm", rate: 87.42, unit: "Nos" },
+                    { id: '13-01-L-v9', label: "1000mm", rate: 94.29, unit: "Nos" },
+                    { id: '13-01-L-v10', label: "1200mm", rate: 113.14, unit: "Nos" },
+                    { id: '13-01-L-v11', label: "1500mm", rate: 133.71, unit: "Nos" }
                 ]
             }
         ]
@@ -534,9 +534,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '14-01-L',
                 description: 'Kerja-kerja membekal dan memasang paip UPVC sebagai lubang titisan (Weepholes) 305mm panjang termasuk litupan batu dan pasir bersih di satu hujung.',
                 variants: [
-                    { id: '14-01-L-v1', label: "i. 50mm", rate: 3.72, unit: "Nos" },
-                    { id: '14-01-L-v2', label: "ii. 100mm", rate: 5.42, unit: "Nos" },
-                    { id: '14-01-L-v3', label: "iii. 150mm", rate: 8.40, unit: "Nos" }
+                    { id: '14-01-L-v1', label: "50mm", rate: 3.72, unit: "Nos" },
+                    { id: '14-01-L-v2', label: "100mm", rate: 5.42, unit: "Nos" },
+                    { id: '14-01-L-v3', label: "150mm", rate: 8.40, unit: "Nos" }
                 ]
             }
         ]
@@ -550,8 +550,8 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '15-01-L',
                 description: 'Kerja-kerja membekal dan mengikat tembok bata campuran pasir dan simen diperkuat menggunakan motar simen dan pasir 1:3.',
                 variants: [
-                    { id: '15-01-L-v1', label: "i. 225mm tebal", rate: 110.00, unit: "m²" },
-                    { id: '15-01-L-v2', label: "ii. 113mm tebal", rate: 55.70, unit: "m²" }
+                    { id: '15-01-L-v1', label: "225mm tebal", rate: 110.00, unit: "m²" },
+                    { id: '15-01-L-v2', label: "113mm tebal", rate: 55.70, unit: "m²" }
                 ]
             },
             {
@@ -571,14 +571,14 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '16-01-L',
                 description: 'Kerja-kerja membina lurang tidak lebih 1200mm dalam termasuk penggalian membentuk 100mm asas konkrit (1:3:6-38mm) membuat rusuk (Benching) dan saluran-saluran membina 115mm dinding bata berlepa simen motar (1:3) dinding bahagian dalam dialas dengan 12mm tebal lepa simen dan pasir.',
                 variants: [
-                    { id: '16-01-L-v1', label: "i. 450mm x 450mm", rate: 462.83, unit: "Nos" },
-                    { id: '16-01-L-v2', label: "ii. 600mm x 600mm", rate: 617.10, unit: "Nos" },
-                    { id: '16-01-L-v3', label: "iii. 900mm x 900mm", rate: 822.80, unit: "Nos" },
-                    { id: '16-01-L-v4', label: "iv. 1000mm x 1000mm", rate: 914.60, unit: "Nos" },
-                    { id: '16-01-L-v5', label: "v. 1200mm x 1200mm", rate: 1028.50, unit: "Nos" },
-                    { id: '16-01-L-v6', label: "vi. 1500mm x 1500mm", rate: 1234.20, unit: "Nos" },
-                    { id: '16-01-L-v7', label: "vii. 1800mm x 1800mm", rate: 1542.75, unit: "Nos" },
-                    { id: '16-01-L-v8', label: "viii. 2000mm x 2000mm", rate: 1748.45, unit: "Nos" }
+                    { id: '16-01-L-v1', label: "450mm x 450mm", rate: 462.83, unit: "Nos" },
+                    { id: '16-01-L-v2', label: "600mm x 600mm", rate: 617.10, unit: "Nos" },
+                    { id: '16-01-L-v3', label: "900mm x 900mm", rate: 822.80, unit: "Nos" },
+                    { id: '16-01-L-v4', label: "1000mm x 1000mm", rate: 914.60, unit: "Nos" },
+                    { id: '16-01-L-v5', label: "1200mm x 1200mm", rate: 1028.50, unit: "Nos" },
+                    { id: '16-01-L-v6', label: "1500mm x 1500mm", rate: 1234.20, unit: "Nos" },
+                    { id: '16-01-L-v7', label: "1800mm x 1800mm", rate: 1542.75, unit: "Nos" },
+                    { id: '16-01-L-v8', label: "2000mm x 2000mm", rate: 1748.45, unit: "Nos" }
                 ]
             },
             {
@@ -598,9 +598,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '10-01',
                 description: 'Kerja-kerja akhir pembersihan sisa bahan binaan dan dibuang ke tempat yang dibenarkan.',
                 variants: [
-                     { id: '10-01-v1', label: "i. Nilai Kerja RM20,000.00 dan ke bawah", rate: 340.00, unit: "L/S" },
-                     { id: '10-01-v2', label: "i. Nilai Kerja RM20,000.01 sehingga RM50,000.00", rate: 425.00, unit: "L/S" },
-                     { id: '10-01-v3', label: "iii. Nilai Kerja RM50,000.01 sehingga RM100,000.00", rate: 510.00, unit: "L/S" }
+                     { id: '10-01-v1', label: "Nilai Kerja RM20,000.00 dan ke bawah", rate: 340.00, unit: "L/S" },
+                     { id: '10-01-v2', label: "Nilai Kerja RM20,000.01 sehingga RM50,000.00", rate: 425.00, unit: "L/S" },
+                     { id: '10-01-v3', label: "Nilai Kerja RM50,000.01 sehingga RM100,000.00", rate: 510.00, unit: "L/S" }
                 ]
             }
         ]
@@ -795,16 +795,16 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '11-1-01',
                 description: 'Memecah atau merobohkan konkrit sedia ada dan membaiki semula mana-mana bahagian rosak, tidak melebihi 300mm tebal.',
                 variants: [
-                    { id: '11-1-01-v1', label: "a) dengan tetulang", rate: 384.70, unit: "m³" },
-                    { id: '11-1-01-v2', label: "b) tanpa tetulang", rate: 280.80, unit: "m³" }
+                    { id: '11-1-01-v1', label: "dengan tetulang", rate: 384.70, unit: "m³" },
+                    { id: '11-1-01-v2', label: "tanpa tetulang", rate: 280.80, unit: "m³" }
                 ]
             },
             {
                 id: '11-1-02',
                 description: 'Membuat lubang menembusi konkrit yang sedia ada dan membaiki semula mana-mana bahagian yang rosak, termasuk menumpang di bahagian atas.',
                 variants: [
-                    { id: '11-1-02-v1', label: "a) dengan tetulang", rate: 845.30, unit: "m³" },
-                    { id: '11-1-02-v2', label: "b) tanpa tetulang", rate: 619.30, unit: "m³" }
+                    { id: '11-1-02-v1', label: "dengan tetulang", rate: 845.30, unit: "m³" },
+                    { id: '11-1-02-v2', label: "tanpa tetulang", rate: 619.30, unit: "m³" }
                 ]
             }
         ]
@@ -844,16 +844,16 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: '11-4-01',
                 description: 'Kerja-kerja membekal, menuang dan memadat konkrit Ready Mixed /tuang disitu gred 20 bertetulang tuang disitu untuk lantai dan tembok longkang tebal 100mm/150mm/ Ready Mixed /tuang disitu.',
                 variants: [
-                    { id: '11-4-01-v1', label: "i. 50mm tebal (Ready Mix)", rate: 17.38, unit: "m²" },
-                    { id: '11-4-01-v2', label: "ii. 50mm tebal (Tuang Disitu)", rate: 25.25, unit: "m²" },
-                    { id: '11-4-01-v3', label: "iii. 75mm tebal (Ready Mix)", rate: 26.07, unit: "m²" },
-                    { id: '11-4-01-v4', label: "iv. 75mm tebal (Tuang Disitu)", rate: 37.99, unit: "m²" },
-                    { id: '11-4-01-v5', label: "v. 100mm tebal (Ready Mix)", rate: 34.77, unit: "m²" },
-                    { id: '11-4-01-v6', label: "vi. 100mm tebal (Tuang Disitu)", rate: 50.61, unit: "m²" },
-                    { id: '11-4-01-v7', label: "vii. 150mm tebal (Ready Mix)", rate: 52.14, unit: "m²" },
-                    { id: '11-4-01-v8', label: "viii. 150mm tebal (Tuang Disitu)", rate: 75.85, unit: "m²" },
-                    { id: '11-4-01-v9', label: "ix. 200mm tebal (Ready Mix)", rate: 69.52, unit: "m²" },
-                    { id: '11-4-01-v10', label: "x. 200mm tebal (Tuang Disitu)", rate: 101.10, unit: "m²" }
+                    { id: '11-4-01-v1', label: "50mm tebal (Ready Mix)", rate: 17.38, unit: "m²" },
+                    { id: '11-4-01-v2', label: "50mm tebal (Tuang Disitu)", rate: 25.25, unit: "m²" },
+                    { id: '11-4-01-v3', label: "75mm tebal (Ready Mix)", rate: 26.07, unit: "m²" },
+                    { id: '11-4-01-v4', label: "75mm tebal (Tuang Disitu)", rate: 37.99, unit: "m²" },
+                    { id: '11-4-01-v5', label: "100mm tebal (Ready Mix)", rate: 34.77, unit: "m²" },
+                    { id: '11-4-01-v6', label: "100mm tebal (Tuang Disitu)", rate: 50.61, unit: "m²" },
+                    { id: '11-4-01-v7', label: "150mm tebal (Ready Mix)", rate: 52.14, unit: "m²" },
+                    { id: '11-4-01-v8', label: "150mm tebal (Tuang Disitu)", rate: 75.85, unit: "m²" },
+                    { id: '11-4-01-v9', label: "200mm tebal (Ready Mix)", rate: 69.52, unit: "m²" },
+                    { id: '11-4-01-v10', label: "200mm tebal (Tuang Disitu)", rate: 101.10, unit: "m²" }
                 ]
             }
         ]
@@ -868,8 +868,8 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PK-1-01',
                 description: 'Kerja-kerja membekal dan memadat batu baur hancur (Crusher Run) sebagai bahan dasar jalan (Road Base) yang setara dan diluluskan dengan ketebalan :-',
                 variants: [
-                    { id: 'PK-1-01-v1', label: 'i. 150mm', rate: 15.51, unit: 'm²' },
-                    { id: 'PK-1-01-v2', label: 'ii. 300mm', rate: 31.03, unit: 'm²' }
+                    { id: 'PK-1-01-v1', label: '150mm', rate: 15.51, unit: 'm²' },
+                    { id: 'PK-1-01-v2', label: '300mm', rate: 31.03, unit: 'm²' }
                 ]
             },
             {
@@ -882,9 +882,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PK-1-03',
                 description: 'Kerja-kerja membekal dan memadat pasir sebagai bahan dasar (Sub Base) yang setara dan diluluskan.',
                 variants: [
-                    { id: 'PK-1-03-v1', label: 'i. 25mm', rate: 3.50, unit: 'm²' },
-                    { id: 'PK-1-03-v2', label: 'ii. 50mm', rate: 7.00, unit: 'm²' },
-                    { id: 'PK-1-03-v3', label: 'iii. 75mm', rate: 10.50, unit: 'm²' }
+                    { id: 'PK-1-03-v1', label: '25mm', rate: 3.50, unit: 'm²' },
+                    { id: 'PK-1-03-v2', label: '50mm', rate: 7.00, unit: 'm²' },
+                    { id: 'PK-1-03-v3', label: '75mm', rate: 10.50, unit: 'm²' }
                 ]
             }
         ]
@@ -898,8 +898,8 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PK-2-01',
                 description: 'Kerja-kerja membekal dan membina Interlocking Concrete Paving Units diturap di atas lapisan permukaan lapisan pasir setebal 30mm dan ruang di antara unit turapan diisi dengan pasir halus dengan ketebalan :-',
                 variants: [
-                    { id: 'PK-2-01-v1', label: 'i. 60mm', rate: 85.14, unit: 'm²' },
-                    { id: 'PK-2-01-v2', label: 'ii. 80mm', rate: 110.07, unit: 'm²' }
+                    { id: 'PK-2-01-v1', label: '60mm', rate: 85.14, unit: 'm²' },
+                    { id: 'PK-2-01-v2', label: '80mm', rate: 110.07, unit: 'm²' }
                 ]
             },
             {
@@ -912,8 +912,8 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PK-2-03',
                 description: 'Kerja-kerja membekal dan membina Grass Interlocking Concrete Paving Units diturap di atas lapisan permukaan lapisan pasir setebal 30mm dan ruang di antara unit turapan diisi dengan pasir halus dengan ketebalan :-',
                 variants: [
-                    { id: 'PK-2-03-v1', label: 'i. 60mm', rate: 78.30, unit: 'm²' },
-                    { id: 'PK-2-03-v2', label: 'ii. 80mm', rate: 96.50, unit: 'm²' }
+                    { id: 'PK-2-03-v1', label: '60mm', rate: 78.30, unit: 'm²' },
+                    { id: 'PK-2-03-v2', label: '80mm', rate: 96.50, unit: 'm²' }
                 ]
             }
         ]
@@ -1037,9 +1037,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'SD-6-01',
                 description: 'Kerja-kerja membekal & memasang paip jenis Polivinil Klorida Tak Plastik (UPVC) bagi kerja-kerja berkaitan dengan saiz :-',
                 variants: [
-                    { id: 'SD-6-01-v1', label: 'i. 100mm', rate: 25.33, unit: 'm' },
-                    { id: 'SD-6-01-v2', label: 'ii. 150mm', rate: 38.00, unit: 'm' },
-                    { id: 'SD-6-01-v3', label: 'iii. 200mm', rate: 50.66, unit: 'm' }
+                    { id: 'SD-6-01-v1', label: '100mm', rate: 25.33, unit: 'm' },
+                    { id: 'SD-6-01-v2', label: '150mm', rate: 38.00, unit: 'm' },
+                    { id: 'SD-6-01-v3', label: '200mm', rate: 50.66, unit: 'm' }
                 ]
             }
         ]
@@ -1104,9 +1104,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PRG-3-01',
                 description: 'Kerja-kerja membekal dan memasang sistem pagar BRC Fence dengan 5mm diameter jejaring halus dengan 50mm x 150mm serta disadur Hot Dipped Galvanised termasuk tiang bersaiz 75 diameter diperkuat konkrit gred 20 dengan panel pagar bersaiz :-',
                 variants: [
-                    { id: 'v1', label: 'i. 2400mm (w) x 900mm (h)', rate: 275.66, unit: 'm' },
-                    { id: 'v2', label: 'ii. 2400mm (w) x 1200mm (h)', rate: 366.56, unit: 'm' },
-                    { id: 'v3', label: 'iii. 2400mm (w) x 1500mm (h)', rate: 457.47, unit: 'm' }
+                    { id: 'v1', label: '2400mm (w) x 900mm (h)', rate: 275.66, unit: 'm' },
+                    { id: 'v2', label: '2400mm (w) x 1200mm (h)', rate: 366.56, unit: 'm' },
+                    { id: 'v3', label: '2400mm (w) x 1500mm (h)', rate: 457.47, unit: 'm' }
                 ]
             }
         ]
@@ -1240,11 +1240,11 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PP-1-01',
                 description: 'Ukuran tapak asas berserta palang pengukuh bertetulang dengan 4 batang 12mm diameter bar keluli lembut dan 1.6mm dawai pengikat berjarak 300mm dan membuat lubang di tiang untuk memasang tiang.',
                 variants: [
-                    { id: 'PP-1-01-v1', label: 'i. 150mm x 150mm x 150mm', rate: 49.90, unit: 'Nos' },
-                    { id: 'PP-1-01-v2', label: 'ii. 200mm x 200mm x 200mm', rate: 77.95, unit: 'Nos' },
-                    { id: 'PP-1-01-v3', label: 'iii. 300mm x 300mm x 300mm', rate: 90.43, unit: 'Nos' },
-                    { id: 'PP-1-01-v4', label: 'iv. 450mm x 450mm x 300mm', rate: 96.02, unit: 'Nos' },
-                    { id: 'PP-1-01-v5', label: 'v. 600mm x 600mm x 300mm', rate: 127.59, unit: 'Nos' }
+                    { id: 'PP-1-01-v1', label: '150mm x 150mm x 150mm', rate: 49.90, unit: 'Nos' },
+                    { id: 'PP-1-01-v2', label: '200mm x 200mm x 200mm', rate: 77.95, unit: 'Nos' },
+                    { id: 'PP-1-01-v3', label: '300mm x 300mm x 300mm', rate: 90.43, unit: 'Nos' },
+                    { id: 'PP-1-01-v4', label: '450mm x 450mm x 300mm', rate: 96.02, unit: 'Nos' },
+                    { id: 'PP-1-01-v5', label: '600mm x 600mm x 300mm', rate: 127.59, unit: 'Nos' }
                 ]
             }
         ]
@@ -1258,15 +1258,15 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PP-2-01',
                 description: 'Membekal, mengimpal dan memasang tiang I-Beam termasuk kerja-kerja bolt dan nut dan aksesori berkaitan pada tapak asas.',
                 variants: [
-                    { id: 'PP-2-01-v1', label: 'i. 100mm x 100mm x 6mm x 8m', rate: 2258.03, unit: 'Nos' },
-                    { id: 'PP-2-01-v2', label: 'ii. 125mm x 125mm x 7mm x 9m', rate: 2526.84, unit: 'Nos' },
-                    { id: 'PP-2-01-v3', label: 'iii. 150mm x 150mm x 7mm x 10m', rate: 2795.65, unit: 'Nos' },
-                    { id: 'PP-2-01-v4', label: 'iv. 175mm x 175mm 7.5mm x 11m', rate: 3064.46, unit: 'Nos' },
-                    { id: 'PP-2-01-v5', label: 'v. 200mm x 200mm x 8mm x 12 m', rate: 3333.28, unit: 'Nos' },
-                    { id: 'PP-2-01-v6', label: 'vi. 250mm x 250mm x 9mm 14m', rate: 3870.90, unit: 'Nos' },
-                    { id: 'PP-2-01-v7', label: 'vii. 300mm x 300mm x 10mm x 15m', rate: 4139.71, unit: 'Nos' },
-                    { id: 'PP-2-01-v8', label: 'viii. 350mm x 350mm x 12mm x 19m', rate: 5214.96, unit: 'Nos' },
-                    { id: 'PP-2-01-v9', label: 'ix. 400mm x 400mm x 13mm x 21m', rate: 5752.59, unit: 'Nos' }
+                    { id: 'PP-2-01-v1', label: '100mm x 100mm x 6mm x 8m', rate: 2258.03, unit: 'Nos' },
+                    { id: 'PP-2-01-v2', label: '125mm x 125mm x 7mm x 9m', rate: 2526.84, unit: 'Nos' },
+                    { id: 'PP-2-01-v3', label: '150mm x 150mm x 7mm x 10m', rate: 2795.65, unit: 'Nos' },
+                    { id: 'PP-2-01-v4', label: '175mm x 175mm 7.5mm x 11m', rate: 3064.46, unit: 'Nos' },
+                    { id: 'PP-2-01-v5', label: '200mm x 200mm x 8mm x 12 m', rate: 3333.28, unit: 'Nos' },
+                    { id: 'PP-2-01-v6', label: '250mm x 250mm x 9mm 14m', rate: 3870.90, unit: 'Nos' },
+                    { id: 'PP-2-01-v7', label: '300mm x 300mm x 10mm x 15m', rate: 4139.71, unit: 'Nos' },
+                    { id: 'PP-2-01-v8', label: '350mm x 350mm x 12mm x 19m', rate: 5214.96, unit: 'Nos' },
+                    { id: 'PP-2-01-v9', label: '400mm x 400mm x 13mm x 21m', rate: 5752.59, unit: 'Nos' }
                 ]
             }
         ]
@@ -1280,15 +1280,15 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PP-3-01',
                 description: 'Kerja-kerja membekal dan memasang serta mendirikan besi penghadang jenis I-Beam termasuk kerja-kerja bolt, nut dan aksesori berkaitan.',
                 variants: [
-                    { id: 'PP-3-01-v1', label: 'i. 100mm x 100mm x 6mm', rate: 376.34, unit: 'm' },
-                    { id: 'PP-3-01-v2', label: 'ii. 125mm x 125mm x 7mm', rate: 421.50, unit: 'm' },
-                    { id: 'PP-3-01-v3', label: 'iii. 150mm x 150mm x 7mm', rate: 451.61, unit: 'm' },
-                    { id: 'PP-3-01-v4', label: 'iv. 175mm x 175mm 7.5mm', rate: 481.71, unit: 'm' },
-                    { id: 'PP-3-01-v5', label: 'v. 200mm x 200mm x 8mm', rate: 511.82, unit: 'm' },
-                    { id: 'PP-3-01-v6', label: 'vi. 250mm x 250mm x 9mm', rate: 541.93, unit: 'm' },
-                    { id: 'PP-3-01-v7', label: 'vii. 300mm x 300mm x 10mm', rate: 572.03, unit: 'm' },
-                    { id: 'PP-3-01-v8', label: 'viii. 350mm x 350mm x 12mm', rate: 602.14, unit: 'm' },
-                    { id: 'PP-3-01-v9', label: 'ix. 400mm x 400mm x 13mm', rate: 632.25, unit: 'm' }
+                    { id: 'PP-3-01-v1', label: '100mm x 100mm x 6mm', rate: 376.34, unit: 'm' },
+                    { id: 'PP-3-01-v2', label: '125mm x 125mm x 7mm', rate: 421.50, unit: 'm' },
+                    { id: 'PP-3-01-v3', label: '150mm x 150mm x 7mm', rate: 451.61, unit: 'm' },
+                    { id: 'PP-3-01-v4', label: '175mm x 175mm 7.5mm', rate: 481.71, unit: 'm' },
+                    { id: 'PP-3-01-v5', label: '200mm x 200mm x 8mm', rate: 511.82, unit: 'm' },
+                    { id: 'PP-3-01-v6', label: '250mm x 250mm x 9mm', rate: 541.93, unit: 'm' },
+                    { id: 'PP-3-01-v7', label: '300mm x 300mm x 10mm', rate: 572.03, unit: 'm' },
+                    { id: 'PP-3-01-v8', label: '350mm x 350mm x 12mm', rate: 602.14, unit: 'm' },
+                    { id: 'PP-3-01-v9', label: '400mm x 400mm x 13mm', rate: 632.25, unit: 'm' }
                 ]
             }
         ]
@@ -1374,9 +1374,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PEL-1-01',
                 description: 'Kerja-kerja membekal dan memasang cermin keselamatan dengan tiang besi 100mm Diameter berketinggian 2.4m dari paras permukaan tanah/jalan termasuk kerja-kerja 450mm kedalaman asas konkrit.',
                 variants: [
-                    { id: 'PEL-1-01-v1', label: "i. 600mm diameter", rate: 1147.50, unit: "Nos" },
-                    { id: 'PEL-1-01-v2', label: "ii. 800mm diameter", rate: 1343.00, unit: "Nos" },
-                    { id: 'PEL-1-01-v3', label: "iii. 1000mm diameter", rate: 1538.50, unit: "Nos" }
+                    { id: 'PEL-1-01-v1', label: "600mm diameter", rate: 1147.50, unit: "Nos" },
+                    { id: 'PEL-1-01-v2', label: "800mm diameter", rate: 1343.00, unit: "Nos" },
+                    { id: 'PEL-1-01-v3', label: "1000mm diameter", rate: 1538.50, unit: "Nos" }
                 ]
             }
         ]
@@ -1418,9 +1418,9 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PEL-5-01',
                 description: 'Kerja-kerja membekal, memasang dan membuka semula Mild Steel Plate 10mm tebal sebagai perlindungan sementara kepada dasar jalan/pembentung mengikut arahan pegawai penguasa.',
                 variants: [
-                    { id: 'PEL-5-01-v1', label: "i. 1200mm x 1200mm", rate: 806.44, unit: "Nos" },
-                    { id: 'PEL-5-01-v2', label: "ii. 1200mm x 2400mm", rate: 1290.30, unit: "Nos" },
-                    { id: 'PEL-5-01-v3', label: "iii. 1500mm x 3000mm", rate: 1881.69, unit: "Nos" }
+                    { id: 'PEL-5-01-v1', label: "1200mm x 1200mm", rate: 806.44, unit: "Nos" },
+                    { id: 'PEL-5-01-v2', label: "1200mm x 2400mm", rate: 1290.30, unit: "Nos" },
+                    { id: 'PEL-5-01-v3', label: "1500mm x 3000mm", rate: 1881.69, unit: "Nos" }
                 ]
             }
         ]
@@ -1452,10 +1452,10 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PEL-8-01',
                 description: 'Menyediakan tenaga buruh bagi melaksanakan kerja-kerja am yang berkaitan :-',
                 variants: [
-                    { id: 'PEL-8-01-v1', label: "i. Tukang Besi/Kimpal", rate: 130.05, unit: "Hari" },
-                    { id: 'PEL-8-01-v2', label: "ii. Tukang Cat", rate: 110.50, unit: "Hari" },
-                    { id: 'PEL-8-01-v3', label: "iii. Tukang Paip", rate: 120.70, unit: "Hari" },
-                    { id: 'PEL-8-01-v4', label: "iv. Buruh Am", rate: 90.10, unit: "Hari" }
+                    { id: 'PEL-8-01-v1', label: "Tukang Besi/Kimpal", rate: 130.05, unit: "Hari" },
+                    { id: 'PEL-8-01-v2', label: "Tukang Cat", rate: 110.50, unit: "Hari" },
+                    { id: 'PEL-8-01-v3', label: "Tukang Paip", rate: 120.70, unit: "Hari" },
+                    { id: 'PEL-8-01-v4', label: "Buruh Am", rate: 90.10, unit: "Hari" }
                 ]
             }
         ]
@@ -1561,60 +1561,60 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PT-4-01',
                 description: `Kerja-kerja membekal dan memasang papan tanda baru serta membuka semula membuka semula papan tanda sedia ada, mengikut spesifikasi berikut dan arahan pegawai penguasa :-\n(a.) Sticker Backdrop dan Logo dari jenis 3M Diamond Reflected\n(b.) Board 3.2mm Fibre Board/Archylic\n(c.) Post welded with plate (Hot Dipped Galvanized)\n     Post - 75mm (diameter) x 3m (embedded 0.425m)\n     Plate - 250mm(L) x 250mm(W) x 5mm(D)\n(d.) Sticker Lining - 3M Engineering Grade\n(e.) Sticker Font/Symbol - 3M Engineering Grade\n(g) Footing Size - 250mm(L) x 250mm (W) x 425mm (D)\n(h) Kaedah Penanaman - Penggunaan Mesin Gerudi dengan Saiz Korekan 250mm\n     atau Precast Concrete bersaiz 250mm(L) x 250mm (W) x 425mm (D)\n(i) Jenis 1 tiang / 2 papan (pengurangan RM 120 bagi set ini)`,
                 variants: [
-                    { id: 'PT-4-01-v1', label: "i. BONGGOL - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v2', label: "ii. BERHENTI - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v3', label: "iii. DILARANG MASUK - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v4', label: "iv. U TURN - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v5', label: "v. JALAN MATI - Size 750mm x 600mm", rate: 593.56, unit: "Nos" },
-                    { id: 'PT-4-01-v6', label: "vi. CHEVRON - Size 750mm x 600mm", rate: 593.56, unit: "Nos" },
-                    { id: 'PT-4-01-v7', label: "vii. SEHALA - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v8', label: "viii. LALUAN BASIKAL - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v9', label: "ix. BULATAN DI HADAPAN - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v10', label: "x. LAMPU ISYARAT - Size 600mm x 600mm & 300mm x 900mm", rate: 625.80, unit: "Nos" },
-                    { id: 'PT-4-01-v11', label: "xi. KANAK-KANAK MELINTAS - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v12', label: "xii. HAIWAN MELINTAS - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
-                    { id: 'PT-4-01-v13', label: "xiii. PENANDA HALANGAN - Size 900mm x 300mm", rate: 451.61, unit: "Nos" },
-                    { id: 'PT-4-01-v14', label: "xiv. DLL - Size 600mm x 600mm", rate: 587.10, unit: "Nos" }
+                    { id: 'PT-4-01-v1', label: "BONGGOL - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v2', label: "BERHENTI - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v3', label: "DILARANG MASUK - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v4', label: "U TURN - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v5', label: "JALAN MATI - Size 750mm x 600mm", rate: 593.56, unit: "Nos" },
+                    { id: 'PT-4-01-v6', label: "CHEVRON - Size 750mm x 600mm", rate: 593.56, unit: "Nos" },
+                    { id: 'PT-4-01-v7', label: "SEHALA - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v8', label: "LALUAN BASIKAL - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v9', label: "BULATAN DI HADAPAN - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v10', label: "LAMPU ISYARAT - Size 600mm x 600mm & 300mm x 900mm", rate: 625.80, unit: "Nos" },
+                    { id: 'PT-4-01-v11', label: "KANAK-KANAK MELINTAS - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v12', label: "HAIWAN MELINTAS - Size 600mm x 600mm", rate: 587.10, unit: "Nos" },
+                    { id: 'PT-4-01-v13', label: "PENANDA HALANGAN - Size 900mm x 300mm", rate: 451.61, unit: "Nos" },
+                    { id: 'PT-4-01-v14', label: "DLL - Size 600mm x 600mm", rate: 587.10, unit: "Nos" }
                 ]
             },
             {
                 id: 'PT-4-02',
                 description: `Kerja-kerja membekal dan memasang papan tanda baru serta membuka semula membuka semula papan tanda sedia ada, mengikut spesifikasi berikut dan arahan pegawai penguasa :-\n(a.) Sticker Backdrop dan Logo dari jenis 3M Diamond Reflected\n(b.) Board 3.2mm Fibre Board/Archylic (2 bahagian)\n(c.) Post welded with plate (Hot Dipped Galvanized)\n     Post - 75mm (diameter) x 3m (embedded 0.425m)\n     Plate - 150mm(L) x 150mm(W) x 5mm(D)\n(d.) Sticker Lining - 3M Engineering Grade\n(e.) Sticker Font/Symbol - 3M Engineering Grade\n(f.) Footing Size - 250mm(L) x 250mm (W) x 425mm (D)\n(i) Kaedah Penanaman - Penggunaan Mesin Gerudi dengan Saiz Korekan 250mm\n     atau Precast Concrete bersaiz 250mm(L) x 250mm (W) x 425mm (D)`,
                 variants: [
-                    { id: 'PT-4-02-v1', label: "i. BONGGOL - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v2', label: "ii. BERHENTI - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v3', label: "iii. DILARANG MASUK - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v4', label: "iv. U TURN - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v5', label: "v. JALAN MATI - Size 750mm x 600mm", rate: 712.25, unit: "Nos" },
-                    { id: 'PT-4-02-v6', label: "vi. CHEVRON - Size 750mm x 600mm", rate: 712.25, unit: "Nos" },
-                    { id: 'PT-4-02-v7', label: "vii. SEHALA - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v8', label: "viii. LALUAN BASIKAL - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v9', label: "ix. BULATAN DI HADAPAN - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v10', label: "x. LAMPU ISYARAT - Size 600mm x 600mm & 300mm x 900mm", rate: 751.21, unit: "Nos" },
-                    { id: 'PT-4-02-v11', label: "xi. KANAK-KANAK MELINTAS - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v12', label: "xii. HAIWAN MELINTAS - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
-                    { id: 'PT-4-02-v13', label: "xiii. PENANDA HALANGAN - Size 900mm x 300mm", rate: 456.93, unit: "Nos" },
-                    { id: 'PT-4-02-v14', label: "xiv. DLL - Size 600mm x 600mm", rate: 704.52, unit: "Nos" }
+                    { id: 'PT-4-02-v1', label: "BONGGOL - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v2', label: "BERHENTI - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v3', label: "DILARANG MASUK - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v4', label: "U TURN - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v5', label: "JALAN MATI - Size 750mm x 600mm", rate: 712.25, unit: "Nos" },
+                    { id: 'PT-4-02-v6', label: "CHEVRON - Size 750mm x 600mm", rate: 712.25, unit: "Nos" },
+                    { id: 'PT-4-02-v7', label: "SEHALA - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v8', label: "LALUAN BASIKAL - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v9', label: "BULATAN DI HADAPAN - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v10', label: "LAMPU ISYARAT - Size 600mm x 600mm & 300mm x 900mm", rate: 751.21, unit: "Nos" },
+                    { id: 'PT-4-02-v11', label: "KANAK-KANAK MELINTAS - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v12', label: "HAIWAN MELINTAS - Size 600mm x 600mm", rate: 704.52, unit: "Nos" },
+                    { id: 'PT-4-02-v13', label: "PENANDA HALANGAN - Size 900mm x 300mm", rate: 456.93, unit: "Nos" },
+                    { id: 'PT-4-02-v14', label: "DLL - Size 600mm x 600mm", rate: 704.52, unit: "Nos" }
                 ]
             },
             {
                 id: 'PT-4-03',
                 description: `Kerja-kerja membekal dan memasang papan tanda baru serta membuka semula membuka semula papan tanda sedia ada, mengikut spesifikasi berikut dan arahan pegawai penguasa :-\n(a.) Sticker Backdrop dan Logo dari jenis 3M Diamond Reflected\n(b.) Board 3.2mm Fibre Board/Archylic\n(c.) Post welded with plate (Hot Dipped Galvanized)\n     Post - 50mm (diameter) x 3m (embedded 0.425m)\n     Plate - 150mm(L) x 150mm(W) x 5mm(D)\n(d.) Sticker Lining - 3M Engineering Grade\n(e.) Sticker Font/Symbol - 3M Engineering Grade\n(f.) Footing Size - 150mm(L) x 150mm (W) x 425mm (D)\n(i) Kaedah Penanaman - Penggunaan Mesin Gerudi dengan Saiz Korekan 250mm\n     atau Precast Concrete bersaiz 150mm(L) x 150mm (W) x 425mm (D)`,
                 variants: [
-                    { id: 'PT-4-03-v1', label: "i. BONGGOL - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v2', label: "ii. BERHENTI - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v3', label: "iii. DILARANG MASUK - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v4', label: "iv. U TURN - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v5', label: "v. JALAN MATI - Size 375mm x 300mm", rate: 445.16, unit: "Nos" },
-                    { id: 'PT-4-03-v6', label: "vi. CHEVRON - Size 375mm x 300mm", rate: 445.16, unit: "Nos" },
-                    { id: 'PT-4-03-v7', label: "vii. SEHALA - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v8', label: "viii. LALUAN BASIKAL - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v9', label: "ix. BULATAN DI HADAPAN - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v10', label: "x. LAMPU ISYARAT - Size 300mm x 300mm & 150mm x 450mm", rate: 408.14, unit: "Nos" },
-                    { id: 'PT-4-03-v11', label: "xi. KANAK-KANAK MELINTAS - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v12', label: "xii. HAIWAN MELINTAS - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
-                    { id: 'PT-4-03-v13', label: "xiii. PENANDA HALANGAN - Size 450mm x 150mm", rate: 338.70, unit: "Nos" },
-                    { id: 'PT-4-03-v14', label: "xiv. DLL - Size 300mm x 300mm", rate: 440.33, unit: "Nos" }
+                    { id: 'PT-4-03-v1', label: "BONGGOL - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v2', label: "BERHENTI - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v3', label: "DILARANG MASUK - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v4', label: "U TURN - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v5', label: "JALAN MATI - Size 375mm x 300mm", rate: 445.16, unit: "Nos" },
+                    { id: 'PT-4-03-v6', label: "CHEVRON - Size 375mm x 300mm", rate: 445.16, unit: "Nos" },
+                    { id: 'PT-4-03-v7', label: "SEHALA - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v8', label: "LALUAN BASIKAL - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v9', label: "BULATAN DI HADAPAN - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v10', label: "LAMPU ISYARAT - Size 300mm x 300mm & 150mm x 450mm", rate: 408.14, unit: "Nos" },
+                    { id: 'PT-4-03-v11', label: "KANAK-KANAK MELINTAS - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v12', label: "HAIWAN MELINTAS - Size 300mm x 300mm", rate: 440.33, unit: "Nos" },
+                    { id: 'PT-4-03-v13', label: "PENANDA HALANGAN - Size 450mm x 150mm", rate: 338.70, unit: "Nos" },
+                    { id: 'PT-4-03-v14', label: "DLL - Size 300mm x 300mm", rate: 440.33, unit: "Nos" }
                 ]
             }
         ]
@@ -1628,11 +1628,11 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PT-5-01',
                 description: `Kerja-kerja membekal dan memasang papan tanda pemakluman dan pemberitahuan menggunakan sticker pantul cahaya serta mengikut spesifikasi lukisan yang ditetapkan (Saiz 1200mm x 900mm). Contoh :-\n(a.) Board 3.2mm Fibre Board/Archylic\n(b.) Post welded with plate (Hot Dipped Galvanized)\n     Post - 75mm (diameter) x 3m (embedded 0.425m)\n     Plate - 250mm(L) x 250mm(W) x 5mm(D)\n(c.) Sticker Lining - 3M Engineering Grade\n(d.) Sticker Font/Symbol - 3M Engineering Grade\n(e.) Footing Size - 250mm(L) x 250mm (W) x 425mm (D)\n(f) Kaedah Penanaman - Penggunaan Mesin Gerudi dengan Saiz Korekan 250mm\n     atau Precast Concrete bersaiz 250mm(L) x 250mm (W) x 425mm (D)`,
                 variants: [
-                    { id: 'PT-5-01-v1', label: "i. Dilarang berniaga di kawasan ini", rate: 735.47, unit: "Nos" },
-                    { id: 'PT-5-01-v2', label: "ii. Dilarang membuang sampah di kawasan ini", rate: 735.47, unit: "Nos" },
-                    { id: 'PT-5-01-v3', label: "iii. Awas kanak-kanak melintas", rate: 735.47, unit: "Nos" },
-                    { id: 'PT-5-01-v4', label: "iv. Dilarang meletakkan kenderaan dibahu jalan", rate: 735.47, unit: "Nos" },
-                    { id: 'PT-5-01-v5', label: "v. DLL", rate: 735.47, unit: "Nos" }
+                    { id: 'PT-5-01-v1', label: "Dilarang berniaga di kawasan ini", rate: 735.47, unit: "Nos" },
+                    { id: 'PT-5-01-v2', label: "Dilarang membuang sampah di kawasan ini", rate: 735.47, unit: "Nos" },
+                    { id: 'PT-5-01-v3', label: "Awas kanak-kanak melintas", rate: 735.47, unit: "Nos" },
+                    { id: 'PT-5-01-v4', label: "Dilarang meletakkan kenderaan dibahu jalan", rate: 735.47, unit: "Nos" },
+                    { id: 'PT-5-01-v5', label: "DLL", rate: 735.47, unit: "Nos" }
                 ]
             }
         ]
@@ -1646,11 +1646,11 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'PT-6-01',
                 description: `Kerja-kerja membekal dan memasang papan tanda baru serta membuka semula papan tanda sedia ada, mengikut arahan pegawai penguasa dan spesifikasi berikut :-\na) Sticker backdrop dan logo dari jenis 3M Diamond Reflected\nb) Board 3.2mm Fibre Board/Archylic\nc) Post welded with plate (Hot Dipped Galvanized)\n     Post - 75mm (diameter) x 3m (embedded 0.425m)\n     Plate - 250mm(L) x 250mm(W) x 5mm(D)\nd) Sticker lining - 3M Engineering Grade\ne) Logo - Transparent Sheet Silk Screen Coloured\nf) Ukuran papan tanda MULA/TAMAT - 300mm x 120mm\ng) Footing Size - 250mm(L) x 250mm (W) x 425mm (D)\n(h) Kaedah Penanaman - Penggunaan Mesin Gerudi dengan Saiz Korekan 250mm\n     atau Precast Concrete bersaiz 250mm(L) x 250mm (W) x 425mm (D)\n\n*bagi papan tanda had sempadan penyelenggaraan harga termasuk papan tanda MULA/TAMAT\n(Rujuk lukisan spesifikasi - sila dapatkan lukisan daripada jabatan kejuruteraan)\nTermasuk mengecat keseluruhan permukaan tiang papan tanda dengan cat anti sebanyak 2 lapisan`,
                 variants: [
-                    { id: 'PT-6-01-v1', label: "i. 600mm x 600mm", rate: 670.96, unit: "Nos" },
-                    { id: 'PT-6-01-v2', label: "ii. 750mm x 450mm", rate: 929.02, unit: "Nos" },
-                    { id: 'PT-6-01-v3', label: "iii. 750mm x 750mm", rate: 890.31, unit: "Nos" },
-                    { id: 'PT-6-01-v4', label: "iv. 900mm x 900mm", rate: 1083.85, unit: "Nos" },
-                    { id: 'PT-6-01-v5', label: "v. 1000mm x 1000mm (2 tiang)", rate: 2322.54, unit: "Nos" }
+                    { id: 'PT-6-01-v1', label: "600mm x 600mm", rate: 670.96, unit: "Nos" },
+                    { id: 'PT-6-01-v2', label: "750mm x 450mm", rate: 929.02, unit: "Nos" },
+                    { id: 'PT-6-01-v3', label: "750mm x 750mm", rate: 890.31, unit: "Nos" },
+                    { id: 'PT-6-01-v4', label: "900mm x 900mm", rate: 1083.85, unit: "Nos" },
+                    { id: 'PT-6-01-v5', label: "1000mm x 1000mm (2 tiang)", rate: 2322.54, unit: "Nos" }
                 ]
             },
             {
@@ -2042,11 +2042,11 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'JEN-1-01',
                 description: 'Kerja-kerja memotong pokok termasuk menggali dan mencabut akar dan umbi.',
                 variants: [
-                    { id: 'JEN-1-01-v1', label: 'i. ukur lilit tidak melebihi 600mm', rate: 449.10, unit: 'Nos' },
-                    { id: 'JEN-1-01-v2', label: 'ii. ukur lilit 600mm dan tidak melebihi 1200mm', rate: 588.60, unit: 'Nos' },
-                    { id: 'JEN-1-01-v3', label: 'iii. ukur lilit 1200mm dan tidak melebihi 1800mm', rate: 872.80, unit: 'Nos' },
-                    { id: 'JEN-1-01-v4', label: 'iv. ukur lilit 1800mm dan tidak melebihi 2400mm', rate: 1434.30, unit: 'Nos' },
-                    { id: 'JEN-1-01-v5', label: 'v. ukur lilit 2400mm dan tidak melebihi 3000mm', rate: 1591.10, unit: 'Nos' }
+                    { id: 'JEN-1-01-v1', label: 'ukur lilit tidak melebihi 600mm', rate: 449.10, unit: 'Nos' },
+                    { id: 'JEN-1-01-v2', label: 'ukur lilit 600mm dan tidak melebihi 1200mm', rate: 588.60, unit: 'Nos' },
+                    { id: 'JEN-1-01-v3', label: 'ukur lilit 1200mm dan tidak melebihi 1800mm', rate: 872.80, unit: 'Nos' },
+                    { id: 'JEN-1-01-v4', label: 'ukur lilit 1800mm dan tidak melebihi 2400mm', rate: 1434.30, unit: 'Nos' },
+                    { id: 'JEN-1-01-v5', label: 'ukur lilit 2400mm dan tidak melebihi 3000mm', rate: 1591.10, unit: 'Nos' }
                 ]
             }
         ]
@@ -2060,18 +2060,18 @@ export const INITIAL_LIBRARY_DATA: PresetGroup[] = [
                 id: 'JEN-2-01',
                 description: 'Menyediakan jentera semasa melaksanakan kerja-kerja yang berkaitan.',
                 variants: [
-                    { id: 'JEN-2-01-v1', label: 'i. Sky lift / Hari', rate: 884.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v2', label: 'ii. Lori Roro', rate: 442.00, unit: 'Nos' },
-                    { id: 'JEN-2-01-v3', label: 'iii. Lori Tipper (10 Tan)', rate: 663.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v4', label: 'iv. Lori Tipper (22 Tan)', rate: 884.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v5', label: 'v. Kren', rate: 1989.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v6', label: 'vi. Backhoe', rate: 663.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v7', label: 'vii. Back Pusher', rate: 663.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v8', label: 'viii. Backhoe with Hydraulic Breaker', rate: 1049.75, unit: 'Hari' },
-                    { id: 'JEN-2-01-v9', label: 'ix. Excavator with Load Loader', rate: 2652.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v10', label: 'x. Water Jetter & Tanker', rate: 4641.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v11', label: 'xi. Suction Tanker', rate: 7225.00, unit: 'Hari' },
-                    { id: 'JEN-2-01-v12', label: 'xii. Tipping Fee', rate: 93.50, unit: 'Trip' }
+                    { id: 'JEN-2-01-v1', label: 'Sky lift / Hari', rate: 884.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v2', label: 'Lori Roro', rate: 442.00, unit: 'Nos' },
+                    { id: 'JEN-2-01-v3', label: 'Lori Tipper (10 Tan)', rate: 663.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v4', label: 'Lori Tipper (22 Tan)', rate: 884.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v5', label: 'Kren', rate: 1989.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v6', label: 'Backhoe', rate: 663.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v7', label: 'Back Pusher', rate: 663.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v8', label: 'Backhoe with Hydraulic Breaker', rate: 1049.75, unit: 'Hari' },
+                    { id: 'JEN-2-01-v9', label: 'Excavator with Load Loader', rate: 2652.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v10', label: 'Water Jetter & Tanker', rate: 4641.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v11', label: 'Suction Tanker', rate: 7225.00, unit: 'Hari' },
+                    { id: 'JEN-2-01-v12', label: 'Tipping Fee', rate: 93.50, unit: 'Trip' }
                 ]
             }
         ]
