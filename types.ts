@@ -29,6 +29,11 @@ export const BP_OPTIONS = [
 // Generate Zon 1 to Zon 24
 export const ZON_OPTIONS = Array.from({ length: 24 }, (_, i) => `Zon ${i + 1}`);
 
+export const MUKIM_OPTIONS = [
+  "BATU",
+  "RAWANG"
+];
+
 // --- BQ PRESET TYPES ---
 export type PresetVariant = {
   id: string;

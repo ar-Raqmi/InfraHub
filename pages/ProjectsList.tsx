@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate, User, BP_OPTIONS, ZON_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
+import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle } from 'lucide-react';
 
@@ -83,6 +83,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const [filterPja, setFilterPja] = useState<string>('ALL');
   const [filterZon, setFilterZon] = useState<string>('ALL');
   const [filterBp, setFilterBp] = useState<string>('ALL');
+  const [filterMukim, setFilterMukim] = useState<string>('ALL');
   const [filterVote, setFilterVote] = useState<string>('ALL'); 
   
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
@@ -290,6 +291,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     { id: 'lokasi', label: 'Lokasi', group: 'Asas', default: false },
     { id: 'bp', label: 'BP', group: 'Asas', default: false },
     { id: 'zon', label: 'Zon', group: 'Asas', default: false },
+    { id: 'mukim', label: 'Mukim', group: 'Asas', default: false },
     { id: 'tarikhBuka', label: 'Tarikh Buka', group: 'Asas', default: false },
     { id: 'namaSyarikat', label: 'Nama Syarikat', group: 'Kontrak', default: true },
     { id: 'noVote', label: 'No. Vot', group: 'Kontrak', default: false },
@@ -387,6 +389,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     setFilterPja('ALL');
     setFilterZon('ALL');
     setFilterBp('ALL');
+    setFilterMukim('ALL');
     setFilterVote('ALL');
     setSearchTerm('');
     setShowSiap(true);
@@ -398,6 +401,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     filterPja !== 'ALL',
     filterZon !== 'ALL',
     filterBp !== 'ALL',
+    filterMukim !== 'ALL',
     filterVote !== 'ALL'
   ].filter(Boolean).length;
 
@@ -412,11 +416,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
       const matchesPja = filterPja === 'ALL' || p.pjaId === Number(filterPja);
       const matchesZon = filterZon === 'ALL' || p.zon === filterZon;
       const matchesBp = filterBp === 'ALL' || p.bp === filterBp;
+      const matchesMukim = filterMukim === 'ALL' || p.mukim === filterMukim;
       const matchesVote = filterVote === 'ALL' || p.noVote === filterVote;
       
-      return matchesSearch && matchesStatus && matchesPja && matchesZon && matchesBp && matchesVote;
+      return matchesSearch && matchesStatus && matchesPja && matchesZon && matchesBp && matchesMukim && matchesVote;
     });
-  }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterVote]);
+  }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterMukim, filterVote]);
 
   // Reset pagination when filter changes
   useEffect(() => {
@@ -1008,7 +1013,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                 <div className="mb-6">
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tapisan Data (Row Filters)</div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                                 <SlidersHorizontal className="w-4 h-4 text-slate-400" />
@@ -1048,6 +1053,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                 <option value="ALL">Semua BP</option>
                                 {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        </div>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
+                            <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
+                                <option value="ALL">Semua Mukim</option>
+                                {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                         </div>
@@ -1164,6 +1177,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     {visibleColumns.lokasi && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto custom-scrollbar min-w-[200px]">{project.lokasi ? project.lokasi.split('\n').map((loc, idx) => { const cleanLoc = loc.trim(); if (!cleanLoc) return null; return <div key={idx} className="text-[11px] text-slate-600  leading-tight mb-1 whitespace-pre-wrap">{cleanLoc}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
                                     {visibleColumns.bp && <td className="px-6 py-4 text-xs text-slate-500">{project.bp}</td>}
                                     {visibleColumns.zon && <td className="px-6 py-4 text-xs text-slate-500">{project.zon}</td>}
+                                    {visibleColumns.mukim && <td className="px-6 py-4 text-xs text-slate-500">{project.mukim}</td>}
                                     {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhBuka)}</td>}
                                     {visibleColumns.namaSyarikat && <td className="px-6 py-4 min-w-[200px]"><div className="text-xs font-bold text-slate-700  leading-relaxed">{project.namaSyarikat || <span className="text-slate-400 italic font-normal">Belum Lantik</span>}</div></td>}
                                     {visibleColumns.noVote && <td className="px-6 py-4 text-xs text-slate-500">{project.noVote}</td>}
