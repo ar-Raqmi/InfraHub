@@ -402,7 +402,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
   const [formData, setFormData] = useState<Partial<Project>>(project || {
     namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(), 
-    pjaId: initialPjaId, bp: '', zon: '', lokasi: '', 
+    pjaId: initialPjaId, bp: '', zon: '', mukim: '', lokasi: '', 
     status: ProjectStatus.MENUNGGU_LANTIKAN, 
     bqData: [], 
     bqDataPelarasan: [],
@@ -1339,6 +1339,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="group"> <label className={labelClass}>BP</label> <select name="bp" value={formData.bp} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)} </select> </div>
                     <div className="group"> <label className={labelClass}>Zon</label> <select name="zon" value={formData.zon} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)} </select> </div>
+                    <div className="group"> <label className={labelClass}>Mukim</label> <select name="mukim" value={formData.mukim || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> <option value="BATU">BATU</option> <option value="RAWANG">RAWANG</option> </select> </div>
                     <div className="group"> <label className={labelClass}>Tarikh Buka</label> <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`} /> </div>
                     
                     <div className="group"> 

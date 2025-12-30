@@ -214,6 +214,7 @@ export interface Project {
   projectLocations?: ProjectLocation[]; // Structured location data with stable IDs
   bp: string; // Blok Perancangan
   zon?: string;
+  mukim?: string;
   pjaId: number; // The PJA in charge
   kosProjek?: number; // Auto take from BQ
   tarikhBuka: string; // Today's date default

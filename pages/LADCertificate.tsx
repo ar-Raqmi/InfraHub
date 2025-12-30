@@ -102,7 +102,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
             drawRow("KOS PROJEK", formatCurrency(contractSum), false, true);
             drawRow("NO FAIL", project.noFail || '-');
             drawRow("ADUN/ ZON", `${project.bp || ''} / ${project.zon || ''}`);
-            drawRow("MUKIM","BATU");
+            drawRow("MUKIM", project.mukim || '-');
             
             y += 5; // Spacer
 
@@ -328,7 +328,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
                             <LabelRow label="KOS PROJEK" value={<span className="border border-black px-2 py-0.5 inline-block min-w-[100px]">{formatCurrency(contractSum)}</span>} />
                             <LabelRow label="NO FAIL" value={project.noFail} />
                             <LabelRow label="ADUN/ ZON" value={`${project.bp || ''} / ${project.zon || ''}`} />
-                            <LabelRow label="MUKIM" value="BATU" />
+                            <LabelRow label="MUKIM" value={project.mukim || '-'} />
                         </div>
 
                         {/* Section 2: Dates */}

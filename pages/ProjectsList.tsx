@@ -754,8 +754,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                   }
 
                   tableBody.push([
-                      { content: `JUMLAH`, colSpan: 6, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } },
-                      { content: subtotalDisplayVal, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } }
+                      { content: `JUMLAH`, colSpan: 6, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } } as any,
+                      { content: subtotalDisplayVal, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } } as any
                   ]);
 
                   const costHeaderLabel = costViewMode === 'both' ? 'KOS (ASAL/AKHIR)' : (costViewMode === 'actual' ? 'HARGA AKHIR' : 'HARGA KONTRAK');

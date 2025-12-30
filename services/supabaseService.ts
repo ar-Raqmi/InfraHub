@@ -33,6 +33,7 @@ class SupabaseService {
             namaProjek: p.nama_projek,
             noAduan: p.no_aduan,
             projectLocations: p.project_locations,
+            mukim: p.mukim,
             pjaId: p.pja_id,
             kosProjek: p.kos_projek,
             tarikhBuka: p.tarikh_buka,
@@ -206,6 +207,7 @@ class SupabaseService {
             project_locations: project.projectLocations,
             bp: project.bp,
             zon: project.zon,
+            mukim: project.mukim,
             pja_id: project.pjaId,
             kos_projek: Number(project.kosProjek) || 0,
             tarikh_buka: project.tarikhBuka,
@@ -273,6 +275,7 @@ class SupabaseService {
         if (updates.projectLocations !== undefined) dbUpdates.project_locations = updates.projectLocations;
         if (updates.bp !== undefined) dbUpdates.bp = updates.bp;
         if (updates.zon !== undefined) dbUpdates.zon = updates.zon;
+        if (updates.mukim !== undefined) dbUpdates.mukim = updates.mukim;
         if (updates.pjaId !== undefined) dbUpdates.pja_id = updates.pjaId;
         if (updates.kosProjek !== undefined) dbUpdates.kos_projek = updates.kosProjek;
         if (updates.tarikhBuka !== undefined) dbUpdates.tarikh_buka = updates.tarikhBuka;
