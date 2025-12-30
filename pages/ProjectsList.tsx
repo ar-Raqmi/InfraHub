@@ -223,7 +223,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                   { content: 'BULAN', colSpan: 12, styles: { halign: 'center' } },
                   { content: 'JUMLAH FAIL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }, // Total Count
                   { content: 'JUMLAH KONTRAK', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-                  { content: 'HAD KERJA', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
                   { content: 'BAKI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }
               ],
               [
@@ -258,8 +257,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                   // Stats
                   14: { cellWidth: 12, halign: 'center', fontStyle: 'bold' }, // Total Count
                   15: { cellWidth: 25, halign: 'right' }, // Total Contract
-                  16: { cellWidth: 25, halign: 'right' }, // Limit
-                  17: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }  // Balance
+                  16: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }  // Balance
               },
               margin: { left: marginX, right: marginX },
               didParseCell: (data: any) => {
