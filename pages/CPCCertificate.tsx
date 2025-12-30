@@ -146,13 +146,13 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             const date3 = dlpEnd ? formatDateMalay(dlpEnd) : '...................';
 
             const tokens = [
-                { text:"Menurut Syarat-Syarat Kontrak, dan tertakluk kepada penyiapan berkaitan dengan pembaikan apa-apa kecacatan, ketidaksempurnaan, kesusutan atau apa-apa dan yang mungkin terzahir dalam Tempoh Tanggungan Kecacatan maka adalah dengan ini di perakui bahawa seluruh Kerja yang tersebut telah siap sejajar dengan syarat-syarat dalam Dokumen Sebut Harga pada", bold: false },
+                { text:"Menurut Syarat-Syarat Kontrak, dan tertakluk kepada penyiapan berkaitan dengan pembaikan apa-apa kecacatan, ketidaksempurnaan, kesusutan atau apa-apa dan yang mungkin terzahir dalam Tempoh Tanggungan Kecacatan maka adalah dengan ini di perakui bahawa seluruh Kerja yang tersebut telah siap sejajar dengan syarat-syarat dalam Dokumen Sebut Harga pada ", bold: false },
                 { text: date1, bold: true },
-                { text:" dan diambil milik pada", bold: false },
+                { text:" dan diambil milik pada ", bold: false },
                 { text: date2, bold: true },
-                { text:" dan dengan itu Tempoh Tanggungan Kecacatan untuk kerja kerja tersebut bermula pada", bold: false },
+                { text:" dan dengan itu Tempoh Tanggungan Kecacatan untuk kerja kerja tersebut bermula pada ", bold: false },
                 { text: date2, bold: true },
-                { text:" dan berakhir pada", bold: false },
+                { text:" dan berakhir pada ", bold: false },
                 { text: date3, bold: true },
                 { text:".", bold: false }
             ];
