@@ -863,7 +863,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           if (bqSectionIdx === 0) {
               // @ts-ignore
               doc.autoTable({ 
-                  body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10 } }]],
+                  body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
                   theme: 'grid', startY: 15, styles: { lineWidth: 0.1, lineColor: 0 }, margin: { left: 10, right: 10 }
               });
               // @ts-ignore
@@ -871,7 +871,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           }
 
           const complexHead = [
-              [{ content: 'LOKASI ADUAN', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }, { content: 'NO ADUAN', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }],
+              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }, { content: 'ADUAN', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }],
               [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 8 } }, { content: aduanText, colSpan: 2, styles: { halign: 'center', fontSize: 8 } }],
               ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'JUMLAH (RM)']
           ];
@@ -942,8 +942,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
       doc.addPage(); 
       const grandTotal = bqData.reduce((acc, g) => acc + g.items.reduce((s, i) => s + (i.amount||0), 0), 0);
-      doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text("SENARAI RINGKASAN", pageWidth/2, 20, { align:"center" }); 
-      doc.setLineWidth(0.5); doc.line(pageWidth/2 - 20, 21, pageWidth/2 + 20, 21);
+      doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text("RINGKASAN", pageWidth/2, 20, { align:"center" }); 
       
       const summaryBody = bqData.map(b => [
           { content: b.title, styles: { fontStyle: 'bold' } },
