@@ -23,7 +23,8 @@ import {
   Rows,
   LayoutTemplate,
   ImageIcon,
-  RefreshCw
+  RefreshCw,
+  Maximize2
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
@@ -57,7 +58,7 @@ interface Shape {
 type ToolType = 'select' | 'rect' | 'circle' | 'arrow' | 'line' | 'crop';
 type LayoutType = 'grid' | 'horizontal' | 'vertical' | 'big-left' | 'big-top';
 
-const processImageForPdf = (base64: string, widthMm: number, heightMm: number): Promise<string> => {
+const processImageForPdf = (base64: string, widthMm: number, heightMm: number, mode: 'cover' | 'contain' = 'cover'): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.src = base64;
@@ -78,20 +79,36 @@ const processImageForPdf = (base64: string, widthMm: number, heightMm: number): 
       const imgRatio = img.width / img.height;
       const reqRatio = reqW / reqH;
       
-      let sX, sY, sW, sH;
-      if (imgRatio > reqRatio) {
-         sH = img.height;
-         sW = img.height * reqRatio;
-         sX = (img.width - sW) / 2;
-         sY = 0;
+      if (mode === 'cover') {
+        let sX, sY, sW, sH;
+        if (imgRatio > reqRatio) {
+           sH = img.height;
+           sW = img.height * reqRatio;
+           sX = (img.width - sW) / 2;
+           sY = 0;
+        } else {
+           sW = img.width;
+           sH = img.width / reqRatio;
+           sX = 0;
+           sY = (img.height - sH) / 2;
+        }
+        ctx.drawImage(img, sX, sY, sW, sH, 0, 0, reqW, reqH);
       } else {
-         sW = img.width;
-         sH = img.width / reqRatio;
-         sX = 0;
-         sY = (img.height - sH) / 2;
+        // contain / fit
+        let dW, dH, dX, dY;
+        if (imgRatio > reqRatio) {
+           dW = reqW;
+           dH = reqW / imgRatio;
+           dX = 0;
+           dY = (reqH - dH) / 2;
+        } else {
+           dH = reqH;
+           dW = reqH * imgRatio;
+           dX = (reqW - dW) / 2;
+           dY = 0;
+        }
+        ctx.drawImage(img, 0, 0, img.width, img.height, dX, dY, dW, dH);
       }
-      
-      ctx.drawImage(img, sX, sY, sW, sH, 0, 0, reqW, reqH);
       resolve(canvas.toDataURL('image/jpeg', 0.90));
     };
     img.onerror = () => resolve(base64);
@@ -171,7 +188,7 @@ const generatePDF = async ({ complaints, mapImageBase64, siteImagesBase64, layou
 
   if (mapImageBase64) {
     try {
-      const processedMap = await processImageForPdf(mapImageBase64, mapBoxWidth, mapBoxHeight);
+      const processedMap = await processImageForPdf(mapImageBase64, mapBoxWidth, mapBoxHeight, 'contain');
       doc.addImage(processedMap, 'JPEG', margin, mapBoxY, mapBoxWidth, mapBoxHeight);
     } catch (e) {
       console.error("Map image error", e);
@@ -231,7 +248,7 @@ const generatePDF = async ({ complaints, mapImageBase64, siteImagesBase64, layou
     doc.setDrawColor(200);
     doc.rect(t.x, t.y, t.w, t.h);
     try {
-        const processedImg = await processImageForPdf(t.img, t.w, t.h);
+        const processedImg = await processImageForPdf(t.img, t.w, t.h, 'cover');
         doc.addImage(processedImg, 'JPEG', t.x, t.y, t.w, t.h);
     } catch(e) {
         console.error("Err", e);
@@ -268,7 +285,10 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
     if (initialImage) {
       const img = new Image();
       img.src = initialImage;
-      img.onload = () => setBgImage(img);
+      img.onload = () => {
+        setBgImage(img);
+        setShapes([]);
+      };
     } else {
       setBgImage(null);
       setShapes([]);
@@ -445,7 +465,63 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
   };
 
   useImperativeHandle(ref, () => ({
-    exportImage: () => canvasRef.current?.toDataURL('image/png') || null
+    exportImage: () => {
+      const canvas = canvasRef.current;
+      if (!canvas || !bgImage) return canvas?.toDataURL('image/png') || null;
+
+      const placement = getImagePlacement();
+      if (!placement) return canvas.toDataURL('image/png');
+
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = bgImage.width;
+      exportCanvas.height = bgImage.height;
+      const ctx = exportCanvas.getContext('2d');
+      if (!ctx) return canvas.toDataURL('image/png');
+
+      ctx.drawImage(bgImage, 0, 0);
+
+      const scaleFactor = 1 / placement.scale;
+      
+      shapes.forEach(shape => {
+        ctx.strokeStyle = shape.color;
+        ctx.lineWidth = shape.strokeWidth * scaleFactor;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+
+        const relX = (shape.x - placement.x) * scaleFactor;
+        const relY = (shape.y - placement.y) * scaleFactor;
+        const relW = (shape.width || 0) * scaleFactor;
+        const relH = (shape.height || 0) * scaleFactor;
+
+        if (shape.type === 'rect') {
+          ctx.strokeRect(relX, relY, relW, relH);
+        } else if (shape.type === 'circle') {
+          const radius = Math.sqrt(Math.pow(relW, 2) + Math.pow(relH, 2));
+          ctx.arc(relX, relY, radius, 0, 2 * Math.PI);
+          ctx.stroke();
+        } else if (shape.type === 'arrow') {
+          const headlen = (15 + (shape.strokeWidth * 1.5)) * scaleFactor; 
+          const toX = relX + relW;
+          const toY = relY + relH;
+          const angle = Math.atan2(toY - relY, toX - relX);
+          
+          ctx.moveTo(relX, relY);
+          ctx.lineTo(toX, toY);
+          ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+          ctx.moveTo(toX, toY);
+          ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+          ctx.stroke();
+        } else if (shape.type === 'line') {
+          const toX = relX + relW;
+          const toY = relY + relH;
+          ctx.moveTo(relX, relY);
+          ctx.lineTo(toX, toY);
+          ctx.stroke();
+        }
+      });
+
+      return exportCanvas.toDataURL('image/png');
+    }
   }));
 
   if (!initialImage) {
@@ -529,6 +605,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   const [siteImages, setSiteImages] = useState<string[]>([]);
   const [layout, setLayout] = useState<LayoutType>('grid');
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
+  const [isEditingMap, setIsEditingMap] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
@@ -669,6 +746,16 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       }
     }
     setEditingImageIndex(null);
+  };
+
+  const saveEditedMap = () => {
+    if (isEditingMap && modalEditorRef.current) {
+      const newImg = modalEditorRef.current.exportImage();
+      if (newImg) {
+        setMapImage(newImg);
+      }
+    }
+    setIsEditingMap(false);
   };
 
   return (
@@ -817,7 +904,12 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                 Muat Naik
               </button>
             ) : (
-              <button onClick={() => setMapImage(null)} className="px-4 md:px-6 py-2 bg-red-50 text-red-600 rounded-lg md:rounded-xl text-[10px] font-bold hover:bg-red-100 transition-colors border border-red-100 uppercase tracking-widest">Padam</button>
+              <div className="flex gap-2">
+                <button onClick={() => setIsEditingMap(true)} className="p-2 bg-blue-50 text-blue-600 rounded-lg md:rounded-xl hover:bg-blue-100 transition-colors border border-blue-100" title="Fullscreen Edit">
+                  <Maximize2 size={16} />
+                </button>
+                <button onClick={() => setMapImage(null)} className="px-4 md:px-6 py-2 bg-red-50 text-red-600 rounded-lg md:rounded-xl text-[10px] font-bold hover:bg-red-100 transition-colors border border-red-100 uppercase tracking-widest">Padam</button>
+              </div>
             )}
           </div>
           <div className="flex-1 p-4 md:p-6 overflow-hidden">
@@ -902,6 +994,27 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
             </div>
             <div className="flex-1 bg-slate-100  p-4 md:p-8 overflow-hidden flex items-center justify-center">
                <CanvasMapEditor ref={modalEditorRef} initialImage={siteImages[editingImageIndex]} isMobile={isMobile} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Map Modal (Fullscreen) */}
+      {isEditingMap && mapImage && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black animate-fade-in">
+          <div className="bg-white w-full h-full flex flex-col overflow-hidden">
+            <div className="p-4 md:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
+              <div>
+                <h3 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">Edit Pelan Lokasi</h3>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan Alat Crop & Anotasi Untuk Melaraskan Pelan</p>
+              </div>
+              <div className="flex gap-2 md:gap-4">
+                <button onClick={() => setIsEditingMap(false)} className="px-4 md:px-8 py-2 md:py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl md:rounded-2xl transition-colors uppercase tracking-widest text-[10px] md:text-xs">Batal</button>
+                <button onClick={saveEditedMap} className="px-6 md:px-10 py-2 md:py-3 bg-emerald-600 text-white font-bold rounded-xl md:rounded-2xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors uppercase tracking-widest text-[10px] md:text-xs">Simpan</button>
+              </div>
+            </div>
+            <div className="flex-1 bg-slate-100 p-4 md:p-8 overflow-hidden">
+               <CanvasMapEditor ref={modalEditorRef} initialImage={mapImage} isMobile={false} />
             </div>
           </div>
         </div>
