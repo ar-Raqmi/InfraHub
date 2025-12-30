@@ -208,11 +208,11 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             
             const maxLeftWidth = sigRightX - sigLeftX - 10; 
             
-            const splitName = doc.splitTextToSize(`Nama Penuh : ${pjaName}`, maxLeftWidth);
+            const splitName = doc.splitTextToSize(`Nama Penuh : `, maxLeftWidth);
             doc.text(splitName, sigLeftX, currentY);
             currentY += (splitName.length * 5); 
 
-            const splitRole = doc.splitTextToSize(`Jawatan : ${pjaRole}`, maxLeftWidth);
+            const splitRole = doc.splitTextToSize(`Jawatan : `, maxLeftWidth);
             doc.text(splitRole, sigLeftX, currentY);
 
             let rightY = sigStartY;
