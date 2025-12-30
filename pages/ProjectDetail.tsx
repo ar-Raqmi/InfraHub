@@ -253,9 +253,9 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
           </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(0,2fr)_1fr] items-center px-3 py-2 md:px-8 md:py-4 gap-2 md:gap-0">
+      <div className="grid grid-cols-1 md:grid-cols-[1.2fr_minmax(0,1.6fr)_1.2fr] items-center px-3 py-2 md:px-8 md:py-4 gap-2 md:gap-0">
         
-        <div className="flex items-center gap-2 md:gap-3 justify-between md:justify-start w-full overflow-hidden">
+        <div className="flex items-center gap-2 md:gap-3 justify-between md:justify-start w-full">
           <div className="flex items-center gap-2 md:gap-3 shrink-0">
              <div className="relative group">
                 <select 
@@ -316,7 +316,7 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
         </div>
 
         {/* Column 3: Price Breakdown (Right) */}
-        <div className="hidden md:flex items-center justify-end gap-6 w-full overflow-hidden">
+        <div className="hidden md:flex items-center justify-end gap-6 w-full">
             <div className="flex flex-col items-end shrink-0">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none text-right">
                   {isPelarasanActive ? 'Harga Kontrak' : 'Jumlah Kos'}
