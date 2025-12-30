@@ -137,9 +137,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
           // Header
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(12);
+          doc.setFontSize(8);
           doc.text(`JADUAL PENGILIRAN KONTRAKTOR PANEL INFRASTRUKTUR JABATAN KEJURUTERAAN TAHUN ${selectedYear}`, pageWidth / 2, currentY, { align: "center" });
-          doc.setFontSize(10);
+          doc.setFontSize(8);
           currentY += 7;
 
           const months = ["JAN", "FEB", "MAC", "APR", "MEI", "JUN", "JUL", "OGO", "SEP", "OKT", "NOV", "DIS"];
@@ -691,82 +691,102 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               doc.text(group.company, marginX + 2, currentY + 5);
               currentY += 10;
 
-              const sortedProjects = [...group.projects].sort((a, b) => {
-                  const dateA = new Date(a.tarikhMulaKontrak || '9999-12-31').getTime();
-                  const dateB = new Date(b.tarikhMulaKontrak || '9999-12-31').getTime();
-                  return dateA - dateB;
-              });
+              const votesInGroup = Object.keys(group.projectsByVote).sort();
+              let billCounter = 1;
 
-              const tableBody = sortedProjects.map((p, idx) => {
-                  const hargaAkhir = getHargaAkhir(p);
-                  const contractCost = p.kosProjek || 0;
-                  
-                  let displayCostStr = '';
-                  if (costViewMode === 'contract') {
-                      displayCostStr = formatCurrency(contractCost).replace('RM', '').trim();
-                  } else if (costViewMode === 'actual') {
-                      displayCostStr = formatCurrency(hargaAkhir).replace('RM', '').trim();
-                  } else { // both
-                      displayCostStr = `${formatCurrency(contractCost).replace('RM', '').trim()}\n${formatCurrency(hargaAkhir).replace('RM', '').trim()}`;
+              for (const voteCode of votesInGroup) {
+                  const voteData = group.projectsByVote[voteCode];
+                  const projectsForVote = [...voteData.projects].sort((a, b) => {
+                      const dateA = new Date(a.tarikhLantikan || '9999-12-31').getTime();
+                      const dateB = new Date(b.tarikhLantikan || '9999-12-31').getTime();
+                      return dateA - dateB;
+                  });
+
+                  if (projectsForVote.length === 0) continue;
+
+                  // Space check for Vot header
+                  if (currentY > pageHeight - 30) {
+                      doc.addPage();
+                      currentY = printHeader(doc.getNumberOfPages());
                   }
-                  
-                  let dateStr = '';
-                  if (p.tarikhMulaKontrak) dateStr += `Mula: ${formatDate(p.tarikhMulaKontrak)}\n`;
-                  if (p.tarikhTamatKontrak) dateStr += `Tamat: ${formatDate(p.tarikhTamatKontrak)}`;
 
-                  const pjaUser = getPjaUser(p.pjaId);
-                  const pjaName = pjaUser ? pjaUser.username.toUpperCase() : '-';
+                  doc.setFont("helvetica", "bold");
+                  doc.setFontSize(7.5);
+                  doc.setTextColor(50, 50, 50);
+                  doc.text(`${voteCode} - ${getVoteName(voteCode)}`, marginX, currentY + 4);
+                  currentY += 6;
 
-                  return [
-                      idx + 1,
-                      `${p.namaProjek}\n\n${dateStr}`,
-                      pjaName,
-                      `${p.status.replace(/_/g, ' ')}\n(${p.peratusSiap}%)`,
-                      `${p.noVote || '-'}\n${getVoteName(p.noVote || '')}`,
-                      displayCostStr
-                  ];
-              });
+                  const tableBody = projectsForVote.map((p) => {
+                      const hargaAkhir = getHargaAkhir(p);
+                      const contractCost = p.kosProjek || 0;
+                      
+                      let displayCostStr = '';
+                      if (costViewMode === 'contract') {
+                          displayCostStr = formatCurrency(contractCost).replace('RM', '').trim();
+                      } else if (costViewMode === 'actual') {
+                          displayCostStr = formatCurrency(hargaAkhir).replace('RM', '').trim();
+                      } else { // both
+                          displayCostStr = `${formatCurrency(contractCost).replace('RM', '').trim()}\n${formatCurrency(hargaAkhir).replace('RM', '').trim()}`;
+                      }
+                      
+                      const pjaUser = getPjaUser(p.pjaId);
+                      const pjaName = pjaUser ? pjaUser.username.toUpperCase() : '-';
 
-              // Terminology standardization for PDF header
-              const costHeaderLabel = costViewMode === 'both' ? 'KOS (ASAL/AKHIR)' : (costViewMode === 'actual' ? 'HARGA AKHIR' : 'HARGA KONTRAK');
+                      return [
+                          billCounter++,
+                          p.namaProjek,
+                          formatDate(p.tarikhMulaKontrak),
+                          formatDate(p.tarikhTamatKontrak),
+                          pjaName,
+                          `${p.status.replace(/_/g, ' ')}\n(${p.peratusSiap}%)`,
+                          displayCostStr
+                      ];
+                  });
 
-              // @ts-ignore
-              doc.autoTable({
-                  startY: currentY,
-                  head: [['BIL', 'PROJEK', 'PJA', 'STATUS', 'VOT', costHeaderLabel]],
-                  body: tableBody,
-                  theme: 'grid',
-                  styles: { fontSize: 6, cellPadding: 1, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
-                  headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center' },
-                  columnStyles: {
-                      0: { cellWidth: 10, halign: 'center' },
-                      1: { cellWidth: 80 },
-                      2: { cellWidth: 20, halign: 'center' },
-                      3: { cellWidth: 25, halign: 'center' },
-                      4: { cellWidth: 25, halign: 'center', fontSize: 7 },
-                      5: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
-                  },
-                  margin: { left: marginX, right: marginX },
-                  rowPageBreak: 'avoid'
-              });
+                  // Add Subtotal row for this Vot
+                  let subtotalDisplayVal = '';
+                  if (costViewMode === 'contract') {
+                      subtotalDisplayVal = formatCurrency(voteData.subtotalContract).replace('RM', '').trim();
+                  } else if (costViewMode === 'actual') {
+                      subtotalDisplayVal = formatCurrency(voteData.subtotalAkhir).replace('RM', '').trim();
+                  } else {
+                      subtotalDisplayVal = `${formatCurrency(voteData.subtotalContract).replace('RM', '').trim()}\n${formatCurrency(voteData.subtotalAkhir).replace('RM', '').trim()}`;
+                  }
 
-              // @ts-ignore
-              currentY = doc.lastAutoTable.finalY + 5;
+                  tableBody.push([
+                      { content: `JUMLAH`, colSpan: 6, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } },
+                      { content: subtotalDisplayVal, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } }
+                  ]);
+
+                  const costHeaderLabel = costViewMode === 'both' ? 'KOS (ASAL/AKHIR)' : (costViewMode === 'actual' ? 'HARGA AKHIR' : 'HARGA KONTRAK');
+
+                  // @ts-ignore
+                  doc.autoTable({
+                      startY: currentY,
+                      head: [['BIL', 'PROJEK', 'MULA', 'TAMAT', 'PJA', 'STATUS', costHeaderLabel]],
+                      body: tableBody,
+                      theme: 'grid',
+                      styles: { fontSize: 6.5, cellPadding: 1.2, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
+                      headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center' },
+                      columnStyles: {
+                          0: { cellWidth: 6, halign: 'center' },
+                          1: { cellWidth: 'auto' },
+                          2: { cellWidth: 18, halign: 'center' },
+                          3: { cellWidth: 18, halign: 'center' },
+                          4: { cellWidth: 18, halign: 'center' },
+                          5: { cellWidth: 22, halign: 'center' },
+                          6: { cellWidth: 20, halign: 'right', fontStyle: 'bold' }
+                      },
+                      margin: { left: marginX, right: marginX },
+                      rowPageBreak: 'avoid'
+                  });
+
+                  // @ts-ignore
+                  currentY = doc.lastAutoTable.finalY + 4;
+              }
+
               totalItemsProcessed += group.projects.length;
               setGenerationProgress(10 + Math.round((totalItemsProcessed / totalItems) * 80));
-
-              const voteSummaryBody = Object.keys(group.projectsByVote).sort().map(voteCode => {
-                  const vData = group.projectsByVote[voteCode];
-                  let voteDisplayVal = '';
-                  if (costViewMode === 'contract') {
-                      voteDisplayVal = formatCurrency(vData.subtotalContract).replace('RM', '').trim();
-                  } else if (costViewMode === 'actual') {
-                      voteDisplayVal = formatCurrency(vData.subtotalAkhir).replace('RM', '').trim();
-                  } else {
-                      voteDisplayVal = `${formatCurrency(vData.subtotalContract).replace('RM', '').trim()}\n${formatCurrency(vData.subtotalAkhir).replace('RM', '').trim()}`;
-                  }
-                  return [voteCode, getVoteName(voteCode), voteDisplayVal];
-              });
 
               let groupTotalDisplay = '';
               if (costViewMode === 'contract') {
@@ -776,9 +796,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               } else {
                   groupTotalDisplay = `${formatCurrency(group.totalCost).replace('RM', '').trim()}\n${formatCurrency(group.totalHargaAkhir).replace('RM', '').trim()}`;
               }
-              voteSummaryBody.push(['', 'JUMLAH BESAR', groupTotalDisplay]);
 
-              const summaryHeight = (voteSummaryBody.length + 2) * 6;
+              const summaryHeight = 15;
               if (currentY + summaryHeight > pageHeight - 15) {
                   doc.addPage();
                   currentY = 15;
@@ -787,17 +806,13 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               // @ts-ignore
               doc.autoTable({
                   startY: currentY,
-                  head: [['VOT', 'PERUNTUKAN', 'JUMLAH (RM)']],
-                  body: voteSummaryBody,
+                  body: [
+                      [{ content: 'JUMLAH', styles: { halign: 'right', fontStyle: 'bold', cellWidth: 30 } }, 
+                       { content: groupTotalDisplay, styles: { halign: 'right', fontStyle: 'bold', cellWidth: 35 } }]
+                  ],
                   theme: 'grid',
-                  styles: { fontSize: 6, cellPadding: 1, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
-                  headStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold', halign: 'center' },
-                  columnStyles: {
-                      0: { cellWidth: 20, halign: 'center' },
-                      1: { cellWidth: 50 },
-                      2: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }
-                  },
-                  margin: { left: pageWidth - 105 },
+                  styles: { fontSize: 7, cellPadding: 1.2, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
+                  margin: { left: pageWidth - 75 },
                   tableWidth: 95,
               });
 
@@ -807,7 +822,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
           doc.addPage();
           currentY = 20;
-          doc.setFontSize(10);
+          doc.setFontSize(8);
           doc.setFont("helvetica","bold");
           doc.text(`RUMUSAN KEWANGAN KESELURUHAN (${selectedYear})`, marginX, currentY);
           currentY += 5;
@@ -840,7 +855,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                   ]
               ],
               theme: 'grid',
-              styles: { fontSize: 8, cellPadding: 1.7, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
+              styles: { fontSize: 7.5, cellPadding: 1.4, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
               headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center' },
               columnStyles: {
                   0: { cellWidth: 20, halign: 'center' },
@@ -867,7 +882,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               startY: currentY,
               body: deductionData,
               theme: 'plain',
-              styles: { fontSize: 9, cellPadding: 1, textColor: 0 },
+              styles: { fontSize: 8, cellPadding: 1, textColor: 0 },
               columnStyles: {
                   0: { cellWidth: 100, halign: 'right', fontStyle: 'bold' },
                   1: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
