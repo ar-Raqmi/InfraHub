@@ -991,6 +991,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('p', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       
       const pelarasanData = formData.bqDataPelarasan || [];
       const originalData = formData.bqData || [];
@@ -1053,14 +1054,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           const billTotalLaras = bill.items.reduce((s, i) => s + (i.amount||0), 0);
           const billTotalDiff = billTotalLaras - billTotalOrig;
 
-          tableBody.push([
-              { content: `JUMLAH ${bill.title}`, colSpan: 5, styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } },
-              { content: formatCurrency(billTotalOrig).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [245, 245, 245] } },
-              { content: '', styles: { lineWidth: fullBorder } },
-              { content: formatCurrency(billTotalLaras).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } },
-              { content: formatCurrency(billTotalDiff).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: fullBorder, fillColor: [255, 255, 255] } }
-          ]);
-
           let tableStartY = 15;
           if (pelSectionIdx === 0) {
               // @ts-ignore
@@ -1099,8 +1092,73 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               ]
           ];
 
+          const footerHeight = 8;
+          const distBottom = 20;
+          const footerY = pageHeight - distBottom - footerHeight;
+
           // @ts-ignore
-          doc.autoTable({ head: complexHead, body: tableBody, theme: 'grid', startY: tableStartY, rowPageBreak: 'avoid', tableLineWidth: 0.1, tableLineColor: [0, 0, 0], styles: { fontSize: 7, cellPadding: 1, lineColor: 0, lineWidth: 0.1, textColor: 0 }, headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0 }, columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 15 }, 5: { cellWidth: 15 }, 6: { cellWidth: 15 }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 } }, margin: { top: 15, left: 10, right: 10, bottom: 20 }, showHead: 'everyPage' });
+          doc.autoTable({ 
+              head: complexHead, 
+              body: tableBody, 
+              theme: 'plain', 
+              startY: tableStartY, 
+              rowPageBreak: 'avoid', 
+              margin: { top: 15, left: 10, right: 10, bottom: distBottom + footerHeight + 5 }, 
+              showHead: 'everyPage',
+              styles: { fontSize: 7, cellPadding: 1, textColor: 0, lineColor: 0 },
+              headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineColor: 0, lineWidth: 0.1 },
+              columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 15 }, 5: { cellWidth: 15 }, 6: { cellWidth: 15 }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 } },
+              didDrawCell: (data) => {
+                  doc.setDrawColor(0, 0, 0);
+                  doc.setLineWidth(0.1);
+                  // Always draw vertical lines
+                  doc.line(data.cell.x, data.cell.y, data.cell.x, data.cell.y + data.cell.height);
+                  doc.line(data.cell.x + data.cell.width, data.cell.y, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+
+                  // Draw horizontal lines ONLY for headers and the first row (BIL Title)
+                  if (data.section === 'head' || (data.section === 'body' && data.row.index === 0)) {
+                      doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
+                      doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+                  }
+              }
+          });
+
+          // @ts-ignore
+          const finalY = doc.lastAutoTable.finalY;
+
+          if (finalY < footerY) {
+            const xPositions = [10, 18, 100, 110, 125, 140, 155, 170, 185, 200];
+            doc.setLineWidth(0.1);
+            doc.setDrawColor(0, 0, 0);
+            xPositions.forEach(x => {
+                doc.line(x, finalY, x, footerY);
+            });
+          }
+
+          // Footer table for the Section Total
+          // @ts-ignore
+          doc.autoTable({
+            body: [[
+                { content: `JUMLAH ${bill.title}`, styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [255, 255, 255] } },
+                { content: formatCurrency(billTotalOrig).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [245, 245, 245] } },
+                { content: '', styles: { lineWidth: 0.1 } },
+                { content: formatCurrency(billTotalLaras).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [255, 255, 255] } },
+                { content: formatCurrency(billTotalDiff).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [255, 255, 255] } }
+            ]],
+            startY: footerY,
+            theme: 'grid',
+            styles: { fontSize: 7, cellPadding: 1, textColor: 0, lineColor: 0, lineWidth: 0.1 },
+            columnStyles: { 
+                0: { cellWidth: 130 }, // BIL + KETERANGAN + UNIT + KADAR + QTY(ASAL) sum = 8 + 82 + 10 + 15 + 15 = 130
+                1: { cellWidth: 15 },  // AMAUN (ASAL)
+                2: { cellWidth: 15 },  // QTY (LARAS) - empty
+                3: { cellWidth: 15 },  // AMAUN (LARAS)
+                4: { cellWidth: 15 }   // BEZA
+            },
+            margin: { left: 10, right: 10 },
+            showHead: false
+          });
+
           pelSectionIdx++;
       }
 
