@@ -678,6 +678,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('p', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       const sealsLogo = await getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
       const mpsLogo = await getBase64ImageFromURL("https://i.imgur.com/ZB7DFaV.png");
       const pjaUser = users.find(u => u.id === formData.pjaId);
@@ -733,7 +734,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       // @ts-ignore
       y = doc.lastAutoTable.finalY + 11;
 
-      const pageHeight = doc.internal.pageSize.getHeight();
       const marginBottom = 15;
 
       // 2. Reference Text: 9 -> 10
@@ -858,11 +858,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           });
 
           const billTotal = bill.items.reduce((s, i) => s + (i.amount || 0), 0);
-          const tableFooter = [[ 
-              { content: 'TO COLLECTION', colSpan: 5, styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } },
-              { content: formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }
-          ]];
-
+          
           let tableStartY = 15;
           if (bqSectionIdx === 0) {
               // @ts-ignore
@@ -880,30 +876,67 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'JUMLAH (RM)']
           ];
 
+          const footerHeight = 8;
+          const distBottom = 20;
+          const footerY = pageHeight - distBottom - footerHeight;
+
           // @ts-ignore
           doc.autoTable({
               head: complexHead,
               body: tableBody,
-              foot: tableFooter,
-              theme: 'grid',
+              theme: 'plain',
               startY: tableStartY,
               rowPageBreak: 'avoid',
               showHead: 'everyPage', 
-              showFoot: 'lastPage',  
-              margin: { top: 20, left: 10, right: 10, bottom: 20 },
-              tableLineWidth: 0.1,
-              tableLineColor: [0, 0, 0],
-              styles: { fontSize: 8, cellPadding: 2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
-              headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineWidth: 0.1 },
-              footStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineWidth: 0.1 },
+              showFoot: 'never',  
+              margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
+              styles: { fontSize: 8, cellPadding: 2, textColor: 0 },
+              headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
               columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 13 }, 3: { cellWidth: 17 }, 4: { cellWidth: 25 }, 5: { cellWidth: 25 } },
               didDrawCell: (data) => {
-                  if (data.section === 'body' && data.row.index === tableBody.length - 1) {
-                      doc.setLineWidth(0.1);
+                  doc.setDrawColor(0);
+                  doc.setLineWidth(0.1);
+                  // Always draw vertical lines
+                  doc.line(data.cell.x, data.cell.y, data.cell.x, data.cell.y + data.cell.height);
+                  doc.line(data.cell.x + data.cell.width, data.cell.y, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+
+                  // Draw horizontal lines ONLY for headers and the first row (BIL Title)
+                  if (data.section === 'head' || (data.section === 'body' && data.row.index === 0)) {
+                      doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
                       doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
                   }
               }
           });
+
+          // @ts-ignore
+          const finalY = doc.lastAutoTable.finalY;
+
+          if (finalY < footerY) {
+            const xPositions = [10, 20, 120, 133, 150, 175, 200];
+            doc.setLineWidth(0.1);
+            doc.setDrawColor(0);
+            xPositions.forEach(x => {
+                doc.line(x, finalY, x, footerY);
+            });
+          }
+
+          // @ts-ignore
+          doc.autoTable({
+            body: [[ 
+                { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } },
+                { content: formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }
+            ]],
+            startY: footerY,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+            columnStyles: { 
+                0: { cellWidth: 165 }, 
+                1: { cellWidth: 25 }   
+            },
+            margin: { left: 10, right: 10 },
+            showHead: false
+          });
+
           bqSectionIdx++;
       }
 
