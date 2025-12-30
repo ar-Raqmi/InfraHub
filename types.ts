@@ -112,7 +112,8 @@ export interface CompanyDetail {
   phoneAlt?: string;
   email: string;
   gred: string; // e.g. "G1"
-  registrationNumber?: string; // NEW: Nombor Pembekal / Kontraktor
+  registrationNumber?: string;
+  limit?: number; 
 }
 
 export interface VoteDefinition {

@@ -453,6 +453,11 @@ class SupabaseService {
         const s = await this.getSystemSettings(year);
         return s.company_details?.[name];
     }
+
+    async getAllCompanyDetails(year: number): Promise<Record<string, CompanyDetail>> {
+        const s = await this.getSystemSettings(year);
+        return s.company_details || {};
+    }
     
     async saveCompanyDetails(year: number, detail: CompanyDetail) {
         const s = await this.getSystemSettings(year);

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate, User, BP_OPTIONS, ZON_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
 import { supabaseService } from '../services/supabaseService';
-import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle } from 'lucide-react';
 
 interface ProjectsListProps {
   projects: Project[];
@@ -93,6 +93,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
 
+  const [companyDetails, setCompanyDetails] = useState<Record<string, any>>({});
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [pageInput, setPageInput] = useState('1');
@@ -100,22 +102,184 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   useEffect(() => {
     const fetchData = async () => {
         try {
-            const [u, votes, order, financials] = await Promise.all([
+            const [u, votes, order, financials, comps] = await Promise.all([
                 supabaseService.getUsers(),
                 supabaseService.getVotes(selectedYear),
                 supabaseService.getCompanyOrder(selectedYear),
-                supabaseService.getManualFinancials(selectedYear)
+                supabaseService.getManualFinancials(selectedYear),
+                supabaseService.getAllCompanyDetails(selectedYear)
             ]);
             setUsers(u);
             setVotesList(votes);
             setCompanyOrder(order);
             setManualFinancials(financials);
+            setCompanyDetails(comps);
         } catch (err) {
             console.error('Failed to load projects list data:', err);
         }
     };
     fetchData();
   }, [selectedYear]);
+
+  const handleExportRotasiPDF = async () => {
+      setIsGeneratingPdf(true);
+      setGenerationProgress(10);
+
+      try {
+          // @ts-ignore
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('l', 'mm', 'a4'); // Landscape for more columns
+          
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          const marginX = 10;
+          let currentY = 15;
+
+          // Header
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
+          doc.text(`JADUAL PENGILIRAN KONTRAKTOR PANEL INFRASTRUKTUR JABATAN KEJURUTERAAN TAHUN ${selectedYear}`, pageWidth / 2, currentY, { align: "center" });
+          doc.setFontSize(10);
+          currentY += 7;
+
+          const months = ["JAN", "FEB", "MAC", "APR", "MEI", "JUN", "JUL", "OGO", "SEP", "OKT", "NOV", "DIS"];
+          
+          const companies = companyOrder.length > 0 ? companyOrder : Array.from(new Set(projects.map(p => p.namaSyarikat).filter(Boolean))) as string[];
+
+          let grandTotalCount = 0;
+          let grandTotalContract = 0;
+          let grandTotalLimit = 0;
+          let grandTotalBalance = 0;
+          const grandTotalMonths = Array(12).fill(0);
+
+          const tableBody = companies.map((compName, idx) => {
+              const compProjects = projects.filter(p => p.namaSyarikat === compName);
+              const compDetail = companyDetails[compName] || {};
+              const limit = compDetail.limit || 0; // Threshold
+              
+              const monthCounts = Array(12).fill(0);
+              let totalContract = 0;
+
+              compProjects.forEach(p => {
+                  totalContract += (p.kosProjek || 0);
+                  
+                  let dateToUse = p.tarikhLantikan || p.tarikhBuka;
+                  if (p.bulan) {
+                      const mIdx = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"].indexOf(p.bulan.toUpperCase());
+                      if (mIdx !== -1) {
+                          monthCounts[mIdx]++;
+                          return;
+                      }
+                  }
+                  
+                  if (dateToUse) {
+                      const d = new Date(dateToUse);
+                      if (!isNaN(d.getTime())) {
+                          monthCounts[d.getMonth()]++;
+                      }
+                  }
+              });
+
+              monthCounts.forEach((count, mIdx) => {
+                  grandTotalMonths[mIdx] += count;
+              });
+
+              const balance = limit - totalContract;
+              const totalCount = monthCounts.reduce((a,b) => a+b, 0);
+
+              grandTotalCount += totalCount;
+              grandTotalContract += totalContract;
+              grandTotalLimit += limit;
+              grandTotalBalance += balance;
+
+              return [
+                  idx + 1,
+                  compName,
+                  ...monthCounts.map(c => c > 0 ? c.toString() : ''), 
+                  totalCount, 
+                  formatCurrency(totalContract).replace('RM', '').trim(),
+                  formatCurrency(limit).replace('RM', '').trim(),
+                  formatCurrency(balance).replace('RM', '').trim()
+              ];
+          });
+
+          const summaryRow = [
+              '',
+              'JUMLAH KESELURUHAN',
+              ...grandTotalMonths.map(c => c > 0 ? c.toString() : ''),
+              grandTotalCount,
+              formatCurrency(grandTotalContract).replace('RM', '').trim(),
+              formatCurrency(grandTotalLimit).replace('RM', '').trim(),
+              formatCurrency(grandTotalBalance).replace('RM', '').trim()
+          ];
+
+          tableBody.push(summaryRow);
+
+          const head = [
+              [
+                  { content: 'BIL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                  { content: 'NAMA KONTRAKTOR', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                  { content: 'BULAN', colSpan: 12, styles: { halign: 'center' } },
+                  { content: 'JUMLAH FAIL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }, // Total Count
+                  { content: 'JUMLAH KONTRAK', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                  { content: 'HAD KERJA', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                  { content: 'BAKI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }
+              ],
+              [
+                  ...months
+              ]
+          ];
+
+          // @ts-ignore
+          doc.autoTable({
+              startY: currentY,
+              head: head,
+              body: tableBody,
+              theme: 'grid',
+              styles: { fontSize: 7, cellPadding: 1, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
+              headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center', lineWidth: 0.1, lineColor: [0,0,0] },
+              columnStyles: {
+                  0: { cellWidth: 10, halign: 'center' }, // BIL
+                  1: { cellWidth: 'auto' }, // NAMA
+                  // Months 2-13 (indices 2 to 13)
+                  2: { cellWidth: 8, halign: 'center' },
+                  3: { cellWidth: 8, halign: 'center' },
+                  4: { cellWidth: 8, halign: 'center' },
+                  5: { cellWidth: 8, halign: 'center' },
+                  6: { cellWidth: 8, halign: 'center' },
+                  7: { cellWidth: 8, halign: 'center' },
+                  8: { cellWidth: 8, halign: 'center' },
+                  9: { cellWidth: 8, halign: 'center' },
+                  10: { cellWidth: 8, halign: 'center' },
+                  11: { cellWidth: 8, halign: 'center' },
+                  12: { cellWidth: 8, halign: 'center' },
+                  13: { cellWidth: 8, halign: 'center' },
+                  // Stats
+                  14: { cellWidth: 12, halign: 'center', fontStyle: 'bold' }, // Total Count
+                  15: { cellWidth: 25, halign: 'right' }, // Total Contract
+                  16: { cellWidth: 25, halign: 'right' }, // Limit
+                  17: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }  // Balance
+              },
+              margin: { left: marginX, right: marginX },
+              didParseCell: (data: any) => {
+                  if (data.row.index === tableBody.length - 1) {
+                       data.cell.styles.fontStyle = 'bold';
+                       data.cell.styles.fillColor = [240, 240, 240];
+                  }
+              }
+          });
+
+          setGenerationProgress(100);
+          doc.save(`Rotasi_Kontraktor_${selectedYear}.pdf`);
+
+      } catch (e) {
+          console.error("Rotasi PDF Error", e);
+          alert("Gagal menjana PDF Rotasi.");
+      } finally {
+          setIsGeneratingPdf(false);
+          setGenerationProgress(0);
+      }
+  };
 
   // Column Definitions
   const columnDefs = [
@@ -798,7 +962,16 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     title={viewMode === 'group' ?"Jana Laporan Panel" :"Export CSV"}
                   >
                       {viewMode === 'group' ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                      <span className="hidden sm:inline">{viewMode === 'group' ? 'Laporan PDF' : 'CSV'}</span>
+                      {viewMode === 'group' ? 'Laporan' : 'CSV'}
+                  </button>
+                  <button 
+                    onClick={handleExportRotasiPDF}
+                    className="h-full px-4 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center gap-2 transition-colors font-bold text-sm"
+                    title=""
+                    disabled={isGeneratingPdf}
+                  >
+                      {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Recycle className="w-4 h-4" />}
+                      <span className="hidden sm:inline">Rotasi</span>
                   </button>
               </div>
           </div>
