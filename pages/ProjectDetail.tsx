@@ -278,7 +278,23 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
           </div>
           
           <div className="md:hidden flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100" onClick={toggleEdit}>
-             <span className="text-[10px] font-black text-emerald-600">{localProgress}%</span>
+             {isEditingProgress ? (
+               <div className="flex items-center">
+                 <input 
+                   type="number" 
+                   value={localProgress} 
+                   onChange={(e) => setLocalProgress(e.target.value)} 
+                   onBlur={handleBlur} 
+                   onKeyDown={handleKeyDown} 
+                   className="w-8 bg-transparent text-[10px] font-black text-emerald-600 outline-none border-b border-emerald-500 p-0 text-center"
+                   autoFocus
+                   inputMode="decimal"
+                 />
+                 <span className="text-[10px] font-black text-emerald-600">%</span>
+               </div>
+             ) : (
+               <span className="text-[10px] font-black text-emerald-600">{localProgress}%</span>
+             )}
           </div>
         </div>
 
