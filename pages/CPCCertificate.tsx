@@ -51,6 +51,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
     const handleDownload = async () => {
         setIsGenerating(true);
         try {
+            // @ts-ignore
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             
