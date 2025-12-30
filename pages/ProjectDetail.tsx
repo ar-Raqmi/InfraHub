@@ -997,7 +997,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       
       let pelSectionIdx = 0;
       for (const bill of pelarasanData) {
-          doc.addPage();
+          if (pelSectionIdx > 0) doc.addPage();
           const originalBill = originalData.find(b => b.id === bill.id);
           const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN');
           let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
@@ -1161,7 +1161,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           pelSectionIdx++;
       }
 
-      doc.addPage();
+      if (pelSectionIdx > 0) doc.addPage();
       const grandTotalOriginal = originalData.reduce((sum, bill) => sum + bill.items.reduce((s, i) => s + (i.amount||0), 0), 0);
       const grandTotalAdjusted = pelarasanData.reduce((sum, bill) => sum + bill.items.reduce((s, i) => s + (i.amount||0), 0), 0);
       
