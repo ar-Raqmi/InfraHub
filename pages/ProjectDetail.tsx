@@ -841,7 +841,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                           if (p.hasLength) parts.push(`${p.length}m(P)`);
                           if (p.hasWidth) parts.push(`${p.width}m(L)`);
                           if (p.hasDepth) parts.push(`${p.depth}m(T)`);
-                          if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`);
+                          if (p.multiplier !== 1) parts.push(`${p.multiplier}`);
                           return parts.join(' x ');
                       }).join('\n');
                   if (dims) descText += `\n\n${dims}`;
@@ -871,8 +871,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           }
 
           const complexHead = [
-              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }, { content: 'ADUAN', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }],
-              [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 8 } }, { content: aduanText, colSpan: 2, styles: { halign: 'center', fontSize: 8 } }],
+              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }, { content: 'ADUAN', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }],
+              [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 7.5 } }, { content: aduanText, colSpan: 2, styles: { halign: 'center', fontSize: 7.5 } }],
               ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'JUMLAH (RM)']
           ];
 
@@ -890,7 +890,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               showHead: 'everyPage', 
               showFoot: 'never',  
               margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
-              styles: { fontSize: 8, cellPadding: 2, textColor: 0 },
+              styles: { fontSize: 7.5, cellPadding: 1.5, textColor: 0 },
               headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
               columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 13 }, 3: { cellWidth: 17 }, 4: { cellWidth: 25 }, 5: { cellWidth: 25 } },
               didDrawCell: (data) => {
@@ -928,7 +928,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             ]],
             startY: footerY,
             theme: 'grid',
-            styles: { fontSize: 8, cellPadding: 2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+            styles: { fontSize: 7.5, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1, textColor: 0 },
             columnStyles: { 
                 0: { cellWidth: 165 }, 
                 1: { cellWidth: 25 }   
