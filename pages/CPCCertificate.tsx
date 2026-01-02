@@ -61,16 +61,16 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             let currentY = 20;
 
             doc.setFont("helvetica","bold");
-            doc.setFontSize(11);
+            doc.setFontSize(12);
             doc.text("KERAJAAN MALAYSIA", pageWidth / 2, currentY, { align:"center" });
             currentY += 6;
             
-            doc.setFontSize(13);
+            doc.setFontSize(12);
             doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, currentY, { align:"center" });
             currentY += 8;
 
             doc.setFont("helvetica","normal");
-            doc.setFontSize(10);
+            doc.setFontSize(11);
             doc.text("PERAKUAN SIAP KERJA", pageWidth / 2, currentY, { align:"center" });
             currentY += 5;
 
@@ -80,7 +80,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             currentY += 15;
 
             doc.setFont("helvetica","normal");
-            doc.setFontSize(9);
+            doc.setFontSize(11);
 
             const leftColX = margin;
             const rightColX = pageWidth / 2 + 10; 
@@ -139,7 +139,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             currentY += (splitTitle.length * 5) + 10;
 
             doc.setFont("helvetica","normal");
-            doc.setFontSize(9); 
+            doc.setFontSize(11); 
             
             const date1 = tarikhSiap ? formatDateMalay(tarikhSiap) : '...................';
             const date2 = dlpStart ? formatDateMalay(dlpStart) : '...................';
@@ -186,7 +186,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             const sigRightX = pageWidth / 2 + 10;
 
             doc.setFont("helvetica","bold");
-            doc.setFontSize(9);
+            doc.setFontSize(11);
             
             doc.text("Diperakui di tapak,", sigLeftX, currentY);
             doc.text("Disahkan,", sigRightX, currentY);

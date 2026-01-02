@@ -241,7 +241,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 25;
         const contentWidth = pageWidth - (margin * 2);
-        let y = 45; // Reduced Letterhead spacing from 50 to 45
+        let y = 55; // Reduced Letterhead spacing from 50 to 45
 
         // Ref & Date
         doc.setFont("helvetica","normal");
@@ -259,7 +259,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y += 8; // Gap after title (Reduced from 10)
 
         // Recipient (Company)
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.setFont("helvetica","bold");
         doc.text(project.namaSyarikat?.toUpperCase() || 'NAMA SYARIKAT', margin, y);
         y += 5;
@@ -287,7 +287,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
 
         // Para 1
         doc.setFont("helvetica","normal");
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.text("Saya dengan segala hormatnya merujuk kepada perkara di atas.", margin, y);
         y += 6; // Gap between Para 1 & 2 (Reduced from 8)
 
@@ -410,7 +410,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 25;
         const contentWidth = pageWidth - (margin * 2);
-        let y = 45;
+        let y = 55;
 
         // Ref & Date
         doc.setFont("helvetica","normal");
@@ -428,7 +428,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y += 12;
 
         // Recipient (Company)
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.setFont("helvetica","bold");
         doc.text(project.namaSyarikat?.toUpperCase() || 'NAMA SYARIKAT', margin, y);
         y += 5;
@@ -456,7 +456,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
 
         // Para 1
         doc.setFont("helvetica","normal");
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.text("Saya dengan segala hormatnya merujuk kepada perkara di atas.", margin, y);
         y += 6;
 
@@ -572,7 +572,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 25;
         const contentWidth = pageWidth - (margin * 2);
-        let y = 45;
+        let y = 55;
 
         // Ref & Date
         doc.setFont("helvetica","normal");
@@ -590,7 +590,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y += 12;
 
         // Recipient (Company)
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.setFont("helvetica","bold");
         doc.text(project.namaSyarikat?.toUpperCase() || 'NAMA SYARIKAT', margin, y);
         y += 5;
@@ -618,7 +618,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
 
         // Para 1
         doc.setFont("helvetica","normal");
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.text("Saya dengan segala hormatnya merujuk kepada perkara di atas.", margin, y);
         y += 7;
 
@@ -682,7 +682,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
         doc.text("Saya yang menjalankan amanah,", margin, y); 
-        y += 20;
+        y += 15;
 
         const jr = juruteraList.find(u => u.id == selectedJuruteraId);
         const signerName = jr ? jr.fullName.toUpperCase() :"NAMA JURUTERA...";
@@ -746,7 +746,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
 
         // --- PAGE 1 ---
         doc.setFont("helvetica","bold");
-        doc.setFontSize(11);
+        doc.setFontSize(12);
         doc.text("KERAJAAN MALAYSIA", pageWidth / 2, y, { align:"center" });
         y += 5;
         doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, y, { align:"center" });
@@ -758,7 +758,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         doc.text("PERAKUAN KERJA TIDAK SIAP", pageWidth / 2, y, { align:"center" });
         y += 5;
         doc.setFont("helvetica","italic");
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.text("(CERTIFICATE OF NON-COMPLETION)", pageWidth / 2, y, { align:"center" });
         y += 15;
 
@@ -777,7 +777,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
             startY: y,
             body: addressData,
             theme: 'plain',
-            styles: { fontSize: 9, cellPadding: 1, overflow: 'visible', font: 'helvetica' },
+            styles: { fontSize: 11, cellPadding: 1, overflow: 'visible', font: 'helvetica' },
             columnStyles: {
                 0: { cellWidth: contentWidth * 0.55 },
                 1: { cellWidth: contentWidth * 0.45 }
@@ -788,7 +788,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y = doc.lastAutoTable.finalY + 10;
 
         doc.setFont("helvetica","normal");
-        doc.setFontSize(9);
+        doc.setFontSize(11);
         doc.text("Kepada:", margin, y);
 
         const recipientX = margin + 20;
@@ -828,7 +828,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
             { text:" and in my opinion the said Works / Section of the Works* ought to have been completed.", italic: true }
         ];
 
-        doc.setFontSize(9);
+        doc.setFontSize(11);
         const linesM1 = getStyledLines(malayParts1, contentWidth); // No indent here
         const linesE1 = getStyledLines(englishParts1, contentWidth);
         const count1 = Math.max(linesM1.length, linesE1.length);
