@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition } from '../types';
+import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { createItem, createHeader } from '../data/bqPresets';
 import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool } from 'lucide-react';
@@ -196,6 +195,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
   const [localDims, setLocalDims] = useState<GlobalDimensions>({ length: 0, width: 0, depth: 0 });
   const [isDimsDirty, setIsDimsDirty] = useState(false);
 
+  const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateSubtitle, setNewTemplateSubtitle] = useState('');
+
   const existingDims = templateLocation ? projectData.locationDimensions?.[templateLocation] : null;
   const isDimsModified = existingDims && (existingDims.length !== templateDims.length || existingDims.width !== templateDims.width || existingDims.depth !== templateDims.depth);
 
@@ -207,6 +210,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
       title: string;
       count?: number; 
   } | null>(null);
+
+  const currentUser = supabaseService.getCurrentUser();
+  const isAdmin = currentUser?.role === Role.ADMIN;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -517,49 +523,95 @@ const BQEditor: React.FC<BQEditorProps> = ({
               };
               if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { bill.items.push(createHeader('ALL QUANTITY ARE PROVISIONAL')); }
               
-              // NEW LOGIC: Iterate linearly to respect template order and avoid duplicate headers
+              // New Logic to handle both full objects and legacy refs
               let lastGroupId = '';
               let lastItemId = '';
               
-              billDef.items.forEach(ref => {
-                  const group = bqLibrary.find(g => g.id === ref.groupId);
-                  if (group) {
-                      // Add Group Header if changed
-                      if (ref.groupId !== lastGroupId) {
-                          bill.items.push(createHeader(group.title.toUpperCase()));
-                          lastGroupId = ref.groupId;
-                          lastItemId = ''; // Reset item tracker on group change
+              billDef.items.forEach(itemOrRef => {
+                  // Check if it's a full BQItem (snapshot) or a legacy ref
+                  const isFullItem = (itemOrRef as BQItem).type !== undefined;
+                  
+                  if (isFullItem) {
+                      // FULL ITEM SNAPSHOT (Standard Mode)
+                      const itemSnapshot = itemOrRef as BQItem;
+                      const newItem = { ...itemSnapshot, id: Math.random().toString(36).substr(2, 9) };
+                      
+                      // 1. Sync with Library if source exists
+                      if (newItem.sourceItemId) {
+                          const group = bqLibrary.find(g => g.id === newItem.sourceGroupId);
+                          const libItem = group?.items.find(i => i.id === newItem.sourceItemId);
+                          if (libItem) {
+                              if (newItem.sourceVariantId) {
+                                  const libVariant = libItem.variants?.find(v => v.id === newItem.sourceVariantId);
+                                  if (libVariant) {
+                                      newItem.rate = libVariant.rate;
+                                      newItem.unit = libVariant.unit;
+                                      // Optional: Update description/label if changed in library? Keeping template desc is safer for context.
+                                  }
+                              } else {
+                                  newItem.rate = libItem.rate || 0;
+                                  newItem.unit = libItem.unit || '';
+                              }
+                          }
+                      }
+
+                      // 2. Apply Global Dimensions from Import Step
+                      const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
+                      if (newItem.isGlobal && currentTplDims) {
+                          newItem.calculationParts = newItem.calculationParts?.map(p => ({
+                              ...p,
+                              length: p.hasLength ? currentTplDims.length : p.length,
+                              width: p.hasWidth ? currentTplDims.width : p.width,
+                              depth: p.hasDepth ? currentTplDims.depth : p.depth
+                          }));
+                          const qty = recalculateQtyFromParts(newItem.calculationParts || []);
+                          newItem.qty = parseFloat(qty.toFixed(2));
+                          newItem.amount = parseFloat((qty * newItem.rate).toFixed(2));
                       }
                       
-                      const libItem = group.items.find(i => i.id === ref.itemId);
-                      if (libItem) {
-                          // Handle Item Header for Variants
-                          if (ref.variantId || (libItem.variants && libItem.variants.length > 0)) {
-                               const parentDesc = libItem.description.charAt(0).toUpperCase() + libItem.description.slice(1).toLowerCase();
-                               // Only add header if we are switching to a new item parent
-                               if (ref.itemId !== lastItemId) {
-                                   bill.items.push(createHeader(parentDesc));
-                                   lastItemId = ref.itemId;
-                               }
-                          } else {
-                              // Reset item id if it's a standard item (no variants) to allow subsequent variants to trigger header
-                              lastItemId = ref.itemId; 
+                      bill.items.push(newItem);
+
+                  } else {
+                      // LEGACY REF MODE (Backwards Compatibility)
+                      const ref = itemOrRef as BQTemplateItemRef;
+                      const group = bqLibrary.find(g => g.id === ref.groupId);
+                      if (group) {
+                          // Add Group Header if changed
+                          if (ref.groupId !== lastGroupId) {
+                              bill.items.push(createHeader(group.title.toUpperCase()));
+                              lastGroupId = ref.groupId;
+                              lastItemId = ''; // Reset item tracker on group change
                           }
                           
-                          const bqIt = createItem(bqLibrary, ref.groupId, ref.itemId, ref.variantId);
-                          // Restore source tracking
-                          bqIt.sourceGroupId = ref.groupId;
-                          bqIt.sourceItemId = ref.itemId;
-                          bqIt.sourceVariantId = ref.variantId;
+                          const libItem = group.items.find(i => i.id === ref.itemId);
+                          if (libItem) {
+                              // Handle Item Header for Variants
+                              if (ref.variantId || (libItem.variants && libItem.variants.length > 0)) {
+                                   const parentDesc = libItem.description.charAt(0).toUpperCase() + libItem.description.slice(1).toLowerCase();
+                                   // Only add header if we are switching to a new item parent
+                                   if (ref.itemId !== lastItemId) {
+                                       bill.items.push(createHeader(parentDesc));
+                                       lastItemId = ref.itemId;
+                                   }
+                              } else {
+                                  lastItemId = ref.itemId; 
+                              }
+                              
+                              const bqIt = createItem(bqLibrary, ref.groupId, ref.itemId, ref.variantId);
+                              // Restore source tracking
+                              bqIt.sourceGroupId = ref.groupId;
+                              bqIt.sourceItemId = ref.itemId;
+                              bqIt.sourceVariantId = ref.variantId;
 
-                          const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
-                          if (bqIt.isGlobal && currentTplDims) {
-                              bqIt.calculationParts = bqIt.calculationParts?.map(p => ({ ...p, length: p.hasLength ? currentTplDims.length : p.length, width: p.hasWidth ? currentTplDims.width : p.width, depth: p.hasDepth ? currentTplDims.depth : p.depth }));
-                              const qty = recalculateQtyFromParts(bqIt.calculationParts || []);
-                              bqIt.qty = parseFloat(qty.toFixed(2));
-                              bqIt.amount = parseFloat((qty * bqIt.rate).toFixed(2));
+                              const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
+                              if (bqIt.isGlobal && currentTplDims) {
+                                  bqIt.calculationParts = bqIt.calculationParts?.map(p => ({ ...p, length: p.hasLength ? currentTplDims.length : p.length, width: p.hasWidth ? currentTplDims.width : p.width, depth: p.hasDepth ? currentTplDims.depth : p.depth }));
+                                  const qty = recalculateQtyFromParts(bqIt.calculationParts || []);
+                                  bqIt.qty = parseFloat(qty.toFixed(2));
+                                  bqIt.amount = parseFloat((qty * bqIt.rate).toFixed(2));
+                              }
+                              bill.items.push(bqIt);
                           }
-                          bill.items.push(bqIt);
                       }
                   }
               });
@@ -575,6 +627,84 @@ const BQEditor: React.FC<BQEditorProps> = ({
       setBills(renumberedBills);
       if (renumberedBills.length > 0 && newGroups.length > 0) setActiveBillId(newGroups[0].id);
       setIsTemplateModalOpen(false);
+  };
+
+  const handleCaptureTemplate = async () => {
+      if (!activeBillId || !newTemplateName.trim()) return;
+      const bill = bills.find(b => b.id === activeBillId);
+      if (!bill) return;
+
+      const sanitizedItems: BQItem[] = bill.items.map(item => {
+          // Clone item
+          const newItem = { ...item };
+          
+          // Reset numeric values
+          newItem.qty = 0;
+          newItem.amount = 0;
+          
+          // Reset Calculation Parts but keep logic flags
+          if (newItem.calculationParts) {
+              newItem.calculationParts = newItem.calculationParts.map(p => ({
+                  ...p,
+                  length: 0,
+                  width: 0,
+                  depth: 0,
+                  multiplier: p.multiplier // Keep multiplier? Probably safe to reset to 1, but keeping user logic is better.
+              }));
+          }
+          
+          // Reset legacy dims just in case
+          if (newItem.dimLength) newItem.dimLength = 0;
+          if (newItem.dimWidth) newItem.dimWidth = 0;
+          if (newItem.dimDepth) newItem.dimDepth = 0;
+
+          // SYNC: Ensure rate/unit matches library if linked
+          if (newItem.sourceItemId) {
+              const group = bqLibrary.find(g => g.id === newItem.sourceGroupId);
+              const libItem = group?.items.find(i => i.id === newItem.sourceItemId);
+              if (libItem) {
+                  if (newItem.sourceVariantId) {
+                      const libVariant = libItem.variants?.find(v => v.id === newItem.sourceVariantId);
+                      if (libVariant) {
+                          newItem.rate = libVariant.rate;
+                          newItem.unit = libVariant.unit;
+                      }
+                  } else {
+                      newItem.rate = libItem.rate || 0;
+                      newItem.unit = libItem.unit || '';
+                  }
+              }
+          }
+
+          return newItem;
+      });
+
+      const newTemplate: BQTemplateDefinition = {
+          id: `tpl-${Date.now()}`,
+          key: 'CUSTOM',
+          title: newTemplateName.trim().toUpperCase(),
+          subtitle: newTemplateSubtitle.trim() || 'Template Tersuai',
+          icon: 'bookmark',
+          color: 'indigo',
+          bills: [
+              {
+                  id: `tb-${Date.now()}`,
+                  title: parseTitle(bill.title).content || bill.title, // Strip "BIL NO X" prefix
+                  items: sanitizedItems
+              }
+          ],
+          groupRefs: [] // Not used for custom templates
+      };
+
+      // Optimistic update
+      const updatedTemplates = [...bqTemplates, newTemplate];
+      setBqTemplates(updatedTemplates);
+      await supabaseService.saveTemplates(updatedTemplates);
+      
+      setIsCaptureModalOpen(false);
+      setNewTemplateName('');
+      setNewTemplateSubtitle('');
+      if (onShowToast) onShowToast("Template berjaya disimpan!", "success");
   };
 
   const requestDeleteBill = (bill: BQGroup) => {
@@ -944,7 +1074,15 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     <div className="p-4 border-b border-slate-100  bg-slate-50/50  sticky top-20 z-20">
                         <div className="flex items-center justify-between mb-2">
                              <input value={activeBill.title} onChange={(e) => updateBillTitle(activeBill.id, e.target.value)} disabled={readOnly} className={`text-lg font-bold bg-transparent outline-none w-full text-slate-800  uppercase ${readOnly ? 'cursor-not-allowed' : ''}`} />
-                            <div className="text-right text-xs text-slate-400 shrink-0 ml-4">Total: <span className="text-emerald-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + (i.amount||0), 0))}</span></div>
+                            <div className="flex items-center gap-3">
+                                {!readOnly && isAdmin && (
+                                    <button onClick={() => setIsCaptureModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors text-[10px] font-bold">
+                                        <Bookmark className="w-3.5 h-3.5" />
+                                        Template
+                                    </button>
+                                )}
+                                <div className="text-right text-xs text-slate-400 shrink-0">Total: <span className="text-emerald-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + (i.amount||0), 0))}</span></div>
+                            </div>
                         </div>
                         {!activeBill.title.toUpperCase().includes('PERMULAAN') && (
                             <div className="mb-2">
@@ -1146,6 +1284,48 @@ const BQEditor: React.FC<BQEditorProps> = ({
               </div>
           </div>,
           document.body
+        )}
+
+        {isCaptureModalOpen && createPortal(
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsCaptureModalOpen(false)}>
+                <div className="bg-white  rounded-[2rem] shadow-2xl max-w-md w-full p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
+                    <div className="mb-6">
+                        <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-4">
+                            <Bookmark className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900">Simpan Template</h3>
+                        <p className="text-sm text-slate-500 mt-1">Simpan struktur dan item dalam senarai ini sebagai template untuk kegunaan masa depan.</p>
+                    </div>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 pl-1">Nama Template</label>
+                            <input 
+                                type="text" 
+                                value={newTemplateName} 
+                                onChange={(e) => setNewTemplateName(e.target.value)} 
+                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-indigo-500 outline-none font-bold text-sm transition-colors"
+                                placeholder="cth: TEMPLATE LONGKANG V2"
+                                autoFocus
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 pl-1">Keterangan (Pilihan)</label>
+                            <input 
+                                type="text" 
+                                value={newTemplateSubtitle} 
+                                onChange={(e) => setNewTemplateSubtitle(e.target.value)} 
+                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-indigo-500 outline-none text-sm transition-colors"
+                                placeholder="cth: Khas untuk kawasan berbukit..."
+                            />
+                        </div>
+                    </div>
+                    <div className="flex gap-3 mt-8">
+                        <button onClick={() => setIsCaptureModalOpen(false)} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">Batal</button>
+                        <button onClick={handleCaptureTemplate} disabled={!newTemplateName.trim()} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed">Simpan</button>
+                    </div>
+                </div>
+            </div>,
+            document.body
         )}
 
         {deleteConfirm?.isOpen && createPortal(

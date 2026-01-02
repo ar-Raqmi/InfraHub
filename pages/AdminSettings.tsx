@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabaseService } from '../services/supabaseService';
-import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool } from 'lucide-react';
-import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQTemplateItemRef } from '../types';
-import BQTemplateCreator from './BQTemplateCreator';
+import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw } from 'lucide-react';
+import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQItem } from '../types';
+import { createItem, createHeader } from '../data/bqPresets';
 
 interface AdminSettingsProps {
   user: User;
@@ -37,6 +36,30 @@ const ICON_MAP = {
     bookmark: Bookmark,
     tool: PenTool
 };
+
+const getColorStyles = (color: string) => {
+    const colors: Record<string, string> = {
+        slate:"bg-slate-100 text-slate-600 border-slate-200",
+        red:"bg-red-100 text-red-600 border-red-200",
+        orange:"bg-orange-100 text-orange-600 border-orange-200",
+        amber:"bg-amber-100 text-amber-600 border-amber-200",
+        yellow:"bg-yellow-100 text-yellow-600 border-yellow-200",
+        lime:"bg-lime-100 text-lime-600 border-lime-200",
+        green:"bg-green-100 text-green-600 border-green-200",
+        emerald:"bg-emerald-100 text-emerald-600 border-emerald-200",
+        teal:"bg-teal-100 text-teal-600 border-teal-200",
+        cyan:"bg-cyan-100 text-cyan-600 border-cyan-200",
+        sky:"bg-sky-100 text-sky-600 border-sky-200",
+        blue:"bg-blue-100 text-blue-600 border-blue-200",
+        indigo:"bg-indigo-100 text-indigo-600 border-indigo-200",
+        violet:"bg-violet-100 text-violet-600 border-violet-200",
+        purple:"bg-purple-100 text-purple-600 border-purple-200",
+        fuchsia:"bg-fuchsia-100 text-fuchsia-600 border-fuchsia-200",
+        pink:"bg-pink-100 text-pink-600 border-pink-200",
+        rose:"bg-rose-100 text-rose-600 border-rose-200",
+    };
+    return colors[color] || colors['blue'];
+}
 
 // Helper for Roman Numerals
 function toRoman(num: number): string {
@@ -163,7 +186,10 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
 
   const [templates, setTemplates] = useState<BQTemplateDefinition[]>([]);
   const [editingTemplate, setEditingTemplate] = useState<BQTemplateDefinition | null>(null);
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
+
+  const ICON_MAP_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
+  const COLOR_LIST = ['slate', 'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
 
   useEffect(() => {
     loadData();
@@ -249,9 +275,10 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
           setLibraryGroups(newGroups);
           await supabaseService.saveLibraryGroups(newGroups);
       } else if (type === 'TEMPLATE') {
+          // Fix: Use deleteTemplate for explicit deletion
+          await supabaseService.deleteTemplate(value);
           const newTemplates = templates.filter(t => t.id !== value);
           setTemplates(newTemplates);
-          await supabaseService.saveTemplates(newTemplates);
       }
       setDeleteConfig({ isOpen: false, type: null, value: '' });
       await loadData();
@@ -434,10 +461,68 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
       saveLibraryState(newGroups);
   };
 
-  // --- TEMPLATE LOGIC ---
-  const openTemplateModal = (template?: BQTemplateDefinition) => {
-      setEditingTemplate(template || null);
-      setIsTemplateModalOpen(true);
+  // --- TEMPLATE GENERATION LOGIC ---
+  
+  const generateInsuransTemplate = async () => {
+      // Hardcoded references for Insurans
+      const refs = [
+          { groupId: 'G1-1', itemId: '1-01', variantId: '1-01-v1' },
+          { groupId: 'G1-2', itemId: '2-01' },
+          { groupId: 'G1-3', itemId: '3-01' }
+      ];
+
+      const templateItems: BQItem[] = [];
+      let lastGroupId = '';
+
+      refs.forEach(ref => {
+          const group = libraryGroups.find(g => g.id === ref.groupId);
+          if (group) {
+              // Add Group Header if new group
+              if (ref.groupId !== lastGroupId) {
+                  templateItems.push(createHeader(group.title.toUpperCase()));
+                  lastGroupId = ref.groupId;
+              }
+              const item = createItem(libraryGroups, ref.groupId, ref.itemId, ref.variantId);
+              if (item) {
+                  // Restore source tracking for sync
+                  item.sourceGroupId = ref.groupId;
+                  item.sourceItemId = ref.itemId;
+                  item.sourceVariantId = ref.variantId;
+                  templateItems.push(item);
+              }
+          }
+      });
+
+      const newTemplate: BQTemplateDefinition = {
+          id: `tpl-${Date.now()}`,
+          key: 'PERMULAAN_BASIC', // Using standard key
+          title: 'KERJA PERMULAAN (INSURANS)',
+          subtitle: 'Insurans, Traffic Mgmt & Laporan',
+          icon: 'file-text',
+          color: 'blue',
+          bills: [
+              { id: 'b1', title: 'KERJA-KERJA PERMULAAN', items: templateItems }
+          ],
+          groupRefs: [] // Legacy
+      };
+
+      await handleSaveTemplate(newTemplate);
+  };
+
+  const generateEmptyTemplate = async () => {
+      const newTemplate: BQTemplateDefinition = {
+          id: `tpl-${Date.now()}`,
+          key: 'EMPTY',
+          title: 'TEMPLATE KOSONG',
+          subtitle: 'Bina senarai BQ dari kosong',
+          icon: 'layout',
+          color: 'slate',
+          bills: [
+              { id: 'b1', title: 'KERJA-KERJA UMUM', items: [] }
+          ],
+          groupRefs: []
+      };
+      await handleSaveTemplate(newTemplate);
   };
 
   const handleSaveTemplate = async (template: BQTemplateDefinition) => {
@@ -448,8 +533,13 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
       
       setTemplates(newTemplates);
       await supabaseService.saveTemplates(newTemplates);
-      setIsTemplateModalOpen(false);
+      setIsEditTemplateModalOpen(false);
       setEditingTemplate(null);
+  };
+
+  const openEditTemplateModal = (template: BQTemplateDefinition) => {
+      setEditingTemplate({ ...template });
+      setIsEditTemplateModalOpen(true);
   };
 
   if (user.role !== Role.ADMIN) {
@@ -541,47 +631,26 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
 
         {/* --- BQ TEMPLATE MANAGER --- */}
         <div className="xl:col-span-2 bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl">
-             <div className="flex items-center justify-between mb-8">
+             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                  <div className="flex items-center gap-4">
                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
                          <Grid2x2 className="w-7 h-7" />
                      </div>
                      <div>
                          <h3 className="text-2xl font-bold text-slate-900">Pengurusan Template BQ</h3>
-                         <p className="text-sm text-slate-500">Konfigurasikan BIL NO. and item automatik bagi setiap fasa projek.</p>
+                         <p className="text-sm text-slate-500">Uruskan template BQ untuk projek baru.</p>
                      </div>
                  </div>
-                 <button onClick={() => openTemplateModal()} className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg hover:bg-emerald-700 transition-colors"><Plus className="w-5 h-5" /> Template Baru</button>
+                 <div className="flex gap-2">
+                     <button onClick={generateEmptyTemplate} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors text-xs"><LayoutTemplate className="w-4 h-4" /> Jana Template Kosong</button>
+                     <button onClick={generateInsuransTemplate} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-200 transition-colors text-xs"><FileText className="w-4 h-4" /> Jana Template Insurans</button>
+                 </div>
              </div>
 
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {templates.map((tpl, idx) => {
                     const IconComp = ICON_MAP[tpl.icon as keyof typeof ICON_MAP] || FileText;
                     
-                    const getColorStyles = (color: string) => {
-                        const colors: Record<string, string> = {
-                            slate:"bg-slate-100 text-slate-600 border-slate-200",
-                            red:"bg-red-100 text-red-600 border-red-200",
-                            orange:"bg-orange-100 text-orange-600 border-orange-200",
-                            amber:"bg-amber-100 text-amber-600 border-amber-200",
-                            yellow:"bg-yellow-100 text-yellow-600 border-yellow-200",
-                            lime:"bg-lime-100 text-lime-600 border-lime-200",
-                            green:"bg-green-100 text-green-600 border-green-200",
-                            emerald:"bg-emerald-100 text-emerald-600 border-emerald-200",
-                            teal:"bg-teal-100 text-teal-600 border-teal-200",
-                            cyan:"bg-cyan-100 text-cyan-600 border-cyan-200",
-                            sky:"bg-sky-100 text-sky-600 border-sky-200",
-                            blue:"bg-blue-100 text-blue-600 border-blue-200",
-                            indigo:"bg-indigo-100 text-indigo-600 border-indigo-200",
-                            violet:"bg-violet-100 text-violet-600 border-violet-200",
-                            purple:"bg-purple-100 text-purple-600 border-purple-200",
-                            fuchsia:"bg-fuchsia-100 text-fuchsia-600 border-fuchsia-200",
-                            pink:"bg-pink-100 text-pink-600 border-pink-200",
-                            rose:"bg-rose-100 text-rose-600 border-rose-200",
-                        };
-                        return colors[color] || colors['blue'];
-                    }
-
                     const colorVal = tpl.color || 'blue';
                     const colorClasses = getColorStyles(colorVal);
 
@@ -595,7 +664,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                     <button onClick={(e) => { e.stopPropagation(); moveTemplate(idx, 'prev'); }} disabled={idx === 0} className="p-1.5 hover:bg-slate-100  rounded disabled:opacity-30 text-slate-500"><ArrowLeft className="w-3.5 h-3.5" /></button>
                                     <button onClick={(e) => { e.stopPropagation(); moveTemplate(idx, 'next'); }} disabled={idx === templates.length - 1} className="p-1.5 hover:bg-slate-100  rounded disabled:opacity-30 text-slate-500"><ArrowRight className="w-3.5 h-3.5" /></button>
                                     <div className="w-px h-4 bg-slate-200  mx-1"></div>
-                                    <button onClick={() => openTemplateModal(tpl)} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50  rounded-xl transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                    <button onClick={() => openEditTemplateModal(tpl)} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50  rounded-xl transition-colors"><Edit2 className="w-4 h-4" /></button>
                                     <button onClick={() => initiateDelete('TEMPLATE', tpl.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50  rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                              </div>
@@ -824,15 +893,63 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         </div>
       </div>
 
-      {/* Edit Template Modal (NEW COMPONENT) */}
-      {isTemplateModalOpen && createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsTemplateModalOpen(false)}>
-              <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-6xl w-full h-[90vh] border border-slate-200  transform scale-100 transition-colors animate-slide-up overflow-hidden" onClick={e => e.stopPropagation()}>
-                    <BQTemplateCreator 
-                        initialTemplate={editingTemplate || undefined}
-                        onSave={handleSaveTemplate}
-                        onCancel={() => { setIsTemplateModalOpen(false); setEditingTemplate(null); }}
-                    />
+      {/* Edit Template Modal */}
+      {isEditTemplateModalOpen && editingTemplate && createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsEditTemplateModalOpen(false)}>
+              <div className="bg-white  rounded-3xl shadow-2xl max-w-2xl w-full p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                  <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold text-slate-900  flex items-center gap-2"><Edit3 className="w-7 h-7 text-emerald-600" />Kemaskini Template</h3><button onClick={() => setIsEditTemplateModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors"><X className="w-6 h-6" /></button></div>
+                  
+                  <div className="overflow-y-auto max-h-[70vh] pr-2 custom-scrollbar">
+                      <form onSubmit={(e) => { e.preventDefault(); handleSaveTemplate(editingTemplate); }} className="space-y-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div><label className={labelClass}>Tajuk Template</label><input type="text" value={editingTemplate.title} onChange={e => setEditingTemplate({...editingTemplate, title: e.target.value.toUpperCase()})} className={inputClass} required /></div>
+                              <div><label className={labelClass}>Keterangan (Subtitle)</label><input type="text" value={editingTemplate.subtitle} onChange={e => setEditingTemplate({...editingTemplate, subtitle: e.target.value})} className={inputClass} /></div>
+                          </div>
+
+                          {/* Icon Selection */}
+                          <div>
+                              <label className={labelClass}>Pilih Ikon</label>
+                              <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                  {ICON_MAP_KEYS.map((iconKey) => {
+                                      const Icon = ICON_MAP[iconKey];
+                                      return (
+                                          <button
+                                              key={iconKey}
+                                              type="button"
+                                              onClick={() => setEditingTemplate({ ...editingTemplate, icon: iconKey as any })}
+                                              className={`p-3 rounded-xl transition-all flex items-center justify-center ${editingTemplate.icon === iconKey ? 'bg-emerald-600 text-white shadow-lg scale-110' : 'bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                                          >
+                                              <Icon className="w-5 h-5" />
+                                          </button>
+                                      );
+                                  })}
+                              </div>
+                          </div>
+
+                          {/* Color Selection */}
+                          <div>
+                              <label className={labelClass}>Pilih Warna</label>
+                              <div className="grid grid-cols-6 sm:grid-cols-9 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                  {COLOR_LIST.map((color) => (
+                                      <button
+                                          key={color}
+                                          type="button"
+                                          onClick={() => setEditingTemplate({ ...editingTemplate, color: color as any })}
+                                          className={`w-full aspect-square rounded-full transition-all border-4 flex items-center justify-center ${editingTemplate.color === color ? 'border-white ring-2 ring-emerald-500 scale-110 shadow-md' : 'border-transparent'}`}
+                                          style={{ backgroundColor: `var(--${color}-500, ${color})` }}
+                                          title={color}
+                                      >
+                                          {editingTemplate.color === color && <Check className="w-4 h-4 text-white" />}
+                                          <div className={`w-full h-full rounded-full ${getColorStyles(color).split(' ')[0]}`}></div>
+                                      </button>
+                                  ))}
+                              </div>
+                          </div>
+
+                          <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsEditTemplateModalOpen(false)} className="flex-1 py-4 bg-slate-100  text-slate-600  font-bold rounded-2xl hover:bg-slate-200  transition-colors text-lg">Batal</button><button type="submit" className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 text-lg"><Save className="w-5 h-5" /> Simpan Perubahan</button></div>
+                      </form>
+                  </div>
               </div>
           </div>,
           document.body

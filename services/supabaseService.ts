@@ -190,6 +190,11 @@ class SupabaseService {
         if (error) throw error;
     }
 
+    async deleteTemplate(id: string) {
+        const { error } = await supabase.from('templates').delete().eq('id', id);
+        if (error) throw error;
+    }
+
     async getProjects(): Promise<Project[]> {
         const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
         if (error) throw error;

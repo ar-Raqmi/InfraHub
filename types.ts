@@ -69,7 +69,7 @@ export interface BQTemplateItemRef {
 export interface BQTemplateBillDefinition {
     id: string;
     title: string;
-    items: BQTemplateItemRef[];
+    items: (BQTemplateItemRef | BQItem)[];
 }
 
 export interface BQTemplateDefinition {
@@ -77,8 +77,8 @@ export interface BQTemplateDefinition {
     key: BQTemplateType;
     title: string;
     subtitle: string;
-    icon: 'file' | 'edit' | 'layout' | 'plus';
-    color: 'blue' | 'indigo' | 'emerald' | 'slate';
+    icon: string;
+    color: string;
     // Structured bills for multi-bill creation
     bills: BQTemplateBillDefinition[];
     // Legacy support
