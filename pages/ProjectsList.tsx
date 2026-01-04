@@ -85,6 +85,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const [filterBp, setFilterBp] = useState<string>('ALL');
   const [filterMukim, setFilterMukim] = useState<string>('ALL');
   const [filterVote, setFilterVote] = useState<string>('ALL'); 
+  const [filterLoC, setFilterLoC] = useState(false);
   
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleteCountdown, setDeleteCountdown] = useState(0);
@@ -393,6 +394,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     setFilterVote('ALL');
     setSearchTerm('');
     setShowSiap(true);
+    setFilterLoC(false);
     handleResetColumns();
   };
 
@@ -402,7 +404,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     filterZon !== 'ALL',
     filterBp !== 'ALL',
     filterMukim !== 'ALL',
-    filterVote !== 'ALL'
+    filterVote !== 'ALL',
+    filterLoC === true,
+    showSiap === false
   ].filter(Boolean).length;
 
   const filteredProjects = useMemo(() => {
@@ -512,6 +516,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
             compProjects = compProjects.filter(p => p.status !== ProjectStatus.SIAP);
         }
 
+        if (filterLoC) {
+            compProjects = compProjects.filter(p => (p.locAmount || 0) > 0 || (p.locDays || 0) > 0);
+        }
+
         const group: CompanyGroupData = {
             company: compName as string,
             projects: compProjects,
@@ -542,7 +550,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     });
     
     return grouped;
-  }, [filteredProjects, companyOrder, showSiap]);
+  }, [filteredProjects, companyOrder, showSiap, filterLoC]);
 
   const exportToExcel = () => {
     const activeCols = columnDefs.filter(c => visibleColumns[c.id]);
