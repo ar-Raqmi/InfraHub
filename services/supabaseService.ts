@@ -60,6 +60,8 @@ class SupabaseService {
             kosSebenar: p.kos_sebenar,
             ladAmount: p.lad_amount,
             ladDays: p.lad_days,
+            locAmount: p.loc_amount,
+            locDays: p.loc_days,
             wangTahanan: p.wang_tahanan,
             
             prestasiScores: p.prestasi_scores,
@@ -240,6 +242,8 @@ class SupabaseService {
             kos_sebenar: project.kosSebenar,
             lad_amount: project.ladAmount,
             lad_days: project.ladDays,
+            loc_amount: project.locAmount,
+            loc_days: project.locDays,
             wang_tahanan: project.wangTahanan,
             skop: project.skop,
             prestasi_scores: project.prestasiScores,
@@ -310,6 +314,8 @@ class SupabaseService {
         if (updates.kosSebenar !== undefined) dbUpdates.kos_sebenar = updates.kosSebenar;
         if (updates.ladAmount !== undefined) dbUpdates.lad_amount = updates.ladAmount;
         if (updates.ladDays !== undefined) dbUpdates.lad_days = updates.ladDays;
+        if (updates.locAmount !== undefined) dbUpdates.loc_amount = updates.locAmount;
+        if (updates.locDays !== undefined) dbUpdates.loc_days = updates.locDays;
         if (updates.wangTahanan !== undefined) dbUpdates.wang_tahanan = updates.wangTahanan;
         
         if (updates.skop !== undefined) dbUpdates.skop = updates.skop;

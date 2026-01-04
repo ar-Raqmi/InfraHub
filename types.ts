@@ -254,6 +254,8 @@ export interface Project {
   
   ladAmount?: number;
   ladDays?: number;
+  locAmount?: number; // Late of Claim Amount (Denda Lewat)
+  locDays?: number;   // Late of Claim Days
   wangTahanan?: number; // Retention Money
 
   // --- PRESTASI FORM DATA (NEW) ---
