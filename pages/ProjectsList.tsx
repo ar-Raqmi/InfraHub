@@ -303,6 +303,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     { id: 'wangTahanan', label: 'Wang Tahanan', group: 'Kewangan', default: false },
     { id: 'ladAmount', label: 'LAD (RM)', group: 'Kewangan', default: false },
     { id: 'ladDays', label: 'Hari LAD', group: 'Kewangan', default: false },
+    { id: 'locAmount', label: 'LOC (RM)', group: 'Kewangan', default: false },
+    { id: 'locDays', label: 'Hari LOC', group: 'Kewangan', default: false },
     { id: 'tarikhLantikan', label: 'T. Lantikan', group: 'Tarikh', default: false },
     { id: 'tarikhCetakanBpp', label: 'T. BPP', group: 'Tarikh', default: false },
     { id: 'tarikhMulaKontrak', label: 'Mula Kontrak', group: 'Tarikh', default: false },
@@ -1128,6 +1130,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             
                                 <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
                             </label>
+
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <div className={`w-10 h-5 rounded-full p-1 transition-colors ${filterLoC ? 'bg-amber-500' : 'bg-slate-300'}`}>
+                                    <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${filterLoC ? 'translate-x-5' : ''}`}></div>
+                                </div>
+                                <input type="checkbox" className="hidden" checked={filterLoC} onChange={() => setFilterLoC(!filterLoC)} />
+                                <span className="text-xs font-bold text-slate-600">Tunjuk Projek LoC</span>
+                            </label>
                         </div>
                     </div>
                 )}
@@ -1189,6 +1199,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
                                     {visibleColumns.ladAmount && <td className="px-6 py-4 text-right text-xs font-bold text-red-500">{formatCurrency(project.ladAmount)}</td>}
                                     {visibleColumns.ladDays && <td className="px-6 py-4 text-center text-xs text-slate-500">{project.ladDays || 0}</td>}
+                                    {visibleColumns.locAmount && <td className="px-6 py-4 text-right text-xs font-bold text-amber-500">{formatCurrency(project.locAmount)}</td>}
+                                    {visibleColumns.locDays && <td className="px-6 py-4 text-center text-xs text-slate-500">{project.locDays || 0}</td>}
                                     {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhLantikan)}</td>}
                                     {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhCetakanBpp)}</td>}
                                     {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhMulaKontrak)}</td>}
