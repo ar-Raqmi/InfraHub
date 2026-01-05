@@ -17,12 +17,10 @@
     <meta name="application-name" content="InfraHub">
     <meta name="apple-mobile-web-app-title" content="InfraHub">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
     <!-- Real PDF Generators -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <script>
       tailwind.config = {
@@ -36,6 +34,7 @@
             animation: {
               'fade-in': 'fadeIn 0.3s ease-out forwards',
               'slide-up': 'slideUp 0.3s ease-out forwards',
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             }
           }
         }
@@ -52,6 +51,69 @@
     <style>
       body { font-family: 'Manrope', sans-serif; }
       
+      /* Splash Screen Styles */
+      #splash-screen {
+        position: fixed;
+        inset: 0;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out, visibility 0.5s;
+      }
+
+      .splash-logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 2rem;
+        animation: splash-bounce 2s infinite ease-in-out;
+      }
+
+      @keyframes splash-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+
+      .progress-container {
+        width: 240px;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        position: relative;
+      }
+
+      #progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #10b981, #3b82f6);
+        border-radius: 999px;
+        transition: width 0.3s ease-out;
+      }
+
+      .status-text {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+      }
+
+      #network-status {
+        font-size: 10px;
+        font-weight: 600;
+        color: #94a3b8;
+      }
+
+      .hidden-splash {
+        opacity: 0;
+        visibility: hidden;
+      }
+
       /* Firefox Scrollbar Support */
       * {
         scrollbar-width: thin;
@@ -137,7 +199,82 @@
 <link rel="stylesheet" href="/index.css">
 </head>
   <body class="h-full bg-slate-50 text-slate-900 antialiased overflow-x-hidden">
+    <!-- Splash Screen (removed by React on mount) -->
+    <div id="splash-screen">
+      <img src="https://cdn-icons-png.flaticon.com/512/2827/2827469.png" alt="InfraHub" class="splash-logo" />
+      <div class="status-text" id="status-message">Initializing InfraHub...</div>
+      <div class="progress-container">
+        <div id="progress-bar"></div>
+      </div>
+      <div id="network-status"></div>
+      <button id="refresh-btn" onclick="window.location.reload()" style="display:none; margin-top: 1.5rem; padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 0.5rem; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase;">Muat Semula Halaman</button>
+    </div>
+
     <div id="root" class="h-full"></div>
+
+    <!-- Optimization Scripts -->
+    <script>
+      (function() {
+        const bar = document.getElementById('progress-bar');
+        const msg = document.getElementById('status-message');
+        const net = document.getElementById('network-status');
+        const btn = document.getElementById('refresh-btn');
+        let progress = 0;
+        let isComplete = false;
+        
+        // Expose a way for React to signal completion
+        window.__APP_READY__ = function() {
+          isComplete = true;
+          progress = 100;
+          bar.style.width = '100%';
+          msg.innerText = 'App Ready!';
+          setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            if (splash) splash.style.opacity = '0';
+            setTimeout(() => splash && splash.remove(), 500);
+          }, 200);
+        };
+
+        // Network Awareness
+        if (navigator.connection) {
+          const type = navigator.connection.effectiveType;
+          if (type === '2g' || type === '3g') {
+            net.innerText = 'Slow connection detected (' + type.toUpperCase() + ')';
+            msg.innerText = 'Loading assets (This may take a while)...';
+          }
+        }
+
+        function animate() {
+          if (isComplete) return;
+
+          if (progress < 92) {
+            // Slower as it gets higher
+            const increment = (95 - progress) / 50;
+            progress += increment;
+            bar.style.width = progress + '%';
+            
+            if (progress > 30 && progress < 60) msg.innerText = 'Downloading modules...';
+            if (progress >= 60 && progress < 85) msg.innerText = 'Preparing workspace...';
+            if (progress >= 85) msg.innerText = 'Finalizing...';
+            
+            requestAnimationFrame(animate);
+          }
+        }
+        
+        requestAnimationFrame(animate);
+
+        // Fallback for extreme delays
+        setTimeout(() => {
+          if (!isComplete && document.getElementById('splash-screen')) {
+            msg.innerText = 'Connection seems slow...';
+            btn.style.display = 'block';
+          }
+        }, 20000);
+      })();
+    </script>
+
+    <!-- Essential Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="./index.tsx"></script>
     <script>
       // Service Worker Registration with safe error handling for development environments
@@ -151,6 +288,5 @@
         });
       }
     </script>
-<script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>

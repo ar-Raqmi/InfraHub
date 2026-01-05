@@ -46,6 +46,15 @@ function App() {
 
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    // Signal to the splash screen that the app is ready
+    // @ts-ignore
+    if (typeof window.__APP_READY__ === 'function') {
+      // @ts-ignore
+      window.__APP_READY__();
+    }
+  }, []);
+
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
   };
@@ -200,18 +209,20 @@ function App() {
       <main className="md:pl-32 pt-24 md:pt-0 pb-24 md:pb-10 min-h-screen relative z-10">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
-          <header className="relative z-40 opacity-0 animate-fade-in flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
-             <div className="flex items-center gap-4">
-               <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
-               <button
-                 onClick={handleRefresh}
-                 className="bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group"
-                 title="Kemaskini Data"
-               >
-                 <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
-               </button>
-             </div>
-          </header>
+          {!isEditing && (
+            <header className="relative z-40 animate-fade-in flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
+              <div className="flex items-center gap-4">
+                <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
+                <button
+                  onClick={handleRefresh}
+                  className="bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group"
+                  title="Kemaskini Data"
+                >
+                  <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+                </button>
+              </div>
+            </header>
+          )}
 
           <div className="animate-slide-up">
              {isEditing ? (
