@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabaseService } from '../services/supabaseService';
-import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw } from 'lucide-react';
+import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash } from 'lucide-react';
 import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQItem } from '../types';
 import { createItem, createHeader } from '../data/bqPresets';
 
@@ -232,16 +232,31 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
     }
   };
 
-  const moveCompany = async (index: number, direction: 'up' | 'down') => {
-      if (direction === 'up' && index === 0) return;
-      if (direction === 'down' && index === companyOrder.length - 1) return;
+  const moveCompany = async (index: number, direction: 'up' | 'down' | 'top' | 'bottom' | number) => {
       const newOrder = [...companyOrder];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      const temp = newOrder[index];
-      newOrder[index] = newOrder[targetIndex];
-      newOrder[targetIndex] = temp;
+      const item = newOrder.splice(index, 1)[0];
+      
+      let targetIndex = index;
+      if (direction === 'up') targetIndex = Math.max(0, index - 1);
+      else if (direction === 'down') targetIndex = Math.min(newOrder.length, index + 1);
+      else if (direction === 'top') targetIndex = 0;
+      else if (direction === 'bottom') targetIndex = newOrder.length;
+      else if (typeof direction === 'number') targetIndex = Math.max(0, Math.min(newOrder.length, direction));
+
+      newOrder.splice(targetIndex, 0, item);
       setCompanyOrder(newOrder);
       await supabaseService.saveCompanyOrder(selectedYear, newOrder);
+  };
+
+  const jumpToRank = (index: number) => {
+      const currentRank = index + 1;
+      const input = prompt(`Masukkan kedudukan baru untuk syarikat ini (1-${companyOrder.length}):`, currentRank.toString());
+      if (input !== null) {
+          const newRank = parseInt(input);
+          if (!isNaN(newRank) && newRank >= 1 && newRank <= companyOrder.length) {
+              moveCompany(index, newRank - 1);
+          }
+      }
   };
 
   const moveTemplate = async (index: number, direction: 'prev' | 'next') => {
@@ -871,9 +886,30 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
           <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600"><Building2 className="w-6 h-6" /></div><div><h3 className="text-xl font-bold text-slate-900">Senarai Syarikat ({selectedYear})</h3><p className="text-xs text-slate-500 mt-1">Susun keutamaan paparan syarikat.</p></div></div>
           <div className="flex gap-2 mb-6"><input type="text" value={newCompany} onChange={(e) => setNewCompany(e.target.value)} className="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tambah Syarikat Baru..." /><button onClick={handleAddCompany} className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"><Plus className="w-5 h-5" /></button></div>
-          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {companyOrder.map((company, idx) => (
-              <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group"><span className="font-medium text-slate-700 truncate pr-2 flex-1">{company}</span><div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors"><button onClick={() => moveCompany(idx, 'up')} disabled={idx === 0} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30"><ArrowUp className="w-3.5 h-3.5" /></button><button onClick={() => moveCompany(idx, 'down')} disabled={idx === companyOrder.length - 1} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30"><ArrowDown className="w-3.5 h-3.5" /></button><div className="w-px h-4 bg-slate-200 mx-1"></div><button onClick={() => openCompanyModal(company)} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Maklumat"><Edit2 className="w-4 h-4" /></button><button onClick={() => initiateDelete('COMPANY', company)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Padam"><Trash2 className="w-4 h-4" /></button></div></div>
+              <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <button 
+                        onClick={() => jumpToRank(idx)}
+                        className="w-8 h-8 shrink-0 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-sm transition-all group/rank"
+                        title="Klik untuk ubah kedudukan"
+                    >
+                        <span className="group-hover/rank:hidden">{idx + 1}</span>
+                        <Hash className="w-3 h-3 hidden group-hover/rank:block" />
+                    </button>
+                    <span className="font-medium text-slate-700 truncate pr-2">{company}</span>
+                </div>
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-colors">
+                  <button onClick={() => moveCompany(idx, 'top')} disabled={idx === 0} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30" title="Ke Atas Sekali"><ChevronsUp className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => moveCompany(idx, 'up')} disabled={idx === 0} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30" title="Naik Satu"><ArrowUp className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => moveCompany(idx, 'down')} disabled={idx === companyOrder.length - 1} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30" title="Turun Satu"><ArrowDown className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => moveCompany(idx, 'bottom')} disabled={idx === companyOrder.length - 1} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30" title="Ke Bawah Sekali"><ChevronsDown className="w-3.5 h-3.5" /></button>
+                  <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                  <button onClick={() => openCompanyModal(company)} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Maklumat"><Edit2 className="w-4 h-4" /></button>
+                  <button onClick={() => initiateDelete('COMPANY', company)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Padam"><Trash2 className="w-4 h-4" /></button>
+                </div>
+              </div>
             ))}
           </div>
         </div>
