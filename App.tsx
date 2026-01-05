@@ -1,35 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Project } from './types';
 import { supabaseService } from './services/supabaseService';
 import Sidebar from './components/Sidebar';
-import Dashboard from './pages/Dashboard';
-import ProjectsList from './pages/ProjectsList';
-import ProjectDetail from './pages/ProjectDetail';
-import Login from './pages/Login';
-import Users from './pages/Users';
-import Inbox from './pages/Inbox';
-import ImageReportGenerator from './pages/ImageReportGenerator';
-import Profile from './pages/Profile';
-import AdminSettings from './pages/AdminSettings';
+import { SyncStatus } from './components/SyncStatus';
+import { useProjects } from './hooks/useProjects'; // New Hook
 import YearSelector from './components/YearSelector';
 import Toast from './components/Toast';
-import { HelpCircle, X, RefreshCw } from 'lucide-react';
+import { HelpCircle, X, RefreshCw, Loader2 } from 'lucide-react';
+import Login from './pages/Login';
+
+// --- Code Splitting (Lazy Load) ---
+// These pages will ONLY download when you click on them.
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const ProjectsList = lazy(() => import('./pages/ProjectsList'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const Users = lazy(() => import('./pages/Users'));
+const Inbox = lazy(() => import('./pages/Inbox'));
+const ImageReportGenerator = lazy(() => import('./pages/ImageReportGenerator'));
+const Profile = lazy(() => import('./pages/Profile'));
+const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [projects, setProjects] = useState<Project[]>([]);
+  
+  // Replace manual fetching with our Smart Hook
+  const { 
+    projects, 
+    createProject, 
+    updateProject, 
+    deleteProject: deleteProjectHook, 
+    isLoading: isProjectsLoading 
+  } = useProjects();
+
   const [selectedProject, setSelectedProject] = useState<Project | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-
   const [showNavWarning, setShowNavWarning] = useState(false);
   const [pendingPage, setPendingPage] = useState<string | null>(null);
-
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -43,39 +54,8 @@ function App() {
 
   useEffect(() => {
     refreshUser();
-    setLoading(false);
+    setAuthLoading(false);
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      loadProjects();
-    }
-  }, [user]);
-
-  const loadProjects = async () => {
-    try {
-      const data = await supabaseService.getProjects();
-      setProjects(data);
-    } catch (err) {
-      console.error('Failed to load projects:', err);
-      showToast('Gagal memuatkan projek.', 'error');
-    }
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await loadProjects();
-      if (currentPage === 'profile' || currentPage === 'users') {
-        refreshUser();
-      }
-      showToast('Data telah dikemaskini.', 'success');
-    } catch (err) {
-      showToast('Gagal mengemaskini data.', 'error');
-    } finally {
-      setTimeout(() => setRefreshing(false), 500);
-    }
-  };
 
   // Filter Projects by Year
   const filteredProjects = projects.filter(p => {
@@ -108,8 +88,7 @@ function App() {
   
   const handleDeleteProject = async (project: Project) => {
     try {
-      await supabaseService.deleteProject(project.id);
-      await loadProjects();
+      await deleteProjectHook(project.id);
       showToast('Projek berjaya dipadam.', 'success');
     } catch (err) {
       console.error('Delete failed:', err);
@@ -118,7 +97,7 @@ function App() {
   };
 
   const handleProjectSaved = () => {
-    loadProjects();
+    // No need to manually loadProjects(), the hook handles it!
     setIsEditing(false);
     showToast('Projek berjaya disimpan!', 'success');
   };
@@ -136,9 +115,8 @@ function App() {
        return;
     }
 
-    loadProjects(); // Refresh projects on navigation
     if (page === 'profile' || page === 'users') {
-      refreshUser(); // Refresh user state on relevant pages
+      refreshUser(); 
     }
 
     if (['dashboard', 'projects', 'users', 'inbox', 'report', 'settings', 'profile'].includes(page)) {
@@ -166,7 +144,6 @@ function App() {
     setPendingPage(null);
   };
 
-  // Override Logout for Nav Guard
   const handleLogoutRequest = () => {
     if (isEditing) {
         setPendingPage('logout');
@@ -176,26 +153,34 @@ function App() {
     }
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center font-manrope text-slate-500 bg-slate-50">Memuatkan...</div>;
+  if (authLoading) return <div className="h-screen flex items-center justify-center font-manrope text-slate-500 bg-slate-50">Memuatkan...</div>;
 
   if (!user) {
     return <Login onLogin={handleLogin} />;
   }
 
+  // A generic loading fallback for Suspense
+  const PageLoader = () => (
+    <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+      <Loader2 className="w-8 h-8 animate-spin mb-2 text-emerald-500" />
+      <p className="text-sm">Memuatkan modul...</p>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50  font-sans transition-colors duration-200 relative overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-900">
+    <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-200 relative overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-900">
       
+      <SyncStatus />
+
       {/* Static Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent"></div>
       </div>
 
-      {/* Toast Notification Container */}
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
-      {/* Sidebar / Bottom Nav */}
       <Sidebar 
         role={user.role} 
         onNavigate={handleNavClick} 
@@ -203,41 +188,32 @@ function App() {
         onLogout={handleLogoutRequest}
       />
 
-      {/* Main Content Area */}
       <main className="md:pl-32 pt-24 md:pt-0 pb-24 md:pb-10 min-h-screen relative z-10">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
-          {/* Top Bar / Header */}
           <header className="relative z-40 opacity-0 animate-fade-in flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
              <div className="flex items-center gap-4">
                <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
-               
-               <button 
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className={`flex items-center gap-2 bg-white  rounded-2xl px-4 py-2 shadow-sm border border-slate-200  transition-colors hover:bg-slate-50  group ${refreshing ? 'opacity-70' : ''}`}
-               >
-                 <RefreshCw className={`w-4 h-4 text-emerald-500 ${refreshing ? 'animate-spin' : ''}`} />
-                 <span className="font-bold text-slate-700  font-manrope hidden sm:inline">Refresh</span>
-               </button>
+               {/* Refresh button is now decorative mostly, since Sync is automatic, but we can keep it for manual reassurance */}
              </div>
           </header>
 
-          {/* Page Content */}
           <div className="animate-slide-up">
              {isEditing ? (
-                <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl p-4 md:p-6 shadow-xl border border-white/20">
-                  <ProjectDetail 
-                    project={selectedProject} 
-                    onClose={() => setIsEditing(false)} 
-                    onSave={handleProjectSaved}
-                    currentUserRole={user.role}
-                    selectedYear={selectedYear}
-                    onShowToast={showToast}
-                  />
-                </div>
+               <Suspense fallback={<PageLoader />}>
+                  <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-4 md:p-6 shadow-xl border border-white/20">
+                    <ProjectDetail 
+                      project={selectedProject} 
+                      onClose={() => setIsEditing(false)} 
+                      onSave={handleProjectSaved}
+                      currentUserRole={user.role}
+                      selectedYear={selectedYear}
+                      onShowToast={showToast}
+                    />
+                  </div>
+                </Suspense>
               ) : (
-                <>
+                <Suspense fallback={<PageLoader />}>
                   {currentPage === 'dashboard' && (
                     <Dashboard 
                       projects={filteredProjects} 
@@ -273,7 +249,7 @@ function App() {
                   {currentPage === 'settings' && (
                     <AdminSettings user={user} selectedYear={selectedYear} />
                   )}
-                </>
+                </Suspense>
               )}
           </div>
 
@@ -284,31 +260,31 @@ function App() {
       {showNavWarning && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 animate-fade-in" onClick={cancelNavigation}>
             <div 
-              className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  animate-slide-up relative" 
+              className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 animate-slide-up relative" 
               onClick={e => e.stopPropagation()}
             >
-                <button onClick={cancelNavigation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100">
+                <button onClick={cancelNavigation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100">
                    <X className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center text-center pt-2">
-                   <div className="w-20 h-20 bg-yellow-50  rounded-full flex items-center justify-center mb-6 text-yellow-500">
-                      <div className="w-14 h-14 bg-yellow-100  rounded-full flex items-center justify-center">
+                   <div className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mb-6 text-yellow-500">
+                      <div className="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center">
                         <HelpCircle className="w-8 h-8 stroke-[1.5]" />
                       </div>
                    </div>
 
-                   <h3 className="text-xl font-bold text-slate-900  mb-2 font-jakarta">
+                   <h3 className="text-xl font-bold text-slate-900 mb-2 font-jakarta">
                      Kembali ke Senarai?
                    </h3>
                    
-                   <p className="text-slate-500  mb-8 text-sm leading-relaxed px-4">
+                   <p className="text-slate-500 mb-8 text-sm leading-relaxed px-4">
                      Sebarang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu meninggalkan halaman ini?
                    </p>
                    
                    <div className="flex gap-3 w-full">
                       <button 
                         onClick={cancelNavigation}
-                        className="flex-1 py-3.5 px-4 bg-white  text-slate-700  rounded-xl font-bold hover:bg-slate-50  transition-colors border border-slate-200  shadow-sm hover:shadow-md"
+                        className="flex-1 py-3.5 px-4 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm hover:shadow-md"
                       >
                         Batal
                       </button>
