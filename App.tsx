@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { User, Project } from './types';
 import { supabaseService } from './services/supabaseService';
 import Sidebar from './components/Sidebar';
@@ -43,8 +44,16 @@ function App() {
   const [pendingPage, setPendingPage] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
+  const queryClient = useQueryClient();
+
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
+  };
+
+  const handleRefresh = async () => {
+    showToast('Mengemaskini data...', 'info');
+    await queryClient.invalidateQueries();
+    showToast('Data dikemaskini!', 'success');
   };
 
   const refreshUser = () => {
@@ -194,7 +203,13 @@ function App() {
           <header className="relative z-40 opacity-0 animate-fade-in flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
              <div className="flex items-center gap-4">
                <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
-               {/* Refresh button is now decorative mostly, since Sync is automatic, but we can keep it for manual reassurance */}
+               <button
+                 onClick={handleRefresh}
+                 className="bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group"
+                 title="Kemaskini Data"
+               >
+                 <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+               </button>
              </div>
           </header>
 
