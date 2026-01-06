@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { Project, User, Role, formatDateMalay, formatCurrency } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { Download, Loader2, X, FileText, Calendar, User as UserIcon, Settings } from 'lucide-react';
+import StrictDateInput from '../components/StrictDateInput';
 
 interface NotisGeneratorProps {
     project: Project;
@@ -1013,8 +1014,8 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-medium text-slate-700  mb-1">Tarikh Mula</label>
-                                    <input 
-                                        type="date" 
+                                    <StrictDateInput 
+                                        name="startDate"
                                         value={startDate} 
                                         onChange={(e) => setStartDate(e.target.value)}
                                         className="w-full px-3 py-2 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-red-500 text-sm font-bold text-slate-700"
@@ -1022,8 +1023,8 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-slate-700  mb-1">Tarikh Tamat</label>
-                                    <input 
-                                        type="date" 
+                                    <StrictDateInput 
+                                        name="endDate"
                                         value={endDate} 
                                         onChange={(e) => setEndDate(e.target.value)}
                                         className="w-full px-3 py-2 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-red-500 text-sm font-bold text-slate-700"
