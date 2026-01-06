@@ -859,21 +859,41 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               const autoNum = getAutoNumber(bill.items, itemIndex);
               const isHeader = item.type === 'HEADER';
               let descText = item.description;
-              if (item.variant) descText += `\n${item.variant}`;
-              
+              let variantText = item.variant || '';
+              let dims = '';
+
               if (!isHeader && item.calculationParts?.length > 0) {
-                  const dims = item.calculationParts
-                      .filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1)
-                      .map(p => {
-                          const parts = [];
-                          if (p.hasLength) parts.push(`${p.length}m(P)`);
-                          if (p.hasWidth) parts.push(`${p.width}m(L)`);
-                          if (p.hasDepth) parts.push(`${p.depth}m(T)`);
-                          if (p.multiplier !== 1) parts.push(`${p.multiplier}`);
-                          return parts.join(' x ');
-                      }).join('\n');
-                  if (dims) descText += `\n\n${dims}`;
+                  const activeParts = item.calculationParts.filter(p => 
+                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
+                  );
+                  
+                  const hasDimensions = activeParts.some(p => 
+                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0)
+                  );
+
+                  if (activeParts.length > 0) {
+                      if (!hasDimensions) {
+                          const multSuffix = ` x ${activeParts.map(p => p.multiplier).join(', ')}`;
+                          if (variantText) {
+                              variantText += multSuffix;
+                          } else {
+                              descText += multSuffix;
+                          }
+                      } else {
+                          dims = activeParts.map(p => {
+                              const parts = [];
+                              if (p.hasLength) parts.push(`${p.length}m(P)`);
+                              if (p.hasWidth) parts.push(`${p.width}m(L)`);
+                              if (p.hasDepth) parts.push(`${p.depth}m(T)`);
+                              if (p.multiplier !== 1) parts.push(`${p.multiplier}`);
+                              return parts.join(' x ');
+                          }).join('\n');
+                      }
+                  }
               }
+
+              if (variantText) descText += `\n${variantText}`;
+              if (dims) descText += `\n\n${dims}`;
 
               tableBody.push([
                   { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
@@ -1048,20 +1068,41 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               const diff = (item.amount || 0) - origAmt;
 
               let descText = item.description;
-              if (item.variant) descText += `\n${item.variant}`;
-              
+              let variantText = item.variant || '';
+              let dims = '';
+
               if (!isHeader && item.calculationParts && item.calculationParts.length > 0) {
-                  const dims = item.calculationParts.filter(p => (p.hasLength && p.length>0) || (p.hasWidth && p.width>0) || (p.hasDepth && p.depth>0) || p.multiplier !== 1)
-                      .map(p => {
-                          const parts = [];
-                          if (p.hasLength) parts.push(`${p.length}m(P)`);
-                          if (p.hasWidth) parts.push(`${p.width}m(L)`);
-                          if (p.hasDepth) parts.push(`${p.depth}m(T)`);
-                          if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`);
-                          return parts.join(' x ');
-                      }).join('\n');
-                  if (dims) descText += `\n\nKiraan Laras:\n${dims}`;
+                  const activeParts = item.calculationParts.filter(p => 
+                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
+                  );
+                  
+                  const hasDimensions = activeParts.some(p => 
+                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0)
+                  );
+
+                  if (activeParts.length > 0) {
+                      if (!hasDimensions) {
+                          const multSuffix = ` x ${activeParts.map(p => p.multiplier).join(', ')}`;
+                          if (variantText) {
+                              variantText += multSuffix;
+                          } else {
+                              descText += multSuffix;
+                          }
+                      } else {
+                          dims = activeParts.map(p => {
+                              const parts = [];
+                              if (p.hasLength) parts.push(`${p.length}m(P)`);
+                              if (p.hasWidth) parts.push(`${p.width}m(L)`);
+                              if (p.hasDepth) parts.push(`${p.depth}m(T)`);
+                              if (p.multiplier !== 1) parts.push(`${p.multiplier}`);
+                              return parts.join(' x ');
+                          }).join('\n');
+                      }
+                  }
               }
+
+              if (variantText) descText += `\n${variantText}`;
+              if (dims) descText += `\n\nKiraan Laras:\n${dims}`;
 
               tableBody.push([
                   { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
