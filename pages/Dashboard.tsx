@@ -22,6 +22,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const [pjaFilter, setPjaFilter] = useState<string>('ALL');
   const [allPjas, setAllPjas] = useState<User[]>([]);
   
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL');
   const [tablePage, setTablePage] = useState(1);
   const itemsPerPage = 5;
 
@@ -50,7 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
   useEffect(() => {
     setTablePage(1);
-  }, [pjaFilter]);
+  }, [pjaFilter, searchQuery, statusFilter]);
 
   const displayProjects = useMemo(() => {
     if (user.role === Role.PJA) {
@@ -98,22 +100,33 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const phase3 = displayProjects.filter(p => p.status === ProjectStatus.TUNTUTAN_BAYARAN);
   const phase4 = displayProjects.filter(p => p.status === ProjectStatus.SIAP);
 
-  const ongoingProjects = useMemo(() => {
-    return [...displayProjects]
-      .filter(p => p.status !== ProjectStatus.SIAP)
-      .sort((a, b) => {
-        const timeA = new Date(a.updatedAt || a.tarikhBuka).getTime();
-        const timeB = new Date(b.updatedAt || b.tarikhBuka).getTime();
-        return timeB - timeA;
-      });
-  }, [displayProjects]);
+  const filteredProjects = useMemo(() => {
+    return displayProjects.filter(p => {
+      // 1. Search filter
+      const matchesSearch = 
+        p.namaProjek.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (p.noFail && p.noFail.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      if (!matchesSearch) return false;
+
+      // 2. Status filter
+      if (statusFilter === 'ALL') {
+        return p.status !== ProjectStatus.SIAP;
+      }
+      return p.status === statusFilter;
+    }).sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.tarikhBuka).getTime();
+      const timeB = new Date(b.updatedAt || b.tarikhBuka).getTime();
+      return timeB - timeA;
+    });
+  }, [displayProjects, searchQuery, statusFilter]);
 
   const paginatedProjects = useMemo(() => {
     const startIndex = (tablePage - 1) * itemsPerPage;
-    return ongoingProjects.slice(startIndex, startIndex + itemsPerPage);
-  }, [ongoingProjects, tablePage]);
+    return filteredProjects.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProjects, tablePage]);
 
-  const totalPages = Math.ceil(ongoingProjects.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
 
   const handleAddBulletin = async () => {
     if (!newBulletinContent.trim()) return;
@@ -310,10 +323,21 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           <h2 className="text-xl font-bold text-slate-800  flex items-center gap-2">
             <PieChart className="w-5 h-5 text-emerald-500" /> Status Projek
           </h2>
+          {statusFilter !== 'ALL' && (
+            <button 
+              onClick={() => setStatusFilter('ALL')}
+              className="text-xs font-bold text-emerald-600 hover:underline"
+            >
+              Lihat Semua Projek Aktif
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
-          <div className="bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-shadow group relative overflow-hidden border border-slate-100">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'ALL' : ProjectStatus.MENUNGGU_LANTIKAN)}
+            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'border-yellow-500 ring-2 ring-yellow-500/20' : 'border-slate-100'}`}
+          >
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <FileClock className="w-24 h-24 text-slate-500" />
             </div>
@@ -325,7 +349,10 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <p className="text-xs text-slate-400 font-medium">Menunggu Lantikan</p>
           </div>
 
-          <div className="bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-shadow group relative overflow-hidden border border-slate-100">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === ProjectStatus.DALAM_PROSES ? 'ALL' : ProjectStatus.DALAM_PROSES)}
+            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.DALAM_PROSES ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-100'}`}
+          >
              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <Clock className="w-24 h-24 text-blue-500" />
             </div>
@@ -337,7 +364,10 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <p className="text-xs text-slate-400 font-medium">Dalam Proses</p>
           </div>
 
-          <div className="bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-shadow group relative overflow-hidden border border-slate-100">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === ProjectStatus.PEMERIKSAAN_TAPAK ? 'ALL' : ProjectStatus.PEMERIKSAAN_TAPAK)}
+            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.PEMERIKSAAN_TAPAK ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-slate-100'}`}
+          >
              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <ClipboardCheck className="w-24 h-24 text-indigo-500" />
             </div>
@@ -349,7 +379,10 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <p className="text-xs text-slate-400 font-medium">Pemeriksaan Tapak</p>
           </div>
 
-          <div className="bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-shadow group relative overflow-hidden border border-slate-100">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === ProjectStatus.TUNTUTAN_BAYARAN ? 'ALL' : ProjectStatus.TUNTUTAN_BAYARAN)}
+            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.TUNTUTAN_BAYARAN ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-slate-100'}`}
+          >
              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <Banknote className="w-24 h-24 text-orange-500" />
             </div>
@@ -361,7 +394,10 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <p className="text-xs text-slate-400 font-medium">Tuntutan Bayaran</p>
           </div>
 
-          <div className="bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-shadow group relative overflow-hidden border border-slate-100">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === ProjectStatus.SIAP ? 'ALL' : ProjectStatus.SIAP)}
+            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.SIAP ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-100'}`}
+          >
              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <CheckCircle className="w-24 h-24 text-emerald-500" />
             </div>
@@ -378,16 +414,63 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
       <div className="space-y-8">
         
         <div className="space-y-6 animate-fade-in">
-           <div className="flex items-center justify-between">
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
              <h2 className="text-xl font-bold text-slate-800  flex items-center gap-2">
-               <BarChart3 className="w-5 h-5 text-emerald-500" /> Projek Terkini
+               <BarChart3 className="w-5 h-5 text-emerald-500" /> 
+               {statusFilter === 'ALL' ? 'Projek Aktif' : `Projek: ${statusFilter.replace(/_/g, ' ')}`}
              </h2>
-             <button 
-               onClick={() => onNavigate('projects')} 
-               className="text-emerald-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-2 group bg-white  px-4 py-2 rounded-xl transition-shadow hover:shadow-lg border border-transparent hover:border-emerald-100"
-             >
-                Lihat Semua <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-             </button>
+             
+             <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="relative w-full sm:w-64">
+                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                      <BarChart3 className="w-4 h-4 text-slate-400" />
+                   </div>
+                   <input 
+                      type="text"
+                      placeholder="Cari No. Fail / Tajuk..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 text-sm outline-none"
+                   />
+                </div>
+
+                {filteredProjects.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="hidden lg:block text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                      <span className="text-emerald-600">{Math.min(filteredProjects.length, (tablePage - 1) * itemsPerPage + 1)}</span>-{Math.min(filteredProjects.length, tablePage * itemsPerPage)} <span className="text-slate-400 font-medium mx-1">/</span> {filteredProjects.length}
+                    </div>
+
+                    {filteredProjects.length > itemsPerPage && (
+                      <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                        <button 
+                          onClick={() => setTablePage(prev => Math.max(1, prev - 1))}
+                          disabled={tablePage === 1}
+                          className={`p-1 rounded-lg transition-colors ${tablePage === 1 ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100 hover:text-emerald-600'}`}
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <span className="text-[10px] font-black text-slate-700 min-w-[40px] text-center">
+                          {tablePage} / {totalPages}
+                        </span>
+                        <button 
+                          onClick={() => setTablePage(prev => Math.min(totalPages, prev + 1))}
+                          disabled={tablePage === totalPages}
+                          className={`p-1 rounded-lg transition-colors ${tablePage === totalPages ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100 hover:text-emerald-600'}`}
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <button 
+                  onClick={() => onNavigate('projects')} 
+                  className="text-emerald-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-2 group bg-white  px-4 py-2 rounded-xl transition-shadow hover:shadow-lg border border-transparent hover:border-emerald-100"
+                >
+                    Lihat Semua <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+             </div>
            </div>
 
            <div className="bg-white  rounded-[2.5rem] shadow-xl shadow-slate-200/50  overflow-hidden border border-slate-100">
@@ -445,8 +528,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                              <div className="w-20 h-20 bg-slate-50  rounded-full flex items-center justify-center">
                                <Activity className="w-8 h-8 text-slate-300" />
                              </div>
-                             <p className="text-slate-400 font-medium">Tiada projek berjalan untuk dipaparkan.</p>
-                             <button onClick={onNewProject} className="text-emerald-600 font-bold text-sm hover:underline">Tambah Projek Baru</button>
+                             <p className="text-slate-400 font-medium">Tiada projek ditemui dengan kriteria carian.</p>
+                             <button onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }} className="text-emerald-600 font-bold text-sm hover:underline">Kosongkan Tapisan</button>
                           </div>
                         </td>
                       </tr>
@@ -454,36 +537,6 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                  </tbody>
               </table>
             </div>
-            
-            {ongoingProjects.length > itemsPerPage && (
-              <div className="px-8 py-5 bg-slate-50/50  border-t border-slate-100  flex flex-col sm:flex-row items-center justify-between gap-4">
-                 <div className="text-xs font-bold text-slate-500">
-                    <span className="text-emerald-600">{Math.min(ongoingProjects.length, (tablePage - 1) * itemsPerPage + 1)}</span> - <span className="text-emerald-600">{Math.min(ongoingProjects.length, tablePage * itemsPerPage)}</span> dari <span className="text-slate-800">{ongoingProjects.length}</span>
-                 </div>
-                 
-                 <div className="flex items-center gap-2">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setTablePage(prev => Math.max(1, prev - 1)); }}
-                      disabled={tablePage === 1}
-                      className={`p-2.5 rounded-xl border transition-colors ${tablePage === 1 ? 'bg-slate-100  text-slate-300 border-slate-100  cursor-not-allowed' : 'bg-white  text-slate-600  border-slate-200  hover:border-emerald-500 hover:text-emerald-600 hover:shadow-md '}`}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    
-                    <div className="px-4 py-2 rounded-xl bg-white  border border-slate-200  text-xs font-black text-slate-700  shadow-sm">
-                      {tablePage} / {totalPages}
-                    </div>
-
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setTablePage(prev => Math.min(totalPages, prev + 1)); }}
-                      disabled={tablePage === totalPages}
-                      className={`p-2.5 rounded-xl border transition-colors ${tablePage === totalPages ? 'bg-slate-100  text-slate-300 border-slate-100  cursor-not-allowed' : 'bg-white  text-slate-600  border-slate-200  hover:border-emerald-500 hover:text-emerald-600 hover:shadow-md '}`}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                 </div>
-              </div>
-            )}
           </div>
         </div>
 
