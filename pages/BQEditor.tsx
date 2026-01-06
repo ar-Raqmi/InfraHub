@@ -1129,14 +1129,60 @@ const BQEditor: React.FC<BQEditorProps> = ({
                          {activeBill.items.length === 0 ? (<div className="h-40 flex flex-col items-center justify-center text-slate-400"><FolderPlus className="w-10 h-10 mb-2 opacity-50" /><p className="text-sm">Tiada item dalam senarai ini.</p></div>) : (
                             <div className="space-y-2">
                                 {(() => {
-                                    let currentLevel0Collapsed = false; let currentLevel1Collapsed = false;
-                                    return activeBill.items.map((item, idx) => {
-                                        const level = getItemLevel(item); let isHidden = false;
-                                        if (level === 0) { currentLevel1Collapsed = false; currentLevel0Collapsed = !!item.isCollapsed; } 
-                                        else if (level === 1) { if (currentLevel0Collapsed) isHidden = true; else currentLevel1Collapsed = !!item.isCollapsed; } 
-                                        else { if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true; }
-                                        return renderItemRow(activeBill, item, idx, isHidden);
+                                    let currentLevel0Collapsed = false; 
+                                    let currentLevel1Collapsed = false;
+                                    let visibleWorkItemCount = 0;
+                                    const items: React.ReactNode[] = [];
+
+                                    activeBill.items.forEach((item, idx) => {
+                                        const level = getItemLevel(item); 
+                                        let isHidden = false;
+                                        if (level === 0) { 
+                                            currentLevel1Collapsed = false; 
+                                            currentLevel0Collapsed = !!item.isCollapsed; 
+                                        } else if (level === 1) { 
+                                            if (currentLevel0Collapsed) isHidden = true; 
+                                            else currentLevel1Collapsed = !!item.isCollapsed; 
+                                        } else { 
+                                            if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true; 
+                                        }
+                                        
+                                        const renderedRow = renderItemRow(activeBill, item, idx, isHidden);
+                                        if (renderedRow) {
+                                            items.push(renderedRow);
+                                            
+                                            // Count actual work items (not headers/notes)
+                                            if (item.type === 'ITEM') {
+                                                visibleWorkItemCount++;
+                                                
+                                                // Page break indicators
+                                                if (visibleWorkItemCount === 8) {
+                                                    items.push(
+                                                        <div key="page-break-warning-8" className="py-6 flex items-center gap-4 animate-pulse">
+                                                            <div className="flex-1 h-px bg-amber-200"></div>
+                                                            <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[10px] font-bold text-amber-600 uppercase tracking-widest shadow-sm">
+                                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                                Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru
+                                                            </div>
+                                                            <div className="flex-1 h-px bg-amber-200"></div>
+                                                        </div>
+                                                    );
+                                                } else if (visibleWorkItemCount === 9) {
+                                                    items.push(
+                                                        <div key="page-break-warning-9" className="py-6 flex items-center gap-4">
+                                                            <div className="flex-1 h-px bg-red-200"></div>
+                                                            <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-widest shadow-sm">
+                                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                                Pecahan halaman disahkan berlaku di sini
+                                                            </div>
+                                                            <div className="flex-1 h-px bg-red-200"></div>
+                                                        </div>
+                                                    );
+                                                }
+                                            }
+                                        }
                                     });
+                                    return items;
                                 })()}
                             </div>
                          )}
