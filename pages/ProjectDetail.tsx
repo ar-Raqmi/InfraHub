@@ -715,7 +715,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       doc.setFontSize(10); 
       doc.setFont("helvetica","normal"); 
       doc.text("Perkara di atas adalah dirujuk.", 20, y); 
-      y += 9;
+      y += 7;
 
       // 3. Project Title 
       const p1 = `2.   ${(formData.namaProjek || '').toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}`;
@@ -727,9 +727,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       // 4. Attachments
       doc.setFont("helvetica","normal"); 
       doc.text("Bersama-sama ini dilampirkan pelan tapak, gambar lokasi aduan serta spesifikasi kerja (BQ)", 28, y); 
-      y += 11; 
+      y += 8; 
       doc.text("Sekian, terima kasih.", 20, y); 
-      y += 11;
+      y += 8;
 
       // 5. Slogans: 8 -> 9
       doc.setFont("helvetica","bold"); 
@@ -742,12 +742,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       ]; 
       slogans.forEach(s => { 
           doc.text(s, 20, y); 
-          y += 4.5;
+          y += 4;
       }); 
 
-      y += 8;
+      y += 6;
 
-      if (y + 45 > pageHeight - marginBottom) {
+      if (y + 40 > pageHeight - marginBottom) {
           doc.addPage();
           y = 20; 
       }
@@ -757,30 +757,30 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       doc.setFontSize(10); 
       doc.text("Saya yang menjalankan amanah,", 20, y); 
 
-      y += 19;
+      y += 15;
       doc.text("..................................................................", 20, y); 
 
-      y += 6; 
+      y += 5; 
       doc.setFont("helvetica","bold"); 
       doc.text(`(${pjaUser?.fullName.toUpperCase() || 'NAMA PJA'})`, 20, y); 
 
-      y += 6; 
+      y += 5; 
       doc.setFont("helvetica","normal"); 
       doc.text(pjaUser?.jawatan || '', 20, y);
 
-      y += 4.5; 
+      y += 4; 
       doc.text(pjaUser?.bahagian || '', 20, y);
 
-      y += 4.5; 
+      y += 4; 
       doc.text(pjaUser?.unit || '', 20, y);
 
       // --- PAGE 2: ULASAN ---
       doc.addPage(); doc.rect(20, 20, 170, 120); doc.rect(20, 145, 170, 120); y = 30; doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.text("ULASAN JURUTERA", 25, y); y += 10;
-      doc.setFontSize(8);
+      doc.setFontSize(10.5);
       const titleLines = doc.splitTextToSize(formData.namaProjek?.toUpperCase() || '', 160); doc.text(titleLines, 25, y); y += (titleLines.length * 5) + 10;
-      doc.setFontSize(9); doc.text("Anggaran Kontrak", 25, y); doc.text(":", 60, y); y += 8; doc.text("Tempoh Kontrak", 25, y); doc.text(":", 60, y); y += 8; doc.text("Lantikan", 25, y); doc.text(":", 60, y);
+      doc.setFontSize(9); doc.text("Anggaran Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8; doc.text("Tempoh Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8; doc.text("Lantikan", 25, y); doc.text(": ___________________________________________________________", 60, y);
       y = 125; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);
-      y = 155; doc.setFontSize(11); doc.text("ULASAN PENGARAH", 25, y); y += 10; doc.setFontSize(9); doc.setFont("helvetica","normal");
+      y = 155; doc.setFontSize(11); doc.text("ULASAN PENGARAH", 25, y); y += 10; doc.setFontSize(10.5); doc.setFont("helvetica","normal");
       const ulasanText = `Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) yang bersidang pada ${meetingDate} dengan rotasi bagi syarikat :-`;
       const splitUlasan = doc.splitTextToSize(ulasanText, 160); doc.text(splitUlasan, 25, y);
       y += 40; doc.line(25, y, 185, y); y += 15; doc.line(25, y, 185, y);
@@ -881,12 +881,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
                       // Sub-row (Indented visually by empty col 0)
                       tableBody.push([
-                          { content: '', styles: { lineWidth: sideOnlyBorder } }, // Empty No
-                          { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top:0, bottom:1, left:3, right:1 } } },
-                          { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder } },
-                          { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder } },
-                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder } },
-                          { content: formatCurrency(partAmount).replace('RM', ''), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder } }
+                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }, // Empty No
+                          { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3, right: 1 } } },
+                          { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                          { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                          { content: formatCurrency(partAmount).replace('RM', ''), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
                       ]);
                   });
               }
@@ -925,7 +925,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               showHead: 'everyPage', 
               showFoot: 'never',  
               margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
-              styles: { fontSize: 7.5, cellPadding: 1.5, textColor: 0 },
+              styles: { fontSize: 7.5, cellPadding: 1.4, textColor: 0 },
               headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
               columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 13 }, 3: { cellWidth: 17 }, 4: { cellWidth: 25 }, 5: { cellWidth: 25 } },
               didDrawCell: (data) => {
@@ -963,7 +963,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             ]],
             startY: footerY,
             theme: 'grid',
-            styles: { fontSize: 7.5, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+            styles: { fontSize: 7.5, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
             columnStyles: { 
                 0: { cellWidth: 165 }, 
                 1: { cellWidth: 25 }   
@@ -991,7 +991,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           body: summaryBody,
           foot: [[{ content: 'TOTAL COLLECTION', styles: { halign: 'center' } }, { content: formatCurrency(grandTotal).replace('RM', ''), styles: { halign: 'right' } }]],
           theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1 },
+          styles: { fontSize: 8, cellPadding: 1.0, lineColor: 0, lineWidth: 0.1 },
           headStyles: { fillColor: 240, textColor: 0, fontStyle: 'bold' },
           footStyles: { fillColor: 240, textColor: 0, fontStyle: 'bold' },
           margin: { left: 20, right: 20 }
@@ -1079,8 +1079,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   if (activeParts.length > 0) {
                       // Header for breakdown
                       tableBody.push([
-                          { content: '', styles: { lineWidth: sideOnlyBorder } },
-                          { content: 'Kiraan Laras:', colSpan: 8, styles: { fontStyle: 'bold', fontSize: 7, textColor: [50, 50, 50], lineWidth: sideOnlyBorder, cellPadding: { top:1, bottom:0, left:3 } } }
+                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.5, bottom: 0 } } },
+                          { content: 'Kiraan Laras:', colSpan: 8, styles: { fontStyle: 'bold', fontSize: 7, textColor: [50, 50, 50], lineWidth: sideOnlyBorder, cellPadding: { top: 0.5, bottom: 0, left: 3 } } }
                       ]);
 
                       activeParts.forEach(p => {
@@ -1106,15 +1106,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                           if (p.label) dimStr += ` - ${p.label}`;
 
                           tableBody.push([
-                              { content: '', styles: { lineWidth: sideOnlyBorder } },
-                              { content: dimStr, styles: { fontStyle: 'italic', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top:0, bottom:1, left:3, right:1 } } },
-                              { content: item.unit, styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } },
-                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '').trim() : '', styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } },
-                              { content: '-', styles: { halign: 'center', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250] } }, // Orig Qty
-                              { content: '-', styles: { halign: 'right', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250] } }, // Orig Amt
-                              { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } }, // Laras Qty
-                              { content: formatCurrency(partAmount).replace('RM', '').trim(), styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } }, // Laras Amt
-                              { content: '', styles: { lineWidth: sideOnlyBorder } } // Diff (Skip for parts to avoid clutter)
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: dimStr, styles: { fontStyle: 'italic', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3, right: 1 } } },
+                              { content: item.unit, styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '').trim() : '', styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: '-', styles: { halign: 'center', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250], cellPadding: { top: 0, bottom: 0.5 } } }, // Orig Qty
+                              { content: '-', styles: { halign: 'right', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250], cellPadding: { top: 0, bottom: 0.5 } } }, // Orig Amt
+                              { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }, // Laras Qty
+                              { content: formatCurrency(partAmount).replace('RM', '').trim(), styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }, // Laras Amt
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } } // Diff (Skip for parts to avoid clutter)
                           ]);
                       });
                   }
@@ -1177,7 +1177,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               rowPageBreak: 'avoid', 
               margin: { top: 15, left: 10, right: 10, bottom: distBottom + footerHeight + 5 }, 
               showHead: 'everyPage',
-              styles: { fontSize: 7, cellPadding: 1, textColor: 0, lineColor: 0 },
+              styles: { fontSize: 7, cellPadding: 0.7, textColor: 0, lineColor: 0 },
               headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineColor: 0, lineWidth: 0.1 },
               columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 15 }, 5: { cellWidth: 15 }, 6: { cellWidth: 15 }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 } },
               didDrawCell: (data) => {
@@ -1219,7 +1219,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             ]],
             startY: footerY,
             theme: 'grid',
-            styles: { fontSize: 7, cellPadding: 1, textColor: 0, lineColor: 0, lineWidth: 0.1 },
+            styles: { fontSize: 7, cellPadding: 0.7, textColor: 0, lineColor: 0, lineWidth: 0.1 },
             columnStyles: { 
                 0: { cellWidth: 130 }, // BIL + KETERANGAN + UNIT + KADAR + QTY(ASAL) sum = 8 + 82 + 10 + 15 + 15 = 130
                 1: { cellWidth: 15 },  // AMAUN (ASAL)
@@ -1263,7 +1263,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       ]);
 
       // @ts-ignore
-      doc.autoTable({ startY: 30, head: [['KETERANGAN', 'ASAL (RM)', 'LARAS (RM)', 'BEZA (RM)']], body: summaryTableBody, theme: 'grid', styles: { fontSize: 7, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1, textColor: 0 }, headStyles: { fillColor: 240, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0, halign: 'center' }, columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 25 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 } }, margin: { left: 20, right: 20 } });
+      doc.autoTable({ startY: 30, head: [['KETERANGAN', 'ASAL (RM)', 'LARAS (RM)', 'BEZA (RM)']], body: summaryTableBody, theme: 'grid', styles: { fontSize: 7, cellPadding: 1.0, lineColor: 0, lineWidth: 0.1, textColor: 0 }, headStyles: { fillColor: 240, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0, halign: 'center' }, columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 25 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 } }, margin: { left: 20, right: 20 } });
 
       let y = doc.lastAutoTable.finalY + 15;
       doc.setFontSize(8); 
@@ -1304,7 +1304,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           startY: y + 5, 
           body: referenceData,
           theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 2, lineColor: 0, lineWidth: 0.1, textColor: [100, 100, 100] }, 
+          styles: { fontSize: 8, cellPadding: 1.2, lineColor: 0, lineWidth: 0.1, textColor: [100, 100, 100] }, 
           columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'right' } },
           margin: { left: 20, right: 20 }
       });
@@ -1314,7 +1314,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           startY: doc.lastAutoTable.finalY + 2, 
           body: calculationData,
           theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+          styles: { fontSize: 8, cellPadding: 1.2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
           columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'right' } },
           margin: { left: 20, right: 20 }
       });
