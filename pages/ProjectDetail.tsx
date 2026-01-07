@@ -793,7 +793,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       
       for (const bill of bqData) {
           doc.addPage();
-          const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN');
+          const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN') || bill.title.toUpperCase().includes('INSURANS');
           let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
           let aduanText = isPermulaan ? (locationRows || []).map(l => l.aduan).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.aduan || '');
           
@@ -1036,7 +1036,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       for (const bill of pelarasanData) {
           if (pelSectionIdx > 0) doc.addPage();
           const originalBill = originalData.find(b => b.id === bill.id);
-          const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN');
+          const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN') || bill.title.toUpperCase().includes('INSURANS');
           let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
           let aduanText = isPermulaan ? (locationRows || []).map(l => l.aduan).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.aduan || '');
 

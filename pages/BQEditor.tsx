@@ -280,16 +280,21 @@ const BQEditor: React.FC<BQEditorProps> = ({
   };
 
   const resequenceTitles = (currentBills: BQGroup[]): BQGroup[] => {
+      const isInsurans = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS');
+      const isPermulaan = (b: BQGroup) => b.title.toUpperCase().includes('PERMULAAN') || b.id.includes('permulaan');
+
+      const insuransBills = currentBills.filter(isInsurans);
+      const permulaanBills = currentBills.filter(b => isPermulaan(b) && !isInsurans(b));
+      const otherBills = currentBills.filter(b => !isInsurans(b) && !isPermulaan(b));
+      const sortedBills = [...insuransBills, ...permulaanBills, ...otherBills];
+
       let counter = 1;
-      return currentBills.map(bill => {
-          if (/^BIL NO\.\s*\d+/i.test(bill.title)) {
-              const currentDesc = bill.title.replace(/^BIL NO\.\s*\d+\s*[-–]\s*/i, '');
-              const newDesc = (currentDesc && currentDesc !== bill.title) ? currentDesc : bill.title.replace(/^BIL NO\.\s*\d+/i, '').trim().replace(/^-/, '').trim();
-              const newTitle = `BIL NO. ${counter} - ${newDesc}`;
-              counter++;
-              return { ...bill, title: newTitle };
-          }
-          return bill;
+      return sortedBills.map(bill => {
+          const { content } = parseTitle(bill.title);
+          const displayContent = content.trim() || 'BUTIRAN KERJA';
+          const newTitle = `BIL NO. ${counter} - ${displayContent.toUpperCase()}`;
+          counter++;
+          return { ...bill, title: newTitle };
       });
   };
 
@@ -891,9 +896,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
   const moveLocation = (locId: string, direction: 'up' | 'down') => {
       if (readOnly) return;
-      const permulaan = bills.filter(b => b.title.includes('PERMULAAN') || b.id.includes('permulaan'));
-      const locationBills = bills.filter(b => b.locationId && !b.title.includes('PERMULAAN') && !b.id.includes('permulaan'));
-      const otherBills = bills.filter(b => !b.locationId && !b.title.includes('PERMULAAN') && !b.id.includes('permulaan'));
+      const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
+      
+      const permulaan = bills.filter(isTopBill);
+      const locationBills = bills.filter(b => b.locationId && !isTopBill(b));
+      const otherBills = bills.filter(b => !b.locationId && !isTopBill(b));
       const uniqueLocIds = Array.from(new Set(locationBills.map(b => b.locationId!)));
       const currentIndex = uniqueLocIds.indexOf(locId);
       if (currentIndex === -1) return;
@@ -1044,15 +1051,18 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
   const activeBillIndex = bills.findIndex(b => b.id === activeBillId);
   const activeBill = bills[activeBillIndex];
+  
+  const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
+
   const billsByLocation: Record<string, BQGroup[]> = {};
   const permulaanBills: BQGroup[] = [];
   const otherBills: BQGroup[] = [];
   bills.forEach(b => {
-      if (b.title.includes('PERMULAAN') || b.id.includes('permulaan')) { permulaanBills.push(b); } 
+      if (isTopBill(b)) { permulaanBills.push(b); } 
       else if (b.locationId) { if (!billsByLocation[b.locationId]) billsByLocation[b.locationId] = []; billsByLocation[b.locationId].push(b); } 
       else { otherBills.push(b); }
   });
-  const sortedLocationIds = Array.from(new Set(bills.filter(b => b.locationId && !b.title.includes('PERMULAAN') && !b.id.includes('permulaan')).map(b => b.locationId!))) as string[];
+  const sortedLocationIds = Array.from(new Set(bills.filter(b => b.locationId && !isTopBill(b)).map(b => b.locationId!))) as string[];
   const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
   const libraryGroups = bqLibrary
     .filter(g => {
@@ -1119,7 +1129,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                 <div className="text-right text-xs text-slate-400 shrink-0">Total: <span className="text-emerald-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + (i.amount||0), 0))}</span></div>
                             </div>
                         </div>
-                        {!activeBill.title.toUpperCase().includes('PERMULAAN') && (
+                        {!isTopBill(activeBill) && (
                             <div className="mb-2">
                                                                   <select value={activeBill.locationId || ''} onChange={(e) => updateBillLocation(activeBill.id, e.target.value)} disabled={readOnly} className={`w-full text-xs font-bold bg-transparent text-slate-500 outline-none flex items-center border border-transparent rounded px-1 py-0.5 transition-colors ${readOnly ? 'cursor-not-allowed' : 'hover:text-emerald-600 cursor-pointer hover:border-slate-200'}`}><option value="">-- Tiada Lokasi --</option>{locationRows.filter(r => r.lokasi).map(r => (<option key={r.id} value={r.id}>{r.lokasi}</option>))}</select>
                                 

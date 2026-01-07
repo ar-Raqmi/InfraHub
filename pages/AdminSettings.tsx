@@ -523,7 +523,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
           icon: 'file-text',
           color: 'blue',
           bills: [
-              { id: 'b1', title: 'KERJA-KERJA PERMULAAN', items: templateItems }
+              { id: 'b1', title: 'KERJA PERMULAAN (INSURANS)', items: templateItems }
           ],
           groupRefs: [] // Legacy
       };

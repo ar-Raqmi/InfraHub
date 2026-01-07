@@ -509,16 +509,18 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const contractPrice = projectData.kosProjek || 0;
     const extraPrice = Math.max(0, totalPelarasanRaw - contractPrice);
 
+    const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
+
     const billsByLocation: Record<string, BQGroup[]> = {};
     const permulaanBills: BQGroup[] = []; 
     const otherBills: BQGroup[] = [];
     
     pelarasanData.forEach(b => { 
-        if (b.title.includes('PERMULAAN') || b.id.includes('permulaan')) { permulaanBills.push(b); } 
+        if (isTopBill(b)) { permulaanBills.push(b); } 
         else if (b.locationId) { if (!billsByLocation[b.locationId]) billsByLocation[b.locationId] = []; billsByLocation[b.locationId].push(b); } 
         else { otherBills.push(b); } 
     });
-    const sortedLocationIds = Array.from(new Set(pelarasanData.filter(b => b.locationId && !b.title.includes('PERMULAAN') && !b.id.includes('permulaan')).map(b => b.locationId!))) as string[];
+    const sortedLocationIds = Array.from(new Set(pelarasanData.filter(b => b.locationId && !isTopBill(b)).map(b => b.locationId!))) as string[];
 
     const renderSidebarItem = (b: BQGroup) => {
         const isActive = activeBillId === b.id;
