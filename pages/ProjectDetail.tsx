@@ -806,50 +806,90 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               const autoNum = getAutoNumber(bill.items, itemIndex);
               const isHeader = item.type === 'HEADER';
               let descText = item.description;
-              let variantText = item.variant || '';
-              let dims = '';
+              if (item.variant) descText += `\n${item.variant}`;
 
-              if (!isHeader && item.calculationParts?.length > 0) {
-                  const activeParts = item.calculationParts.filter(p => 
-                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
-                  );
+              // Determine Active Parts First
+              const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
+              const activeParts = rawParts.filter(p => 
+                  (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
+              );
+
+              // Logic for Display
+              // Default: If we have calculation parts, we usually hide the main row values 
+              // and let the sub-rows show the breakdown + values.
+              let hideMainValues = activeParts.length > 0;
+              let showSubRows = true;
+              
+              // Special Case: Single Active Part
+              if (activeParts.length === 1) {
+                  const p = activeParts[0];
+                  const hasDimensions = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
                   
-                  const hasDimensions = activeParts.some(p => 
-                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0)
-                  );
-
-                  if (activeParts.length > 0) {
-                      if (!hasDimensions) {
-                          const multSuffix = ` x ${activeParts.map(p => p.multiplier).join(', ')}`;
-                          if (variantText) {
-                              variantText += multSuffix;
-                          } else {
-                              descText += multSuffix;
-                          }
-                      } else {
-                          dims = activeParts.map(p => {
-                              const parts = [];
-                              if (p.hasLength) parts.push(`${p.length}m(P)`);
-                              if (p.hasWidth) parts.push(`${p.width}m(L)`);
-                              if (p.hasDepth) parts.push(`${p.depth}m(T)`);
-                              if (p.multiplier !== 1) parts.push(`${p.multiplier}`);
-                              return parts.join(' x ');
-                          }).join('\n');
+                  if (!hasDimensions) {
+                      // Case: Inline (e.g. "Label" or "x 5") -> No sub-row, merge to main.
+                      showSubRows = false; 
+                      hideMainValues = false; // Show values on main row
+                      
+                      const parts = [];
+                      if (p.label) parts.push(p.label);
+                      if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`);
+                      
+                      if (parts.length > 0) {
+                         const inlineText = parts.join(' ');
+                         descText += ` ${inlineText}`;
                       }
+                  } else {
+                      // Case: Single Dimensioned Part -> Sub-row handles values. Main row text only.
+                      // hideMainValues stays TRUE.
+                      // showSubRows stays TRUE.
                   }
               }
 
-              if (variantText) descText += `\n${variantText}`;
-              if (dims) descText += `\n\n${dims}`;
-
+              // 1. Push Main Item Row
               tableBody.push([
                   { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
                   { content: descText, styles: { fontStyle: isHeader ? 'bold' : 'normal', lineWidth: sideOnlyBorder } },
-                  { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: item.qty || '', styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: item.amount ? formatCurrency(item.amount).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }
+                  { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: hideMainValues ? '' : (item.qty || ''), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                  { content: hideMainValues ? '' : (item.amount ? formatCurrency(item.amount).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }
               ]);
+
+              // 2. Push Calculation Part Rows (if needed)
+              if (showSubRows && activeParts.length > 0) {
+                  activeParts.forEach(p => {
+                      // Calculate Part Qty
+                      let product = 1;
+                      if (p.hasLength) product *= p.length;
+                      if (p.hasWidth) product *= p.width;
+                      if (p.hasDepth) product *= p.depth;
+                      const partQtyVal = product * p.multiplier;
+                      const partQty = partQtyVal % 1 === 0 ? partQtyVal : parseFloat(partQtyVal.toFixed(2));
+                      
+                      // Calculate Part Amount
+                      const partAmount = partQtyVal * item.rate;
+
+                      // Format Dimension String
+                      const partsStr = [];
+                      if (p.hasLength) partsStr.push(`${p.length}m(P)`);
+                      if (p.hasWidth) partsStr.push(`${p.width}m(L)`);
+                      if (p.hasDepth) partsStr.push(`${p.depth}m(T)`);
+                      if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
+                      
+                      let dimStr = partsStr.join(' x ');
+                      if (p.label) dimStr += ` - ${p.label}`;
+
+                      // Sub-row (Indented visually by empty col 0)
+                      tableBody.push([
+                          { content: '', styles: { lineWidth: sideOnlyBorder } }, // Empty No
+                          { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top:0, bottom:1, left:3, right:1 } } },
+                          { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder } },
+                          { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder } },
+                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder } },
+                          { content: formatCurrency(partAmount).replace('RM', ''), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder } }
+                      ]);
+                  });
+              }
           });
 
           const billTotal = bill.items.reduce((s, i) => s + (i.amount || 0), 0);
@@ -1015,42 +1055,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               const diff = (item.amount || 0) - origAmt;
 
               let descText = item.description;
-              let variantText = item.variant || '';
-              let dims = '';
+              if (item.variant) descText += `\n${item.variant}`;
 
-              if (!isHeader && item.calculationParts && item.calculationParts.length > 0) {
-                  const activeParts = item.calculationParts.filter(p => 
-                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
-                  );
-                  
-                  const hasDimensions = activeParts.some(p => 
-                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0)
-                  );
-
-                  if (activeParts.length > 0) {
-                      if (!hasDimensions) {
-                          const multSuffix = ` x ${activeParts.map(p => p.multiplier).join(', ')}`;
-                          if (variantText) {
-                              variantText += multSuffix;
-                          } else {
-                              descText += multSuffix;
-                          }
-                      } else {
-                          dims = activeParts.map(p => {
-                              const parts = [];
-                              if (p.hasLength) parts.push(`${p.length}m(P)`);
-                              if (p.hasWidth) parts.push(`${p.width}m(L)`);
-                              if (p.hasDepth) parts.push(`${p.depth}m(T)`);
-                              if (p.multiplier !== 1) parts.push(`${p.multiplier}`);
-                              return parts.join(' x ');
-                          }).join('\n');
-                      }
-                  }
-              }
-
-              if (variantText) descText += `\n${variantText}`;
-              if (dims) descText += `\n\nKiraan Laras:\n${dims}`;
-
+              // 1. Push Main Item Row (Comparison Summary)
               tableBody.push([
                   { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
                   { content: descText, styles: { fontStyle: isHeader ? 'bold' : 'normal', lineWidth: sideOnlyBorder } },
@@ -1062,6 +1069,56 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   { content: item.amount ? formatCurrency(item.amount).replace('RM', '').trim() : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
                   { content: diff !== 0 ? (diff > 0 ? '+' : '') + formatCurrency(diff).replace('RM', '').trim() : '-', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: 'bold', textColor: diff > 0 ? [0, 100, 255] : (diff < 0 ? [255, 0, 0] : [0, 0, 0]) } }
               ]);
+
+              // 2. Push Calculation Part Rows (Breakdown of New/Adjusted Value)
+              if (!isHeader && item.calculationParts && item.calculationParts.length > 0) {
+                  const activeParts = item.calculationParts.filter(p => 
+                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
+                  );
+
+                  if (activeParts.length > 0) {
+                      // Header for breakdown
+                      tableBody.push([
+                          { content: '', styles: { lineWidth: sideOnlyBorder } },
+                          { content: 'Kiraan Laras:', colSpan: 8, styles: { fontStyle: 'bold', fontSize: 7, textColor: [50, 50, 50], lineWidth: sideOnlyBorder, cellPadding: { top:1, bottom:0, left:3 } } }
+                      ]);
+
+                      activeParts.forEach(p => {
+                          // Calculate Part Qty
+                          let product = 1;
+                          if (p.hasLength) product *= p.length;
+                          if (p.hasWidth) product *= p.width;
+                          if (p.hasDepth) product *= p.depth;
+                          const partQtyVal = product * p.multiplier;
+                          const partQty = partQtyVal % 1 === 0 ? partQtyVal : parseFloat(partQtyVal.toFixed(2));
+                          
+                          // Calculate Part Amount
+                          const partAmount = partQtyVal * (item.rate || 0);
+
+                          // Format Dimension String
+                          const partsStr = [];
+                          if (p.hasLength) partsStr.push(`${p.length}m(P)`);
+                          if (p.hasWidth) partsStr.push(`${p.width}m(L)`);
+                          if (p.hasDepth) partsStr.push(`${p.depth}m(T)`);
+                          if (p.multiplier !== 1) partsStr.push(`x ${p.multiplier}`);
+                          
+                          let dimStr = partsStr.join(' x ');
+                          if (p.label) dimStr += ` - ${p.label}`;
+
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder } },
+                              { content: dimStr, styles: { fontStyle: 'italic', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top:0, bottom:1, left:3, right:1 } } },
+                              { content: item.unit, styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '').trim() : '', styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } },
+                              { content: '-', styles: { halign: 'center', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250] } }, // Orig Qty
+                              { content: '-', styles: { halign: 'right', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250] } }, // Orig Amt
+                              { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } }, // Laras Qty
+                              { content: formatCurrency(partAmount).replace('RM', '').trim(), styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder } }, // Laras Amt
+                              { content: '', styles: { lineWidth: sideOnlyBorder } } // Diff (Skip for parts to avoid clutter)
+                          ]);
+                      });
+                  }
+              }
               itemIndex++;
           }
 

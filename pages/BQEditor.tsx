@@ -950,7 +950,33 @@ const BQEditor: React.FC<BQEditorProps> = ({
             <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<input type="number" value={part.depth || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { depth: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
             <span className="text-slate-300">×</span>
             <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><input type="number" value={part.multiplier || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { multiplier: parseFloat(e.target.value) })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" /></div>
-            {!readOnly && <button onClick={() => removeCalculationPart(bill.id, item.id, part.id)} className="ml-auto p-1 text-slate-300 hover:text-red-500"><MinusCircle className="w-4 h-4" /></button>}
+            
+            {/* Individual Row Result with Full Breakdown */}
+            <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
+                <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
+                <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
+                    {(() => {
+                        let product = 1;
+                        if (part.hasLength) product *= part.length;
+                        if (part.hasWidth) product *= part.width;
+                        if (part.hasDepth) product *= part.depth;
+                        const qty = product * part.multiplier;
+                        return qty % 1 === 0 ? qty : qty.toFixed(2);
+                    })()}
+                </div>
+                <div className="hidden md:block text-[10px] text-slate-400">x {formatCurrency(item.rate)}</div>
+                <div className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 min-w-[60px] text-right">
+                    {(() => {
+                        let product = 1;
+                        if (part.hasLength) product *= part.length;
+                        if (part.hasWidth) product *= part.width;
+                        if (part.hasDepth) product *= part.depth;
+                        const qty = product * part.multiplier;
+                        return formatCurrency(qty * item.rate);
+                    })()}
+                </div>
+                {!readOnly && <button onClick={() => removeCalculationPart(bill.id, item.id, part.id)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><MinusCircle className="w-4 h-4" /></button>}
+            </div>
         </div>
       );
   };
