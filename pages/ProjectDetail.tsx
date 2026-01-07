@@ -1034,7 +1034,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       let pelSectionIdx = 0;
 
       for (const bill of pelarasanData) {
-          doc.addPage();
+          if (pelSectionIdx > 0) doc.addPage();
           const originalBill = originalData.find(b => b.id === bill.id);
           const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN');
           let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
@@ -1221,7 +1221,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           if (pelSectionIdx === 0) {
               // @ts-ignore
               doc.autoTable({ 
-                  body: [[{ content: `PELARASAN BQ: ${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
+                  body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
                   theme: 'grid', startY: 15, styles: { lineWidth: 0.1, lineColor: 0 }, margin: { left: 10, right: 10 }
               });
               // @ts-ignore
@@ -1274,7 +1274,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
       // --- SUMMARY PAGE ---
       doc.addPage();
-      doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text("RINGKASAN PELARASAN BQ", pageWidth/2, 20, { align:"center" }); 
+      doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text("RINGKASAN", pageWidth/2, 20, { align:"center" }); 
       
       const summaryBody = pelarasanData.map(b => {
           const orig = originalData.find(ob => ob.id === b.id)?.items.reduce((s, i) => s + (i.amount||0), 0) || 0;
@@ -1308,25 +1308,27 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       });
 
       let y = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.text("HARGA AKHIR", 20, y);
+      doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(0); doc.text("HARGA AKHIR", 20, y);
       const valBQAsal = Number(grandTotalOrig) || 0; const valBQLarasRaw = Number(grandTotalLaras) || 0;
       const valBQLarasCapped = Math.min(valBQLarasRaw, valBQAsal); const valExtra = Math.max(0, valBQLarasRaw - valBQAsal);
       const valWT = Number(formData.wangTahanan) || 0; const valLAD = Number(formData.ladAmount) || 0; const valLoC = Number(formData.locAmount) || 0;
       const finalPayment = valBQLarasCapped - valWT - valLAD - valLoC;
 
+      const larasColor = valBQLarasRaw < valBQAsal ? [200, 0, 0] : (valBQLarasRaw > valBQAsal ? [0, 80, 200] : 0);
+
       const calculationData = [
-          ["HARGA KONTRAK", formatCurrency(valBQAsal).replace('RM', '').trim()],
-          ["HARGA PELARASAN", formatCurrency(valBQLarasRaw).replace('RM', '').trim()],
-          ["WANG TAHANAN", valWT > 0 ? `-${formatCurrency(valWT).replace('RM', '').trim()}` : '-'],
-          ["LAD", valLAD > 0 ? `-${formatCurrency(valLAD).replace('RM', '').trim()}` : '-'],
-          ["LOC", valLoC > 0 ? `-${formatCurrency(valLoC).replace('RM', '').trim()}` : '-'],
-          [ { content:"JUMLAH DIBAYAR", styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }, { content: formatCurrency(finalPayment).replace('RM', '').trim(), styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } } ]
+          ["HARGA PELARASAN", { content: formatCurrency(valBQLarasRaw).replace('RM', '').trim(), styles: { textColor: larasColor } }],
+          ["HARGA KONTRAK", { content: formatCurrency(valBQAsal).replace('RM', '').trim(), styles: { textColor: 0 } }],
+          ["WANG TAHANAN", { content: valWT > 0 ? `-${formatCurrency(valWT).replace('RM', '').trim()}` : '-', styles: { textColor: valWT > 0 ? [200, 0, 0] : 0 } }],
+          ["LAD", { content: valLAD > 0 ? `-${formatCurrency(valLAD).replace('RM', '').trim()}` : '-', styles: { textColor: valLAD > 0 ? [200, 0, 0] : 0 } }],
+          ["LOC", { content: valLoC > 0 ? `-${formatCurrency(valLoC).replace('RM', '').trim()}` : '-', styles: { textColor: valLoC > 0 ? [200, 0, 0] : 0 } }],
+          [ { content:"JUMLAH DIBAYAR", styles: { fillColor: [240, 240, 240], fontStyle: 'bold', textColor: 0 } }, { content: formatCurrency(finalPayment).replace('RM', '').trim(), styles: { fillColor: [240, 240, 240], fontStyle: 'bold', textColor: 0 } } ]
       ];
-      if (valExtra > 0) calculationData.splice(2, 0, ["PENAMBAHAN (HAKIKAT)", `+${formatCurrency(valExtra).replace('RM', '').trim()}`]);
+      if (valExtra > 0) calculationData.splice(0, 0, ["PENAMBAHAN", { content: `+${formatCurrency(valExtra).replace('RM', '').trim()}`, styles: { textColor: [0, 80, 200] } }]);
 
       // @ts-ignore
       doc.autoTable({
-          startY: y + 5, body: calculationData, theme: 'grid', styles: { fontSize: 8, cellPadding: 1.2, lineColor: 0, lineWidth: 0.1 },
+          startY: y + 5, body: calculationData, theme: 'grid', styles: { fontSize: 8, cellPadding: 1.2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
           columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'right' } }, margin: { left: 20, right: 20 }
       });
 
