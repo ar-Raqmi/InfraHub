@@ -345,7 +345,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [isCPCOpen, setIsCPCOpen] = useState(false);
   const [isPrestasiOpen, setIsPrestasiOpen] = useState(false);
   const [isNotisOpen, setIsNotisOpen] = useState(false);
-  const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | null; }>({ isOpen: false, type: null });
+  const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | null; }>({ isOpen: false, type: null });
 
   const initialPjaId = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (project?.pjaId || 0);
 
@@ -410,6 +410,34 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const handleBackClick = () => { setConfirmationState({ isOpen: true, type: 'back' }); };
   const handleSaveClick = () => { setConfirmationState({ isOpen: true, type: 'save' }); };
   const cancelConfirmation = () => { setConfirmationState({ isOpen: false, type: null }); };
+
+  const handleInitializePelarasan = () => {
+    if (!formData.bqData || formData.bqData.length === 0) {
+        if (onShowToast) onShowToast("Sila pastikan BQ Kontrak (Phase 1) telah diisi terlebih dahulu.", "error");
+        return;
+    }
+
+    // Deep clone original BQ data
+    const clonedBQData: BQGroup[] = JSON.parse(JSON.stringify(formData.bqData));
+    
+    // Also clone global calculations if they exist
+    const clonedGlobalCalculations: Record<string, GlobalDimensions> = formData.globalCalculations 
+        ? JSON.parse(JSON.stringify(formData.globalCalculations)) 
+        : {};
+
+    setFormData(prev => ({
+        ...prev,
+        bqDataPelarasan: clonedBQData,
+        globalCalculationsPelarasan: clonedGlobalCalculations
+    }));
+    
+    if (onShowToast) onShowToast("Pelarasan telah dimulakan berdasarkan BQ Kontrak.", "success");
+  };
+
+  const handleResetPelarasan = () => {
+    setConfirmationState({ isOpen: true, type: 'reset_pelarasan' });
+  };
+
   const confirmAction = async () => {
     if (confirmationState.type === 'back') { setConfirmationState({ isOpen: false, type: null }); onClose(); } 
     else if (confirmationState.type === 'save') {
@@ -418,6 +446,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             if (project && project.id) { await supabaseService.updateProject(project.id, formData); } else { await supabaseService.createProject(formData as any); }
             onSave();
         } catch (e) { console.error(e); if (onShowToast) onShowToast("Ralat menyimpan projek.","error"); } finally { setIsSaving(false); }
+    }
+    else if (confirmationState.type === 'reset_pelarasan') {
+        setConfirmationState({ isOpen: false, type: null });
+        handleInitializePelarasan();
     }
   };
 
@@ -547,38 +579,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         }));
     }
   }, [formData.bqDataPelarasan, formData.ladAmount, formData.locAmount, formData.wangTahanan, formData.kosProjek]);
-
-  useEffect(() => {
-    if (activeTab === 'phase3' && formData.bqData && formData.bqData.length > 0) {
-       const sourceData = formData.bqData; const targetData = formData.bqDataPelarasan || [];
-       const syncedData = sourceData.map(sourceBill => {
-           const targetBill = targetData.find(b => b.id === sourceBill.id);
-           if (!targetBill) { return JSON.parse(JSON.stringify(sourceBill)); }
-           const newBill = { ...targetBill, title: sourceBill.title, locationId: sourceBill.locationId, calculationId: targetBill.calculationId || sourceBill.calculationId };
-           newBill.items = sourceBill.items.map(sourceItem => {
-               const targetItem = targetBill.items.find(i => i.id === sourceItem.id);
-               if (!targetItem) { return JSON.parse(JSON.stringify(sourceItem)); }
-               return {
-                   ...targetItem, 
-                   description: sourceItem.description, 
-                   unit: sourceItem.unit, 
-                   rate: sourceItem.rate, 
-                   variant: sourceItem.variant, 
-                   type: sourceItem.type,
-                   isGlobal: targetItem.isGlobal !== undefined ? targetItem.isGlobal : sourceItem.isGlobal,
-                   calculationParts: targetItem.calculationParts || sourceItem.calculationParts,
-                   qty: targetItem.qty !== undefined ? targetItem.qty : sourceItem.qty,
-                   amount: targetItem.amount !== undefined ? targetItem.amount : sourceItem.amount
-               };
-           });
-           return newBill;
-       });
-
-       if (JSON.stringify(syncedData) !== JSON.stringify(targetData)) { 
-           setFormData(prev => ({ ...prev, bqDataPelarasan: syncedData })); 
-       }
-    }
-  }, [activeTab, formData.bqData]);
 
   useEffect(() => {
     if (!formData.isManualMulaKontrak && formData.tarikhCetakanBpp) { const newDate = addDaysSkippingWeekends(formData.tarikhCetakanBpp, 2); if (newDate && newDate !== formData.tarikhMulaKontrak) { setFormData(prev => ({ ...prev, tarikhMulaKontrak: newDate })); } }
@@ -1032,8 +1032,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       const originalData = formData.bqData || [];
       
       let pelSectionIdx = 0;
+
       for (const bill of pelarasanData) {
-          if (pelSectionIdx > 0) doc.addPage();
+          doc.addPage();
           const originalBill = originalData.find(b => b.id === bill.id);
           const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN');
           let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
@@ -1042,153 +1043,210 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           const tableBody = [];
           const sideOnlyBorder = { top: 0, right: 0.1, bottom: 0, left: 0.1 };
           const titleBorder = { top: 0.1, right: 0.1, bottom: 0, left: 0.1 };
-          const fullBorder = 0.1;
 
-          tableBody.push([{ content: bill.title, colSpan: 9, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fontSize: 8 } }]);
+          tableBody.push([{ content: bill.title, colSpan: 6, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fillColor: [245, 245, 245] } }]);
 
-          let itemIndex = 0;
-          for (const item of bill.items) {
+          bill.items.forEach((item, itemIndex) => {
               const autoNum = getAutoNumber(bill.items, itemIndex);
               const isHeader = item.type === 'HEADER';
               const originalItem = originalBill?.items.find(i => i.id === item.id);
-              const origQty = originalItem?.qty || 0;
+              
               const origAmt = originalItem?.amount || 0;
-              const diff = (item.amount || 0) - origAmt;
+              const currentAmt = item.amount || 0;
+              
+              // Rounded comparison to avoid floating point artifacts
+              const diff = parseFloat((currentAmt - origAmt).toFixed(2));
+              const hasPelarasan = !isHeader && Math.abs(diff) > 0.01;
 
               let descText = item.description;
               if (item.variant) descText += `\n${item.variant}`;
 
-              // 1. Push Main Item Row (Comparison Summary)
-              tableBody.push([
-                  { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: descText, styles: { fontStyle: isHeader ? 'bold' : 'normal', lineWidth: sideOnlyBorder } },
-                  { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '').trim() : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: origQty || '', styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fillColor: [245, 245, 245] } },
-                  { content: origAmt ? formatCurrency(origAmt).replace('RM', '').trim() : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, fillColor: [245, 245, 245] } },
-                  { content: item.qty || '', styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: item.amount ? formatCurrency(item.amount).replace('RM', '').trim() : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
-                  { content: diff !== 0 ? (diff > 0 ? '+' : '') + formatCurrency(diff).replace('RM', '').trim() : '-', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: 'bold', textColor: diff > 0 ? [0, 100, 255] : (diff < 0 ? [255, 0, 0] : [0, 0, 0]) } }
-              ]);
+              const textColor = hasPelarasan ? (diff > 0 ? [0, 80, 200] : [200, 0, 0]) : [0, 0, 0];
+              const rowFontStyle = hasPelarasan ? 'bold' : (isHeader ? 'bold' : 'normal');
 
-              // 2. Push Calculation Part Rows (Breakdown of New/Adjusted Value)
-              if (!isHeader && item.calculationParts && item.calculationParts.length > 0) {
-                  const activeParts = item.calculationParts.filter(p => 
-                      (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
-                  );
+              // Calculation Parts
+              const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
+              const activeParts = rawParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1);
 
-                  if (activeParts.length > 0) {
-                      // Header for breakdown
+              const rawOrigParts = (originalItem && !isHeader && originalItem.calculationParts) ? originalItem.calculationParts : [];
+              const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1);
+
+              let hideMainValues = activeParts.length > 0 || activeOrigParts.length > 0;
+
+              // Formatting helpers for zero suppression
+              const fmtQty = (val: number | undefined) => (val === undefined || val === 0 ? '' : val.toString());
+              const fmtAmt = (val: number | undefined) => (val === undefined || val === 0 ? '' : formatCurrency(val).replace('RM', ''));
+
+              // Special Case: Single Multiplier (No Dimensions) -> Similar to original BQ but for Pelarasan
+              const isSpecialMultiplier = !isHeader && activeParts.length === 1 && 
+                  !(activeParts[0].hasLength && activeParts[0].length > 0) &&
+                  !(activeParts[0].hasWidth && activeParts[0].width > 0) &&
+                  !(activeParts[0].hasDepth && activeParts[0].depth > 0);
+
+              if (isSpecialMultiplier) {
+                  const p = activeParts[0];
+                  const pOrig = activeOrigParts[0];
+                  
+                  if (hasPelarasan) {
+                      // 1. Original Row
+                      let mainDesc = descText;
+                      const origPartsText = [];
+                      if (pOrig?.label) origPartsText.push(pOrig.label);
+                      if (pOrig?.multiplier && pOrig.multiplier !== 1) origPartsText.push(`x ${pOrig.multiplier}`);
+                      if (origPartsText.length > 0) mainDesc += ` ${origPartsText.join(' ')}`;
+                      
+                      const origQtyVal = pOrig ? pOrig.multiplier : (originalItem?.qty || 0);
+                      const origQty = origQtyVal % 1 === 0 ? origQtyVal : parseFloat(origQtyVal.toFixed(2));
+                      const origAmt = pOrig ? (origQtyVal * (originalItem?.rate || 0)) : (originalItem?.amount || 0);
+
                       tableBody.push([
-                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.5, bottom: 0 } } },
-                          { content: 'Kiraan Laras:', colSpan: 8, styles: { fontStyle: 'bold', fontSize: 7, textColor: [50, 50, 50], lineWidth: sideOnlyBorder, cellPadding: { top: 0.5, bottom: 0, left: 3 } } }
+                          { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: 'normal' } },
+                          { content: mainDesc, styles: { fontStyle: 'normal', lineWidth: sideOnlyBorder } },
+                          { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: fmtQty(origQty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: fmtAmt(origAmt), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }
                       ]);
 
-                      activeParts.forEach(p => {
-                          // Calculate Part Qty
-                          let product = 1;
-                          if (p.hasLength) product *= p.length;
-                          if (p.hasWidth) product *= p.width;
-                          if (p.hasDepth) product *= p.depth;
-                          const partQtyVal = product * p.multiplier;
-                          const partQty = partQtyVal % 1 === 0 ? partQtyVal : parseFloat(partQtyVal.toFixed(2));
-                          
-                          // Calculate Part Amount
-                          const partAmount = partQtyVal * (item.rate || 0);
+                      // 2. Adjusted Row (Sub-row but repeats description)
+                      let subDesc = descText;
+                      const adjPartsText = [];
+                      if (p.label) adjPartsText.push(p.label);
+                      if (p.multiplier !== 1) adjPartsText.push(`x ${p.multiplier}`);
+                      if (adjPartsText.length > 0) subDesc += ` ${adjPartsText.join(' ')}`;
 
-                          // Format Dimension String
-                          const partsStr = [];
-                          if (p.hasLength) partsStr.push(`${p.length}m(P)`);
-                          if (p.hasWidth) partsStr.push(`${p.width}m(L)`);
-                          if (p.hasDepth) partsStr.push(`${p.depth}m(T)`);
-                          if (p.multiplier !== 1) partsStr.push(`x ${p.multiplier}`);
-                          
-                          let dimStr = partsStr.join(' x ');
-                          if (p.label) dimStr += ` - ${p.label}`;
+                      const adjQtyVal = p.multiplier;
+                      const adjQty = adjQtyVal % 1 === 0 ? adjQtyVal : parseFloat(adjQtyVal.toFixed(2));
+                      const adjAmt = adjQtyVal * item.rate;
 
-                          tableBody.push([
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: dimStr, styles: { fontStyle: 'italic', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3, right: 1 } } },
-                              { content: item.unit, styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '').trim() : '', styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: '-', styles: { halign: 'center', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250], cellPadding: { top: 0, bottom: 0.5 } } }, // Orig Qty
-                              { content: '-', styles: { halign: 'right', fontSize: 7, textColor: [200, 200, 200], lineWidth: sideOnlyBorder, fillColor: [250, 250, 250], cellPadding: { top: 0, bottom: 0.5 } } }, // Orig Amt
-                              { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }, // Laras Qty
-                              { content: formatCurrency(partAmount).replace('RM', '').trim(), styles: { halign: 'right', fontSize: 7, textColor: [100, 100, 100], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }, // Laras Amt
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } } // Diff (Skip for parts to avoid clutter)
-                          ]);
-                      });
+                      tableBody.push([
+                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                          { content: subDesc, styles: { fontSize: 7, fontStyle: 'bold', textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, left: 3 } } },
+                          { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                          { content: fmtQty(adjQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                          { content: fmtAmt(adjAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
+                      ]);
+                  } else {
+                      // No Pelarasan - merged main row
+                      let mainDesc = descText;
+                      const partsText = [];
+                      if (p.label) partsText.push(p.label);
+                      if (p.multiplier !== 1) partsText.push(`x ${p.multiplier}`);
+                      if (partsText.length > 0) mainDesc += ` ${partsText.join(' ')}`;
+
+                      tableBody.push([
+                          { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any } },
+                          { content: mainDesc, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder } },
+                          { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
+                      ]);
+                  }
+              } else {
+                  // Standard Behavior (Multiple parts or dimensions)
+                  // 1. Push Main Item Row
+                  tableBody.push([
+                      { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any } },
+                      { content: descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder } },
+                      { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                      { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                      { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                      { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
+                  ]);
+
+                  // 2. Push Calculation Parts
+                  if (activeParts.length > 0 || activeOrigParts.length > 0) {
+                      if (hasPelarasan) {
+                          // Original parts first
+                          activeOrigParts.forEach(p => {
+                              let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
+                              const pQtyVal = product * p.multiplier;
+                              const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
+                              const pAmt = pQtyVal * (originalItem?.rate || 0);
+                              const partsStr = []; if (p.hasLength) partsStr.push(`${p.length}m(P)`); if (p.hasWidth) partsStr.push(`${p.width}m(L)`); if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
+                              let dimStr = partsStr.join(' x '); if (p.label) dimStr += ` - ${p.label}`;
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
+                                  { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
+                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
+                                  { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
+                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } }
+                              ]);
+                          });
+                          // Adjusted parts second
+                          activeParts.forEach(p => {
+                              let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
+                              const pQtyVal = product * p.multiplier;
+                              const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
+                              const pAmt = pQtyVal * item.rate;
+                              const partsStr = []; if (p.hasLength) partsStr.push(`${p.length}m(P)`); if (p.hasWidth) partsStr.push(`${p.width}m(L)`); if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
+                              let dimStr = partsStr.join(' x '); if (p.label) dimStr += ` - ${p.label}`;
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                                  { content: dimStr, styles: { fontSize: 7, fontStyle: 'bold', textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
+                              ]);
+                          });
+                      } else {
+                          // No pelarasan, show standard sub-rows like original BQ
+                          activeParts.forEach(p => {
+                              let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
+                              const pQtyVal = product * p.multiplier;
+                              const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
+                              const pAmt = pQtyVal * item.rate;
+                              const partsStr = []; if (p.hasLength) partsStr.push(`${p.length}m(P)`); if (p.hasWidth) partsStr.push(`${p.width}m(L)`); if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
+                              let dimStr = partsStr.join(' x '); if (p.label) dimStr += ` - ${p.label}`;
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
+                              ]);
+                          });
+                      }
                   }
               }
-              itemIndex++;
-          }
+          });
 
-          const billTotalOrig = originalBill?.items.reduce((s, i) => s + (i.amount||0), 0) || 0;
-          const billTotalLaras = bill.items.reduce((s, i) => s + (i.amount||0), 0);
-          const billTotalDiff = billTotalLaras - billTotalOrig;
-
+          const billTotal = bill.items.reduce((s, i) => s + (i.amount || 0), 0);
           let tableStartY = 15;
           if (pelSectionIdx === 0) {
               // @ts-ignore
-              doc.autoTable({
-                  body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 9, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
-                  theme: 'grid',
-                  startY: 15,
-                  tableLineWidth: 0.1,
-                  tableLineColor: [0, 0, 0],
-                  styles: { fontSize: 7, cellPadding: 1, lineColor: 0, lineWidth: 0.1, textColor: 0 },
-                  margin: { left: 10, right: 10 }
+              doc.autoTable({ 
+                  body: [[{ content: `PELARASAN BQ: ${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
+                  theme: 'grid', startY: 15, styles: { lineWidth: 0.1, lineColor: 0 }, margin: { left: 10, right: 10 }
               });
               // @ts-ignore
               tableStartY = doc.lastAutoTable.finalY;
           }
 
           const complexHead = [
-              [
-                  { content: 'LOKASI', colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } },
-                  { content: 'ADUAN', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }
-              ],
-              [
-                  { content: locText, colSpan: 6, styles: { halign: 'center', fontSize: 7 } },
-                  { content: aduanText, colSpan: 3, styles: { halign: 'center', fontSize: 7 } }
-              ],
-              [
-                  { content: 'BIL', styles: { halign: 'center', fontSize: 7 } },
-                  { content: 'KETERANGAN', styles: { halign: 'center', fontSize: 7 } },
-                  { content: 'UNIT', styles: { halign: 'center', fontSize: 7 } },
-                  { content: 'KADAR (RM)', styles: { halign: 'center', fontSize: 7 } },
-                  { content: 'QTY (ASAL)', styles: { halign: 'center', fontSize: 7, fillColor: [230, 230, 230] } },
-                  { content: 'AMAUN (ASAL)', styles: { halign: 'center', fontSize: 7, fillColor: [230, 230, 230] } },
-                  { content: 'QTY (LARAS)', styles: { halign: 'center', fontSize: 7 } },
-                  { content: 'AMAUN (LARAS)', styles: { halign: 'center', fontSize: 7 } },
-                  { content: 'BEZA (RM)', styles: { halign: 'center', fontSize: 7 } }
-              ]
+              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }, { content: 'ADUAN', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }],
+              [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 7.5 } }, { content: aduanText, colSpan: 2, styles: { halign: 'center', fontSize: 7.5 } }],
+              ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'JUMLAH (RM)']
           ];
 
-          const footerHeight = 8;
-          const distBottom = 20;
-          const footerY = pageHeight - distBottom - footerHeight;
+          const footerHeight = 8; const distBottom = 20; const footerY = pageHeight - distBottom - footerHeight;
 
           // @ts-ignore
-          doc.autoTable({ 
-              head: complexHead, 
-              body: tableBody, 
-              theme: 'plain', 
-              startY: tableStartY, 
-              rowPageBreak: 'avoid', 
-              margin: { top: 15, left: 10, right: 10, bottom: distBottom + footerHeight + 5 }, 
-              showHead: 'everyPage',
-              styles: { fontSize: 7, cellPadding: 0.7, textColor: 0, lineColor: 0 },
-              headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold', lineColor: 0, lineWidth: 0.1 },
-              columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 15 }, 5: { cellWidth: 15 }, 6: { cellWidth: 15 }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 } },
+          doc.autoTable({
+              head: complexHead, body: tableBody, theme: 'plain', startY: tableStartY, rowPageBreak: 'avoid', showHead: 'everyPage', 
+              margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
+              styles: { fontSize: 7.5, cellPadding: 1.4, textColor: 0 },
+              headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
+              columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 13 }, 3: { cellWidth: 17 }, 4: { cellWidth: 25 }, 5: { cellWidth: 25 } },
               didDrawCell: (data) => {
-                  doc.setDrawColor(0, 0, 0);
-                  doc.setLineWidth(0.1);
-                  // Always draw vertical lines
+                  doc.setDrawColor(0); doc.setLineWidth(0.1);
                   doc.line(data.cell.x, data.cell.y, data.cell.x, data.cell.y + data.cell.height);
                   doc.line(data.cell.x + data.cell.width, data.cell.y, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
-
-                  // Draw horizontal lines ONLY for headers and the first row (BIL Title)
                   if (data.section === 'head' || (data.section === 'body' && data.row.index === 0)) {
                       doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
                       doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
@@ -1198,136 +1256,83 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
           // @ts-ignore
           const finalY = doc.lastAutoTable.finalY;
-
           if (finalY < footerY) {
-            const xPositions = [10, 18, 100, 110, 125, 140, 155, 170, 185, 200];
-            doc.setLineWidth(0.1);
-            doc.setDrawColor(0, 0, 0);
-            xPositions.forEach(x => {
-                doc.line(x, finalY, x, footerY);
-            });
+            const xPositions = [10, 20, 120, 133, 150, 175, 200];
+            doc.setLineWidth(0.1); doc.setDrawColor(0);
+            xPositions.forEach(x => { doc.line(x, finalY, x, footerY); });
           }
 
-          // Footer table for the Section Total
           // @ts-ignore
           doc.autoTable({
-            body: [[
-                { content: `JUMLAH`, styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [255, 255, 255] } },
-                { content: formatCurrency(billTotalOrig).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [245, 245, 245] } },
-                { content: '', styles: { lineWidth: 0.1 } },
-                { content: formatCurrency(billTotalLaras).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [255, 255, 255] } },
-                { content: formatCurrency(billTotalDiff).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1, fillColor: [255, 255, 255] } }
-            ]],
-            startY: footerY,
-            theme: 'grid',
-            styles: { fontSize: 7, cellPadding: 0.7, textColor: 0, lineColor: 0, lineWidth: 0.1 },
-            columnStyles: { 
-                0: { cellWidth: 130 }, // BIL + KETERANGAN + UNIT + KADAR + QTY(ASAL) sum = 8 + 82 + 10 + 15 + 15 = 130
-                1: { cellWidth: 15 },  // AMAUN (ASAL)
-                2: { cellWidth: 15 },  // QTY (LARAS) - empty
-                3: { cellWidth: 15 },  // AMAUN (LARAS)
-                4: { cellWidth: 15 }   // BEZA
-            },
-            margin: { left: 10, right: 10 },
-            showHead: false
+            body: [[ { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }, { content: billTotal === 0 ? '' : formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } } ]],
+            startY: footerY, theme: 'grid', styles: { fontSize: 7.5, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+            columnStyles: { 0: { cellWidth: 165 }, 1: { cellWidth: 25 } },
+            margin: { left: 10, right: 10 }, showHead: false
           });
-
           pelSectionIdx++;
       }
 
-      if (pelSectionIdx > 0) doc.addPage();
-      const grandTotalOriginal = originalData.reduce((sum, bill) => sum + bill.items.reduce((s, i) => s + (i.amount||0), 0), 0);
-      const grandTotalAdjusted = pelarasanData.reduce((sum, bill) => sum + bill.items.reduce((s, i) => s + (i.amount||0), 0), 0);
+      // --- SUMMARY PAGE ---
+      doc.addPage();
+      doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text("RINGKASAN PELARASAN BQ", pageWidth/2, 20, { align:"center" }); 
       
-      doc.setFont("helvetica","bold");
-      doc.setFontSize(10);
-      doc.text("RINGKASAN", pageWidth/2, 20, { align:"center" });
-      doc.setLineWidth(0.5);
-
-      const summaryTableBody = pelarasanData.map(bill => {
-          const origTotal = originalData.find(b => b.id === bill.id)?.items.reduce((s,i) => s+(i.amount||0), 0) || 0;
-          const larasTotal = bill.items.reduce((s,i) => s+(i.amount||0), 0);
-          const diffTotal = larasTotal - origTotal;
+      const summaryBody = pelarasanData.map(b => {
+          const orig = originalData.find(ob => ob.id === b.id)?.items.reduce((s, i) => s + (i.amount||0), 0) || 0;
+          const laras = b.items.reduce((s, i) => s + (i.amount||0), 0);
+          const diff = parseFloat((laras - orig).toFixed(2));
           return [
-              { content: bill.title, styles: { fontStyle: 'bold' } },
-              { content: formatCurrency(origTotal).replace('RM', '').trim(), styles: { halign: 'right' } },
-              { content: formatCurrency(larasTotal).replace('RM', '').trim(), styles: { halign: 'right' } },
-              { content: (diffTotal > 0 ? '+' : '') + formatCurrency(diffTotal).replace('RM', '').trim(), styles: { halign: 'right', fontStyle: 'bold', textColor: diffTotal > 0 ? [0, 100, 255] : (diffTotal < 0 ? [255, 0, 0] : [0,0,0]) } }
+              { content: b.title, styles: { fontStyle: 'bold' } },
+              { content: formatCurrency(orig).replace('RM', ''), styles: { halign: 'right' } },
+              { content: formatCurrency(laras).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } },
+              { content: Math.abs(diff) < 0.01 ? '-' : (diff > 0 ? '+' : '') + formatCurrency(diff).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold', textColor: diff > 0.01 ? [0, 80, 200] : (diff < -0.01 ? [200, 0, 0] : [0, 0, 0]) } }
           ];
       });
-      
-      summaryTableBody.push([
-          { content: 'JUMLAH', styles: { fontStyle: 'bold', halign: 'center' } as any },
-          { content: formatCurrency(grandTotalOriginal).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right' } as any },
-          { content: formatCurrency(grandTotalAdjusted).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right' } as any },
-          { content: formatCurrency(grandTotalAdjusted - grandTotalOriginal).replace('RM', '').trim(), styles: { fontStyle: 'bold', halign: 'right' } as any }
-      ]);
 
+      const grandTotalOrig = originalData.reduce((acc, g) => acc + g.items.reduce((s, i) => s + (i.amount||0), 0), 0);
+      const grandTotalLaras = pelarasanData.reduce((acc, g) => acc + g.items.reduce((s, i) => s + (i.amount||0), 0), 0);
+      const grandTotalDiff = parseFloat((grandTotalLaras - grandTotalOrig).toFixed(2));
+      
       // @ts-ignore
-      doc.autoTable({ startY: 30, head: [['KETERANGAN', 'ASAL (RM)', 'LARAS (RM)', 'BEZA (RM)']], body: summaryTableBody, theme: 'grid', styles: { fontSize: 7, cellPadding: 1.0, lineColor: 0, lineWidth: 0.1, textColor: 0 }, headStyles: { fillColor: 240, textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0, halign: 'center' }, columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 25 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 } }, margin: { left: 20, right: 20 } });
+      doc.autoTable({
+          startY: 30, head: [['KETERANGAN', 'ASAL (RM)', 'LARAS (RM)', 'BEZA (+/-)']], body: summaryBody,
+          foot: [[
+              { content: 'JUMLAH KESELURUHAN', styles: { halign: 'center' } }, 
+              { content: formatCurrency(grandTotalOrig).replace('RM', ''), styles: { halign: 'right' } }, 
+              { content: formatCurrency(grandTotalLaras).replace('RM', ''), styles: { halign: 'right' } },
+              { content: Math.abs(grandTotalDiff) < 0.01 ? '-' : (grandTotalDiff > 0 ? '+' : '') + formatCurrency(grandTotalDiff).replace('RM', ''), styles: { halign: 'right' } }
+          ]],
+          theme: 'grid', styles: { fontSize: 8, cellPadding: 1.5, lineColor: 0, lineWidth: 0.1 },
+          headStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' },
+          footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' },
+          margin: { left: 15, right: 15 }
+      });
 
       let y = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(8); 
-      doc.setFont("helvetica","bold"); 
-      doc.text("HARGA AKHIR", 20, y);
-      
-      const valBQAsal = Number(grandTotalOriginal) || 0;
-      const valBQLarasRaw = Number(grandTotalAdjusted) || 0;
-      const valBQLarasCapped = Math.min(valBQLarasRaw, valBQAsal);
-      const valExtra = Math.max(0, valBQLarasRaw - valBQAsal);
-      const valWT = Number(formData.wangTahanan) || 0;
-      const valLAD = Number(formData.ladAmount) || 0;
-      const valLoC = Number(formData.locAmount) || 0;
-
+      doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.text("HARGA AKHIR", 20, y);
+      const valBQAsal = Number(grandTotalOrig) || 0; const valBQLarasRaw = Number(grandTotalLaras) || 0;
+      const valBQLarasCapped = Math.min(valBQLarasRaw, valBQAsal); const valExtra = Math.max(0, valBQLarasRaw - valBQAsal);
+      const valWT = Number(formData.wangTahanan) || 0; const valLAD = Number(formData.ladAmount) || 0; const valLoC = Number(formData.locAmount) || 0;
       const finalPayment = valBQLarasCapped - valWT - valLAD - valLoC;
 
-      const referenceData = [
-          ["HARGA KONTRAK", formatCurrency(valBQAsal).replace('RM', '').trim()]
-      ];
-
       const calculationData = [
+          ["HARGA KONTRAK", formatCurrency(valBQAsal).replace('RM', '').trim()],
           ["HARGA PELARASAN", formatCurrency(valBQLarasRaw).replace('RM', '').trim()],
           ["WANG TAHANAN", valWT > 0 ? `-${formatCurrency(valWT).replace('RM', '').trim()}` : '-'],
           ["LAD", valLAD > 0 ? `-${formatCurrency(valLAD).replace('RM', '').trim()}` : '-'],
           ["LOC", valLoC > 0 ? `-${formatCurrency(valLoC).replace('RM', '').trim()}` : '-'],
-          [
-            { content:"JUMLAH DIBAYAR (HARGA AKHIR)", styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }, 
-            { content: formatCurrency(finalPayment).replace('RM', '').trim(), styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }
-          ]
+          [ { content:"JUMLAH DIBAYAR", styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }, { content: formatCurrency(finalPayment).replace('RM', '').trim(), styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } } ]
       ];
-
-      if (valExtra > 0) {
-          calculationData.splice(1, 0, ["PENAMBAHAN", `+${formatCurrency(valExtra).replace('RM', '').trim()}`]);
-      }
+      if (valExtra > 0) calculationData.splice(2, 0, ["PENAMBAHAN (HAKIKAT)", `+${formatCurrency(valExtra).replace('RM', '').trim()}`]);
 
       // @ts-ignore
       doc.autoTable({
-          startY: y + 5, 
-          body: referenceData,
-          theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 1.2, lineColor: 0, lineWidth: 0.1, textColor: [100, 100, 100] }, 
-          columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'right' } },
-          margin: { left: 20, right: 20 }
-      });
-
-      // @ts-ignore
-      doc.autoTable({
-          startY: doc.lastAutoTable.finalY + 2, 
-          body: calculationData,
-          theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 1.2, lineColor: 0, lineWidth: 0.1, textColor: 0 },
-          columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'right' } },
-          margin: { left: 20, right: 20 }
+          startY: y + 5, body: calculationData, theme: 'grid', styles: { fontSize: 8, cellPadding: 1.2, lineColor: 0, lineWidth: 0.1 },
+          columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'right' } }, margin: { left: 20, right: 20 }
       });
 
       y = doc.lastAutoTable.finalY + 20;
-      doc.setFontSize(8); doc.setFont("helvetica","bold");
-      doc.text("Disediakan oleh", 20, y);
-      doc.text("Disemak oleh,", 120, y);
-      y += 20;
-      doc.line(20, y, 80, y);
-      doc.line(120, y, 180, y);
-      
+      doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.text("Disediakan oleh", 20, y); doc.text("Disemak oleh,", 120, y); 
+      y += 20; doc.line(20, y, 80, y); doc.line(120, y, 180, y);
       doc.save(`BQ_Pelarasan_${formData.noFail || 'Draft'}.pdf`);
   };
 
@@ -1505,7 +1510,31 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                 </div>
             </div>
             <div className="rounded-[2rem] border border-slate-200 shadow-2xl bg-white/50 flex flex-col h-auto overflow-visible w-full">
-                <div className="bg-white/80 p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10"> <div className="flex items-center gap-4"> <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20"> <Edit className="w-6 h-6" /> </div> <div> <h3 className="font-bold text-slate-900 text-xl tracking-tight">Pelarasan BQ</h3> <p className="text-xs text-slate-500 font-medium">Bandingkan dengan kontrak asal & buat pelarasan</p> </div> </div> </div>
+                <div className="bg-white/80 p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10"> 
+                    <div className="flex items-center gap-4"> 
+                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20"> <Edit className="w-6 h-6" /> </div> 
+                        <div> <h3 className="font-bold text-slate-900 text-xl tracking-tight">Pelarasan BQ</h3> <p className="text-xs text-slate-500 font-medium">Bandingkan dengan kontrak asal & buat pelarasan</p> </div> 
+                    </div> 
+                    {!isGlobalReadOnly && (
+                        <div className="flex gap-2">
+                            {formData.bqDataPelarasan && formData.bqDataPelarasan.length > 0 ? (
+                                <button 
+                                    onClick={handleResetPelarasan}
+                                    className="flex items-center gap-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-slate-200 hover:border-red-200"
+                                >
+                                    <RefreshCw className="w-4 h-4" /> Reset Pelarasan
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={handleInitializePelarasan}
+                                    className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 transition-all"
+                                >
+                                    <Zap className="w-4 h-4" /> Mulakan Pelarasan
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
                 <div className="bg-slate-50/50"> <BQPelarasanEditor originalData={formData.bqData || []} pelarasanData={formData.bqDataPelarasan || []} onDataChange={handleBQPelarasanChange} projectData={formData as Project} isPrintView={false} locationRows={locationRows} globalCalculationsPelarasan={formData.globalCalculationsPelarasan || {}} onGlobalCalculationsPelarasanChange={handleGlobalCalculationsPelarasanChange} readOnly={isGlobalReadOnly} /> </div>
             </div>
           </div>
@@ -1528,10 +1557,33 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()} >
                 <button onClick={cancelConfirmation} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100"> <X className="w-5 h-5" /> </button>
                 <div className="flex flex-col items-center text-center pt-2">
-                   {confirmationState.type === 'back' ? ( <div className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mb-6 text-yellow-500"> <div className="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center"> <HelpCircle className="w-8 h-8 stroke-[1.5]" /> </div> </div> ) : ( <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500"> <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center"> <CheckCircle className="w-8 h-8 stroke-[1.5]" /> </div> </div> )}
-                   <h3 className="text-xl font-bold text-slate-900 mb-2 font-jakarta"> {confirmationState.type === 'back' ? 'Kembali ke Senarai?' : 'Simpan Projek?'} </h3>
-                   <p className="text-slate-500 mb-8 text-sm leading-relaxed px-4"> {confirmationState.type === 'back' ? 'Sebarang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu kembali?' : 'Adakah anda pasti mahu menyimpan maklumat projek ini? Pastikan semua maklumat adalah tepat.'} </p>
-                   <div className="flex gap-3 w-full"> <button onClick={cancelConfirmation} className="flex-1 py-3.5 px-4 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm hover:shadow-md" > Batal </button> <button onClick={confirmAction} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${ confirmationState.type === 'back' ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30' }`} > {confirmationState.type === 'back' ? 'Ya, Kembali' : 'Ya, Simpan'} </button> </div>
+                   {confirmationState.type === 'back' ? ( 
+                       <div className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mb-6 text-yellow-500"> 
+                           <div className="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center"> <HelpCircle className="w-8 h-8 stroke-[1.5]" /> </div> 
+                       </div> 
+                   ) : confirmationState.type === 'reset_pelarasan' ? (
+                       <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6 text-red-500"> 
+                           <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center"> <RefreshCw className="w-8 h-8 stroke-[1.5]" /> </div> 
+                       </div> 
+                   ) : ( 
+                       <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500"> 
+                           <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center"> <CheckCircle className="w-8 h-8 stroke-[1.5]" /> </div> 
+                       </div> 
+                   )}
+                   <h3 className="text-xl font-bold text-slate-900 mb-2 font-jakarta"> 
+                       {confirmationState.type === 'back' ? 'Kembali ke Senarai?' : confirmationState.type === 'reset_pelarasan' ? 'Set Semula Pelarasan?' : 'Simpan Projek?'} 
+                   </h3>
+                   <p className="text-slate-500 mb-8 text-sm leading-relaxed px-4"> 
+                       {confirmationState.type === 'back' ? 'Sebarang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu kembali?' : 
+                        confirmationState.type === 'reset_pelarasan' ? 'Semua maklumat pelarasan yang telah diisi akan dipadam dan diset semula mengikut BQ asal. Adakah anda pasti?' :
+                        'Adakah anda pasti mahu menyimpan maklumat projek ini? Pastikan semua maklumat adalah tepat.'} 
+                   </p>
+                   <div className="flex gap-3 w-full"> 
+                       <button onClick={cancelConfirmation} className="flex-1 py-3.5 px-4 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm hover:shadow-md" > Batal </button> 
+                       <button onClick={confirmAction} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${ confirmationState.type === 'back' ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' : confirmationState.type === 'reset_pelarasan' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30' }`} > 
+                           {confirmationState.type === 'back' ? 'Ya, Kembali' : confirmationState.type === 'reset_pelarasan' ? 'Ya, Set Semula' : 'Ya, Simpan'} 
+                       </button> 
+                   </div>
                 </div>
             </div>
         </div>,
