@@ -172,6 +172,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [newSebutharga, setNewSebutharga] = useState('');
   const [meetingDate, setMeetingDate] = useState('');
+  const [meetingNumber, setMeetingNumber] = useState('');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [companyToEdit, setCompanyToEdit] = useState<CompanyDetail | null>(null);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
@@ -213,6 +214,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         setVotes(loadedVotes);
         setSebuthargaNumbers(loadedSH);
         setMeetingDate(settings.meeting_date || '');
+        setMeetingNumber(settings.meeting_number || '');
 
         setLibraryGroups(library);
         const categories = Array.from(new Set(library.map(g => g.category)));
@@ -341,9 +343,14 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
   const handleSaveSettings = async () => {
       setIsSavingSettings(true);
       try {
-        await supabaseService.updateSettings(selectedYear, { meeting_date: meetingDate });
-      } catch (err) {
+        await supabaseService.updateSettings(selectedYear, { 
+            meeting_date: meetingDate,
+            meeting_number: meetingNumber
+        });
+        // Optional: you could add a success alert here if needed
+      } catch (err: any) {
         console.error('Failed to save settings:', err);
+        alert('Ralat menyimpan: ' + (err.message || 'Sila semak konsol'));
       } finally {
         setIsSavingSettings(false);
       }
@@ -594,9 +601,26 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 <div><h3 className="text-xl font-bold text-slate-900">Tetapan Mesyuarat</h3><div className="flex items-center gap-2 mt-1"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200">Tahun {selectedYear}</span></div></div>
             </div>
             <div className="relative z-10 mt-2">
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-jakarta pl-1">Tarikh Sidang Jawatankuasa Sebutharga</label>
-                <div className="flex flex-col md:flex-row gap-4 items-stretch"><div className="flex-1"><DatePickerInput value={meetingDate} onChange={setMeetingDate} placeholder="DD/MM/YYYY" /></div><button onClick={handleSaveSettings} disabled={isSavingSettings} className="h-14 px-8 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg transition-colors font-bold shadow-lg shadow-orange-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0 md:w-auto w-full text-base">{isSavingSettings ? 'Menyimpan...' : 'Simpan'}</button></div>
-                <p className="text-[11px] text-slate-400 mt-3 pl-1 italic flex items-center gap-1.5"><Info className="w-3.5 h-3.5" />Tarikh bagi dokumen "Ulasan Pengarah".</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-jakarta pl-1">Bil. Mesyuarat (Contoh: 1/2025)</label>
+                        <input 
+                            type="text" 
+                            value={meetingNumber} 
+                            onChange={(e) => setMeetingNumber(e.target.value)}
+                            className="w-full h-14 px-4 py-3 rounded-lg bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-colors text-slate-900 font-bold"
+                            placeholder="Bil. Mesyuarat (e.g., 1/2025)"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-jakarta pl-1">Tarikh Sidang Jawatankuasa</label>
+                        <DatePickerInput value={meetingDate} onChange={setMeetingDate} placeholder="DD/MM/YYYY" />
+                    </div>
+                </div>
+                <button onClick={handleSaveSettings} disabled={isSavingSettings} className="h-14 px-8 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg transition-colors font-bold shadow-lg shadow-orange-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full text-base">
+                    {isSavingSettings ? 'Menyimpan...' : 'Simpan Tetapan Mesyuarat'}
+                </button>
+                <p className="text-[11px] text-slate-400 mt-3 pl-1 italic flex items-center gap-1.5"><Info className="w-3.5 h-3.5" />Maklumat ini akan dipaparkan pada dokumen "Ulasan Pengarah".</p>
             </div>
         </div>
 

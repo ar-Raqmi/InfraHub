@@ -663,6 +663,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       const formattedDate = `${monthNames[dateObj.getMonth()]} ${year}`;
       const settings = await supabaseService.getSettings(year);
       const meetingDate = settings.meeting_date || '.........................';
+      const meetingNumber = settings.meeting_number || 'XXXX';
 
 // --- PAGE 1: COVER LETTER ---
       doc.setFont("helvetica","bold"); 
@@ -781,7 +782,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       doc.setFontSize(9); doc.text("Anggaran Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8; doc.text("Tempoh Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8; doc.text("Lantikan", 25, y); doc.text(": ___________________________________________________________", 60, y);
       y = 125; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);
       y = 155; doc.setFontSize(11); doc.text("ULASAN PENGARAH", 25, y); y += 10; doc.setFontSize(10.5); doc.setFont("helvetica","normal");
-      const ulasanText = `Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) yang bersidang pada ${meetingDate} dengan rotasi bagi syarikat :-`;
+      const ulasanText = `Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) Bil. ${meetingNumber} yang bersidang pada ${meetingDate} dengan rotasi bagi syarikat :-`;
       const splitUlasan = doc.splitTextToSize(ulasanText, 160); doc.text(splitUlasan, 25, y);
       y += 40; doc.line(25, y, 185, y); y += 15; doc.line(25, y, 185, y);
       y = 250; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);

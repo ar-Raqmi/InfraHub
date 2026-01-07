@@ -419,12 +419,11 @@ class SupabaseService {
     }
     
     private async updateSystemSettings(year: number, updates: any) {
-        const { data: existing } = await supabase.from('system_settings').select('*').eq('year', year).single();
-        if (existing) {
-             await supabase.from('system_settings').update(updates).eq('year', year);
-        } else {
-             await supabase.from('system_settings').insert({ year, ...updates });
-        }
+        const { error } = await supabase
+            .from('system_settings')
+            .upsert({ year, ...updates }, { onConflict: 'year' });
+        
+        if (error) throw error;
     }
 
     async getCompanies(year: number): Promise<string[]> {
