@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { createItem, createHeader } from '../data/bqPresets';
-import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool } from 'lucide-react';
+import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, Search } from 'lucide-react';
 
 interface BQEditorProps {
   initialData?: BQGroup[];
@@ -183,7 +183,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+      const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+      const [librarySearchTerm, setLibrarySearchTerm] = useState('');
+  
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
 
   const [selectedTemplate, setSelectedTemplate] = useState<BQTemplateDefinition | null>(null);
@@ -334,6 +336,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
       if (readOnly) return;
       const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
       if (categories.length > 0) setSelectedCategory(categories[0]);
+      setLibrarySearchTerm('');
       setIsAddItemModalOpen(true);
   };
 
@@ -1051,7 +1054,13 @@ const BQEditor: React.FC<BQEditorProps> = ({
   });
   const sortedLocationIds = Array.from(new Set(bills.filter(b => b.locationId && !b.title.includes('PERMULAAN') && !b.id.includes('permulaan')).map(b => b.locationId!))) as string[];
   const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
-  const libraryGroups = selectedCategory ? bqLibrary.filter(g => g.category === selectedCategory) : [];
+  const libraryGroups = bqLibrary
+    .filter(g => {
+        if (librarySearchTerm) {
+            return g.title.toLowerCase().includes(librarySearchTerm.toLowerCase());
+        }
+        return !selectedCategory || g.category === selectedCategory;
+    });
 
   if (isPrintView) return null;
 
@@ -1235,7 +1244,30 @@ const BQEditor: React.FC<BQEditorProps> = ({
                       
                       <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
                           <div className="space-y-6">
-                              {libraryGroups.filter(g => g.category === selectedCategory).map(group => (
+                              {/* Search Bar */}
+                              <div className="sticky top-0 bg-white z-10 pb-4 mb-2 border-b border-slate-50">
+                                  <div className="relative group">
+                                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                      <input 
+                                          type="text" 
+                                          placeholder="Cari item (cth: Capping Beam, Longkang)..." 
+                                          value={librarySearchTerm}
+                                          onChange={(e) => setLibrarySearchTerm(e.target.value)}
+                                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                                      />
+                                      {librarySearchTerm && (
+                                          <button 
+                                              onClick={() => setLibrarySearchTerm('')}
+                                              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 rounded-full text-slate-400 transition-colors"
+                                          >
+                                              <X className="w-3 h-3" />
+                                          </button>
+                                      )}
+                                  </div>
+                              </div>
+
+                              {libraryGroups.length > 0 ? (
+                                libraryGroups.map(group => (
                                   <div key={group.id} className="space-y-3"><h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100  pb-1">{group.title}</h4>
                                       <div className="grid grid-cols-1 gap-2">
                                           {group.items.map(item => (
@@ -1257,7 +1289,14 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                           ))}
                                       </div>
                                   </div>
-                              ))}
+                                ))
+                              ) : (
+                                <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                                    <Search className="w-12 h-12 mb-4 opacity-10" />
+                                    <p className="text-sm font-medium">Tiada item dijumpai untuk "{librarySearchTerm}"</p>
+                                    <button onClick={() => setLibrarySearchTerm('')} className="mt-2 text-xs text-emerald-600 font-bold hover:underline">Kosongkan carian</button>
+                                </div>
+                              )}
                           </div>
                       </div>
                   </div>
