@@ -83,6 +83,7 @@ export interface BQTemplateDefinition {
     bills: BQTemplateBillDefinition[];
     // Legacy support
     groupRefs: string[]; 
+    orderIndex?: number;
 }
 
 export interface User {

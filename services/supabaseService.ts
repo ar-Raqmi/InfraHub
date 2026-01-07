@@ -168,17 +168,21 @@ class SupabaseService {
     }
 
     async getTemplates(): Promise<BQTemplateDefinition[]> {
-        const { data, error } = await supabase.from('templates').select('*');
+        const { data, error } = await supabase
+            .from('templates')
+            .select('*')
+            .order('order_index', { ascending: true });
         if (error) throw error;
         return data?.map(t => ({
             ...t,
-            groupRefs: t.group_refs
+            groupRefs: t.group_refs,
+            orderIndex: t.order_index
         })) || [];
     }
 
     async saveTemplates(templates: BQTemplateDefinition[]) {
         const { error } = await supabase.from('templates').upsert(
-            templates.map(t => ({
+            templates.map((t, idx) => ({
                 id: t.id,
                 key: t.key,
                 title: t.title,
@@ -186,7 +190,8 @@ class SupabaseService {
                 icon: t.icon,
                 color: t.color,
                 bills: t.bills,
-                group_refs: t.groupRefs
+                group_refs: t.groupRefs,
+                order_index: idx
             }))
         );
         if (error) throw error;
