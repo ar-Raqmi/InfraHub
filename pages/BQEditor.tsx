@@ -12,7 +12,7 @@ interface BQEditorProps {
   isPrintView?: boolean;
   onPreviewCostChange?: (cost: number) => void;
   locationRows: ProjectLocation[];
-  onLocationDimensionsChange?: (locationId: string, dims: GlobalDimensions) => void;
+  onLocationDimensionsChange?: (locationId: string, dims: GlobalDimensions[]) => void;
   onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
   readOnly?: boolean;
 }
@@ -185,12 +185,13 @@ const BQEditor: React.FC<BQEditorProps> = ({
   const [step, setStep] = useState(1);
   const [templateError, setTemplateError] = useState(false);
 
-  const [localDims, setLocalDims] = useState<GlobalDimensions>({ length: 0, width: 0, depth: 0 });
+  const [localDimsArray, setLocalDimsArray] = useState<GlobalDimensions[]>([]);
   const [isDimsDirty, setIsDimsDirty] = useState(false);
 
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isGlobalLinkModalOpen, setIsGlobalLinkModalOpen] = useState<{itemId: string, partId: string} | null>(null);
   const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateSubtitle, setNewTemplateSubtitle] = useState('');
@@ -247,12 +248,17 @@ const BQEditor: React.FC<BQEditorProps> = ({
       if (!activeBillId) return;
       const bill = bills.find(b => b.id === activeBillId);
       if (bill && bill.calculationId && projectData.globalCalculations?.[bill.calculationId]) {
-          setLocalDims(projectData.globalCalculations[bill.calculationId]);
+          const rawDims = projectData.globalCalculations[bill.calculationId];
+          if (Array.isArray(rawDims)) {
+              setLocalDimsArray(rawDims);
+          } else {
+              setLocalDimsArray([rawDims]);
+          }
       } else if (bill && bill.locationId && projectData.locationDimensions?.[bill.locationId]) {
           // Fallback for old data: if bill has no globalCalc but location has dims, use them as initial
-          setLocalDims(projectData.locationDimensions[bill.locationId]);
+          setLocalDimsArray([projectData.locationDimensions[bill.locationId]]);
       } else {
-          setLocalDims({ length: 0, width: 0, depth: 0 });
+          setLocalDimsArray([{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]);
       }
       setIsDimsDirty(false);
   }, [activeBillId, bills, projectData.globalCalculations, projectData.locationDimensions]);
@@ -463,17 +469,31 @@ const BQEditor: React.FC<BQEditorProps> = ({
               itemsToAdd.push(newItem); 
           }
 
-          const d = localDims;
-          if (d) {
+          const dArray = localDimsArray;
+          if (dArray.length > 0) {
                itemsToAdd.forEach(newItem => {
                    if (newItem.type === 'ITEM' && newItem.calculationParts && newItem.isGlobal) {
-                       newItem.calculationParts = newItem.calculationParts?.map(part => ({
-                            ...part,
-                            length: part.hasLength ? d.length : part.length,
-                            width: part.hasWidth ? d.width : part.width,
-                            depth: part.hasDepth ? d.depth : part.depth
+                       // Create a part for EACH global dimension
+                       const basePart = newItem.calculationParts[0] || { 
+                           id: Math.random().toString(36).substr(2, 9), 
+                           label: '', 
+                           length: 0, width: 0, depth: 0, multiplier: 1, 
+                           hasLength: false, hasWidth: false, hasDepth: false 
+                       };
+                       
+                       const newParts: CalculationPart[] = dArray.map((gDim, idx) => ({
+                            ...basePart,
+                            id: `${basePart.id}-${idx}`,
+                            label: gDim.label || `Kiraan ${idx + 1}`,
+                            isGlobal: true,
+                            globalIndex: idx,
+                            length: basePart.hasLength ? gDim.length : basePart.length,
+                            width: basePart.hasWidth ? gDim.width : basePart.width,
+                            depth: basePart.hasDepth ? gDim.depth : basePart.depth
                        }));
-                       const qty = recalculateQtyFromParts(newItem.calculationParts || []);
+
+                       newItem.calculationParts = newParts;
+                       const qty = recalculateQtyFromParts(newParts);
                        newItem.qty = parseFloat(qty.toFixed(2));
                        newItem.amount = parseFloat((qty * newItem.rate).toFixed(2));
                    }
@@ -486,13 +506,21 @@ const BQEditor: React.FC<BQEditorProps> = ({
       if (onShowToast) onShowToast(`Item ditambah`, 'success');
   };
   
-  const updateBillsWithNewDimensions = (calculationId: string, newDims: GlobalDimensions) => {
+  const updateBillsWithNewDimensions = (calculationId: string, newDimsArray: GlobalDimensions[]) => {
       const updatedBills = bills.map(bill => {
           if (bill.calculationId !== calculationId) return bill;
           const updatedItems = bill.items.map(item => {
-              if (!item.isGlobal || !item.calculationParts) return item;
+              if (!item.calculationParts) return item;
               const newParts = item.calculationParts.map(part => {
-                  return { ...part, length: part.hasLength ? newDims.length : part.length, width: part.hasWidth ? newDims.width : part.width, depth: part.hasDepth ? newDims.depth : part.depth };
+                  if (!part.isGlobal || part.globalIndex === undefined) return part;
+                  const gDim = newDimsArray[part.globalIndex];
+                  if (!gDim) return part;
+                  return { 
+                      ...part, 
+                      length: part.hasLength ? gDim.length : part.length, 
+                      width: part.hasWidth ? gDim.width : part.width, 
+                      depth: part.hasDepth ? gDim.depth : part.depth 
+                  };
               });
               const newQty = recalculateQtyFromParts(newParts);
               return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
@@ -506,8 +534,8 @@ const BQEditor: React.FC<BQEditorProps> = ({
       if (readOnly) return;
       const bill = bills.find(b => b.id === activeBillId);
       if (!bill || !bill.calculationId) return;
-      if (onLocationDimensionsChange) { onLocationDimensionsChange(bill.calculationId, localDims); }
-      updateBillsWithNewDimensions(bill.calculationId, localDims);
+      if (onLocationDimensionsChange) { onLocationDimensionsChange(bill.calculationId, localDimsArray as any); }
+      updateBillsWithNewDimensions(bill.calculationId, localDimsArray);
       setIsDimsDirty(false);
   };
 
@@ -522,16 +550,25 @@ const BQEditor: React.FC<BQEditorProps> = ({
           if (b.id !== activeBillId) return b;
           const newBill = { ...b, calculationId: targetCalcId };
           // Immediately sync dimensions if target already has them
-          const targetDims = projectData.globalCalculations?.[targetCalcId] || { length: 0, width: 0, depth: 0 };
-          setLocalDims(targetDims);
+          const rawTargetDims = projectData.globalCalculations?.[targetCalcId] || { length: 0, width: 0, depth: 0 };
+          const targetDimsArray = Array.isArray(rawTargetDims) ? rawTargetDims : [rawTargetDims];
+          setLocalDimsArray(targetDimsArray);
+          const firstDim = targetDimsArray[0];
           const updatedItems = newBill.items.map(item => {
               if (!item.isGlobal || !item.calculationParts) return item;
-              const newParts = item.calculationParts.map(part => ({
-                  ...part,
-                  length: part.hasLength ? targetDims.length : part.length,
-                  width: part.hasWidth ? targetDims.width : part.width,
-                  depth: part.hasDepth ? targetDims.depth : part.depth
-              }));
+              const newParts = item.calculationParts.map(part => {
+                  // Default link to index 0 if it was global but didn't have globalIndex
+                  const gIndex = part.globalIndex !== undefined ? part.globalIndex : 0;
+                  const gDim = targetDimsArray[gIndex] || firstDim;
+                  return {
+                      ...part,
+                      isGlobal: true,
+                      globalIndex: gIndex,
+                      length: part.hasLength ? gDim.length : part.length,
+                      width: part.hasWidth ? gDim.width : part.width,
+                      depth: part.hasDepth ? gDim.depth : part.depth
+                  };
+              });
               const newQty = recalculateQtyFromParts(newParts);
               return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
           });
@@ -560,7 +597,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
           tpl.bills.forEach((billDef, bIdx) => {
               const billCalcId = `calc-${Math.random().toString(36).substr(2, 9)}`;
               if (isMultistep && templateLocation) {
-                  if (onLocationDimensionsChange) onLocationDimensionsChange(billCalcId, templateDims);
+                  if (onLocationDimensionsChange) onLocationDimensionsChange(billCalcId, [templateDims]);
               }
 
               const bill: BQGroup = { 
@@ -668,7 +705,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
           });
       } else if (tpl.key === 'EMPTY') { 
           const billCalcId = `calc-${Math.random().toString(36).substr(2, 9)}`;
-          if (templateLocation && onLocationDimensionsChange) onLocationDimensionsChange(billCalcId, templateDims);
+          if (templateLocation && onLocationDimensionsChange) onLocationDimensionsChange(billCalcId, [templateDims]);
           newGroups.push({ id: `bil-${Date.now()}`, calculationId: billCalcId, title: `BIL NO. 999 - BUTIRAN KERJA-KERJA`, locationId: templateLocation, items: [] }); 
       }
       const newBills = [...bills, ...newGroups];
@@ -826,7 +863,14 @@ const BQEditor: React.FC<BQEditorProps> = ({
           return { ...bill, items: bill.items.map(item => {
                   if (item.id !== itemId) return item;
                   const newPart: CalculationPart = { id: Math.random().toString(36).substr(2, 9), label: '', length: 0, width: 0, depth: 0, multiplier: 1, hasLength: false, hasWidth: false, hasDepth: false };
-                  if (item.isGlobal) { newPart.length = localDims.length; newPart.width = localDims.width; newPart.depth = localDims.depth; }
+                  if (item.isGlobal && localDimsArray.length > 0) { 
+                      const gDim = localDimsArray[0];
+                      newPart.isGlobal = true;
+                      newPart.globalIndex = 0;
+                      newPart.length = gDim.length; 
+                      newPart.width = gDim.width; 
+                      newPart.depth = gDim.depth; 
+                  }
                   const existingParts = item.calculationParts || [];
                   if (existingParts.length > 0) { const last = existingParts[existingParts.length - 1]; newPart.hasLength = last.hasLength; newPart.hasWidth = last.hasWidth; newPart.hasDepth = last.hasDepth; }
                   const newParts = [...existingParts, newPart];
@@ -857,11 +901,18 @@ const BQEditor: React.FC<BQEditorProps> = ({
           if (bill.id !== billId) return bill;
           return { ...bill, items: bill.items.map(item => {
                   if (item.id !== itemId) return item;
-                  if (item.isGlobal) {
-                      if (updates.hasLength === true) updates.length = localDims.length;
-                      if (updates.hasWidth === true) updates.width = localDims.width;
-                      if (updates.hasDepth === true) updates.depth = localDims.depth;
+                  const existingParts = item.calculationParts || [];
+                  const partToUpdate = existingParts.find(p => p.id === partId);
+                  
+                  if (partToUpdate?.isGlobal && partToUpdate.globalIndex !== undefined) {
+                      const gDim = localDimsArray[partToUpdate.globalIndex];
+                      if (gDim) {
+                          if (updates.hasLength === true) updates.length = gDim.length;
+                          if (updates.hasWidth === true) updates.width = gDim.width;
+                          if (updates.hasDepth === true) updates.depth = gDim.depth;
+                      }
                   }
+
                   let newItemUnit = item.unit; 
                   const newParts = (item.calculationParts || []).map(p => {
                       if (p.id !== partId) return p;
@@ -910,11 +961,22 @@ const BQEditor: React.FC<BQEditorProps> = ({
                 const newGlobal = !item.isGlobal;
                 let newItems = { ...item, isGlobal: newGlobal };
                 if (newGlobal && item.calculationParts) {
-                     const newParts = item.calculationParts.map(part => ({ ...part, length: part.hasLength ? localDims.length : part.length, width: part.hasWidth ? localDims.width : part.width, depth: part.hasDepth ? localDims.depth : part.depth }));
+                     const firstDim = localDimsArray[0] || { length: 0, width: 0, depth: 0 };
+                     const newParts = item.calculationParts.map(part => ({ 
+                         ...part, 
+                         isGlobal: true,
+                         globalIndex: 0,
+                         length: part.hasLength ? firstDim.length : part.length, 
+                         width: part.hasWidth ? firstDim.width : part.width, 
+                         depth: part.hasDepth ? firstDim.depth : part.depth 
+                     }));
                      newItems.calculationParts = newParts;
                      const qty = recalculateQtyFromParts(newParts);
                      newItems.qty = parseFloat(qty.toFixed(2));
                      newItems.amount = parseFloat((qty * newItems.rate).toFixed(2));
+                } else if (!newGlobal && item.calculationParts) {
+                    const newParts = item.calculationParts.map(part => ({ ...part, isGlobal: false, globalIndex: undefined }));
+                    newItems.calculationParts = newParts;
                 }
                 return newItems;
             })
@@ -988,11 +1050,23 @@ const BQEditor: React.FC<BQEditorProps> = ({
   };
 
   const renderCalculationPartRow = (bill: BQGroup, item: BQItem, part: CalculationPart, index: number) => {
-      const isGlobal = item.isGlobal;
+      const isGlobal = part.isGlobal;
       const inputClassBase ="w-12 outline-none text-right font-bold text-sm transition-colors";
       const inputClass = isGlobal || readOnly ? `${inputClassBase} bg-transparent text-slate-400 cursor-not-allowed` : `${inputClassBase} bg-emerald-50/50  text-emerald-700  border-b border-emerald-300  rounded-sm`;
+      
+      const gDimLabel = isGlobal && part.globalIndex !== undefined ? (localDimsArray[part.globalIndex]?.label || `Kiraan ${part.globalIndex + 1}`) : '';
+
       return (
-        <div key={part.id} className="flex flex-wrap items-center gap-2 text-xs bg-white  p-1.5 rounded-lg border border-slate-200  mb-1 last:mb-0">
+        <div key={part.id} className={`flex flex-wrap items-center gap-2 text-xs p-1.5 rounded-lg border mb-1 last:mb-0 transition-colors ${isGlobal ? 'bg-emerald-50/30 border-emerald-100' : 'bg-white border-slate-200'}`}>
+             {!readOnly && (
+                 <button 
+                    onClick={() => setIsGlobalLinkModalOpen({ itemId: item.id, partId: part.id })}
+                    className={`p-1 rounded transition-colors ${isGlobal ? 'text-emerald-600 bg-emerald-100' : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50'}`}
+                    title={isGlobal ? `Terhubung dengan: ${gDimLabel}` : "Hubungkan dengan Global Calculation"}
+                 >
+                    {isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}
+                 </button>
+             )}
              <input type="text" value={part.label || ''} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { label: e.target.value })} disabled={readOnly} className="w-16 bg-transparent border-b border-dashed border-slate-300  focus:border-emerald-500 outline-none text-slate-500 placeholder-slate-400 text-[10px]" placeholder="Label" />
             <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasLength ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasLength} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasLength: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">P</span>{part.hasLength && (<input type="number" value={part.length || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { length: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
             {part.hasLength && (part.hasWidth || part.hasDepth) && <span className="text-slate-300">×</span>}
@@ -1004,6 +1078,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
             
             {/* Individual Row Result with Full Breakdown */}
             <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
+                {isGlobal && <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter bg-emerald-50 px-1 rounded">{gDimLabel}</span>}
                 <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
                 <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
                     {(() => {
@@ -1217,6 +1292,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                         <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase"><Ruler className="w-4 h-4" />Global Calculation</div>
                                         {!readOnly && (
                                             <div className="flex items-center gap-1">
+                                                <button onClick={() => {
+                                                    setLocalDimsArray([...localDimsArray, { length: 0, width: 0, depth: 0, label: `Kiraan ${localDimsArray.length + 1}` }]);
+                                                    setIsDimsDirty(true);
+                                                }} className="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Tambah Global Calculation">
+                                                    <PlusCircle className="w-3.5 h-3.5" />
+                                                </button>
                                                 <button onClick={() => setIsLinkModalOpen(true)} className="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
                                                     <Link className="w-3.5 h-3.5" />
                                                 </button>
@@ -1228,11 +1309,40 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                                        <div className="flex items-center bg-white  rounded-lg border border-slate-200  px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">P</span><DimensionInput value={localDims.length || 0} onChange={val => { setLocalDims({...localDims, length: val}); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                        <div className="flex items-center bg-white  rounded-lg border border-slate-200  px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">L</span><DimensionInput value={localDims.width || 0} onChange={val => { setLocalDims({...localDims, width: val}); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                        <div className="flex items-center bg-white  rounded-lg border border-slate-200  px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">T</span><DimensionInput value={localDims.depth || 0} onChange={val => { setLocalDims({...localDims, depth: val}); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                        {isDimsDirty && !readOnly && (<button onClick={handleSaveGlobalDims} className="ml-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" ><Save className="w-3 h-3" /> Kemaskini</button>)}
+                                    <div className="flex flex-col gap-2 w-full sm:w-auto">
+                                        {localDimsArray.map((dims, idx) => (
+                                            <div key={idx} className="flex flex-wrap items-center gap-2">
+                                                <input 
+                                                    value={dims.label || ''} 
+                                                    onChange={e => {
+                                                        const newArray = [...localDimsArray];
+                                                        newArray[idx] = { ...dims, label: e.target.value };
+                                                        setLocalDimsArray(newArray);
+                                                        setIsDimsDirty(true);
+                                                    }}
+                                                    placeholder="Label"
+                                                    disabled={readOnly}
+                                                    className="text-[10px] font-bold text-slate-400 bg-transparent border-b border-dashed border-slate-200 outline-none w-20"
+                                                />
+                                                <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">P</span><DimensionInput value={dims.length || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, length: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
+                                                <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">L</span><DimensionInput value={dims.width || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, width: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
+                                                <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">T</span><DimensionInput value={dims.depth || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, depth: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
+                                                {!readOnly && localDimsArray.length > 1 && (
+                                                    <button onClick={() => {
+                                                        const newArray = localDimsArray.filter((_, i) => i !== idx);
+                                                        setLocalDimsArray(newArray);
+                                                        setIsDimsDirty(true);
+                                                    }} className="p-1 text-slate-300 hover:text-red-500">
+                                                        <MinusCircle className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {isDimsDirty && !readOnly && (
+                                            <button onClick={handleSaveGlobalDims} className="mt-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" >
+                                                <Save className="w-3 h-3" /> Kemaskini Semua
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
@@ -1376,18 +1486,18 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                   <div className="flex justify-between items-start gap-4">
                                                       <div className="flex-1 min-w-0"><p className="text-sm font-bold text-slate-800  leading-tight">{item.description}</p>
                                                           <div className="mt-2 flex gap-2 flex-wrap">
-                                                              {(!item.variants || item.variants.length === 0) ? (
+                                                              {(!(item as any).variants || (item as any).variants.length === 0) ? (
                                                                   <button 
-                                                                    onClick={() => handleLibraryAddItem(item.sourceGroupId || group.id, item.id)} 
+                                                                    onClick={() => handleLibraryAddItem((item as any).sourceGroupId || group.id, item.id)} 
                                                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
                                                                   >
                                                                     <Plus className="w-3.5 h-3.5" /> Pilih Item
                                                                   </button>
                                                               ) : (
-                                                                  item.variants.map(v => (
+                                                                  (item as any).variants.map((v: any) => (
                                                                       <button 
                                                                         key={v.id} 
-                                                                        onClick={() => handleLibraryAddItem(item.sourceGroupId || group.id, item.id, v.id)} 
+                                                                        onClick={() => handleLibraryAddItem((item as any).sourceGroupId || group.id, item.id, v.id)} 
                                                                         className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
                                                                       >
                                                                         <Plus className="w-3.5 h-3.5" /> {v.label}
@@ -1506,6 +1616,57 @@ const BQEditor: React.FC<BQEditorProps> = ({
                   </div>
                   
                   <button onClick={() => setIsLinkModalOpen(false)} className="w-full py-3 bg-slate-100  text-slate-600  font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                      Batal
+                  </button>
+              </div>
+          </div>,
+          document.body
+        )}
+
+        {isGlobalLinkModalOpen && createPortal(
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 animate-fade-in" onClick={() => setIsGlobalLinkModalOpen(null)}>
+              <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-sm w-full p-8 border border-slate-200 animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                  <div className="mb-6">
+                      <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                          <Link className="w-5 h-5 text-emerald-600" />
+                          Pilih Global Calculation
+                      </h3>
+                      <p className="text-sm text-slate-500 mt-1">Hubungkan baris kiraan ini dengan salah satu set Global Calculation.</p>
+                  </div>
+                  <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar mb-6">
+                      <button 
+                        onClick={() => {
+                            updateCalculationPart(activeBillId!, isGlobalLinkModalOpen.itemId, isGlobalLinkModalOpen.partId, { isGlobal: false, globalIndex: undefined });
+                            setIsGlobalLinkModalOpen(null);
+                        }}
+                        className="w-full text-left p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-red-500 hover:bg-red-50 transition-all group flex items-center justify-between"
+                      >
+                          <span className="font-bold text-slate-700">Tiada Hubungan (Manual)</span>
+                          <Unlink className="w-4 h-4 text-slate-300 group-hover:text-red-500" />
+                      </button>
+                      
+                      <div className="h-px bg-slate-100 my-2"></div>
+                      
+                      {localDimsArray.map((dims, idx) => (
+                          <button 
+                            key={idx} 
+                            onClick={() => {
+                                updateCalculationPart(activeBillId!, isGlobalLinkModalOpen.itemId, isGlobalLinkModalOpen.partId, { isGlobal: true, globalIndex: idx, length: dims.length, width: dims.width, depth: dims.depth });
+                                setIsGlobalLinkModalOpen(null);
+                            }} 
+                            className="w-full text-left p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-emerald-500 hover:bg-emerald-50 transition-all group flex items-center justify-between"
+                          >
+                              <div>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">Set Global {idx + 1}</div>
+                                <div className="font-bold text-slate-700">{dims.label || `Kiraan ${idx + 1}`}</div>
+                                <div className="text-[10px] text-slate-400 mt-1 font-mono">P:{dims.length} L:{dims.width} T:{dims.depth}</div>
+                              </div>
+                              <Link className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                          </button>
+                      ))}
+                  </div>
+                  <button onClick={() => setIsGlobalLinkModalOpen(null)} className="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
                       Batal
                   </button>
               </div>

@@ -132,6 +132,7 @@ export interface GlobalDimensions {
   length: number; // P
   width: number;  // L
   depth: number;  // T
+  label?: string; // NEW: Label for this dimension group
 }
 
 export interface CalculationPart {
@@ -148,6 +149,10 @@ export interface CalculationPart {
   width: number;
   depth: number;
   multiplier: number; // Factor
+
+  // NEW: Global linking
+  isGlobal?: boolean;
+  globalIndex?: number; // Index in the globalCalculations array
 }
 
 export interface BQItem {
@@ -283,8 +288,8 @@ export interface Project {
   locationDimensionsPelarasan?: Record<string, GlobalDimensions>; // NEW: Map location string to dims (Pelarasan)
   
   // NEW DIMENSIONS (BINDED BY BIL NO / CALCULATION ID)
-  globalCalculations?: Record<string, GlobalDimensions>;
-  globalCalculationsPelarasan?: Record<string, GlobalDimensions>;
+  globalCalculations?: Record<string, GlobalDimensions | GlobalDimensions[]>;
+  globalCalculationsPelarasan?: Record<string, GlobalDimensions | GlobalDimensions[]>;
 
   // AKU JANJI
   akuJanjiMonth?: string; // The selected month string e.g. "November"

@@ -421,7 +421,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     const clonedBQData: BQGroup[] = JSON.parse(JSON.stringify(formData.bqData));
     
     // Also clone global calculations if they exist
-    const clonedGlobalCalculations: Record<string, GlobalDimensions> = formData.globalCalculations 
+    const clonedGlobalCalculations = formData.globalCalculations 
         ? JSON.parse(JSON.stringify(formData.globalCalculations)) 
         : {};
 
@@ -601,26 +601,24 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
 
-  const handleLocationDimensionsChange = (calculationId: string, dims: GlobalDimensions) => {
-    setFormData(prev => ({
-      ...prev, 
-      globalCalculations: {
-        ...(prev.globalCalculations || {}), 
-        [calculationId]: dims 
-      } 
-    }));
-  };
-
-  const handleGlobalCalculationsPelarasanChange = (calculationId: string, dims: GlobalDimensions) => {
-    setFormData(prev => ({
-      ...prev, 
-      globalCalculationsPelarasan: {
-        ...(prev.globalCalculationsPelarasan || {}), 
-        [calculationId]: dims 
-      } 
-    }));
-  };
-
+    const handleLocationDimensionsChange = (calculationId: string, dims: GlobalDimensions[]) => {
+        setFormData(prev => ({
+            ...prev,
+            globalCalculations: {
+                ...(prev.globalCalculations || {}),
+                [calculationId]: dims
+            }
+        }));
+    };
+    const handleGlobalCalculationsPelarasanChange = (calculationId: string, dims: GlobalDimensions[]) => {
+        setFormData(prev => ({
+            ...prev,
+            globalCalculationsPelarasan: {
+                ...(prev.globalCalculationsPelarasan || {}),
+                [calculationId]: dims
+            }
+        }));
+    };
   const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[]) => {
     setFormData(prev => ({ ...prev, bqDataPelarasan }));
   };
