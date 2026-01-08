@@ -362,6 +362,27 @@ const BQEditor: React.FC<BQEditorProps> = ({
       }));
   };
 
+  const toggleAllCollapse = () => {
+    if (!activeBillId) return;
+    const bill = bills.find(b => b.id === activeBillId);
+    if (!bill) return;
+    
+    // Determine if we should collapse or expand. 
+    // If any header is currently expanded, we collapse all.
+    const hasExpanded = bill.items.some(item => item.type === 'HEADER' && !item.isCollapsed);
+    const newState = hasExpanded;
+
+    setBills(prev => prev.map(b => {
+        if (b.id !== activeBillId) return b;
+        return {
+            ...b,
+            items: b.items.map(item => 
+                item.type === 'HEADER' ? { ...item, isCollapsed: newState } : item
+            )
+        };
+    }));
+  };
+
   const recalculateQtyFromParts = (parts: CalculationPart[]): number => {
       return parts.reduce((acc, part) => {
            let product = 1;
@@ -1180,6 +1201,19 @@ const BQEditor: React.FC<BQEditorProps> = ({
                               
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                                     <div className="flex items-center gap-2">
+                                        {activeBill.items.some(i => i.type === 'HEADER') && (
+                                            <button 
+                                                onClick={toggleAllCollapse} 
+                                                className="p-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                                                title={activeBill.items.some(item => item.type === 'HEADER' && !item.isCollapsed) ? "Collapse All" : "Expand All"}
+                                            >
+                                                {activeBill.items.some(item => item.type === 'HEADER' && !item.isCollapsed) ? (
+                                                    <ChevronUp className="w-3.5 h-3.5" />
+                                                ) : (
+                                                    <ChevronDown className="w-3.5 h-3.5" />
+                                                )}
+                                            </button>
+                                        )}
                                         <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase"><Ruler className="w-4 h-4" />Global Calculation</div>
                                         {!readOnly && (
                                             <div className="flex items-center gap-1">
