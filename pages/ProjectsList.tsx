@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
 import { supabaseService } from '../services/supabaseService';
-import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle } from 'lucide-react';
+import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface ProjectsListProps {
   projects: Project[];
@@ -100,6 +100,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [pageInput, setPageInput] = useState('1');
+
+  const [sortKey, setSortKey] = useState<string>('tarikhBuka');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -395,6 +398,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     setSearchTerm('');
     setShowSiap(true);
     setFilterLoC(false);
+    setSortKey('tarikhBuka');
+    setSortDirection('desc');
     handleResetColumns();
   };
 
@@ -410,7 +415,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   ].filter(Boolean).length;
 
   const filteredProjects = useMemo(() => {
-    return projects.filter(p => {
+    const filtered = projects.filter(p => {
       const matchesSearch = 
         p.noFail.toLowerCase().includes(searchTerm.toLowerCase()) || 
         p.namaProjek.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -425,7 +430,52 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
       
       return matchesSearch && matchesStatus && matchesPja && matchesZon && matchesBp && matchesMukim && matchesVote;
     });
-  }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterMukim, filterVote]);
+
+    return filtered.sort((a, b) => {
+        const getVal = (p: Project, key: string) => {
+            // @ts-ignore
+            let val = p[key];
+            if (key === 'kosSebenar') val = getHargaAkhir(p);
+            return val;
+        };
+
+        const valA = getVal(a, sortKey);
+        const valB = getVal(b, sortKey);
+
+        // --- Rule: Empty values always at the bottom ---
+        const isEmptyA = valA === undefined || valA === null || valA === '';
+        const isEmptyB = valB === undefined || valB === null || valB === '';
+
+        if (isEmptyA && !isEmptyB) return 1;
+        if (!isEmptyA && isEmptyB) return -1;
+        if (isEmptyA && isEmptyB) {
+            // If both are empty for the current sort key, fallback to date desc
+            const dateA = new Date(a.tarikhBuka || 0).getTime();
+            const dateB = new Date(b.tarikhBuka || 0).getTime();
+            return dateB - dateA;
+        }
+
+        let comparison = 0;
+        if (sortKey === 'noFail') {
+            // Natural sort for file numbers (e.g., 2 comes before 10)
+            comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
+            if (comparison === 0) {
+                // Secondary sort: Latest date on top
+                const dateA = new Date(a.tarikhBuka || 0).getTime();
+                const dateB = new Date(b.tarikhBuka || 0).getTime();
+                return dateB - dateA;
+            }
+        } else if (typeof valA === 'string') {
+            comparison = valA.localeCompare(valB as string);
+        } else if (typeof valA === 'number') {
+            comparison = valA - (valB as number);
+        } else if (valA instanceof Date || (typeof valA === 'string' && !isNaN(Date.parse(valA)))) {
+            comparison = new Date(valA as string).getTime() - new Date(valB as string).getTime();
+        }
+
+        return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterMukim, filterVote, sortKey, sortDirection]);
 
   // Reset pagination when filter changes
   useEffect(() => {
@@ -1156,14 +1206,95 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
       {/* List View with Pagination */}
       {viewMode === 'list' && (
         <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl shadow-xl border border-white/20  overflow-hidden min-h-[400px] flex flex-col">
+            
+            {/* Top Pagination Controls */}
+            {filteredProjects.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b border-slate-200 bg-slate-50/50">
+                    <div className="flex items-center gap-4">
+                        <div className="text-xs font-medium text-slate-500">
+                            Paparan <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)}</span> hingga <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, currentPage * itemsPerPage)}</span> dari <span className="font-bold text-slate-700">{filteredProjects.length}</span> projek
+                        </div>
+                        
+                        {(sortKey !== 'tarikhBuka' || sortDirection !== 'desc') && (
+                            <button 
+                                onClick={() => {
+                                    setSortKey('tarikhBuka');
+                                    setSortDirection('desc');
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
+                            >
+                                <RotateCcw className="w-3 h-3" />
+                                Reset Susunan
+                            </button>
+                        )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <ChevronLeft className="w-4 h-4 text-slate-600" />
+                        </button>
+                        
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-500">Muka</span>
+                            <input
+                                type="number"
+                                value={pageInput}
+                                onChange={handlePageInputChange}
+                                onBlur={handlePageInputBlur}
+                                onKeyDown={handlePageInputKeyDown}
+                                className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 shadow-sm"
+                            />
+                            <span className="text-xs text-slate-500">dari {totalPages}</span>
+                        </div>
+
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <ChevronRight className="w-4 h-4 text-slate-600" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="overflow-x-auto flex-1">
                 <table className="w-full">
                     <thead className="bg-slate-50/80   sticky top-0 z-20 border-b border-slate-200">
                         <tr>
-                            {columnDefs.filter(c => visibleColumns[c.id]).map(col => (
-                                <th key={col.id} className="px-6 py-4 text-left text-xs font-extrabold text-slate-500  uppercase tracking-wider whitespace-nowrap">{col.label}</th>
-                            ))}
-                            <th className="px-6 py-4 w-16"></th>
+                            {columnDefs.filter(c => visibleColumns[c.id]).map(col => {
+                                const isSorted = sortKey === col.id;
+                                return (
+                                    <th 
+                                        key={col.id} 
+                                        onClick={() => {
+                                            if (isSorted) {
+                                                setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+                                            } else {
+                                                setSortKey(col.id);
+                                                setSortDirection('asc');
+                                            }
+                                        }}
+                                        className="px-6 py-4 text-left text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-slate-100/50 transition-colors group"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {col.label}
+                                            <div className={`transition-opacity ${isSorted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                                {isSorted ? (
+                                                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-emerald-600" /> : <ArrowDown className="w-3 h-3 text-emerald-600" />
+                                                ) : (
+                                                    <ArrowUpDown className="w-3 h-3 text-slate-300" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </th>
+                                );
+                            })}
+                            <th className="px-6 py-4 w-16 bg-slate-50/80"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1240,45 +1371,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     </tbody>
                 </table>
             </div>
-
-            {/* Pagination Controls */}
-            {filteredProjects.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-slate-200  bg-slate-50/50">
-                    <div className="text-xs font-medium text-slate-500">
-                        Paparan <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)}</span> hingga <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, currentPage * itemsPerPage)}</span> dari <span className="font-bold text-slate-700">{filteredProjects.length}</span> projek
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <ChevronLeft className="w-4 h-4 text-slate-600" />
-                        </button>
-                        
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500">Muka</span>
-                            <input
-                                type="number"
-                                value={pageInput}
-                                onChange={handlePageInputChange}
-                                onBlur={handlePageInputBlur}
-                                onKeyDown={handlePageInputKeyDown}
-                                className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700"
-                            />
-                            <span className="text-xs text-slate-500">dari {totalPages}</span>
-                        </div>
-
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <ChevronRight className="w-4 h-4 text-slate-600" />
-                        </button>
-                    </div>
-                </div>
-            )}
         </div>
       )}
 
