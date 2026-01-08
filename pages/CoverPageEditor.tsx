@@ -12,6 +12,7 @@ interface CoverPageEditorProps {
 
 const CoverPageEditor: React.FC<CoverPageEditorProps> = ({ project, selectedYear, pjaUser, onUpdate, isPrintView }) => {
     const [meetingDate, setMeetingDate] = useState('');
+    const [meetingNumber, setMeetingNumber] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -31,6 +32,7 @@ const CoverPageEditor: React.FC<CoverPageEditorProps> = ({ project, selectedYear
                 try {
                     const settings = await supabaseService.getSettings(yearToFetch);
                     setMeetingDate(settings.meeting_date || '');
+                    setMeetingNumber(settings.meeting_number || 'XXXX');
                 } catch (err) {
                     console.error('Failed to load settings for cover page:', err);
                 }
@@ -224,7 +226,7 @@ const CoverPageEditor: React.FC<CoverPageEditorProps> = ({ project, selectedYear
                                 <div className="flex-1 p-6 relative flex flex-col">
                                     <h3 className="font-bold uppercase mb-4 text-[14px] text-black">ULASAN PENGARAH</h3>
                                     <p className="text-justify mb-8 leading-relaxed text-[13px] text-black">
-                                        Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) yang bersidang pada <strong>{meetingDate || '.........................'}</strong> dengan rotasi bagi syarikat :-
+                                        Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) Bil. <strong>{meetingNumber || 'XXXX'}</strong> yang bersidang pada <strong>{meetingDate || '.........................'}</strong> dengan rotasi bagi syarikat :-
                                     </p>
                                     
                                     <div className="space-y-12 mt-12">
