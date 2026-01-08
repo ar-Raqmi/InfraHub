@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, Role } from '../types';
+import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, Role, PresetGroup } from '../types';
 import { supabaseService } from '../services/supabaseService';
-import { ChevronDown, ChevronRight, Save, Ruler, ChevronUp, Link, Unlink, PlusCircle, MinusCircle, FolderPlus, Calculator, MapPin, Layers, Info, AlertTriangle, X, Type, List, Trash2, Bookmark } from 'lucide-react';
+import { createItem, createHeader } from '../data/bqPresets';
+import { ChevronDown, ChevronRight, Save, Ruler, ChevronUp, Link, Unlink, PlusCircle, MinusCircle, FolderPlus, Calculator, MapPin, Layers, Info, AlertTriangle, X, Type, List, Trash2, Bookmark, Plus, Search, History, Clock } from 'lucide-react';
 
 interface BQPelarasanEditorProps {
   originalData: BQGroup[];
@@ -141,9 +142,158 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const [isDimsDirty, setIsDimsDirty] = useState(false);
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
+    const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
+    const [recentItems, setRecentItems] = useState<{groupId: string, itemId: string, variantId?: string}[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [librarySearchTerm, setLibrarySearchTerm] = useState('');
+    const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+    const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; type: 'BILL' | 'ITEM' | 'HEADER'; billId: string; itemId?: string; title: string; count?: number; } | null>(null);
+
+    useEffect(() => {
+        if (!isAddItemModalOpen && lastAddedItemId) {
+            const element = document.getElementById(`bq-item-${lastAddedItemId}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const timer = setTimeout(() => { setLastAddedItemId(null); }, 3000);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [isAddItemModalOpen, lastAddedItemId]);
+
+    useEffect(() => {
+        const fetchLibrary = async () => {
+            try {
+                const library = await supabaseService.getLibraryGroups();
+                setBqLibrary(library);
+            } catch (err) {
+                console.error('Failed to load BQ library:', err);
+            }
+        };
+        fetchLibrary();
+        
+        const saved = localStorage.getItem('bq_recent_items');
+        if (saved) {
+            try { setRecentItems(JSON.parse(saved)); } catch (e) { console.error('Failed to load recent items:', e); }
+        }
+    }, []);
+
     useEffect(() => {
         if (pelarasanData.length > 0 && !activeBillId) { setActiveBillId(pelarasanData[0].id); }
     }, [pelarasanData]);
+
+    const handleLibraryAddItem = (groupId: string, itemId?: string, variantId?: string) => {
+        if (!activeBillId || readOnly) return;
+        const group = bqLibrary.find(g => g.id === groupId);
+        if (!group || !itemId) return;
+
+        // Add to recent items
+        setRecentItems(prev => {
+            const newItem = { groupId, itemId, variantId };
+            const filtered = prev.filter(i => !(i.groupId === groupId && i.itemId === itemId && i.variantId === variantId));
+            const updated = [newItem, ...filtered].slice(0, 10);
+            localStorage.setItem('bq_recent_items', JSON.stringify(updated));
+            return updated;
+        });
+
+        const newData = pelarasanData.map(b => {
+            if (b.id !== activeBillId) return b;
+            let newItems = [...b.items];
+            const libraryItem = group.items.find(i => i.id === itemId)!;
+            const groupHeaderDesc = group.title.toUpperCase(); 
+            
+            let level0Index = -1;
+            for (let i = newItems.length - 1; i >= 0; i--) {
+                if (getItemLevel(newItems[i]) === 0 && newItems[i].description === groupHeaderDesc) { level0Index = i; break; }
+            }
+            
+            let insertionIndex = newItems.length; 
+            let needsGroupHeader = level0Index === -1;
+            if (!needsGroupHeader) {
+                let groupEndIndex = newItems.length;
+                for (let i = level0Index + 1; i < newItems.length; i++) {
+                    if (getItemLevel(newItems[i]) === 0) { groupEndIndex = i; break; }
+                }
+                insertionIndex = groupEndIndex; 
+            }
+
+            const itemsToAdd: BQItem[] = [];
+            if (needsGroupHeader) { 
+                const header = createHeader(groupHeaderDesc);
+                header.isAdjustment = true;
+                itemsToAdd.push(header); 
+            }
+            
+            if (variantId || (libraryItem.variants && libraryItem.variants.length > 0)) {
+                const rawParentDesc = libraryItem.description;
+                const parentDesc = rawParentDesc.charAt(0).toUpperCase() + rawParentDesc.slice(1).toLowerCase();
+                
+                let needsParentHeader = true;
+                const prevItem = newItems.length > 0 ? newItems[insertionIndex - 1] : null;
+                
+                if (prevItem) {
+                     if (prevItem.sourceItemId === itemId && prevItem.type === 'ITEM') { needsParentHeader = false; }
+                     if (prevItem.type === 'HEADER' && prevItem.description === parentDesc) { needsParentHeader = false; }
+                }
+
+                if (needsParentHeader) { 
+                    const header = createHeader(parentDesc);
+                    header.isAdjustment = true;
+                    itemsToAdd.push(header); 
+                }
+                if (variantId) { 
+                    const newItem = createItem(bqLibrary, groupId, itemId, variantId); 
+                    newItem.sourceGroupId = groupId;
+                    newItem.sourceItemId = itemId;
+                    newItem.sourceVariantId = variantId;
+                    newItem.isAdjustment = true;
+                    itemsToAdd.push(newItem); 
+                }
+            } else { 
+                const newItem = createItem(bqLibrary, groupId, itemId); 
+                newItem.sourceGroupId = groupId;
+                newItem.sourceItemId = itemId;
+                newItem.isAdjustment = true;
+                itemsToAdd.push(newItem); 
+            }
+
+            const d = localDims;
+            itemsToAdd.forEach(newItem => {
+                if (newItem.type === 'ITEM' && newItem.calculationParts && newItem.isGlobal) {
+                    newItem.calculationParts = newItem.calculationParts.map(part => ({
+                        ...part,
+                        length: part.hasLength ? d.length : part.length,
+                        width: part.hasWidth ? d.width : part.width,
+                        depth: part.hasDepth ? d.depth : part.depth
+                    }));
+                    const qty = recalculateQtyFromParts(newItem.calculationParts);
+                    newItem.qty = parseFloat(qty.toFixed(2));
+                    newItem.amount = parseFloat((qty * newItem.rate).toFixed(2));
+                }
+            });
+
+            if (itemsToAdd.length > 0) {
+                const lastItem = itemsToAdd[itemsToAdd.length - 1];
+                setLastAddedItemId(lastItem.id);
+            }
+
+            newItems.splice(insertionIndex, 0, ...itemsToAdd);
+            return { ...b, items: newItems };
+        });
+        onDataChange(newData);
+    };
+
+    const openAddItemModal = () => {
+        if (readOnly) return;
+        setSelectedCategory('HISTORY');
+        setLibrarySearchTerm('');
+        setIsAddItemModalOpen(true);
+    };
+
+    const handleClearHistory = () => {
+        setRecentItems([]);
+        localStorage.removeItem('bq_recent_items');
+    };
 
     useEffect(() => {
         if (!activeBillId) return;
@@ -250,6 +400,71 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         const newCalcId = `calc-pelarasan-${Math.random().toString(36).substr(2, 9)}`;
         const updatedBills = pelarasanData.map(b => b.id === activeBillId ? { ...b, calculationId: newCalcId } : b);
         onDataChange(updatedBills);
+    };
+
+    const moveItem = (billId: string, itemId: string, direction: 'up' | 'down') => {
+        if (readOnly) return;
+        const newData = pelarasanData.map(bill => {
+            if (bill.id !== billId) return bill;
+            const items = [...bill.items];
+            const index = items.findIndex(i => i.id === itemId);
+            if (index === -1) return bill;
+            const itemToMove = items[index];
+            const currentLevel = getItemLevel(itemToMove);
+            let blockEnd = index + 1;
+            while (blockEnd < items.length && getItemLevel(items[blockEnd]) > currentLevel) blockEnd++;
+            const block = items.slice(index, blockEnd);
+            if (direction === 'up') {
+                if (index === 0) return bill; 
+                let prevSiblingIndex = index - 1;
+                while (prevSiblingIndex >= 0) { const level = getItemLevel(items[prevSiblingIndex]); if (level === currentLevel) break; if (level < currentLevel) return bill; prevSiblingIndex--; }
+                if (prevSiblingIndex < 0) return bill;
+                const beforePrev = items.slice(0, prevSiblingIndex); const prevBlock = items.slice(prevSiblingIndex, index); const afterBlock = items.slice(blockEnd);
+                return { ...bill, items: [...beforePrev, ...block, ...prevBlock, ...afterBlock] };
+            } else {
+                if (blockEnd >= items.length) return bill; 
+                const nextItem = items[blockEnd];
+                if (getItemLevel(nextItem) < currentLevel) return bill; 
+                let nextSiblingEnd = blockEnd + 1;
+                while (nextSiblingEnd < items.length && getItemLevel(items[nextSiblingEnd]) > currentLevel) nextSiblingEnd++;
+                const before = items.slice(0, index); const nextBlock = items.slice(blockEnd, nextSiblingEnd); const after = items.slice(nextSiblingEnd);
+                return { ...bill, items: [...before, ...nextBlock, ...block, ...after] };
+            }
+        });
+        onDataChange(newData);
+    };
+
+    const requestDeleteItem = (billId: string, item: BQItem, index: number) => {
+        if (readOnly) return;
+        const bill = pelarasanData.find(b => b.id === billId);
+        if (!bill) return;
+        let childCount = 0;
+        const currentLevel = getItemLevel(item);
+        if (item.type === 'HEADER') {
+            for (let i = index + 1; i < bill.items.length; i++) {
+                if (getItemLevel(bill.items[i]) > currentLevel) childCount++; else break;
+            }
+        }
+        setDeleteConfirm({ isOpen: true, type: item.type === 'HEADER' ? 'HEADER' : 'ITEM', billId: billId, itemId: item.id, title: item.description, count: childCount });
+    };
+
+    const performDelete = () => {
+        if (!deleteConfirm || readOnly) return;
+        const newData = pelarasanData.map(bill => {
+            if (bill.id !== deleteConfirm.billId) return bill;
+            if (deleteConfirm.type === 'HEADER') {
+                const itemIndex = bill.items.findIndex(i => i.id === deleteConfirm.itemId);
+                if (itemIndex === -1) return bill;
+                const currentLevel = getItemLevel(bill.items[itemIndex]);
+                let nextHeaderIndex = itemIndex + 1;
+                while (nextHeaderIndex < bill.items.length && getItemLevel(bill.items[nextHeaderIndex]) > currentLevel) nextHeaderIndex++;
+                const newItems = [...bill.items];
+                newItems.splice(itemIndex, nextHeaderIndex - itemIndex);
+                return { ...bill, items: newItems };
+            } else { return { ...bill, items: bill.items.filter(i => i.id !== deleteConfirm.itemId) }; }
+        });
+        onDataChange(newData);
+        setDeleteConfirm(null);
     };
 
     const updateItem = (billId: string, itemId: string, updates: Partial<BQItem>) => {
@@ -401,40 +616,68 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         // Coloring logic
         const isLess = diff < -0.01;
         const isMore = diff > 0.01;
+        const isRecentlyAdded = lastAddedItemId === item.id;
         
-        const cardStyle = isLess ? 'border-red-200 ring-1 ring-red-100' : (isMore ? 'border-blue-200 ring-1 ring-blue-100' : 'border-slate-100');
+        const cardStyle = isRecentlyAdded 
+            ? 'bg-blue-50/80 ring-2 ring-blue-500 border-blue-200' 
+            : (isLess ? 'border-red-200 ring-1 ring-red-100' : (isMore ? 'border-blue-200 ring-1 ring-blue-100' : 'border-slate-100'));
+        
         const diffTextClass = isLess ? 'text-red-600 font-bold' : (isMore ? 'text-blue-600 font-bold' : 'text-slate-500');
 
         if (item.type === 'HEADER') {
             const isLevel0 = hierarchyLevel === 0;
             return (
-                <div key={item.id} className={`flex items-center gap-2 py-3 border-b border-slate-100 ${isLevel0 ? 'bg-slate-100' : 'bg-slate-50/50'} px-4 -mx-4 group`}>
+                <div key={item.id} id={`bq-item-${item.id}`} className={`flex items-center gap-2 py-3 border-b border-slate-100 ${isLevel0 ? 'bg-slate-100' : 'bg-slate-50/50'} px-4 -mx-4 group transition-colors duration-700 ${isRecentlyAdded ? 'bg-blue-50/80 ring-2 ring-blue-500' : ''}`}>
                     <span className="text-xs font-black text-slate-400 min-w-[30px]">{autoNumber}</span>
                     <button onClick={() => toggleCollapse(bill.id, item.id)} className="p-1 rounded hover:bg-slate-200  text-slate-400 transition-colors">{item.isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</button>
-                    <span className={`w-full bg-transparent outline-none text-slate-800  text-sm ${isLevel0 ? 'font-bold uppercase' : 'font-semibold pl-1'}`}>{item.description}</span>
+                    {item.isAdjustment ? (
+                        <AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className={`w-full bg-transparent outline-none text-blue-600  text-sm ${isLevel0 ? 'font-bold uppercase' : 'font-semibold pl-1'}`} placeholder="TAJUK..." minHeight={24} />
+                    ) : (
+                        <span className={`w-full bg-transparent outline-none text-slate-800  text-sm ${isLevel0 ? 'font-bold uppercase' : 'font-semibold pl-1'}`}>{item.description}</span>
+                    )}
+                    {!readOnly && item.isAdjustment && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="text-slate-400 hover:text-amber-500 p-1 rounded hover:bg-amber-50  disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
+                            <button onClick={() => moveItem(bill.id, item.id, 'down')} className="text-slate-400 hover:text-amber-500 p-1 rounded hover:bg-amber-50  disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
+                            <button onClick={() => requestDeleteItem(bill.id, item, index)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                    )}
                 </div>
             );
         }
 
         return (
-            <div key={item.id} className={`py-4 border border-transparent border-b-slate-100 last:border-0 hover:bg-slate-50 px-2 rounded-xl transition-all duration-300 ${cardStyle}`}>
+            <div key={item.id} id={`bq-item-${item.id}`} className={`py-4 border border-transparent border-b-slate-100 last:border-0 hover:bg-slate-50 px-2 rounded-xl transition-all duration-700 ${cardStyle}`}>
                 <div className="flex flex-col xl:flex-row gap-4">
                     <div className="flex-1 min-w-0">
                          <div className="flex gap-3 mb-2">
                              <div className="text-xs font-black text-slate-400 mt-1 min-w-[30px]">{autoNumber}</div>
                              <div className="flex-1 pl-10">
-                                 <p className="text-sm font-medium text-slate-800 leading-relaxed">{item.description}</p>
+                                 {item.isAdjustment ? (
+                                     <AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className="w-full bg-transparent outline-none text-sm font-medium text-blue-600" minHeight={40} />
+                                 ) : (
+                                     <p className="text-sm font-medium text-slate-800 leading-relaxed">{item.description}</p>
+                                 )}
                                  {item.variant && <p className="text-xs text-slate-500 italic mt-1">{item.variant}</p>}
                                  <div className="mt-2 flex items-center gap-2">
-                                     <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-mono">{item.unit}</span>
-                                     <span className="text-xs text-slate-400">@ {formatCurrency(item.rate)}</span>
+                                     {item.isAdjustment ? (
+                                         <input type="text" value={item.unit} onChange={(e) => updateItem(bill.id, item.id, { unit: e.target.value })} disabled={readOnly} className="text-xs bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-mono w-16 outline-none border border-blue-100" />
+                                     ) : (
+                                         <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-mono">{item.unit}</span>
+                                     )}
+                                     <span className="text-xs text-slate-400">@ </span>
+                                     {item.isAdjustment ? (
+                                         <input type="number" value={item.rate} onChange={(e) => updateItem(bill.id, item.id, { rate: parseFloat(e.target.value) })} disabled={readOnly} className="text-xs bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-mono w-20 outline-none border border-blue-100" />
+                                     ) : (
+                                         <span className="text-xs text-slate-400">{formatCurrency(item.rate)}</span>
+                                     )}
                                  </div>
                              </div>
                          </div>
-                         <div className="ml-12 bg-amber-50/30 p-3 rounded-lg border border-amber-100">
+                         <div className={`ml-12 ${item.isAdjustment ? 'bg-blue-50/30 border-blue-100' : 'bg-amber-50/30 border-amber-100'} p-3 rounded-lg border`}>
                              <div className="flex items-center justify-between mb-2">
-                                 <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
-                                     <Calculator className="w-3 h-3" /> Pelarasan (Adjusted)
+                                 <div className={`text-[10px] font-bold ${item.isAdjustment ? 'text-blue-600' : 'text-amber-600'} uppercase tracking-wider flex items-center gap-1`}>
+                                     <Calculator className="w-3 h-3" /> {item.isAdjustment ? 'Penambahan (New)' : 'Pelarasan (Adjusted)'}
                                  </div>
                                  <div className="flex items-center gap-1">
                                     <button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1 rounded-md transition-colors border text-[10px] flex items-center gap-1 ${item.isGlobal ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white text-slate-400 border-slate-200'}`}>{item.isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}{item.isGlobal ? 'Linked' : 'Manual'}</button>
@@ -454,13 +697,13 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                 <div className="space-y-1">
                                     {(item.calculationParts || []).map(part => renderCalculationPartRow(bill, item, part))}
                                     {!readOnly && (
-                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-amber-200/50">
-                                            <button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-amber-600 hover:text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-100/50 transition-colors">
+                                        <div className={`flex items-center justify-between mt-2 pt-2 border-t ${item.isAdjustment ? 'border-blue-200/50' : 'border-amber-200/50'}`}>
+                                            <button onClick={() => addCalculationPart(bill.id, item.id)} className={`text-[10px] flex items-center gap-1 ${item.isAdjustment ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-100/50' : 'text-amber-600 hover:text-amber-700 hover:bg-amber-100/50'} font-bold px-2 py-1 rounded transition-colors`}>
                                                 <PlusCircle className="w-3 h-3" /> Tambah Kiraan
                                             </button>
                                             <div className="flex items-center gap-2 ml-auto">
-                                                <span className="text-xs text-slate-400">Qty Laras:</span>
-                                                <div className="font-mono font-bold text-amber-600 text-sm border-l border-amber-200 pl-3">
+                                                <span className="text-xs text-slate-400">Qty {item.isAdjustment ? 'Baru' : 'Laras'}:</span>
+                                                <div className={`font-mono font-bold ${item.isAdjustment ? 'text-blue-600 border-blue-200' : 'text-amber-600 border-amber-200'} text-sm border-l pl-3`}>
                                                     = {item.qty}
                                                 </div>
                                             </div>
@@ -470,8 +713,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                              )}
                          </div>
                     </div>
-                    <div className="w-full xl:w-[320px] shrink-0 bg-slate-50  rounded-xl border border-slate-200  p-4 text-xs">
-                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="w-full xl:w-[320px] shrink-0 bg-slate-50  rounded-xl border border-slate-200  p-4 text-xs flex flex-col">
+                         <div className="grid grid-cols-2 gap-x-4 gap-y-2 flex-1">
                              <div className="col-span-2 border-b border-slate-200  pb-1 mb-1 font-bold text-slate-400 uppercase tracking-widest text-[10px]">Perbandingan</div>
                              
                              <div className="text-slate-500">Asal (Qty)</div>
@@ -493,6 +736,14 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                              <div className="font-bold">Beza (RM)</div>
                              <div className={`text-right font-mono ${diffTextClass}`}>{diff > 0 ? '+' : ''}{formatCurrency(diff)}</div>
                          </div>
+                         
+                         {!readOnly && item.isAdjustment && (
+                             <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end gap-2">
+                                 <button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
+                                 <button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
+                                 <button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                             </div>
+                         )}
                     </div>
                 </div>
             </div>
@@ -536,6 +787,23 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             </div>
         );
     };
+
+    const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
+    
+    const libraryGroups = (() => {
+        const searchLower = librarySearchTerm.toLowerCase();
+        const recentGroupIds = Array.from(new Set(recentItems.map(ri => ri.groupId)));
+        const recentGroupsData = recentGroupIds.map(id => bqLibrary.find(g => g.id === id)).filter(Boolean) as PresetGroup[];
+
+        if (librarySearchTerm) {
+            const matchedRecent = recentGroupsData.filter(g => g.title.toLowerCase().includes(searchLower));
+            const matchedLibrary = bqLibrary.filter(g => g.title.toLowerCase().includes(searchLower) && !matchedRecent.some(rg => rg.id === g.id));
+            return [...matchedRecent.map(g => ({ ...g, isHistoryMatch: true })), ...matchedLibrary];
+        }
+
+        if (selectedCategory === 'HISTORY') { return recentGroupsData; }
+        return bqLibrary.filter(g => g.category === selectedCategory);
+    })();
 
     if (isPrintView) return null;
 
@@ -648,19 +916,68 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                     {(() => {
                                         let currentLevel0Collapsed = false; 
                                         let currentLevel1Collapsed = false;
-                                        return activeBill.items.map((item, idx) => {
+                                        let visibleWorkItemCount = 0;
+                                        const items: React.ReactNode[] = [];
+
+                                        activeBill.items.forEach((item, idx) => {
                                             const level = getItemLevel(item); 
                                             let isHidden = false;
-                                            if (level === 0) { currentLevel1Collapsed = false; currentLevel0Collapsed = !!item.isCollapsed; } 
-                                            else if (level === 1) { if (currentLevel0Collapsed) isHidden = true; else currentLevel1Collapsed = !!item.isCollapsed; } 
-                                            else { if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true; }
-                                            return renderItemRow(activeBill, item, idx, isHidden);
+                                            if (level === 0) { 
+                                                currentLevel1Collapsed = false; 
+                                                currentLevel0Collapsed = !!item.isCollapsed; 
+                                            } else if (level === 1) { 
+                                                if (currentLevel0Collapsed) isHidden = true; 
+                                                else currentLevel1Collapsed = !!item.isCollapsed; 
+                                            } else { 
+                                                if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true; 
+                                            }
+                                            
+                                            const renderedRow = renderItemRow(activeBill, item, idx, isHidden);
+                                            if (renderedRow) {
+                                                items.push(renderedRow);
+                                                
+                                                // Count actual work items (not headers/notes)
+                                                if (item.type === 'ITEM' && !isHidden) {
+                                                    visibleWorkItemCount++;
+                                                    
+                                                    // Page break indicators
+                                                    if (visibleWorkItemCount === 8) {
+                                                        items.push(
+                                                            <div key="page-break-warning-8" className="py-6 flex items-center gap-4 animate-pulse">
+                                                                <div className="flex-1 h-px bg-amber-200"></div>
+                                                                <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[10px] font-bold text-amber-600 uppercase tracking-widest shadow-sm">
+                                                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                                                    Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru
+                                                                </div>
+                                                                <div className="flex-1 h-px bg-amber-200"></div>
+                                                            </div>
+                                                        );
+                                                    } else if (visibleWorkItemCount === 9) {
+                                                        items.push(
+                                                            <div key="page-break-warning-9" className="py-6 flex items-center gap-4">
+                                                                <div className="flex-1 h-px bg-red-200"></div>
+                                                                <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-widest shadow-sm">
+                                                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                                                    Pecahan halaman disahkan berlaku di sini
+                                                                </div>
+                                                                <div className="flex-1 h-px bg-red-200"></div>
+                                                            </div>
+                                                        );
+                                                    }
+                                                }
+                                            }
                                         });
+                                        return items;
                                     })()}
                                 </div>
-                             )}
-                        </div>
-                    </>
+                         )}
+                         {!readOnly && (
+                             <button onClick={openAddItemModal} className="mt-4 w-full py-3 border-2 border-dashed border-amber-200 rounded-xl text-amber-500 font-bold text-sm hover:border-amber-500 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2">
+                                 <Plus className="w-4 h-4" /> Tambah Item (Pelarasan)
+                             </button>
+                         )}
+                    </div>
+                </>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8">
                         <Layers className="w-16 h-16 mb-4 opacity-20" />
@@ -669,6 +986,89 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* --- MODALS --- */}
+            {isAddItemModalOpen && createPortal(
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden border border-slate-200 transform scale-100 transition-colors animate-slide-up" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                            <div className="flex items-center gap-3"><div className="p-2 bg-amber-100 text-amber-600 rounded-lg"><Plus className="w-5 h-5" /></div><div><h3 className="font-bold text-slate-900">Tambah Item Pelarasan</h3><p className="text-xs text-slate-500">Pilih item baru untuk ditambah ke dalam {activeBill?.title}</p></div></div>
+                            <button onClick={() => setIsAddItemModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
+                        </div>
+                        <div className="flex-1 flex overflow-hidden">
+                            <div className="w-64 bg-slate-50 border-r border-slate-100 p-4 space-y-1 overflow-y-auto custom-scrollbar shrink-0">
+                                <button onClick={() => setSelectedCategory('HISTORY')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors mb-2 flex items-center gap-2 ${selectedCategory === 'HISTORY' ? 'bg-amber-600 text-white shadow-md' : 'text-slate-500 hover:bg-amber-50'}`}>
+                                    <History className="w-3.5 h-3.5" />
+                                    Sejarah
+                                </button>
+                                <div className="h-px bg-slate-200 my-2 mx-2"></div>
+                                {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-amber-600 text-white shadow-md' : 'text-slate-500 hover:bg-amber-50'}`}>{cat}</button>))}
+                            </div>
+                            
+                            <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
+                                <div className="sticky top-0 bg-white z-10 pb-4 mb-2 border-b border-slate-50 flex items-center justify-between gap-4">
+                                    <div className="relative group flex-1">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
+                                        <input type="text" placeholder="Cari kumpulan item..." value={librarySearchTerm} onChange={(e) => setLibrarySearchTerm(e.target.value)} className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-amber-500 focus:bg-white outline-none transition-all" />
+                                        {librarySearchTerm && <button onClick={() => setLibrarySearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 rounded-full text-slate-400 transition-colors"><X className="w-3 h-3" /></button>}
+                                    </div>
+                                    {!librarySearchTerm && selectedCategory === 'HISTORY' && recentItems.length > 0 && (
+                                        <button onClick={handleClearHistory} className="flex items-center gap-1.5 px-3 py-2 text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors shrink-0 border border-transparent hover:border-red-100">
+                                            <Trash2 className="w-3.5 h-3.5" /> Padam Sejarah
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="space-y-6">
+                                    {libraryGroups.length > 0 ? (
+                                        libraryGroups.map(group => (
+                                            <div key={group.id} className="space-y-3">
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                                                    {(selectedCategory === 'HISTORY' || (group as any).isHistoryMatch) && <Clock className="w-3 h-3 text-amber-500" />}
+                                                    {group.title}
+                                                </h4>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {group.items.map(item => (
+                                                        <div key={`${group.id}-${item.id}`} className="p-3 bg-slate-50 rounded-2xl border border-slate-100 transition-colors hover:border-amber-300 group/item">
+                                                            <div className="flex justify-between items-start gap-4">
+                                                                <div className="flex-1 min-w-0"><p className="text-sm font-bold text-slate-800 leading-tight">{item.description}</p>
+                                                                    <div className="mt-2 flex gap-2 flex-wrap">
+                                                                        {(!item.variants || item.variants.length === 0) ? (
+                                                                            <button onClick={() => handleLibraryAddItem(group.id, item.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-amber-600 text-[10px] font-bold rounded-lg hover:bg-amber-600 hover:text-white transition-colors shadow-sm">
+                                                                                <Plus className="w-3.5 h-3.5" /> Pilih Item
+                                                                            </button>
+                                                                        ) : (
+                                                                            item.variants.map(v => (
+                                                                                <button key={v.id} onClick={() => handleLibraryAddItem(group.id, item.id, v.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-amber-600 text-[10px] font-bold rounded-lg hover:bg-amber-600 hover:text-white transition-colors shadow-sm">
+                                                                                    <Plus className="w-3.5 h-3.5" /> {v.label}
+                                                                                </button>
+                                                                            ))
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right shrink-0">
+                                                                    {(!item.variants || item.variants.length === 0) && (<><p className="text-[10px] font-bold text-slate-400 uppercase leading-none">Kadar</p><p className="font-mono font-bold text-amber-600 text-sm mt-1">{formatCurrency(item.rate || 0)}</p></>)}
+                                                                    <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase mt-2 inline-block">{item.unit}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                                            <Search className="w-12 h-12 mb-4 opacity-10" />
+                                            <p className="text-sm font-medium">Tiada item dijumpai.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {/* Link Modal */}
             {isLinkModalOpen && createPortal(
@@ -712,6 +1112,20 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                         <button onClick={() => setIsLinkModalOpen(false)} className="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
                             Batal
                         </button>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {deleteConfirm?.isOpen && createPortal(
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 animate-fade-in" onClick={() => setDeleteConfirm(null)}>
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
+                        <div className="flex flex-col items-center text-center pt-2">
+                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6 text-red-500"><div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center"><AlertTriangle className="w-8 h-8 stroke-[1.5]" /></div></div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Padam Item?</h3>
+                            <p className="text-slate-500 mb-8 text-sm leading-relaxed px-4">Adakah anda pasti mahu memadam <span className="font-bold text-slate-900 block mt-1 p-2 bg-slate-50 rounded-lg border border-slate-200 break-words">{deleteConfirm.title}</span>{deleteConfirm.type === 'HEADER' && deleteConfirm.count && deleteConfirm.count > 0 && (<span className="mt-2 block text-xs text-red-500 font-bold">Nota: Ini akan memadam {deleteConfirm.count} item di bawahnya.</span>)}</p>
+                            <div className="flex gap-3 w-full"><button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3.5 px-4 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm">Batal</button><button onClick={performDelete} className="flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg bg-red-600 hover:bg-red-700 shadow-red-600/30">Ya, Padam</button></div>
+                        </div>
                     </div>
                 </div>,
                 document.body

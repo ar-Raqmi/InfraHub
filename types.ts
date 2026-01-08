@@ -192,6 +192,9 @@ export interface BQItem {
   sourceGroupId?: string;
   sourceItemId?: string;
   sourceVariantId?: string;
+
+  // --- NEW: Pelarasan Addition ---
+  isAdjustment?: boolean; // If true, this item was added during Pelarasan phase
 }
 
 export interface BQGroup {

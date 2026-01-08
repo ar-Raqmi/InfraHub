@@ -1057,12 +1057,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               // Rounded comparison to avoid floating point artifacts
               const diff = parseFloat((currentAmt - origAmt).toFixed(2));
               const hasPelarasan = !isHeader && Math.abs(diff) > 0.01;
+              const isAddition = item.isAdjustment === true;
 
               let descText = item.description;
               if (item.variant) descText += `\n${item.variant}`;
 
-              const textColor = hasPelarasan ? (diff > 0 ? [0, 80, 200] : [200, 0, 0]) : [0, 0, 0];
-              const rowFontStyle = hasPelarasan ? 'bold' : (isHeader ? 'bold' : 'normal');
+              // Blue if it's a completely new item or has positive pelarasan, Red if negative
+              const textColor = isAddition ? [0, 0, 255] : (hasPelarasan ? (diff > 0 ? [0, 80, 200] : [200, 0, 0]) : [0, 0, 0]);
+              const rowFontStyle = (hasPelarasan || isAddition) ? 'bold' : (isHeader ? 'bold' : 'normal');
 
               // Calculation Parts
               const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
@@ -1087,7 +1089,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   const p = activeParts[0];
                   const pOrig = activeOrigParts[0];
                   
-                  if (hasPelarasan) {
+                  if (hasPelarasan && !isAddition) {
                       // 1. Original Row
                       let mainDesc = descText;
                       const origPartsText = [];
@@ -1123,14 +1125,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       tableBody.push([
                           { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                           { content: subDesc, styles: { fontSize: 7, fontStyle: 'bold', textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, left: 3 } } },
-                          { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                          { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, textColor: textColor as any } } },
                           { content: fmtQty(adjQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, textColor: textColor as any } } },
                           { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                           { content: fmtAmt(adjAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
                       ]);
                   } else {
-                      // No Pelarasan - merged main row
+                      // No Pelarasan OR it's a completely NEW item (Addition)
                       let mainDesc = descText;
                       const partsText = [];
                       if (p.label) partsText.push(p.label);
@@ -1138,11 +1140,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       if (partsText.length > 0) mainDesc += ` ${partsText.join(' ')}`;
 
                       tableBody.push([
-                          { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any } },
-                          { content: mainDesc, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder } },
-                          { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
+                          { content: mainDesc, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                          { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
                           { content: fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
                           { content: '', styles: { lineWidth: sideOnlyBorder } },
                           { content: fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
                       ]);
@@ -1151,18 +1153,18 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   // Standard Behavior (Multiple parts or dimensions)
                   // 1. Push Main Item Row
                   tableBody.push([
-                      { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any } },
-                      { content: descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder } },
-                      { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+                      { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
+                      { content: descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                      { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
                       { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                      { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                      { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
                       { content: '', styles: { lineWidth: sideOnlyBorder } },
                       { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
                   ]);
 
                   // 2. Push Calculation Parts
                   if (activeParts.length > 0 || activeOrigParts.length > 0) {
-                      if (hasPelarasan) {
+                      if (hasPelarasan && !isAddition) {
                           // Original parts first
                           activeOrigParts.forEach(p => {
                               let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
@@ -1192,15 +1194,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                               tableBody.push([
                                   { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                                   { content: dimStr, styles: { fontSize: 7, fontStyle: 'bold', textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, left: 3 } } },
-                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 }, textColor: textColor as any } },
                                   { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 }, textColor: textColor as any } },
                                   { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                                   { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
                               ]);
                           });
                       } else {
-                          // No pelarasan, show standard sub-rows like original BQ
+                          // No pelarasan OR it's a completely NEW item (Addition)
                           activeParts.forEach(p => {
                               let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
                               const pQtyVal = product * p.multiplier;
@@ -1210,12 +1212,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                               let dimStr = partsStr.join(' x '); if (p.label) dimStr += ` - ${p.label}`;
                               tableBody.push([
                                   { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                                  { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
-                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 }, textColor: textColor as any, fontStyle: rowFontStyle as any } },
+                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any } },
+                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any } },
                                   { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
+                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any, fontStyle: rowFontStyle as any } }
                               ]);
                           });
                       }
