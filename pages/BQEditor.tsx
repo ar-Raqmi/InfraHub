@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { createItem, createHeader } from '../data/bqPresets';
-import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, Search } from 'lucide-react';
+import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, Search, History, Clock } from 'lucide-react';
 
 interface BQEditorProps {
   initialData?: BQGroup[];
@@ -170,21 +170,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
     readOnly = false
 }) => {
   const [activeBillId, setActiveBillId] = useState<string | null>(null);
+  const [bills, setBills] = useState<BQGroup[]>(initialData || []);
   const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
   const [bqTemplates, setBqTemplates] = useState<BQTemplateDefinition[]>([]);
-  const [bills, setBills] = useState<BQGroup[]>(() => {
-    let data = initialData && initialData.length > 0 ? initialData : [];
-    return data.map(b => ({
-        ...b,
-        calculationId: b.calculationId || `calc-${Math.random().toString(36).substr(2, 9)}`
-    }));
-  });
-
-  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-      const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-      const [librarySearchTerm, setLibrarySearchTerm] = useState('');
+  const [recentItems, setRecentItems] = useState<{groupId: string, itemId: string, variantId?: string}[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [librarySearchTerm, setLibrarySearchTerm] = useState('');
   
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
 
@@ -197,6 +188,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
   const [localDims, setLocalDims] = useState<GlobalDimensions>({ length: 0, width: 0, depth: 0 });
   const [isDimsDirty, setIsDimsDirty] = useState(false);
 
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateSubtitle, setNewTemplateSubtitle] = useState('');
@@ -215,6 +209,17 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
   const currentUser = supabaseService.getCurrentUser();
   const isAdmin = currentUser?.role === Role.ADMIN;
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bq_recent_items');
+    if (saved) {
+        try {
+            setRecentItems(JSON.parse(saved));
+        } catch (e) {
+            console.error('Failed to load recent items:', e);
+        }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -339,10 +344,15 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
   const openAddItemModal = () => {
       if (readOnly) return;
-      const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
-      if (categories.length > 0) setSelectedCategory(categories[0]);
+      setSelectedCategory('HISTORY');
       setLibrarySearchTerm('');
       setIsAddItemModalOpen(true);
+  };
+
+  const handleClearHistory = () => {
+      setRecentItems([]);
+      localStorage.removeItem('bq_recent_items');
+      if (onShowToast) onShowToast("Sejarah telah dipadam.", "info");
   };
 
   const toggleCollapse = (billId: string, itemId: string) => {
@@ -366,6 +376,16 @@ const BQEditor: React.FC<BQEditorProps> = ({
       if (!activeBillId || readOnly) return;
       const group = bqLibrary.find(g => g.id === groupId);
       if (!group || !itemId) return;
+
+      // Add to recent items
+      setRecentItems(prev => {
+          const newItem = { groupId, itemId, variantId };
+          const filtered = prev.filter(i => !(i.groupId === groupId && i.itemId === itemId && i.variantId === variantId));
+          const updated = [newItem, ...filtered].slice(0, 10);
+          localStorage.setItem('bq_recent_items', JSON.stringify(updated));
+          return updated;
+      });
+
       setBills(prev => prev.map(b => {
           if (b.id !== activeBillId) return b;
           let newItems = [...b.items];
@@ -1064,13 +1084,33 @@ const BQEditor: React.FC<BQEditorProps> = ({
   });
   const sortedLocationIds = Array.from(new Set(bills.filter(b => b.locationId && !isTopBill(b)).map(b => b.locationId!))) as string[];
   const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
-  const libraryGroups = bqLibrary
-    .filter(g => {
-        if (librarySearchTerm) {
-            return g.title.toLowerCase().includes(librarySearchTerm.toLowerCase());
-        }
-        return !selectedCategory || g.category === selectedCategory;
-    });
+  
+  const libraryGroups = (() => {
+    const searchLower = librarySearchTerm.toLowerCase();
+    const recentGroupIds = Array.from(new Set(recentItems.map(ri => ri.groupId)));
+    const recentGroupsData = recentGroupIds.map(id => bqLibrary.find(g => g.id === id)).filter(Boolean) as PresetGroup[];
+
+    if (librarySearchTerm) {
+      // Global Search: Matches Group Title only
+      const matchedRecent = recentGroupsData.filter(g => g.title.toLowerCase().includes(searchLower));
+      const matchedLibrary = bqLibrary.filter(g => 
+        g.title.toLowerCase().includes(searchLower) && 
+        !matchedRecent.some(rg => rg.id === g.id)
+      );
+
+      return [
+        ...matchedRecent.map(g => ({ ...g, isHistoryMatch: true })),
+        ...matchedLibrary
+      ];
+    }
+
+    // Category View
+    if (selectedCategory === 'HISTORY') {
+      return recentGroupsData;
+    }
+    
+    return bqLibrary.filter(g => g.category === selectedCategory);
+  })();
 
   if (isPrintView) return null;
 
@@ -1249,18 +1289,23 @@ const BQEditor: React.FC<BQEditorProps> = ({
                   </div>
                   <div className="flex-1 flex overflow-hidden">
                                               <div className="w-64 bg-slate-50 border-r border-slate-100 p-4 space-y-1 overflow-y-auto custom-scrollbar shrink-0">
+                                                  <button onClick={() => setSelectedCategory('HISTORY')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors mb-2 flex items-center gap-2 ${selectedCategory === 'HISTORY' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50'}`}>
+                                                      <History className="w-3.5 h-3.5" />
+                                                      Sejarah
+                                                  </button>
+                                                  <div className="h-px bg-slate-200 my-2 mx-2"></div>
                                                   {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50'}`}>{cat}</button>))}
                                               </div>
                       
                       <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
                           <div className="space-y-6">
                               {/* Search Bar */}
-                              <div className="sticky top-0 bg-white z-10 pb-4 mb-2 border-b border-slate-50">
-                                  <div className="relative group">
+                              <div className="sticky top-0 bg-white z-10 pb-4 mb-2 border-b border-slate-50 flex items-center justify-between gap-4">
+                                  <div className="relative group flex-1">
                                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                                       <input 
                                           type="text" 
-                                          placeholder="Cari item (cth: Capping Beam, Longkang)..." 
+                                          placeholder="Cari kumpulan item (cth: Longkang, Cerucuk)..." 
                                           value={librarySearchTerm}
                                           onChange={(e) => setLibrarySearchTerm(e.target.value)}
                                           className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-emerald-500 focus:bg-white outline-none transition-all"
@@ -1274,19 +1319,46 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                           </button>
                                       )}
                                   </div>
+                                  {!librarySearchTerm && selectedCategory === 'HISTORY' && recentItems.length > 0 && (
+                                      <button 
+                                          onClick={handleClearHistory}
+                                          className="flex items-center gap-1.5 px-3 py-2 text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors shrink-0 border border-transparent hover:border-red-100"
+                                      >
+                                          <Trash2 className="w-3.5 h-3.5" /> Padam Sejarah
+                                      </button>
+                                  )}
                               </div>
 
                               {libraryGroups.length > 0 ? (
                                 libraryGroups.map(group => (
-                                  <div key={group.id} className="space-y-3"><h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100  pb-1">{group.title}</h4>
+                                  <div key={group.id} className="space-y-3">
+                                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                                          {(selectedCategory === 'HISTORY' || (group as any).isHistoryMatch) && <Clock className="w-3 h-3 text-emerald-500" />}
+                                          {group.title}
+                                      </h4>
                                       <div className="grid grid-cols-1 gap-2">
                                           {group.items.map(item => (
-                                              <div key={item.id} className="p-3 bg-slate-50  rounded-2xl border border-slate-100  transition-colors hover:border-emerald-300  group/item">
+                                              <div key={`${group.id}-${item.id}`} className="p-3 bg-slate-50  rounded-2xl border border-slate-100  transition-colors hover:border-emerald-300  group/item">
                                                   <div className="flex justify-between items-start gap-4">
                                                       <div className="flex-1 min-w-0"><p className="text-sm font-bold text-slate-800  leading-tight">{item.description}</p>
                                                           <div className="mt-2 flex gap-2 flex-wrap">
-                                                              {(!item.variants || item.variants.length === 0) ? (<button onClick={() => handleLibraryAddItem(group.id, item.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"><Plus className="w-3.5 h-3.5" /> Pilih Item</button>) : (
-                                                                  item.variants.map(v => (<button key={v.id} onClick={() => handleLibraryAddItem(group.id, item.id, v.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"><Plus className="w-3.5 h-3.5" /> {v.label}</button>))
+                                                              {(!item.variants || item.variants.length === 0) ? (
+                                                                  <button 
+                                                                    onClick={() => handleLibraryAddItem(item.sourceGroupId || group.id, item.id)} 
+                                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
+                                                                  >
+                                                                    <Plus className="w-3.5 h-3.5" /> Pilih Item
+                                                                  </button>
+                                                              ) : (
+                                                                  item.variants.map(v => (
+                                                                      <button 
+                                                                        key={v.id} 
+                                                                        onClick={() => handleLibraryAddItem(item.sourceGroupId || group.id, item.id, v.id)} 
+                                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
+                                                                      >
+                                                                        <Plus className="w-3.5 h-3.5" /> {v.label}
+                                                                      </button>
+                                                                  ))
                                                               )}
                                                           </div>
                                                       </div>
