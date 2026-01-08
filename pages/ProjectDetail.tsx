@@ -801,7 +801,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           const sideOnlyBorder = { top: 0, right: 0.1, bottom: 0, left: 0.1 };
           const titleBorder = { top: 0.1, right: 0.1, bottom: 0, left: 0.1 };
 
-          tableBody.push([{ content: bill.title, colSpan: 6, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fillColor: [245, 245, 245] } }]);
+          tableBody.push([{ content: bill.title, colSpan: 7, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fillColor: [245, 245, 245] } }]);
 
           bill.items.forEach((item, itemIndex) => {
               const autoNum = getAutoNumber(bill.items, itemIndex);
@@ -1044,7 +1044,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           const sideOnlyBorder = { top: 0, right: 0.1, bottom: 0, left: 0.1 };
           const titleBorder = { top: 0.1, right: 0.1, bottom: 0, left: 0.1 };
 
-          tableBody.push([{ content: bill.title, colSpan: 6, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fillColor: [245, 245, 245] } }]);
+          tableBody.push([{ content: bill.title, colSpan: 7, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fillColor: [245, 245, 245] } }]);
 
           bill.items.forEach((item, itemIndex) => {
               const autoNum = getAutoNumber(bill.items, itemIndex);
@@ -1105,7 +1105,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                           { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
                           { content: fmtQty(origQty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
                           { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
-                          { content: fmtAmt(origAmt), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }
+                          { content: fmtAmt(origAmt), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: '', styles: { lineWidth: sideOnlyBorder } }
                       ]);
 
                       // 2. Adjusted Row (Sub-row but repeats description)
@@ -1125,6 +1126,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                           { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                           { content: fmtQty(adjQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                           { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                           { content: fmtAmt(adjAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
                       ]);
                   } else {
@@ -1141,6 +1143,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                           { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
                           { content: fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
                           { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                          { content: '', styles: { lineWidth: sideOnlyBorder } },
                           { content: fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
                       ]);
                   }
@@ -1153,6 +1156,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                       { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
                       { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
                       { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
+                      { content: '', styles: { lineWidth: sideOnlyBorder } },
                       { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
                   ]);
 
@@ -1173,7 +1177,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                                   { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
                                   { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
                                   { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
-                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } }
+                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } }
                               ]);
                           });
                           // Adjusted parts second
@@ -1190,6 +1195,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                                   { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                                   { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                                   { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
                                   { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
                               ]);
                           });
@@ -1208,6 +1214,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                                   { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
                                   { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
                                   { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
                                   { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
                               ]);
                           });
@@ -1221,7 +1228,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           if (pelSectionIdx === 0) {
               // @ts-ignore
               doc.autoTable({ 
-                  body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
+                  body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
                   theme: 'grid', startY: 15, styles: { lineWidth: 0.1, lineColor: 0 }, margin: { left: 10, right: 10 }
               });
               // @ts-ignore
@@ -1229,9 +1236,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           }
 
           const complexHead = [
-              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }, { content: 'ADUAN', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }],
-              [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 7.5 } }, { content: aduanText, colSpan: 2, styles: { halign: 'center', fontSize: 7.5 } }],
-              ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'JUMLAH (RM)']
+              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }, { content: 'ADUAN', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }],
+              [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 7.5 } }, { content: aduanText, colSpan: 3, styles: { halign: 'center', fontSize: 7.5 } }],
+              ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'ASAL (RM)', 'JUMLAH (RM)']
           ];
 
           const footerHeight = 8; const distBottom = 20; const footerY = pageHeight - distBottom - footerHeight;
@@ -1242,7 +1249,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
               styles: { fontSize: 7.5, cellPadding: 1.4, textColor: 0 },
               headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
-              columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 13 }, 3: { cellWidth: 17 }, 4: { cellWidth: 25 }, 5: { cellWidth: 25 } },
+              columnStyles: { 0: { cellWidth: 9 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 20 }, 5: { cellWidth: 22 }, 6: { cellWidth: 22 } },
               didDrawCell: (data) => {
                   doc.setDrawColor(0); doc.setLineWidth(0.1);
                   doc.line(data.cell.x, data.cell.y, data.cell.x, data.cell.y + data.cell.height);
@@ -1257,7 +1264,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           // @ts-ignore
           const finalY = doc.lastAutoTable.finalY;
           if (finalY < footerY) {
-            const xPositions = [10, 20, 120, 133, 150, 175, 200];
+            const xPositions = [10, 19, 111, 121, 136, 156, 178, 200];
             doc.setLineWidth(0.1); doc.setDrawColor(0);
             xPositions.forEach(x => { doc.line(x, finalY, x, footerY); });
           }
@@ -1266,7 +1273,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           doc.autoTable({
             body: [[ { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }, { content: billTotal === 0 ? '' : formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } } ]],
             startY: footerY, theme: 'grid', styles: { fontSize: 7.5, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
-            columnStyles: { 0: { cellWidth: 165 }, 1: { cellWidth: 25 } },
+            columnStyles: { 0: { cellWidth: 168 }, 1: { cellWidth: 22 } },
             margin: { left: 10, right: 10 }, showHead: false
           });
           pelSectionIdx++;
