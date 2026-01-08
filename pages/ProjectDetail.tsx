@@ -1018,7 +1018,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       y = 250; doc.setFont("helvetica","bold"); doc.text("Disediakan oleh", 20, y); doc.text("Disemak oleh,", 120, y); 
       y += 20; doc.line(20, y, 80, y); doc.line(120, y, 180, y);
       
-      doc.save(`BQ_Dokumen_${formData.noFail || 'Draft'}.pdf`);
+      doc.save(`BQ_${formData.lokasi || 'Draft'}.pdf`);
   };
 
   const handleExportRealPelarasanPDF = async () => {
