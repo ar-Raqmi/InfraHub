@@ -934,9 +934,10 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                         <div className="p-4 border-b border-slate-100 bg-slate-50/50 sticky top-20 z-20">
                             <div className="flex items-center justify-between mb-2">
                                 <h2 className="text-lg font-bold text-slate-800 uppercase">{activeBill.title}</h2>
-                                                                                        <div className="flex items-center gap-3">
-                                                                                            <div className="text-right text-xs text-slate-400 shrink-0">Pelarasan: <span className="text-amber-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + (i.amount||0), 0))}</span></div>
-                                                                                        </div>                            </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="text-right text-xs text-slate-400 shrink-0">Pelarasan: <span className="text-amber-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + (i.amount||0), 0))}</span></div>
+                                </div>
+                            </div>
                             
                             <div className={`mt-2 p-3 rounded-xl border transition-colors ${isDimsDirty ? 'bg-orange-50 border-orange-200' : 'bg-amber-50/50 border-amber-100'}`}>
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
