@@ -402,6 +402,51 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         onDataChange(updatedBills);
     };
 
+    const handleSplitBill = (billId: string, splitItemIndex: number) => {
+        if (readOnly) return;
+        
+        const billIndex = pelarasanData.findIndex(b => b.id === billId);
+        if (billIndex === -1) return;
+        
+        const sourceBill = pelarasanData[billIndex];
+        const itemsToMove = sourceBill.items.slice(splitItemIndex);
+        const remainingItems = sourceBill.items.slice(0, splitItemIndex);
+        
+        const { prefix, content } = parseTitle(sourceBill.title);
+        const match = prefix.match(/BIL NO\.\s*(\d+)/i);
+        const currentNo = match ? parseInt(match[1]) : 0;
+        
+        const cleanContent = content.replace(/\s+SAMBUNGAN$/i, "");
+        const newTitle = `BIL NO. ${currentNo + 1} - ${cleanContent} SAMBUNGAN`;
+        
+        const newBill: BQGroup = {
+            ...sourceBill,
+            id: `bill-split-${Math.random().toString(36).substr(2, 9)}`,
+            title: newTitle,
+            items: itemsToMove,
+        };
+        
+        let newData = [...pelarasanData];
+        newData[billIndex] = { ...sourceBill, items: remainingItems };
+        newData.splice(billIndex + 1, 0, newBill);
+        
+        for (let i = billIndex + 2; i < newData.length; i++) {
+            const b = newData[i];
+            const { prefix: bPrefix, content: bContent } = parseTitle(b.title);
+            const bMatch = bPrefix.match(/BIL NO\.\s*(\d+)/i);
+            if (bMatch) {
+                const bNo = parseInt(bMatch[1]);
+                newData[i] = {
+                    ...b,
+                    title: `BIL NO. ${bNo + 1} - ${bContent}`
+                };
+            }
+        }
+        
+        onDataChange(newData);
+        setActiveBillId(newBill.id);
+    };
+
     const moveItem = (billId: string, itemId: string, direction: 'up' | 'down') => {
         if (readOnly) return;
         const newData = pelarasanData.map(bill => {
@@ -605,8 +650,11 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         const hierarchyLevel = getItemLevel(item);
         
         let originalItem: BQItem | undefined;
-        let originalBill = originalData.find(b => b.id === bill.id);
-        if (originalBill) { originalItem = originalBill.items.find(i => i.id === item.id); }
+        // Search across all original bills since items might have moved due to split
+        for (const ob of originalData) {
+            originalItem = ob.items.find(i => i.id === item.id);
+            if (originalItem) break;
+        }
         
         const originalQty = originalItem?.qty || 0;
         const originalAmount = originalItem?.amount || 0;
@@ -919,8 +967,17 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                         let visibleWorkItemCount = 0;
                                         const items: React.ReactNode[] = [];
 
+                                        let lastLevel0Index = -1;
+                                        let lastLevel1Index = -1;
                                         activeBill.items.forEach((item, idx) => {
                                             const level = getItemLevel(item); 
+                                            if (level === 0) {
+                                                lastLevel0Index = idx;
+                                                lastLevel1Index = -1; 
+                                            } else if (level === 1) {
+                                                lastLevel1Index = idx;
+                                            }
+                                            
                                             let isHidden = false;
                                             if (level === 0) { 
                                                 currentLevel1Collapsed = false; 
@@ -940,27 +997,51 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                                 if (item.type === 'ITEM' && !isHidden) {
                                                     visibleWorkItemCount++;
                                                     
+                                                    const splitIdx = lastLevel0Index !== -1 ? lastLevel0Index : lastLevel1Index;
+
                                                     // Page break indicators
                                                     if (visibleWorkItemCount === 8) {
                                                         items.push(
-                                                            <div key="page-break-warning-8" className="py-6 flex items-center gap-4 animate-pulse">
-                                                                <div className="flex-1 h-px bg-amber-200"></div>
-                                                                <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[10px] font-bold text-amber-600 uppercase tracking-widest shadow-sm">
-                                                                    <AlertTriangle className="w-3.5 h-3.5" />
-                                                                    Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru
+                                                            <div key="page-break-warning-8" className="py-6 flex flex-col items-center gap-4">
+                                                                <div className="w-full flex items-center gap-4 animate-pulse">
+                                                                    <div className="flex-1 h-px bg-amber-200"></div>
+                                                                    <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[10px] font-bold text-amber-600 uppercase tracking-widest shadow-sm">
+                                                                        <AlertTriangle className="w-3.5 h-3.5" />
+                                                                        Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru
+                                                                    </div>
+                                                                    <div className="flex-1 h-px bg-amber-200"></div>
                                                                 </div>
-                                                                <div className="flex-1 h-px bg-amber-200"></div>
+                                                                {!readOnly && splitIdx !== -1 && (
+                                                                    <button 
+                                                                        onClick={() => handleSplitBill(activeBill.id, splitIdx)}
+                                                                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105"
+                                                                    >
+                                                                        <PlusCircle className="w-4 h-4" />
+                                                                        Mula BIL NO baru dari "{activeBill.items[splitIdx].description}"
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         );
                                                     } else if (visibleWorkItemCount === 9) {
                                                         items.push(
-                                                            <div key="page-break-warning-9" className="py-6 flex items-center gap-4">
-                                                                <div className="flex-1 h-px bg-red-200"></div>
-                                                                <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-widest shadow-sm">
-                                                                    <AlertTriangle className="w-3.5 h-3.5" />
-                                                                    Pecahan halaman disahkan berlaku di sini
+                                                            <div key="page-break-warning-9" className="py-6 flex flex-col items-center gap-4">
+                                                                <div className="w-full flex items-center gap-4">
+                                                                    <div className="flex-1 h-px bg-red-200"></div>
+                                                                    <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-widest shadow-sm">
+                                                                        <AlertTriangle className="w-3.5 h-3.5" />
+                                                                        Pecahan halaman disahkan berlaku di sini
+                                                                    </div>
+                                                                    <div className="flex-1 h-px bg-red-200"></div>
                                                                 </div>
-                                                                <div className="flex-1 h-px bg-red-200"></div>
+                                                                {!readOnly && splitIdx !== -1 && (
+                                                                    <button 
+                                                                        onClick={() => handleSplitBill(activeBill.id, splitIdx)}
+                                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105"
+                                                                    >
+                                                                        <PlusCircle className="w-4 h-4" />
+                                                                        Mula BIL NO baru dari "{activeBill.items[splitIdx].description}"
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         );
                                                     }
