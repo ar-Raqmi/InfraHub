@@ -1269,7 +1269,7 @@ Jabatan Kejuruteraan` }],
               margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
               styles: { fontSize: 6.3, cellPadding: 0.6, textColor: 0 },
               headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
-              columnStyles: { 0: { cellWidth: 9 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 20 }, 5: { cellWidth: 22 }, 6: { cellWidth: 22 } },
+              columnStyles: { 0: { cellWidth: 9 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 15 }, 5: { cellWidth: 20 }, 6: { cellWidth: 20 } },
               didDrawCell: (data) => {
                   doc.setDrawColor(0); doc.setLineWidth(0.1);
                   doc.line(data.cell.x, data.cell.y, data.cell.x, data.cell.y + data.cell.height);
@@ -1284,7 +1284,7 @@ Jabatan Kejuruteraan` }],
           // @ts-ignore
           const finalY = doc.lastAutoTable.finalY;
           if (finalY < footerY) {
-            const xPositions = [10, 19, 111, 121, 136, 156, 178, 200];
+            const xPositions = [10, 19, 120, 130, 145, 160, 180, 200];
             doc.setLineWidth(0.1); doc.setDrawColor(0);
             xPositions.forEach(x => { doc.line(x, finalY, x, footerY); });
           }
@@ -1293,7 +1293,7 @@ Jabatan Kejuruteraan` }],
           doc.autoTable({
             body: [[ { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }, { content: billTotal === 0 ? '' : formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } } ]],
             startY: footerY, theme: 'grid', styles: { fontSize: 7, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
-            columnStyles: { 0: { cellWidth: 168 }, 1: { cellWidth: 22 } },
+            columnStyles: { 0: { cellWidth: 170 }, 1: { cellWidth: 20 } },
             margin: { left: 10, right: 10 }, showHead: false
           });
           pelSectionIdx++;
