@@ -272,7 +272,7 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
             <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5 shadow-inner">
                 <div 
                   className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 rounded-full transition-all duration-1000 ease-out relative" 
-                  style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }} 
+                  style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }}
                 >
                   <div className="absolute inset-0 bg-white/20 animate-pulse" />
                 </div>
@@ -312,8 +312,8 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
       
       <div className="md:hidden h-1 w-full bg-slate-100 relative">
           <div 
-            className="h-full bg-emerald-500 transition-all duration-1000 ease-out" 
-            style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }} 
+            className="h-full bg-emerald-500 transition-all duration-1000 ease-out"
+            style={{ width: `${Math.min(100, Math.max(0, Number(progress) || 0))}%` }}
           />
       </div>
     </div>,
@@ -417,10 +417,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         return;
     }
 
-    // Deep clone original BQ data
     const clonedBQData: BQGroup[] = JSON.parse(JSON.stringify(formData.bqData));
     
-    // Also clone global calculations if they exist
     const clonedGlobalCalculations = formData.globalCalculations 
         ? JSON.parse(JSON.stringify(formData.globalCalculations)) 
         : {};
@@ -536,12 +534,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         const siapDate = new Date(formData.tarikhSiapSebenar);
         const tuntutanDate = new Date(formData.tarikhTuntutanBayaran);
         
-        // Calculate diff in days
         const timeDiff = tuntutanDate.getTime() - siapDate.getTime();
         const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
         
-        // Logic: Grace period 14 days. Penalty starts on 15th day (index-based) or simply if days > 14
-        // Formula: max(0, dayDiff - 14)
         const locDays = Math.max(0, dayDiff - 14);
         const locRate = 100.00;
         const totalLoC = locDays * locRate;
@@ -668,35 +663,34 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       if(sealsLogo) doc.addImage(sealsLogo, 'PNG', 15, 15, 25, 20); 
       if(mpsLogo) doc.addImage(mpsLogo, 'PNG', 170, 15, 25, 20);
       
-      // Adjusted: 11 -> 12
       doc.setFontSize(12); doc.text("JABATAN KEJURUTERAAN", pageWidth/2, 20, { align:"center" });
       
-      // Adjusted: 13 -> 14
       doc.setFontSize(14); doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth/2, 25, { align:"center" });
       
-      // Adjusted: 8 -> 9
       doc.setFontSize(9); doc.setFont("helvetica","normal");
       doc.text("Persiaran 3, Bandar Baru Selayang", pageWidth/2, 30, { align:"center" });
       doc.text("68100 Batu Caves, Selangor.", pageWidth/2, 33.5, { align:"center" });
       doc.text("Tel. : 03-61204897/61311426 Fax. : 03-61204879", pageWidth/2, 37, { align:"center" });
       
-      // Adjusted: 12 -> 13
       doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text("CADANGAN KERJA", pageWidth/2, 46, { align:"center" });
-      doc.setLineWidth(0.5); doc.line(pageWidth/2 - 20, 47, pageWidth/2 + 20, 47); 
+      doc.setLineWidth(0.5); doc.line(pageWidth/2 - 20, 47, pageWidth/2 + 20, 47);
 
       let y = 56;
       const coverBody = [
-          [{ content: 'Tarikh', styles: { fontStyle: 'bold' } }, { content: `\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 ${formattedDate}`, styles: { fontStyle: 'bold' } }],
-          [{ content: 'Daripada', styles: { fontStyle: 'bold' } }, { content: `${pjaUser?.fullName.toUpperCase() || 'PJA'}\n${pjaUser?.jawatan || ''}\n${pjaUser?.bahagian || ''}\n${pjaUser?.unit || ''}` }],
-          [{ content: 'Kepada', styles: { fontStyle: 'bold' } }, { content: 'Pengarah\nJabatan Kejuruteraan' }],
+          [{ content: 'Tarikh', styles: { fontStyle: 'bold' } }, { content: `         ${formattedDate}`, styles: { fontStyle: 'bold' } }],
+          [{ content: 'Daripada', styles: { fontStyle: 'bold' } }, { content: `${pjaUser?.fullName.toUpperCase() || 'PJA'}
+${pjaUser?.jawatan || ''}
+${pjaUser?.bahagian || ''}
+${pjaUser?.unit || ''}` }],
+          [{ content: 'Kepada', styles: { fontStyle: 'bold' } }, { content: `Pengarah
+Jabatan Kejuruteraan` }],
           [{ content: 'Tajuk', styles: { fontStyle: 'bold' } }, { content: formData.namaProjek?.toUpperCase() || '', styles: { fontStyle: 'bold' } }],
           [{ content: 'Blok Perancangan', styles: { fontStyle: 'bold' } }, { content: formData.bp || '' }],
           [{ content: 'Zon', styles: { fontStyle: 'bold' } }, { content: formData.zon || '' }],
       ];
       
-      // AutoTable fontSize: 9 -> 10
       // @ts-ignore
-      doc.autoTable({ 
+      doc.autoTable({
         startY: y, 
         body: coverBody, 
         theme: 'plain', 
@@ -710,27 +704,23 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
       const marginBottom = 15;
 
-      // 2. Reference Text: 9 -> 10
       doc.setFontSize(10); 
       doc.setFont("helvetica","normal"); 
       doc.text("Perkara di atas adalah dirujuk.", 20, y); 
       y += 7;
 
-      // 3. Project Title 
       const p1 = `2.   ${(formData.namaProjek || '').toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}`;
       doc.setFont("helvetica","bold");
       doc.text(p1, 20, y, { maxWidth: 170, align:"justify" });
       const lineCount = doc.splitTextToSize(p1, 170).length;
-      y += (lineCount * 5); // Balanced spacing multiplier
+      y += (lineCount * 5); 
 
-      // 4. Attachments
       doc.setFont("helvetica","normal"); 
       doc.text("Bersama-sama ini dilampirkan pelan tapak, gambar lokasi aduan serta spesifikasi kerja (BQ)", 28, y); 
       y += 8; 
       doc.text("Sekian, terima kasih.", 20, y); 
       y += 8;
 
-      // 5. Slogans: 8 -> 9
       doc.setFont("helvetica","bold"); 
       doc.setFontSize(9); 
       const slogans = [
@@ -751,7 +741,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           y = 20; 
       }
 
-      // 6. Signature Details: 9 -> 10
       doc.setFont("helvetica","normal"); 
       doc.setFontSize(10); 
       doc.text("Saya yang menjalankan amanah,", 20, y); 
@@ -761,7 +750,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
       y += 5; 
       doc.setFont("helvetica","bold"); 
-      doc.text(`(${pjaUser?.fullName.toUpperCase() || 'NAMA PJA'})`, 20, y); 
+      doc.text(`(${pjaUser?.fullName.toUpperCase() || 'NAMA PJA'})`, 20, y);
 
       y += 5; 
       doc.setFont("helvetica","normal"); 
@@ -807,44 +796,29 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               let descText = item.description;
               if (item.variant) descText += `\n${item.variant}`;
 
-              // Determine Active Parts First
               const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
               const activeParts = rawParts.filter(p => 
                   (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
               );
 
-              // Logic for Display
-              // Default: If we have calculation parts, we usually hide the main row values 
-              // and let the sub-rows show the breakdown + values.
               let hideMainValues = activeParts.length > 0;
               let showSubRows = true;
               
-              // Special Case: Single Active Part
               if (activeParts.length === 1) {
                   const p = activeParts[0];
                   const hasDimensions = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
                   
                   if (!hasDimensions) {
-                      // Case: Inline (e.g. "Label" or "x 5") -> No sub-row, merge to main.
                       showSubRows = false; 
-                      hideMainValues = false; // Show values on main row
+                      hideMainValues = false; 
                       
-                      const parts = [];
-                      if (p.label) parts.push(p.label);
-                      if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`);
-                      
-                      if (parts.length > 0) {
-                         const inlineText = parts.join(' ');
-                         descText += ` ${inlineText}`;
-                      }
-                  } else {
-                      // Case: Single Dimensioned Part -> Sub-row handles values. Main row text only.
-                      // hideMainValues stays TRUE.
-                      // showSubRows stays TRUE.
+                      let inlineText = '';
+                      if (p.label) inlineText += ` - ${p.label}`;
+                      if (p.multiplier !== 1) inlineText += ` x ${p.multiplier}`;
+                      if (inlineText) descText += inlineText;
                   }
               }
 
-              // 1. Push Main Item Row
               tableBody.push([
                   { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
                   { content: descText, styles: { fontStyle: isHeader ? 'bold' : 'normal', lineWidth: sideOnlyBorder } },
@@ -854,33 +828,35 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   { content: hideMainValues ? '' : (item.amount ? formatCurrency(item.amount).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }
               ]);
 
-              // 2. Push Calculation Part Rows (if needed)
               if (showSubRows && activeParts.length > 0) {
                   activeParts.forEach(p => {
-                      // Calculate Part Qty
                       let product = 1;
                       if (p.hasLength) product *= p.length;
                       if (p.hasWidth) product *= p.width;
                       if (p.hasDepth) product *= p.depth;
                       const partQtyVal = product * p.multiplier;
                       const partQty = partQtyVal % 1 === 0 ? partQtyVal : parseFloat(partQtyVal.toFixed(2));
-                      
-                      // Calculate Part Amount
                       const partAmount = partQtyVal * item.rate;
 
-                      // Format Dimension String
                       const partsStr = [];
+                      const hasDim = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
                       if (p.hasLength) partsStr.push(`${p.length}m(P)`);
                       if (p.hasWidth) partsStr.push(`${p.width}m(L)`);
                       if (p.hasDepth) partsStr.push(`${p.depth}m(T)`);
-                      if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
                       
                       let dimStr = partsStr.join(' x ');
-                      if (p.label) dimStr += ` - ${p.label}`;
+                      if (hasDim) {
+                          if (p.multiplier !== 1) dimStr += ` x ${p.multiplier}`;
+                          if (p.label) dimStr += ` - ${p.label}`;
+                      } else {
+                          dimStr = '';
+                          if (p.label) dimStr += `- ${p.label}`;
+                          if (p.multiplier !== 1) dimStr += ` x ${p.multiplier}`;
+                          dimStr = dimStr.trim().startsWith('- ') ? dimStr.trim().substring(2) : dimStr.trim();
+                      }
 
-                      // Sub-row (Indented visually by empty col 0)
                       tableBody.push([
-                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }, // Empty No
+                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
                           { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3, right: 1 } } },
                           { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
                           { content: partQty.toString(), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
@@ -896,7 +872,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           let tableStartY = 15;
           if (bqSectionIdx === 0) {
               // @ts-ignore
-              doc.autoTable({ 
+              doc.autoTable({
                   body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 6, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
                   theme: 'grid', startY: 15, styles: { lineWidth: 0.1, lineColor: 0 }, margin: { left: 10, right: 10 }
               });
@@ -930,11 +906,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               didDrawCell: (data) => {
                   doc.setDrawColor(0);
                   doc.setLineWidth(0.1);
-                  // Always draw vertical lines
                   doc.line(data.cell.x, data.cell.y, data.cell.x, data.cell.y + data.cell.height);
                   doc.line(data.cell.x + data.cell.width, data.cell.y, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
-
-                  // Draw horizontal lines ONLY for headers and the first row (BIL Title)
                   if (data.section === 'head' || (data.section === 'body' && data.row.index === 0)) {
                       doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
                       doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
@@ -944,7 +917,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
           // @ts-ignore
           const finalY = doc.lastAutoTable.finalY;
-
           if (finalY < footerY) {
             const xPositions = [10, 20, 120, 133, 150, 175, 200];
             doc.setLineWidth(0.1);
@@ -963,14 +935,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             startY: footerY,
             theme: 'grid',
             styles: { fontSize: 7.5, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
-            columnStyles: { 
-                0: { cellWidth: 165 }, 
-                1: { cellWidth: 25 }   
-            },
+            columnStyles: { 0: { cellWidth: 165 }, 1: { cellWidth: 25 } },
             margin: { left: 10, right: 10 },
             showHead: false
           });
-
           bqSectionIdx++;
       }
 
@@ -1015,219 +983,271 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
       
       y = 250; doc.setFont("helvetica","bold"); doc.text("Disediakan oleh", 20, y); doc.text("Disemak oleh,", 120, y); 
       y += 20; doc.line(20, y, 80, y); doc.line(120, y, 180, y);
-      
+
       doc.save(`BQ_${formData.lokasi || 'Draft'}.pdf`);
   };
 
-  const handleExportRealPelarasanPDF = async () => {
-      // @ts-ignore
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      
-      const pelarasanData = formData.bqDataPelarasan || [];
-      const originalData = formData.bqData || [];
-      
-      let pelSectionIdx = 0;
-
-      for (const bill of pelarasanData) {
-          if (pelSectionIdx > 0) doc.addPage();
-          const originalBill = originalData.find(b => b.id === bill.id);
-          const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN') || bill.title.toUpperCase().includes('INSURANS');
-          let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
-          let aduanText = isPermulaan ? (locationRows || []).map(l => l.aduan).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.aduan || '');
-
-          const tableBody = [];
-          const sideOnlyBorder = { top: 0, right: 0.1, bottom: 0, left: 0.1 };
-          const titleBorder = { top: 0.1, right: 0.1, bottom: 0, left: 0.1 };
-
-          tableBody.push([{ content: bill.title, colSpan: 7, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fillColor: [245, 245, 245] } }]);
-
-          bill.items.forEach((item, itemIndex) => {
-              const autoNum = getAutoNumber(bill.items, itemIndex);
-              const isHeader = item.type === 'HEADER';
-              const originalItem = originalBill?.items.find(i => i.id === item.id);
-              
-              const isAddition = item.isAdjustment === true;
-
-              let descText = item.description;
-              if (item.variant) descText += `\n${item.variant}`;
-
-              // Title/Description logic: Blue only if fully new item, else Black
-              const textColor = isAddition ? [0, 80, 200] : [0, 0, 0];
-              const rowFontStyle = isAddition ? 'bold' : (isHeader ? 'bold' : 'normal');
-
-              // Calculation Parts
-              const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
-              const activeParts = rawParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1);
-
-              const rawOrigParts = (originalItem && !isHeader && originalItem.calculationParts) ? originalItem.calculationParts : [];
-              const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1);
-
-              let hideMainValues = activeParts.length > 0 || activeOrigParts.length > 0;
-
-              // Formatting helpers for zero suppression
-              const fmtQty = (val: number | undefined) => (val === undefined || val === 0 ? '' : val.toString());
-              const fmtAmt = (val: number | undefined) => (val === undefined || val === 0 ? '' : formatCurrency(val).replace('RM', ''));
-
-              // Helper to generate dimension string
-              const getDimStr = (p: any) => {
-                  const partsStr = []; 
-                  if (p.hasLength) partsStr.push(`${p.length}m(P)`); 
-                  if (p.hasWidth) partsStr.push(`${p.width}m(L)`); 
-                  if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); 
-                  if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
-                  let str = partsStr.join(' x '); 
-                  if (p.label) str += ` - ${p.label}`;
-                  return str;
-              };
-
-              // Helper to check if calculation part has changed
-              const hasPartChanged = (p: any, pOrig: any) => {
-                  if (!pOrig) return true;
-                  return p.length !== pOrig.length || 
-                         p.width !== pOrig.width || 
-                         p.depth !== pOrig.depth || 
-                         p.multiplier !== pOrig.multiplier || 
-                         p.label !== pOrig.label;
-              };
-
-              // 1. Push Main Item Row
-              tableBody.push([
-                  { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
-                  { content: descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                  { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                  { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                  { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                  { content: '', styles: { lineWidth: sideOnlyBorder } },
-                  { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
-              ]);
-
-              // 2. Push Calculation Parts with Side-by-Side logic
-              if (!isHeader && (activeParts.length > 0 || activeOrigParts.length > 0)) {
-                  // Strategy: Loop through all parts in Pelarasan and compare with Original
-                  // Also handle parts that might have been deleted (exist in Orig but not in Pelarasan)
-                  
-                  // Track processed original IDs
-                  const processedOrigIds = new Set<string>();
-
-                  activeParts.forEach(p => {
-                      const pOrig = activeOrigParts.find(op => op.id === p.id);
-                      if (pOrig) processedOrigIds.add(pOrig.id);
-
-                      let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
-                      const pQtyVal = product * p.multiplier;
-                      const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
-                      const pAmt = pQtyVal * item.rate;
-                      const dimStr = getDimStr(p);
-
-                      if (isAddition) {
-                          // Entirely new item: All parts Blue
-                          tableBody.push([
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
-                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
-                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
-                          ]);
-                      } else if (!pOrig) {
-                          // New calculation line in existing item: Blue
-                          tableBody.push([
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
-                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
-                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
-                          ]);
-                      } else if (hasPartChanged(p, pOrig)) {
-                          // Changed: Print Original (Black) then Adjusted (Blue/Red)
-                          let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
-                          const pOrigQtyVal = origProd * pOrig.multiplier;
-                          const pOrigQty = pOrigQtyVal % 1 === 0 ? pOrigQtyVal : parseFloat(pOrigQtyVal.toFixed(2));
-                          const pOrigAmt = pOrigQtyVal * (originalItem?.rate || 0);
-                          const dimStrOrig = getDimStr(pOrig);
-
-                          // Color based on increase/decrease
-                          const partColor = pAmt < pOrigAmt ? [200, 0, 0] : [0, 80, 200];
-
-                          // 1. Original Line
-                          tableBody.push([
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
-                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: fmtQty(pOrigQty), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
-                          ]);
-                          // 2. Adjusted Line
-                          tableBody.push([
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
-                              { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
-                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: partColor as any } },
-                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
-                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: partColor as any } },
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
-                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, textColor: partColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
-                          ]);
+      const handleExportRealPelarasanPDF = async () => {
+          // @ts-ignore
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('p', 'mm', 'a4');
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          
+          const pelarasanData = formData.bqDataPelarasan || [];
+          const originalData = formData.bqData || [];
+          
+          let pelSectionIdx = 0;
+  
+          for (const bill of pelarasanData) {
+              if (pelSectionIdx > 0) doc.addPage();
+              const originalBill = originalData.find(b => b.id === bill.id);
+              const isPermulaan = bill.title.toUpperCase().includes('PERMULAAN') || bill.title.toUpperCase().includes('INSURANS');
+              let locText = isPermulaan ? (locationRows || []).map(l => l.lokasi).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.lokasi || 'TIADA LOKASI');
+              let aduanText = isPermulaan ? (locationRows || []).map(l => l.aduan).join('\n') : ((locationRows || []).find(l => l.id === bill.locationId)?.aduan || '');
+  
+              const tableBody = [];
+              const sideOnlyBorder = { top: 0, right: 0.1, bottom: 0, left: 0.1 };
+              const titleBorder = { top: 0.1, right: 0.1, bottom: 0, left: 0.1 };
+  
+              tableBody.push([{ content: bill.title, colSpan: 7, styles: { fontStyle: 'bold', halign: 'left', lineWidth: titleBorder, fillColor: [245, 245, 245] } }]);
+  
+              bill.items.forEach((item, itemIndex) => {
+                  const autoNum = getAutoNumber(bill.items, itemIndex);
+                  const isHeader = item.type === 'HEADER';
+                  const originalItem = originalBill?.items.find(i => i.id === item.id);
+                  const isAddition = item.isAdjustment === true;
+  
+                  let descText = item.description;
+                  if (item.variant) descText += `\n${item.variant}`;
+  
+                  const rowFontStyle = isAddition ? 'bold' : (isHeader ? 'bold' : 'normal');
+                  const textColor = isAddition ? [0, 80, 200] : [0, 0, 0];
+  
+                  const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
+                  const activeParts = rawParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
+  
+                  const rawOrigParts = (originalItem && !isHeader && originalItem.calculationParts) ? originalItem.calculationParts : [];
+                  const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
+  
+                  const fmtQty = (val: number | undefined) => {
+                    if (val === undefined || val === 0) return '';
+                    return val % 1 === 0 ? val.toString() : parseFloat(val.toFixed(2)).toString();
+                };
+                  const fmtAmt = (val: number | undefined, allowZero: boolean = false) => {
+                      if (val === undefined) return '';
+                      if (val === 0 && !allowZero) return '';
+                      return formatCurrency(val).replace('RM', '');
+                  };
+  
+                  const getDimStr = (p: any, includeItemDesc: boolean = false) => {
+                      const partsStr = []; 
+                      const hasDimensions = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
+  
+                      if (p.hasLength) partsStr.push(`${p.length}m(P)`); 
+                      if (p.hasWidth) partsStr.push(`${p.width}m(L)`); 
+                      if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); 
+                      
+                      let str = partsStr.join(' x '); 
+  
+                      if (hasDimensions) {
+                          if (p.multiplier !== 1) str += ` x ${p.multiplier}`;
+                          if (p.label) str += ` - ${p.label}`;
                       } else {
-                          // No Change: Print one line in Black
-                          tableBody.push([
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: dimStr, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
-                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
-                          ]);
+                          let base = includeItemDesc ? item.description : '';
+                          let inlineParts = [];
+                          if (p.label) inlineParts.push(`- ${p.label}`);
+                          if (p.multiplier !== 1) inlineParts.push(`x ${p.multiplier}`);
+                          
+                          let inline = inlineParts.join(' ');
+                          if (base && inline) str = `${base} ${inline}`;
+                          else if (base) str = base;
+                          else {
+                              str = inline.trim();
+                              if (str.startsWith('- ')) str = str.substring(2);
+                          }
                       }
-                  });
-
-                  // Handle deleted parts (exist in Orig but not in Pelarasan)
-                  activeOrigParts.forEach(pOrig => {
-                      if (!processedOrigIds.has(pOrig.id)) {
-                          let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
-                          const pOrigQtyVal = origProd * pOrig.multiplier;
-                          const pOrigQty = pOrigQtyVal % 1 === 0 ? pOrigQtyVal : parseFloat(pOrigQtyVal.toFixed(2));
-                          const pOrigAmt = pOrigQtyVal * (originalItem?.rate || 0);
-                          const dimStrOrig = getDimStr(pOrig);
-
+                      return str.trim();
+                  };
+  
+                  const hasPartChanged = (p: any, pOrig: any) => {
+                      if (!pOrig) return true;
+                      return p.length !== pOrig.length || p.width !== pOrig.width || p.depth !== pOrig.depth || 
+                             p.multiplier !== pOrig.multiplier || p.label !== pOrig.label;
+                  };
+  
+                  const hasChanged = isAddition || (originalItem ? (
+                      item.qty !== originalItem.qty || item.amount !== originalItem.amount || item.rate !== originalItem.rate ||
+                      activeParts.length !== activeOrigParts.length ||
+                      activeParts.some((p, idx) => hasPartChanged(p, activeOrigParts[idx]))
+                  ) : false);
+  
+                  const isInlineType = !isHeader && activeParts.length === 1 && 
+                                      !(activeParts[0].hasLength || activeParts[0].hasWidth || activeParts[0].hasDepth);
+                  
+                  const showSubRows = (activeParts.length > 0 || activeOrigParts.length > 0) && !isInlineType;
+                  const isInlineChange = isInlineType && hasChanged;
+                  const hideMainValues = showSubRows || isInlineChange;
+  
+                  if (isInlineType && !hasChanged) {
+                      const p = activeParts[0];
+                      let inlineParts = [];
+                      if (p.label) inlineParts.push(`- ${p.label}`);
+                      if (p.multiplier !== 1) inlineParts.push(`x ${p.multiplier}`);
+                      let inline = inlineParts.join(' ');
+                      if (inline) descText += ` ${inline}`;
+                  }
+  
+                  // 1. Push Main Item Row
+                  tableBody.push([
+                      { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
+                      { content: isInlineChange ? '' : descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                      { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                      { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                      { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                      { content: '', styles: { lineWidth: sideOnlyBorder } },
+                      { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
+                  ]);
+  
+                  // 2. Push Calculation Parts with Side-by-Side logic
+                  if (isInlineChange) {
+                      if (isAddition) {
+                          const pCurr = activeParts[0];
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: getDimStr(pCurr, true), styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: fmtQty(item.qty), styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: fmtAmt(item.amount, true), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                          ]);
+                      } else if (originalItem) {
+                          const pOrig = activeOrigParts[0];
+                          const pCurr = activeParts[0];
+                          const partColor = item.amount < (originalItem.amount || 0) ? [200, 0, 0] : [0, 80, 200];
+  
                           // 1. Original Line (Black)
                           tableBody.push([
                               { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
+                              { content: getDimStr(pOrig, true), styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
                               { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: fmtQty(pOrigQty), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                              { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: fmtQty(originalItem.qty), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: originalItem.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: fmtAmt(originalItem.amount), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                               { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
                           ]);
-                          // 2. Adjusted Line (Red/Zeroed)
+                          // 2. Adjusted Line (Colored)
                           tableBody.push([
                               { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
-                              { content: dimStrOrig, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [200, 0, 0], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
-                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: [200, 0, 0] } },
-                              { content: '0', styles: { halign: 'center', fontsize: 6.5, textColor: [200, 0, 0], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
-                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: [200, 0, 0] } },
+                              { content: getDimStr(pCurr, true), styles: { fontsize: 6.5, fontStyle: 'bold', textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: fmtQty(item.qty), styles: { halign: 'center', fontsize: 6.5, textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: partColor as any } },
                               { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
-                              { content: '0.00', styles: { halign: 'right', fontsize: 6.5, textColor: [200, 0, 0], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                              { content: fmtAmt(item.amount, true), styles: { halign: 'right', fontsize: 6.5, textColor: partColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
                           ]);
                       }
-                  });
-              }
-          });
-
+                  } else if (!isHeader && showSubRows) {
+                      const processedOrigIds = new Set<string>();
+                      activeParts.forEach(p => {
+                          const pOrig = activeOrigParts.find(op => op.id === p.id);
+                          if (pOrig) processedOrigIds.add(pOrig.id);
+                          let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
+                          const pQtyVal = product * p.multiplier;
+                          const pAmt = pQtyVal * item.rate;
+                          const hasDimensions = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
+                          const isPartInlineType = !hasDimensions && activeParts.length === 1;
+                          const dimStr = getDimStr(p, isPartInlineType);
+  
+                          if (isAddition) {
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: fmtQty(pQtyVal), styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: fmtAmt(pAmt, true), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                              ]);
+                          } else if (!pOrig) {
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: fmtQty(pQtyVal), styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: fmtAmt(pAmt, true), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                              ]);
+                          } else if (hasPartChanged(p, pOrig)) {
+                              let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
+                              const pOrigAmt = (origProd * pOrig.multiplier) * (originalItem?.rate || 0);
+                              const partColor = pAmt < pOrigAmt ? [200, 0, 0] : [0, 80, 200];
+                              const dimStrOrig = getDimStr(pOrig, false);
+  
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: fmtQty(origProd * pOrig.multiplier), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
+                              ]);
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontsize: 6.5, textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: fmtQty(pQtyVal), styles: { halign: 'center', fontsize: 6.5, textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: partColor as any } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: fmtAmt(pAmt, true), styles: { halign: 'right', fontsize: 6.5, textColor: partColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                              ]);
+                          } else {
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: dimStr, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: fmtQty(pQtyVal), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
+                              ]);
+                          }
+                      });
+                      activeOrigParts.forEach(pOrig => {
+                          if (!processedOrigIds.has(pOrig.id)) {
+                              let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
+                              const pOrigAmt = (origProd * pOrig.multiplier) * (originalItem?.rate || 0);
+                              const dimStrOrig = getDimStr(pOrig, false);
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: fmtQty(origProd * pOrig.multiplier), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
+                              ]);
+                              tableBody.push([
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: dimStrOrig, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [200, 0, 0], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                                  { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: [200, 0, 0] } },
+                                  { content: '0', styles: { halign: 'center', fontsize: 6.5, textColor: [200, 0, 0], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: [200, 0, 0] } },
+                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                                  { content: '0.00', styles: { halign: 'right', fontsize: 6.5, textColor: [200, 0, 0], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                              ]);
+                          }
+                      });
+                  }
+              });
           const billTotal = bill.items.reduce((s, i) => s + (i.amount || 0), 0);
           let tableStartY = 15;
           if (pelSectionIdx === 0) {
               // @ts-ignore
-              doc.autoTable({ 
+              doc.autoTable({
                   body: [[{ content: `${formData.namaProjek?.toUpperCase()}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', fontSize: 8 } }]],
                   theme: 'grid', startY: 15, styles: { lineWidth: 0.1, lineColor: 0 }, margin: { left: 10, right: 10 }
               });
@@ -1247,7 +1267,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           doc.autoTable({
               head: complexHead, body: tableBody, theme: 'plain', startY: tableStartY, rowPageBreak: 'avoid', showHead: 'everyPage', 
               margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
-              styles: { fontSize: 6.5, cellPadding: 1.4, textColor: 0 },
+              styles: { fontSize: 6.3, cellPadding: 0.6, textColor: 0 },
               headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
               columnStyles: { 0: { cellWidth: 9 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 20 }, 5: { cellWidth: 22 }, 6: { cellWidth: 22 } },
               didDrawCell: (data) => {
@@ -1485,7 +1505,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                   <div className="group"> <label className={labelClass}>No. Sebutharga</label> <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih No. Sebutharga...</option> {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)} </select> </div>
                 </div>
             </div>
-            <div className="rounded-[2rem] border border-slate-200 shadow-2xl bg-white/50 overflow-hidden">
+            <div className="rounded-[2rem] border border-slate-200 shadow-2xl bg-white/50">
                 <div className="bg-white/80 p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10"> <div className="flex items-center gap-4"> <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20"> <FileSignature className="w-6 h-6" /> </div> <div> <h3 className="font-bold text-slate-900 text-xl tracking-tight">Dokumen Aku Janji</h3> <p className="text-xs text-slate-500 font-medium">Jana dan cetak dokumen rasmi</p> </div> </div> </div>
                 <div className="p-6 bg-slate-50/50"> <AkuJanjiEditor project={formData as Project} selectedYear={selectedYear} pjaUser={users.find(u => u.id === formData.pjaId)} onUpdate={handleAkuJanjiUpdate} isPrintView={false} readOnly={isGlobalReadOnly} /> </div>
             </div>
@@ -1571,11 +1591,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                            <div className="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center"> <HelpCircle className="w-8 h-8 stroke-[1.5]" /> </div> 
                        </div> 
                    ) : confirmationState.type === 'reset_pelarasan' ? (
-                       <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6 text-red-500"> 
+                       <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6 text-red-500">
                            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center"> <RefreshCw className="w-8 h-8 stroke-[1.5]" /> </div> 
                        </div> 
                    ) : ( 
-                       <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500"> 
+                       <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500">
                            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center"> <CheckCircle className="w-8 h-8 stroke-[1.5]" /> </div> 
                        </div> 
                    )}
