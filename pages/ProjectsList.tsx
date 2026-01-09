@@ -203,7 +203,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                   ...monthCounts.map(c => c > 0 ? c.toString() : ''), 
                   totalCount, 
                   formatCurrency(totalContract).replace('RM', '').trim(),
-                  formatCurrency(limit).replace('RM', '').trim(),
                   formatCurrency(balance).replace('RM', '').trim()
               ];
           });
@@ -214,7 +213,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               ...grandTotalMonths.map(c => c > 0 ? c.toString() : ''),
               grandTotalCount,
               formatCurrency(grandTotalContract).replace('RM', '').trim(),
-              formatCurrency(grandTotalLimit).replace('RM', '').trim(),
               formatCurrency(grandTotalBalance).replace('RM', '').trim()
           ];
 
