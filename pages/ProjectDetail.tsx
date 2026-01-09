@@ -1049,20 +1049,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               const isHeader = item.type === 'HEADER';
               const originalItem = originalBill?.items.find(i => i.id === item.id);
               
-              const origAmt = originalItem?.amount || 0;
-              const currentAmt = item.amount || 0;
-              
-              // Rounded comparison to avoid floating point artifacts
-              const diff = parseFloat((currentAmt - origAmt).toFixed(2));
-              const hasPelarasan = !isHeader && Math.abs(diff) > 0.01;
               const isAddition = item.isAdjustment === true;
 
               let descText = item.description;
               if (item.variant) descText += `\n${item.variant}`;
 
-              // Blue if it's a completely new item or has positive pelarasan, Red if negative
-              const textColor = isAddition ? [0, 0, 255] : (hasPelarasan ? (diff > 0 ? [0, 80, 200] : [200, 0, 0]) : [0, 0, 0]);
-              const rowFontStyle = (hasPelarasan || isAddition) ? 'bold' : (isHeader ? 'bold' : 'normal');
+              // Title/Description logic: Blue only if fully new item, else Black
+              const textColor = isAddition ? [0, 80, 200] : [0, 0, 0];
+              const rowFontStyle = isAddition ? 'bold' : (isHeader ? 'bold' : 'normal');
 
               // Calculation Parts
               const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
@@ -1077,149 +1071,155 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
               const fmtQty = (val: number | undefined) => (val === undefined || val === 0 ? '' : val.toString());
               const fmtAmt = (val: number | undefined) => (val === undefined || val === 0 ? '' : formatCurrency(val).replace('RM', ''));
 
-              // Special Case: Single Multiplier (No Dimensions) -> Similar to original BQ but for Pelarasan
-              const isSpecialMultiplier = !isHeader && activeParts.length === 1 && 
-                  !(activeParts[0].hasLength && activeParts[0].length > 0) &&
-                  !(activeParts[0].hasWidth && activeParts[0].width > 0) &&
-                  !(activeParts[0].hasDepth && activeParts[0].depth > 0);
+              // Helper to generate dimension string
+              const getDimStr = (p: any) => {
+                  const partsStr = []; 
+                  if (p.hasLength) partsStr.push(`${p.length}m(P)`); 
+                  if (p.hasWidth) partsStr.push(`${p.width}m(L)`); 
+                  if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); 
+                  if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
+                  let str = partsStr.join(' x '); 
+                  if (p.label) str += ` - ${p.label}`;
+                  return str;
+              };
 
-              if (isSpecialMultiplier) {
-                  const p = activeParts[0];
-                  const pOrig = activeOrigParts[0];
+              // Helper to check if calculation part has changed
+              const hasPartChanged = (p: any, pOrig: any) => {
+                  if (!pOrig) return true;
+                  return p.length !== pOrig.length || 
+                         p.width !== pOrig.width || 
+                         p.depth !== pOrig.depth || 
+                         p.multiplier !== pOrig.multiplier || 
+                         p.label !== pOrig.label;
+              };
+
+              // 1. Push Main Item Row
+              tableBody.push([
+                  { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
+                  { content: descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                  { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                  { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                  { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+                  { content: '', styles: { lineWidth: sideOnlyBorder } },
+                  { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
+              ]);
+
+              // 2. Push Calculation Parts with Side-by-Side logic
+              if (!isHeader && (activeParts.length > 0 || activeOrigParts.length > 0)) {
+                  // Strategy: Loop through all parts in Pelarasan and compare with Original
+                  // Also handle parts that might have been deleted (exist in Orig but not in Pelarasan)
                   
-                  if (hasPelarasan && !isAddition) {
-                      // 1. Original Row
-                      let mainDesc = descText;
-                      const origPartsText = [];
-                      if (pOrig?.label) origPartsText.push(pOrig.label);
-                      if (pOrig?.multiplier && pOrig.multiplier !== 1) origPartsText.push(`x ${pOrig.multiplier}`);
-                      if (origPartsText.length > 0) mainDesc += ` ${origPartsText.join(' ')}`;
-                      
-                      const origQtyVal = pOrig ? pOrig.multiplier : (originalItem?.qty || 0);
-                      const origQty = origQtyVal % 1 === 0 ? origQtyVal : parseFloat(origQtyVal.toFixed(2));
-                      const origAmt = pOrig ? (origQtyVal * (originalItem?.rate || 0)) : (originalItem?.amount || 0);
+                  // Track processed original IDs
+                  const processedOrigIds = new Set<string>();
 
-                      tableBody.push([
-                          { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: 'normal' } },
-                          { content: mainDesc, styles: { fontStyle: 'normal', lineWidth: sideOnlyBorder } },
-                          { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-                          { content: fmtQty(origQty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-                          { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
-                          { content: fmtAmt(origAmt), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
-                          { content: '', styles: { lineWidth: sideOnlyBorder } }
-                      ]);
+                  activeParts.forEach(p => {
+                      const pOrig = activeOrigParts.find(op => op.id === p.id);
+                      if (pOrig) processedOrigIds.add(pOrig.id);
 
-                      // 2. Adjusted Row (Sub-row but repeats description)
-                      let subDesc = descText;
-                      const adjPartsText = [];
-                      if (p.label) adjPartsText.push(p.label);
-                      if (p.multiplier !== 1) adjPartsText.push(`x ${p.multiplier}`);
-                      if (adjPartsText.length > 0) subDesc += ` ${adjPartsText.join(' ')}`;
+                      let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
+                      const pQtyVal = product * p.multiplier;
+                      const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
+                      const pAmt = pQtyVal * item.rate;
+                      const dimStr = getDimStr(p);
 
-                      const adjQtyVal = p.multiplier;
-                      const adjQty = adjQtyVal % 1 === 0 ? adjQtyVal : parseFloat(adjQtyVal.toFixed(2));
-                      const adjAmt = adjQtyVal * item.rate;
+                      if (isAddition) {
+                          // Entirely new item: All parts Blue
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
+                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
+                          ]);
+                      } else if (!pOrig) {
+                          // New calculation line in existing item: Blue
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
+                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, textColor: [0, 80, 200], lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: [0, 80, 200] } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
+                          ]);
+                      } else if (hasPartChanged(p, pOrig)) {
+                          // Changed: Print Original (Black) then Adjusted (Blue/Red)
+                          let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
+                          const pOrigQtyVal = origProd * pOrig.multiplier;
+                          const pOrigQty = pOrigQtyVal % 1 === 0 ? pOrigQtyVal : parseFloat(pOrigQtyVal.toFixed(2));
+                          const pOrigAmt = pOrigQtyVal * (originalItem?.rate || 0);
+                          const dimStrOrig = getDimStr(pOrig);
 
-                      tableBody.push([
-                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                          { content: subDesc, styles: { fontSize: 7, fontStyle: 'bold', textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, left: 3 } } },
-                          { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, textColor: textColor as any } } },
-                          { content: fmtQty(adjQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, textColor: textColor as any } } },
-                          { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                          { content: fmtAmt(adjAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
-                      ]);
-                  } else {
-                      // No Pelarasan OR it's a completely NEW item (Addition)
-                      let mainDesc = descText;
-                      const partsText = [];
-                      if (p.label) partsText.push(p.label);
-                      if (p.multiplier !== 1) partsText.push(`x ${p.multiplier}`);
-                      if (partsText.length > 0) mainDesc += ` ${partsText.join(' ')}`;
+                          // Color based on increase/decrease
+                          const partColor = pAmt < pOrigAmt ? [200, 0, 0] : [0, 80, 200];
 
-                      tableBody.push([
-                          { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
-                          { content: mainDesc, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                          { content: item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                          { content: fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                          { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                          { content: '', styles: { lineWidth: sideOnlyBorder } },
-                          { content: fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
-                      ]);
-                  }
-              } else {
-                  // Standard Behavior (Multiple parts or dimensions)
-                  // 1. Push Main Item Row
-                  tableBody.push([
-                      { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
-                      { content: descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                      { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                      { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                      { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-                      { content: '', styles: { lineWidth: sideOnlyBorder } },
-                      { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
-                  ]);
-
-                  // 2. Push Calculation Parts
-                  if (activeParts.length > 0 || activeOrigParts.length > 0) {
-                      if (hasPelarasan && !isAddition) {
-                          // Original parts first
-                          activeOrigParts.forEach(p => {
-                              let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
-                              const pQtyVal = product * p.multiplier;
-                              const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
-                              const pAmt = pQtyVal * (originalItem?.rate || 0);
-                              const partsStr = []; if (p.hasLength) partsStr.push(`${p.length}m(P)`); if (p.hasWidth) partsStr.push(`${p.width}m(L)`); if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
-                              let dimStr = partsStr.join(' x '); if (p.label) dimStr += ` - ${p.label}`;
-                              tableBody.push([
-                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
-                                  { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2, left: 3 } } },
-                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
-                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
-                                  { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
-                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } },
-                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.2 } } }
-                              ]);
-                          });
-                          // Adjusted parts second
-                          activeParts.forEach(p => {
-                              let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
-                              const pQtyVal = product * p.multiplier;
-                              const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
-                              const pAmt = pQtyVal * item.rate;
-                              const partsStr = []; if (p.hasLength) partsStr.push(`${p.length}m(P)`); if (p.hasWidth) partsStr.push(`${p.width}m(L)`); if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
-                              let dimStr = partsStr.join(' x '); if (p.label) dimStr += ` - ${p.label}`;
-                              tableBody.push([
-                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                                  { content: dimStr, styles: { fontSize: 7, fontStyle: 'bold', textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5, left: 3 } } },
-                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 }, textColor: textColor as any } },
-                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, textColor: textColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 }, textColor: textColor as any } },
-                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } },
-                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, textColor: textColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.5 } } }
-                              ]);
-                          });
+                          // 1. Original Line
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: fmtQty(pOrigQty), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
+                          ]);
+                          // 2. Adjusted Line
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: dimStr, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: partColor as any } },
+                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, textColor: partColor as any, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: partColor as any } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, textColor: partColor as any, fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                          ]);
                       } else {
-                          // No pelarasan OR it's a completely NEW item (Addition)
-                          activeParts.forEach(p => {
-                              let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
-                              const pQtyVal = product * p.multiplier;
-                              const pQty = pQtyVal % 1 === 0 ? pQtyVal : parseFloat(pQtyVal.toFixed(2));
-                              const pAmt = pQtyVal * item.rate;
-                              const partsStr = []; if (p.hasLength) partsStr.push(`${p.length}m(P)`); if (p.hasWidth) partsStr.push(`${p.width}m(L)`); if (p.hasDepth) partsStr.push(`${p.depth}m(T)`); if (p.multiplier !== 1) partsStr.push(` ${p.multiplier}`);
-                              let dimStr = partsStr.join(' x '); if (p.label) dimStr += ` - ${p.label}`;
-                              tableBody.push([
-                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                                  { content: dimStr, styles: { fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 }, textColor: textColor as any, fontStyle: rowFontStyle as any } },
-                                  { content: item.unit, styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any } },
-                                  { content: fmtQty(pQty), styles: { halign: 'center', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any } },
-                                  { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any } },
-                                  { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
-                                  { content: fmtAmt(pAmt), styles: { halign: 'right', fontSize: 7, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 }, textColor: textColor as any, fontStyle: rowFontStyle as any } }
-                              ]);
-                          });
+                          // No Change: Print one line in Black
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: dimStr, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: fmtQty(pQty), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } },
+                              { content: fmtAmt(pAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0, bottom: 0.5 } } }
+                          ]);
                       }
-                  }
+                  });
+
+                  // Handle deleted parts (exist in Orig but not in Pelarasan)
+                  activeOrigParts.forEach(pOrig => {
+                      if (!processedOrigIds.has(pOrig.id)) {
+                          let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
+                          const pOrigQtyVal = origProd * pOrig.multiplier;
+                          const pOrigQty = pOrigQtyVal % 1 === 0 ? pOrigQtyVal : parseFloat(pOrigQtyVal.toFixed(2));
+                          const pOrigAmt = pOrigQtyVal * (originalItem?.rate || 0);
+                          const dimStrOrig = getDimStr(pOrig);
+
+                          // 1. Original Line (Black)
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: fmtQty(pOrigQty), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
+                          ]);
+                          // 2. Adjusted Line (Red/Zeroed)
+                          tableBody.push([
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: dimStrOrig, styles: { fontsize: 6.5, fontStyle: 'bold', textColor: [200, 0, 0], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5, left: 3 } } },
+                              { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: [200, 0, 0] } },
+                              { content: '0', styles: { halign: 'center', fontsize: 6.5, textColor: [200, 0, 0], lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: item.rate ? formatCurrency(item.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 }, textColor: [200, 0, 0] } },
+                              { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } },
+                              { content: '0.00', styles: { halign: 'right', fontsize: 6.5, textColor: [200, 0, 0], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
+                          ]);
+                      }
+                  });
               }
           });
 
@@ -1236,8 +1236,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           }
 
           const complexHead = [
-              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }, { content: 'ADUAN', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }],
-              [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 7.5 } }, { content: aduanText, colSpan: 3, styles: { halign: 'center', fontSize: 7.5 } }],
+              [{ content: 'LOKASI', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7 } }, { content: 'ADUAN', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7.5 } }],
+              [{ content: locText, colSpan: 4, styles: { halign: 'center', fontSize: 7 } }, { content: aduanText, colSpan: 3, styles: { halign: 'center', fontSize: 7.5 } }],
               ['BIL', 'KETERANGAN', 'UNIT', 'KUANTITI', 'KADAR (RM)', 'ASAL (RM)', 'JUMLAH (RM)']
           ];
 
@@ -1247,7 +1247,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           doc.autoTable({
               head: complexHead, body: tableBody, theme: 'plain', startY: tableStartY, rowPageBreak: 'avoid', showHead: 'everyPage', 
               margin: { top: 20, left: 10, right: 10, bottom: distBottom + footerHeight + 5 },
-              styles: { fontSize: 7.5, cellPadding: 1.4, textColor: 0 },
+              styles: { fontSize: 6.5, cellPadding: 1.4, textColor: 0 },
               headStyles: { fillColor: 255, textColor: 0, fontStyle: 'bold' },
               columnStyles: { 0: { cellWidth: 9 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 10 }, 3: { cellWidth: 15 }, 4: { cellWidth: 20 }, 5: { cellWidth: 22 }, 6: { cellWidth: 22 } },
               didDrawCell: (data) => {
@@ -1272,7 +1272,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           // @ts-ignore
           doc.autoTable({
             body: [[ { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }, { content: billTotal === 0 ? '' : formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } } ]],
-            startY: footerY, theme: 'grid', styles: { fontSize: 7.5, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
+            startY: footerY, theme: 'grid', styles: { fontSize: 7, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
             columnStyles: { 0: { cellWidth: 168 }, 1: { cellWidth: 22 } },
             margin: { left: 10, right: 10 }, showHead: false
           });
