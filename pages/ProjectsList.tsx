@@ -3,6 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
 import { supabaseService } from '../services/supabaseService';
+import { useUsers } from '../hooks/useUsers';
+import { useSettings } from '../hooks/useSettings';
 import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface ProjectsListProps {
@@ -64,17 +66,22 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
 };
 
 const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onAddProject, onEditProject, onDeleteProject, user }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [votesList, setVotesList] = useState<VoteDefinition[]>([]);
+  const { users } = useUsers();
+  const { 
+    votes: votesList, 
+    companyOrder, 
+    manualFinancials, 
+    companyDetails,
+    updateSettings,
+    isSyncing: isSettingsSyncing 
+  } = useSettings(selectedYear);
   
   const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
   const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
-  const [companyOrder, setCompanyOrder] = useState<string[]>([]); 
   const [costViewMode, setCostViewMode] = useState<'contract' | 'actual' | 'both'>('contract'); 
   
   const [showSiap, setShowSiap] = useState(true); 
 
-  const [manualFinancials, setManualFinancials] = useState<{ outsource: number, ydp: number }>({ outsource: 0, ydp: 0 });
   const [isSavingFinancials, setIsSavingFinancials] = useState(false);
   
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -95,36 +102,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
 
-  const [companyDetails, setCompanyDetails] = useState<Record<string, any>>({});
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [pageInput, setPageInput] = useState('1');
 
   const [sortKey, setSortKey] = useState<string>('tarikhBuka');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  useEffect(() => {
-    const fetchData = async () => {
-        try {
-            const [u, votes, order, financials, comps] = await Promise.all([
-                supabaseService.getUsers(),
-                supabaseService.getVotes(selectedYear),
-                supabaseService.getCompanyOrder(selectedYear),
-                supabaseService.getManualFinancials(selectedYear),
-                supabaseService.getAllCompanyDetails(selectedYear)
-            ]);
-            setUsers(u);
-            setVotesList(votes);
-            setCompanyOrder(order);
-            setManualFinancials(financials);
-            setCompanyDetails(comps);
-        } catch (err) {
-            console.error('Failed to load projects list data:', err);
-        }
-    };
-    fetchData();
-  }, [selectedYear]);
 
   const handleExportRotasiPDF = async () => {
       setIsGeneratingPdf(true);
@@ -377,7 +360,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const saveManualFinancials = async () => {
       setIsSavingFinancials(true);
       try {
-        await supabaseService.saveManualFinancials(selectedYear, manualFinancials);
+        await updateSettings({ manual_financials: manualFinancials });
       } catch (err) {
         console.error('Failed to save financials:', err);
       } finally {

@@ -208,6 +208,12 @@ class SupabaseService {
         return data?.map(this.mapProject) || [];
     }
 
+    async getProjectById(id: number): Promise<Project> {
+        const { data, error } = await supabase.from('projects').select('*').eq('id', id).single();
+        if (error) throw error;
+        return this.mapProject(data);
+    }
+
     async createProject(project: Omit<Project, 'id'>) {
         const newId = Date.now();
         const dbProject = {

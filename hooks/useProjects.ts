@@ -39,12 +39,23 @@ export const useProjects = () => {
     };
   }, [queryClient]);
 
-  // 3. Mutations (Create, Update, Delete)
-  // We use "Pessimistic Updates" here for safety (wait for server response)
+  // 3. Mutations (Optimistic Updates for 100kbps speed)
   
   const createProjectMutation = useMutation({
     mutationFn: (newProject: Omit<Project, 'id'>) => supabaseService.createProject(newProject),
-    onSuccess: () => {
+    onMutate: async (newProject) => {
+      await queryClient.cancelQueries({ queryKey: ['projects'] });
+      const previousProjects = queryClient.getQueryData<Project[]>(['projects']);
+      const optimisticProject = { ...newProject, id: Date.now() } as Project;
+      queryClient.setQueryData(['projects'], (old: Project[] = []) => [optimisticProject, ...old]);
+      return { previousProjects };
+    },
+    onError: (err, newProject, context) => {
+      if (context?.previousProjects) {
+        queryClient.setQueryData(['projects'], context.previousProjects);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
@@ -52,14 +63,40 @@ export const useProjects = () => {
   const updateProjectMutation = useMutation({
     mutationFn: ({ id, updates }: { id: number; updates: Partial<Project> }) => 
       supabaseService.updateProject(id, updates),
-    onSuccess: () => {
+    onMutate: async ({ id, updates }) => {
+      await queryClient.cancelQueries({ queryKey: ['projects'] });
+      const previousProjects = queryClient.getQueryData<Project[]>(['projects']);
+      queryClient.setQueryData(['projects'], (old: Project[] = []) => 
+        old.map(p => p.id === id ? { ...p, ...updates } : p)
+      );
+      return { previousProjects };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousProjects) {
+        queryClient.setQueryData(['projects'], context.previousProjects);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 
   const deleteProjectMutation = useMutation({
     mutationFn: (id: number) => supabaseService.deleteProject(id),
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['projects'] });
+      const previousProjects = queryClient.getQueryData<Project[]>(['projects']);
+      queryClient.setQueryData(['projects'], (old: Project[] = []) => 
+        old.filter(p => p.id !== id)
+      );
+      return { previousProjects };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousProjects) {
+        queryClient.setQueryData(['projects'], context.previousProjects);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });

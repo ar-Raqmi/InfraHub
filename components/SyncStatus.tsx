@@ -1,33 +1,102 @@
-import React from 'react';
-import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Wifi, WifiOff, RefreshCw, ShieldCheck, Zap } from 'lucide-react';
 import { useIsFetching } from '@tanstack/react-query';
 
 export const SyncStatus: React.FC = () => {
-  const isFetching = useIsFetching();
-  const isOnline = navigator.onLine;
+  // Real count of active network requests from React Query
+  const isFetchingCount = useIsFetching();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showSynced, setShowSynced] = useState(false);
 
-  if (!isOnline) {
-    return (
-      <div className="fixed top-0 left-0 right-0 z-[9999] bg-red-500 text-white text-xs font-bold py-1 px-4 flex items-center justify-center gap-2 shadow-md">
-        <WifiOff className="w-3 h-3" />
-        <span>OFFLINE MODE - Data may be outdated</span>
-      </div>
-    );
-  }
+  // Monitor hardware connection strictly
+  useEffect(() => {
+    const handleStatusChange = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', handleStatusChange);
+    window.addEventListener('offline', handleStatusChange);
+    return () => {
+      window.removeEventListener('online', handleStatusChange);
+      window.removeEventListener('offline', handleStatusChange);
+    };
+  }, []);
 
-  if (isFetching > 0) {
-    return (
-      <div className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-400 text-yellow-900 text-xs font-bold py-1 px-4 flex items-center justify-center gap-2 shadow-md transition-all duration-500">
-        <RefreshCw className="w-3 h-3 animate-spin" />
-        <span>Syncing...</span>
-      </div>
-    );
-  }
+  // Show "Synced" briefly ONLY after a real fetch finishes
+  useEffect(() => {
+    if (isFetchingCount === 0 && isOnline) {
+      setShowSynced(true);
+      const timer = setTimeout(() => setShowSynced(false), 2500);
+      return () => clearTimeout(timer);
+    } else if (isFetchingCount > 0) {
+      setShowSynced(false);
+    }
+  }, [isFetchingCount, isOnline]);
+
+  const conn = (navigator as any).connection;
+  const realSpeed = conn?.downlink;
+  const realPing = conn?.rtt;
+
+  // If everything is idle, hide the UI to save resources
+  if (isOnline && isFetchingCount === 0 && !showSynced) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none flex justify-center">
-       <div className="bg-emerald-500/90 text-white text-[10px] font-bold py-0.5 px-3 rounded-b-lg shadow-sm backdrop-blur-sm opacity-0 animate-fade-out">
-          Live
+    <div className="fixed bottom-10 left-1/2 z-[10000] px-4 w-full max-w-md animate-slide-up-center">
+       <div className={`
+         relative overflow-hidden rounded-[2.5rem] p-6 shadow-2xl border-2 backdrop-blur-xl transition-all duration-300
+         ${!isOnline ? 'bg-red-600/95 border-red-400 shadow-red-500/20' : 
+           isFetchingCount > 0 ? 'bg-white/95 border-emerald-500 shadow-emerald-500/20' : 
+           'bg-emerald-600/95 border-emerald-400 shadow-emerald-500/20'}
+       `}>
+          
+          <div className="relative z-10 flex items-center gap-6">
+             <div className={`
+               w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shrink-0
+               ${!isOnline ? 'bg-white text-red-600' : 
+                 isFetchingCount > 0 ? 'bg-emerald-500 text-white animate-spin-slow' : 
+                 'bg-white text-emerald-600'}
+             `}>
+                {!isOnline ? (
+                  <WifiOff className="w-8 h-8" />
+                ) : isFetchingCount > 0 ? (
+                  <RefreshCw className="w-8 h-8" />
+                ) : (
+                  <ShieldCheck className="w-8 h-8" />
+                )}
+             </div>
+
+             <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                   <h4 className={`text-base font-black uppercase tracking-tighter ${!isOnline || !isFetchingCount && showSynced ? 'text-white' : 'text-slate-900'}`}>
+                      {!isOnline ? 'Luar Talian' : isFetchingCount > 0 ? 'Menyinkron' : 'Terkini'}
+                   </h4>
+                   {isFetchingCount > 0 && (
+                      <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-200 uppercase">
+                         {isFetchingCount} Modul
+                      </span>
+                   )}
+                </div>
+                <p className={`text-xs font-bold leading-tight ${!isOnline || !isFetchingCount && showSynced ? 'text-white/80' : 'text-slate-500'}`}>
+                   {!isOnline ? 'Sambungan terputus. Guna data lokal.' : 
+                    isFetchingCount > 0 ? 'Mengambil data terbaru dari awan...' : 
+                    'Pangkalan data tempatan telah dikemaskini.'}
+                </p>
+             </div>
+
+             {isOnline && (realSpeed !== undefined || realPing !== undefined) && (
+               <div className="flex flex-col items-end gap-1 shrink-0">
+                  {realPing !== undefined && (
+                    <div className={`flex items-center gap-1 font-mono font-black text-[9px]
+                      ${isFetchingCount > 0 ? 'text-slate-400' : 'text-white/60'}`}>
+                       <Zap className="w-3 h-3" /> {realPing}ms
+                    </div>
+                  )}
+                  {realSpeed !== undefined && (
+                    <div className={`text-[11px] font-black tracking-tighter
+                      ${isFetchingCount > 0 ? 'text-emerald-600' : 'text-white'}`}>
+                       {realSpeed} <span className="text-[8px] opacity-70">Mbps</span>
+                    </div>
+                  )}
+               </div>
+             )}
+          </div>
        </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Project, ProjectStatus, Role, User } from '../types';
 import { supabaseService } from '../services/supabaseService';
+import { useUsers } from '../hooks/useUsers';
+import { useProjects } from '../hooks/useProjects';
 import { 
   AlertCircle, 
   Search, 
@@ -43,9 +45,10 @@ type FilterView = 'AKTIF' | 'SAMPAH';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const { users: allUsers } = useUsers();
+  const { projects } = useProjects();
+  const user = supabaseService.getCurrentUser();
+
   const [selectedTask, setSelectedTask] = useState<TaskNotification | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentView, setCurrentView] = useState<FilterView>('AKTIF');
@@ -59,23 +62,6 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
   const [permanentIds, setPermanentIds] = useState<string[]>(() => 
     JSON.parse(localStorage.getItem('infrahub_permanent_notifications') || '[]')
   );
-
-  useEffect(() => {
-    const fetchData = async () => {
-        try {
-            setUser(supabaseService.getCurrentUser());
-            const [projs, users] = await Promise.all([
-                supabaseService.getProjects(),
-                supabaseService.getUsers()
-            ]);
-            setProjects(projs);
-            setAllUsers(users);
-        } catch (err) {
-            console.error('Failed to load inbox data:', err);
-        }
-    };
-    fetchData();
-  }, []);
 
   // Auto-delete logic: Remove items from trash that are older than 7 days
   useEffect(() => {

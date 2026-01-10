@@ -2,7 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, BulletinItem, getStatusColor } from '../types';
 import { supabaseService } from '../services/supabaseService';
-import { Bell, TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote, ClipboardCheck, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart } from 'lucide-react';
+import { useBulletins } from '../hooks/useBulletins';
+import { useUsers } from '../hooks/useUsers';
+import { Bell, TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote, ClipboardCheck, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart, Loader2 } from 'lucide-react';
 
 interface DashboardProps {
   projects: Project[];
@@ -14,13 +16,14 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, onNewProject, onNavigate, onProfileClick }) => {
-  const [bulletins, setBulletins] = useState<BulletinItem[]>([]);
+  const { bulletins, addBulletin, deleteBulletin, isSyncing: isBulletinSyncing } = useBulletins();
+  const { users: allUsers, isSyncing: isUserSyncing } = useUsers();
+
   const [isAddingBulletin, setIsAddingBulletin] = useState(false);
   const [newBulletinContent, setNewBulletinContent] = useState('');
   const [selectedBulletin, setSelectedBulletin] = useState<BulletinItem | null>(null);
   const [bulletinToDelete, setBulletinToDelete] = useState<BulletinItem | null>(null);
   const [pjaFilter, setPjaFilter] = useState<string>('ALL');
-  const [allPjas, setAllPjas] = useState<User[]>([]);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL');
@@ -29,26 +32,9 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
   const isManagement = user.role === Role.ADMIN || user.role === Role.JURUTERA;
 
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [bulls, users] = await Promise.all([
-          supabaseService.getBulletins(),
-          supabaseService.getUsers()
-        ]);
-        setBulletins(bulls);
-        setAllUsers(users);
-        if (isManagement) {
-          setAllPjas(users.filter(u => u.role === Role.PJA));
-        }
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err);
-      }
-    };
-    fetchData();
-  }, [isManagement]);
+  const allPjas = useMemo(() => {
+    return allUsers.filter(u => u.role === Role.PJA);
+  }, [allUsers]);
 
   useEffect(() => {
     setTablePage(1);
@@ -132,8 +118,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
     if (!newBulletinContent.trim()) return;
     const author = `${user.fullName.split(' ')[0]} (${user.role === Role.ADMIN ? 'PT' : 'JR'})`;
     try {
-      const newItem = await supabaseService.addBulletin(newBulletinContent, author);
-      setBulletins([newItem, ...bulletins].slice(0, 3));
+      await addBulletin({ content: newBulletinContent, author });
       setNewBulletinContent('');
       setIsAddingBulletin(false);
     } catch (err) {
@@ -144,8 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const confirmDeleteBulletin = async () => {
     if (!bulletinToDelete) return;
     try {
-      await supabaseService.deleteBulletin(bulletinToDelete.id);
-      setBulletins(prev => prev.filter(b => b.id !== bulletinToDelete.id));
+      await deleteBulletin(bulletinToDelete.id);
       setBulletinToDelete(null);
     } catch (err) {
       console.error('Failed to delete bulletin:', err);

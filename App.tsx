@@ -5,7 +5,10 @@ import { User, Project } from './types';
 import { supabaseService } from './services/supabaseService';
 import Sidebar from './components/Sidebar';
 import { SyncStatus } from './components/SyncStatus';
-import { useProjects } from './hooks/useProjects'; // New Hook
+import { useProjects } from './hooks/useProjects'; 
+import { useUsers } from './hooks/useUsers';
+import { useBulletins } from './hooks/useBulletins';
+import { useSettings } from './hooks/useSettings';
 import YearSelector from './components/YearSelector';
 import Toast from './components/Toast';
 import { HelpCircle, X, RefreshCw, Loader2 } from 'lucide-react';
@@ -25,8 +28,9 @@ const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
-  // Replace manual fetching with our Smart Hook
+  // Initialize Global Hooks for Pre-Warming Cache
   const { 
     projects, 
     createProject, 
@@ -35,11 +39,14 @@ function App() {
     isLoading: isProjectsLoading 
   } = useProjects();
 
+  const { users } = useUsers();
+  const { bulletins } = useBulletins();
+  const { settings } = useSettings(selectedYear);
+
   const [selectedProject, setSelectedProject] = useState<Project | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showNavWarning, setShowNavWarning] = useState(false);
   const [pendingPage, setPendingPage] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -61,6 +68,7 @@ function App() {
 
   const handleRefresh = async () => {
     showToast('Mengemaskini data...', 'info');
+    // Invalidate ALL queries to force a fresh background fetch
     await queryClient.invalidateQueries();
     showToast('Data dikemaskini!', 'success');
   };

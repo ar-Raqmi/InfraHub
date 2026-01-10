@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate, ProjectLocation, BQItem, CalculationPart } from '../types';
-import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star, Megaphone, User as UserIcon, ChevronDown, Check } from 'lucide-react';
+import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star, Megaphone, User as UserIcon, ChevronDown, Check, ShieldCheck, CloudDownload } from 'lucide-react';
 import BQEditor from './BQEditor';
 import BQPelarasanEditor from './BQPelarasanEditor';
 import AkuJanjiEditor from './AkuJanjiEditor';
@@ -12,6 +12,10 @@ import PrestasiCertificate from './PrestasiCertificate';
 import NotisGenerator from './NotisGenerator';
 import { supabaseService } from '../services/supabaseService';
 import StrictDateInput from '../components/StrictDateInput';
+import { useProjects } from '../hooks/useProjects';
+import { useUsers } from '../hooks/useUsers';
+import { useSettings } from '../hooks/useSettings';
+import { useQuery } from '@tanstack/react-query';
 
 const toRoman = (num: number): string => {
   const lookup: { [key: string]: number } = {m:1000,cm:900,d:500,cd:400,c:100,xc:90,l:50,xl:40,x:10,ix:9,v:5,iv:4,i:1};
@@ -151,9 +155,10 @@ interface CostHUDProps {
   exportAction: React.ReactNode;
   isPelarasanActive: boolean;
   isReadOnly?: boolean;
+  isVerifying?: boolean;
 }
 
-const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPelarasanActive, isReadOnly }: CostHUDProps) => {
+const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPelarasanActive, isReadOnly, isVerifying }: CostHUDProps) => {
   const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '0');
   const [isEditingProgress, setIsEditingProgress] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -182,8 +187,19 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
 
   return createPortal(
     <div className="fixed top-0 left-0 md:left-28 right-0 z-[90] bg-white border-b border-slate-300 shadow-xl no-print">
+      
+      {/* Sync Status Banner */}
+      <div className={`h-1.5 w-full transition-colors duration-500 ${isVerifying ? 'bg-amber-400' : 'bg-emerald-500'}`}></div>
+
       <div className="md:hidden w-full bg-slate-50 border-b border-slate-200 px-4 py-2 flex flex-col items-center">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Ringkasan Kewangan</span>
+          <div className="flex items-center gap-2 mb-1">
+             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Ringkasan Kewangan</span>
+             {isVerifying ? (
+                 <RefreshCw className="w-3 h-3 text-amber-500 animate-spin" />
+             ) : (
+                 <ShieldCheck className="w-3 h-3 text-emerald-500" />
+             )}
+          </div>
           <div className="flex items-center gap-4">
               <div className="flex flex-col items-center">
                   <span className="text-[8px] font-bold text-slate-400 uppercase leading-none">{isPelarasanActive ? 'Asal' : 'Kos'}</span>
@@ -201,10 +217,22 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
           </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1.2fr_minmax(0,1.6fr)_1.2fr] items-center px-3 py-2 md:px-8 md:py-4 gap-2 md:gap-0">
+      <div className="grid grid-cols-1 md:grid-cols-[1.4fr_minmax(0,1.4fr)_1.2fr] items-center px-3 py-2 md:px-8 md:py-4 gap-2 md:gap-0">
         
         <div className="flex items-center gap-2 md:gap-3 justify-between md:justify-start w-full">
           <div className="flex items-center gap-2 md:gap-3 shrink-0">
+             
+             {/* Desktop Sync Indicator */}
+             <div className="hidden lg:flex flex-col mr-2">
+                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tighter transition-colors ${isVerifying ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                    {isVerifying ? (
+                        <><RefreshCw className="w-3 h-3 animate-spin" /> Menyemak Awan...</>
+                    ) : (
+                        <><ShieldCheck className="w-3 h-3" /> Sepadan Awan</>
+                    )}
+                </div>
+             </div>
+
              <div className="relative group">
                 <select 
                   name="status" 
@@ -322,6 +350,22 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
 };
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole, selectedYear, onShowToast }) => {
+  const { createProject, updateProject } = useProjects();
+  const { users } = useUsers();
+  const projectYear = project?.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : selectedYear;
+  const { companies, votes: voteNumbers, sebuthargaNumbers, settings } = useSettings(projectYear);
+
+  // Sync Check: Verify if we have the absolute latest version from server
+  const { isFetching: isVerifying } = useQuery({
+    queryKey: ['projects', project?.id],
+    queryFn: async () => {
+        if (!project?.id) return null;
+        return await supabaseService.getProjectById(project.id);
+    },
+    enabled: !!project?.id,
+    staleTime: 0 // Always check server
+  });
+
   const currentUser = supabaseService.getCurrentUser();
   const TABS = [
     { id: 'phase1', label: '1. BQ Building (PJA)', color: 'bg-yellow-100 text-yellow-700 border-yellow-200 shadow-sm', ringColor: 'ring-yellow-400' },
@@ -333,10 +377,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [activeTab, setActiveTab] = useState('phase1');
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-  const [companies, setCompanies] = useState<string[]>([]);
-  const [voteNumbers, setVoteNumbers] = useState<string[]>([]);
-  const [sebuthargaNumbers, setSebuthargaNumbers] = useState<string[]>([]);
+  
   const [tempohVal, setTempohVal] = useState<number>(0);
   const [tempohUnit, setTempohUnit] = useState<'Minggu'|'Bulan'|'Tahun'>('Minggu');
   const [locationRows, setLocationRows] = useState<ProjectLocation[]>([]);
@@ -370,30 +411,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
   const isPJA = currentUser?.role === Role.PJA;
   const isDifferentPJA = isPJA && formData.pjaId !== 0 && formData.pjaId !== currentUser?.id;
-  const isGlobalReadOnly = isDifferentPJA;
+  const isGlobalReadOnly = isDifferentPJA || isVerifying; // LOCK during sync check
   const isPTSectionReadOnly = isPJA || isGlobalReadOnly;
-
-  useEffect(() => {
-    const fetchData = async () => {
-        try {
-            const u = await supabaseService.getUsers();
-            setUsers(u);
-            let year = selectedYear;
-            if (project && project.tarikhBuka) { year = new Date(project.tarikhBuka).getFullYear(); }
-            const [comps, votes, sh] = await Promise.all([
-                supabaseService.getCompanies(year),
-                supabaseService.getVoteNumbers(year),
-                supabaseService.getSebuthargaNumbers(year)
-            ]);
-            setCompanies(comps); 
-            setVoteNumbers(votes); 
-            setSebuthargaNumbers(sh);
-        } catch (err) {
-            console.error('Failed to load project detail data:', err);
-        }
-    };
-    fetchData();
-  }, [project, selectedYear]);
 
   const handlePjaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       const selectedPjaId = Number(e.target.value);
@@ -441,9 +460,18 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     else if (confirmationState.type === 'save') {
         setConfirmationState({ isOpen: false, type: null }); setIsSaving(true);
         try {
-            if (project && project.id) { await supabaseService.updateProject(project.id, formData); } else { await supabaseService.createProject(formData as any); }
+            if (project && project.id) { 
+                await updateProject({ id: project.id, updates: formData }); 
+            } else { 
+                await createProject(formData as any); 
+            }
             onSave();
-        } catch (e) { console.error(e); if (onShowToast) onShowToast("Ralat menyimpan projek.","error"); } finally { setIsSaving(false); }
+        } catch (e) { 
+            console.error(e); 
+            if (onShowToast) onShowToast("Ralat menyimpan projek.","error"); 
+        } finally { 
+            setIsSaving(false); 
+        }
     }
     else if (confirmationState.type === 'reset_pelarasan') {
         setConfirmationState({ isOpen: false, type: null });
@@ -1401,6 +1429,7 @@ Jabatan Kejuruteraan` }],
         saveAction={actionButtons} 
         exportAction={exportAction} 
         isReadOnly={isGlobalReadOnly} 
+        isVerifying={isVerifying}
       />
       <div className="pt-24">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 px-2 no-print gap-4">

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabaseService } from '../services/supabaseService';
-import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash } from 'lucide-react';
+import { useSettings } from '../hooks/useSettings';
+import { useBulletins } from '../hooks/useBulletins';
+import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2 } from 'lucide-react';
 import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQItem } from '../types';
 import { createItem, createHeader } from '../data/bqPresets';
 
@@ -163,10 +165,16 @@ const DatePickerInput = ({ value, onChange, placeholder }: { value: string, onCh
 };
 
 const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => {
-  const [companies, setCompanies] = useState<string[]>([]);
+  const { 
+    settings, 
+    companies, 
+    votes, 
+    sebuthargaNumbers, 
+    updateSettings,
+    isSyncing: isSettingsSyncing 
+  } = useSettings(selectedYear);
+
   const [companyOrder, setCompanyOrder] = useState<string[]>([]);
-  const [votes, setVotes] = useState<VoteDefinition[]>([]);
-  const [sebuthargaNumbers, setSebuthargaNumbers] = useState<string[]>([]);
   const [newCompany, setNewCompany] = useState('');
   const [editingVote, setEditingVote] = useState<VoteDefinition | null>(null);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
@@ -193,44 +201,40 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
   const COLOR_LIST = ['slate', 'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
 
   useEffect(() => {
-    loadData();
-  }, [selectedYear]);
-
-  const loadData = async () => {
-    try {
-        const [loadedCompanies, loadedOrder, loadedVotes, loadedSH, settings, library, loadedTemplates] = await Promise.all([
-            supabaseService.getCompanies(selectedYear),
-            supabaseService.getCompanyOrder(selectedYear),
-            supabaseService.getVotes(selectedYear),
-            supabaseService.getSebuthargaNumbers(selectedYear),
-            supabaseService.getSettings(selectedYear),
-            supabaseService.getLibraryGroups(),
-            supabaseService.getTemplates()
-        ]);
-
-        setCompanies(loadedCompanies);
-        const combinedOrder = Array.from(new Set([...loadedOrder, ...loadedCompanies])).filter(c => loadedCompanies.includes(c));
-        setCompanyOrder(combinedOrder);
-        setVotes(loadedVotes);
-        setSebuthargaNumbers(loadedSH);
+    if (settings) {
         setMeetingDate(settings.meeting_date || '');
         setMeetingNumber(settings.meeting_number || '');
-
-        setLibraryGroups(library);
-        const categories = Array.from(new Set(library.map(g => g.category)));
-        if (categories.length > 0 && !selectedCategory) setSelectedCategory(categories[0]);
-
-        setTemplates(loadedTemplates);
-    } catch (err) {
-        console.error('Failed to load admin settings data:', err);
+        const loadedOrder = settings.company_order || [];
+        const loadedCompanies = settings.companies || [];
+        const combinedOrder = Array.from(new Set([...loadedOrder, ...loadedCompanies])).filter(c => loadedCompanies.includes(c));
+        setCompanyOrder(combinedOrder);
     }
-  };
+  }, [settings]);
+
+  useEffect(() => {
+    const loadLibraryAndTemplates = async () => {
+        try {
+            const [library, loadedTemplates] = await Promise.all([
+                supabaseService.getLibraryGroups(),
+                supabaseService.getTemplates()
+            ]);
+            setLibraryGroups(library);
+            const categories = Array.from(new Set(library.map(g => g.category)));
+            if (categories.length > 0 && !selectedCategory) setSelectedCategory(categories[0]);
+            setTemplates(loadedTemplates);
+        } catch (err) {
+            console.error('Failed to load library/templates:', err);
+        }
+    };
+    loadLibraryAndTemplates();
+  }, []);
 
   const handleAddCompany = async () => {
     if (newCompany.trim()) {
-      await supabaseService.addCompany(selectedYear, newCompany.trim());
+      const newCompanies = [...companies, newCompany.trim()];
+      const newOrder = [...companyOrder, newCompany.trim()];
+      await updateSettings({ companies: newCompanies, company_order: newOrder });
       setNewCompany('');
-      await loadData();
     }
   };
 
@@ -247,7 +251,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
 
       newOrder.splice(targetIndex, 0, item);
       setCompanyOrder(newOrder);
-      await supabaseService.saveCompanyOrder(selectedYear, newOrder);
+      await updateSettings({ company_order: newOrder });
   };
 
   const jumpToRank = (index: number) => {
@@ -282,27 +286,31 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
   const confirmDelete = async () => {
       const { type, value } = deleteConfig;
       if (type === 'COMPANY') {
-          await supabaseService.deleteCompany(selectedYear, value);
+          const newCompanies = companies.filter(c => c !== value);
+          const newOrder = companyOrder.filter(c => c !== value);
+          const details = settings.company_details || {};
+          if(details[value]) delete details[value];
+          await updateSettings({ companies: newCompanies, company_order: newOrder, company_details: details });
       } else if (type === 'VOTE') {
-          await supabaseService.deleteVoteNumber(selectedYear, value);
+          const newVotes = votes.filter(v => v.code !== value);
+          await updateSettings({ vote_numbers: newVotes });
       } else if (type === 'SEBUTHARGA') {
-          await supabaseService.deleteSebuthargaNumber(selectedYear, value);
+          const newNums = sebuthargaNumbers.filter(n => n !== value);
+          await updateSettings({ sebutharga_numbers: newNums });
       } else if (type === 'PRESET_GROUP') {
           const newGroups = libraryGroups.filter(g => g.id !== value);
           setLibraryGroups(newGroups);
           await supabaseService.saveLibraryGroups(newGroups);
       } else if (type === 'TEMPLATE') {
-          // Fix: Use deleteTemplate for explicit deletion
           await supabaseService.deleteTemplate(value);
           const newTemplates = templates.filter(t => t.id !== value);
           setTemplates(newTemplates);
       }
       setDeleteConfig({ isOpen: false, type: null, value: '' });
-      await loadData();
   };
 
   const openCompanyModal = async (name: string) => {
-      const details = await supabaseService.getCompanyDetails(selectedYear, name);
+      const details = settings.company_details?.[name];
       setCompanyToEdit(details || { name: name, address: '', ownerName: '', phone: '', email: '', gred: 'G1', phoneAlt: '', registrationNumber: '' });
       setIsCompanyModalOpen(true);
   };
@@ -310,10 +318,12 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
   const handleSaveCompanyDetails = async (e: React.FormEvent) => {
       e.preventDefault();
       if (companyToEdit) {
-          await supabaseService.saveCompanyDetails(selectedYear, companyToEdit);
+          const details = settings.company_details || {};
+          details[companyToEdit.name] = companyToEdit;
+          const newCompanies = Array.from(new Set([...companies, companyToEdit.name]));
+          await updateSettings({ company_details: details, companies: newCompanies });
           setIsCompanyModalOpen(false);
           setCompanyToEdit(null);
-          await loadData();
       }
   };
 
@@ -325,29 +335,31 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
   const handleSaveVote = async (e: React.FormEvent) => {
       e.preventDefault();
       if (editingVote) {
-          await supabaseService.saveVote(selectedYear, editingVote);
+          let newVotes = [...votes];
+          const index = newVotes.findIndex(v => v.code === editingVote.code);
+          if (index >= 0) newVotes[index] = editingVote;
+          else newVotes.push(editingVote);
+          await updateSettings({ vote_numbers: newVotes });
           setIsVoteModalOpen(false);
           setEditingVote(null);
-          await loadData();
       }
   };
 
   const handleAddSebutharga = async () => {
-    if (newSebutharga.trim()) {
-      await supabaseService.addSebuthargaNumber(selectedYear, newSebutharga.trim());
+    if (newSebutharga.trim() && !sebuthargaNumbers.includes(newSebutharga.trim())) {
+      const newNums = [...sebuthargaNumbers, newSebutharga.trim()];
+      await updateSettings({ sebutharga_numbers: newNums });
       setNewSebutharga('');
-      await loadData();
     }
   };
 
   const handleSaveSettings = async () => {
       setIsSavingSettings(true);
       try {
-        await supabaseService.updateSettings(selectedYear, { 
+        await updateSettings({ 
             meeting_date: meetingDate,
             meeting_number: meetingNumber
         });
-        // Optional: you could add a success alert here if needed
       } catch (err: any) {
         console.error('Failed to save settings:', err);
         alert('Ralat menyimpan: ' + (err.message || 'Sila semak konsol'));
@@ -355,6 +367,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         setIsSavingSettings(false);
       }
   };
+
+
 
   const saveLibraryState = async (newGroups: PresetGroup[]) => {
       setIsSavingLibrary(true);
