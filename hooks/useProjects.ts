@@ -27,12 +27,35 @@ export const useProjects = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'projects' },
         (payload) => {
-          console.log('⚡ Realtime change detected:', payload);
-          // Invalidate cache -> triggers a background refetch
-          queryClient.invalidateQueries({ queryKey: ['projects'] });
+          console.log('⚡ Realtime change detected:', payload.eventType, payload);
+          
+          if (payload.eventType === 'INSERT') {
+            const newProject = supabaseService['mapProject'](payload.new);
+            queryClient.setQueryData(['projects'], (old: Project[] = []) => [newProject, ...old]);
+          } 
+          else if (payload.eventType === 'UPDATE') {
+            const updatedProject = supabaseService['mapProject'](payload.new);
+            
+            // Update List Cache
+            queryClient.setQueryData(['projects'], (old: Project[] = []) => 
+              old.map(p => p.id === updatedProject.id ? updatedProject : p)
+            );
+            
+            // Update Individual Detail Cache
+            queryClient.setQueryData(['projects', updatedProject.id], updatedProject);
+          } 
+          else if (payload.eventType === 'DELETE') {
+            const id = payload.old.id;
+            queryClient.setQueryData(['projects'], (old: Project[] = []) => 
+              old.filter(p => p.id !== id)
+            );
+            queryClient.removeQueries({ queryKey: ['projects', id] });
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Realtime status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);

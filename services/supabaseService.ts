@@ -9,7 +9,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 class SupabaseService {
     // --- MAPPERS ---
-    private mapUser(u: any): User {
+    public mapUser(u: any): User {
         return {
             id: u.id,
             username: u.username,
@@ -26,7 +26,7 @@ class SupabaseService {
         };
     }
 
-    private mapProject(p: any): Project {
+    public mapProject(p: any): Project {
         return {
             ...p,
             id: p.id,

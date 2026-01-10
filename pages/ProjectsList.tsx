@@ -70,12 +70,18 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const { 
     votes: votesList, 
     companyOrder, 
-    manualFinancials, 
+    manualFinancials: hookManualFinancials, 
     companyDetails,
     updateSettings,
     isSyncing: isSettingsSyncing 
   } = useSettings(selectedYear);
   
+  const [manualFinancials, setManualFinancials] = useState(hookManualFinancials);
+
+  useEffect(() => {
+    setManualFinancials(hookManualFinancials);
+  }, [hookManualFinancials]);
+
   const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
   const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
   const [costViewMode, setCostViewMode] = useState<'contract' | 'actual' | 'both'>('contract'); 

@@ -15,7 +15,7 @@ import StrictDateInput from '../components/StrictDateInput';
 import { useProjects } from '../hooks/useProjects';
 import { useUsers } from '../hooks/useUsers';
 import { useSettings } from '../hooks/useSettings';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const toRoman = (num: number): string => {
   const lookup: { [key: string]: number } = {m:1000,cm:900,d:500,cd:400,c:100,xc:90,l:50,xl:40,x:10,ix:9,v:5,iv:4,i:1};
@@ -156,9 +156,11 @@ interface CostHUDProps {
   isPelarasanActive: boolean;
   isReadOnly?: boolean;
   isVerifying?: boolean;
+  showRemoteUpdateNotice?: boolean;
+  onApplyRemoteUpdate?: () => void;
 }
 
-const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPelarasanActive, isReadOnly, isVerifying }: CostHUDProps) => {
+const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPelarasanActive, isReadOnly, isVerifying, showRemoteUpdateNotice, onApplyRemoteUpdate }: CostHUDProps) => {
   const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '0');
   const [isEditingProgress, setIsEditingProgress] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -224,13 +226,22 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
              
              {/* Desktop Sync Indicator */}
              <div className="hidden lg:flex flex-col mr-2">
-                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tighter transition-colors ${isVerifying ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
-                    {isVerifying ? (
-                        <><RefreshCw className="w-3 h-3 animate-spin" /> Menyemak Awan...</>
-                    ) : (
-                        <><ShieldCheck className="w-3 h-3" /> Sepadan Awan</>
-                    )}
-                </div>
+                {showRemoteUpdateNotice ? (
+                    <button 
+                        onClick={onApplyRemoteUpdate}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter bg-blue-600 text-white border border-blue-400 shadow-lg shadow-blue-500/20 animate-bounce cursor-pointer hover:bg-blue-700 transition-colors"
+                    >
+                        <CloudDownload className="w-3 h-3" /> Ambil Data Awan
+                    </button>
+                ) : (
+                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tighter transition-colors ${isVerifying ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                        {isVerifying ? (
+                            <><RefreshCw className="w-3 h-3 animate-spin" /> Menyemak Awan...</>
+                        ) : (
+                            <><ShieldCheck className="w-3 h-3" /> Sepadan Awan</>
+                        )}
+                    </div>
+                )}
              </div>
 
              <div className="relative group">
@@ -352,21 +363,60 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole, selectedYear, onShowToast }) => {
   const { createProject, updateProject } = useProjects();
   const { users } = useUsers();
+  const queryClient = useQueryClient();
   const projectYear = project?.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : selectedYear;
   const { companies, votes: voteNumbers, sebuthargaNumbers, settings } = useSettings(projectYear);
 
-  // Sync Check: Verify if we have the absolute latest version from server
-  const { isFetching: isVerifying } = useQuery({
+  // Get the latest project data from the cache (which is updated by Realtime in useProjects)
+  const { data: latestProject, isFetching: isVerifying } = useQuery({
     queryKey: ['projects', project?.id],
     queryFn: async () => {
         if (!project?.id) return null;
         return await supabaseService.getProjectById(project.id);
     },
     enabled: !!project?.id,
-    staleTime: 0 // Always check server
+    staleTime: 30000, // 30s stale time because realtime handles updates
+    initialData: project
   });
 
   const currentUser = supabaseService.getCurrentUser();
+  
+  // Track if local form has unsaved changes
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showRemoteUpdateNotice, setShowRemoteUpdateNotice] = useState(false);
+
+  // Detect remote changes
+  useEffect(() => {
+    if (latestProject && project && latestProject.id === project.id) {
+        // If the updatedAt or a deep compare shows it's newer than what we started with
+        if (latestProject.updatedAt !== project.updatedAt) {
+            if (!hasUnsavedChanges) {
+                // Auto-sync if user hasn't touched anything
+                setFormData(latestProject);
+                if (onShowToast) onShowToast("Data dikemaskini secara automatik dari awan.", "info");
+            } else {
+                // Show notice if user has edits
+                setShowRemoteUpdateNotice(true);
+            }
+        }
+    }
+  }, [latestProject]);
+
+  const handleApplyRemoteUpdate = () => {
+    if (latestProject) {
+        setFormData(latestProject);
+        setHasUnsavedChanges(false);
+        setShowRemoteUpdateNotice(false);
+        if (onShowToast) onShowToast("Data awan telah digunakan.", "success");
+    }
+  };
+
+  // Detect project switch and reset flags
+  useEffect(() => {
+    setHasUnsavedChanges(false);
+    setShowRemoteUpdateNotice(false);
+  }, [project?.id]);
+
   const TABS = [
     { id: 'phase1', label: '1. BQ Building (PJA)', color: 'bg-yellow-100 text-yellow-700 border-yellow-200 shadow-sm', ringColor: 'ring-yellow-400' },
     { id: 'phase2', label: '2. File Creation (PT)', color: 'bg-blue-100 text-blue-700 border-blue-200 shadow-sm', ringColor: 'ring-blue-500' },
@@ -424,6 +474,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
           coverBahagian: selectedUser?.bahagian || prev.coverBahagian || 'Bahagian Infrastruktur',
           coverUnit: selectedUser?.unit || prev.coverUnit || 'Unit Selenggara Infrastruktur'
       }));
+      setHasUnsavedChanges(true);
   };
 
   const handleBackClick = () => { setConfirmationState({ isOpen: true, type: 'back' }); };
@@ -447,6 +498,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         bqDataPelarasan: clonedBQData,
         globalCalculationsPelarasan: clonedGlobalCalculations
     }));
+    setHasUnsavedChanges(true);
     
     if (onShowToast) onShowToast("Pelarasan telah dimulakan berdasarkan BQ Kontrak.", "success");
   };
@@ -465,6 +517,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
             } else { 
                 await createProject(formData as any); 
             }
+            setHasUnsavedChanges(false);
             onSave();
         } catch (e) { 
             console.error(e); 
@@ -479,13 +532,23 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     }
   };
 
-  const addLocationRow = () => { setLocationRows(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]); };
-  const removeLocationRow = (id: string) => { setLocationRows(prev => { if (prev.length <= 1) return [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]; return prev.filter(r => r.id !== id); }); };
-  const updateLocationRow = (id: string, field: 'lokasi' | 'aduan', value: string) => { setLocationRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r)); };
+  const addLocationRow = () => { 
+      setLocationRows(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]); 
+      setHasUnsavedChanges(true);
+  };
+  const removeLocationRow = (id: string) => { 
+      setLocationRows(prev => { if (prev.length <= 1) return [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]; return prev.filter(r => r.id !== id); }); 
+      setHasUnsavedChanges(true);
+  };
+  const updateLocationRow = (id: string, field: 'lokasi' | 'aduan', value: string) => { 
+      setLocationRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r)); 
+      setHasUnsavedChanges(true);
+  };
   
   const handlePrestasiUpdate = (newScores: number[], percentage: number, skop: 'BEKALAN'|'PERKHIDMATAN'|'KERJA', noInbois: string) => {
       const prestasiString = `${percentage}%`;
       setFormData(prev => ({ ...prev, prestasiScores: newScores, prestasi: prestasiString, skop: skop, noInbois: noInbois }));
+      setHasUnsavedChanges(true);
       if (onShowToast) onShowToast("Maklumat prestasi dikemaskini. Sila simpan projek.","info");
   };
 
@@ -505,7 +568,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   useEffect(() => {
      const lokasiStr = locationRows.map(r => r.lokasi).join('\n');
      const aduanStr = locationRows.map(r => r.aduan).join('\n');
-     if (formData.lokasi !== lokasiStr || formData.noAduan !== aduanStr || JSON.stringify(formData.projectLocations) !== JSON.stringify(locationRows)) { setFormData(prev => ({ ...prev, lokasi: lokasiStr, noAduan: aduanStr, projectLocations: locationRows })); }
+     if (formData.lokasi !== lokasiStr || formData.noAduan !== aduanStr || JSON.stringify(formData.projectLocations) !== JSON.stringify(locationRows)) { 
+         setFormData(prev => ({ ...prev, lokasi: lokasiStr, noAduan: aduanStr, projectLocations: locationRows })); 
+     }
   }, [locationRows]);
 
   useEffect(() => {
@@ -622,6 +687,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target; const finalValue = name === 'namaProjek' ? value.toUpperCase() : value;
     setFormData(prev => ({ ...prev, [name]: finalValue }));
+    setHasUnsavedChanges(true);
   };
 
     const handleLocationDimensionsChange = (calculationId: string, dims: GlobalDimensions[]) => {
@@ -632,6 +698,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                 [calculationId]: dims
             }
         }));
+        setHasUnsavedChanges(true);
     };
     const handleGlobalCalculationsPelarasanChange = (calculationId: string, dims: GlobalDimensions[]) => {
         setFormData(prev => ({
@@ -641,13 +708,16 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
                 [calculationId]: dims
             }
         }));
+        setHasUnsavedChanges(true);
     };
   const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[]) => {
     setFormData(prev => ({ ...prev, bqDataPelarasan }));
+    setHasUnsavedChanges(true);
   };
 
   const handleBQChange = (bqData: BQGroup[]) => {
     setFormData(prev => ({ ...prev, bqData }));
+    setHasUnsavedChanges(true);
   };
 
   useEffect(() => {
@@ -659,7 +729,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     }
   }, [formData.bqData]);
 
-  const handleAkuJanjiUpdate = (updates: Partial<Project>) => { setFormData(prev => ({ ...prev, ...updates })); };
+  const handleAkuJanjiUpdate = (updates: Partial<Project>) => { 
+      setFormData(prev => ({ ...prev, ...updates })); 
+      setHasUnsavedChanges(true);
+  };
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -1425,11 +1498,16 @@ Jabatan Kejuruteraan` }],
         status={formData.status || ProjectStatus.MENUNGGU_LANTIKAN} 
         progress={formData.peratusSiap || 0} 
         onStatusChange={handleInputChange} 
-        onProgressChange={(val) => setFormData(prev => ({ ...prev, peratusSiap: val }))} 
+        onProgressChange={(val) => {
+            setFormData(prev => ({ ...prev, peratusSiap: val }));
+            setHasUnsavedChanges(true);
+        }} 
         saveAction={actionButtons} 
         exportAction={exportAction} 
         isReadOnly={isGlobalReadOnly} 
         isVerifying={isVerifying}
+        showRemoteUpdateNotice={showRemoteUpdateNotice}
+        onApplyRemoteUpdate={handleApplyRemoteUpdate}
       />
       <div className="pt-24">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 px-2 no-print gap-4">
@@ -1523,13 +1601,22 @@ Jabatan Kejuruteraan` }],
                   <div className="group"> <label className={labelClass}>No. Vot</label> <select name="noVote" value={formData.noVote} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih Vot...</option> {voteNumbers.map(v => <option key={v} value={v}>{v}</option>)} </select> </div>
                   <div className="group"> <label className={labelClass}>Tarikh Lantikan</label> <StrictDateInput name="tarikhLantikan" value={formData.tarikhLantikan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
                   <div className="group"> <label className={labelClass}>Tarikh BPP</label> <StrictDateInput name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
-                  <div className="group"> <label className={labelClass}>Tempoh Kontrak</label> <div className="flex gap-2"> <input type="number" value={tempohVal || ''} onChange={(e) => setTempohVal(Number(e.target.value))} disabled={isPTSectionReadOnly} className={`${inputClass} flex-1`} placeholder="0" /> <select value={tempohUnit} onChange={(e) => setTempohUnit(e.target.value as any)} disabled={isPTSectionReadOnly} className={`${inputClass} w-32`} > <option value="Minggu">Minggu</option> <option value="Bulan">Bulan</option> <option value="Tahun">Tahun</option> </select> </div> </div>
+                  <div className="group"> <label className={labelClass}>Tempoh Kontrak</label> <div className="flex gap-2"> <input type="number" value={tempohVal || ''} onChange={(e) => {
+    setTempohVal(Number(e.target.value));
+    setHasUnsavedChanges(true);
+}} disabled={isPTSectionReadOnly} className={`${inputClass} flex-1`} placeholder="0" /> <select value={tempohUnit} onChange={(e) => {
+    setTempohUnit(e.target.value as any);
+    setHasUnsavedChanges(true);
+}} disabled={isPTSectionReadOnly} className={`${inputClass} w-32`} > <option value="Minggu">Minggu</option> <option value="Bulan">Bulan</option> <option value="Tahun">Tahun</option> </select> </div> </div>
                   <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kontrak</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setFormData(prev => ({ ...prev, isManualMulaKontrak: !formData.isManualMulaKontrak }))} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKontrak ?"Reset to Auto" :"Manual Edit"} > {formData.isManualMulaKontrak ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>} {formData.isManualMulaKontrak ?"Manual" :"Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKontrak" value={formData.tarikhMulaKontrak} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKontrak} className={`${inputClass} ${(!formData.isManualMulaKontrak || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKontrak} /> {!formData.isManualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari BPP (Business Days)</p>} </div>
                   <div className="group"> <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label> <StrictDateInput name="tarikhTamatKontrak" value={formData.tarikhTamatKontrak} onChange={() => {}} className={`${inputClass} bg-slate-50 cursor-not-allowed`} readOnly /> </div>
                   <div className="group"> <label className={labelClass}>No. BPP</label> <input type="text" name="noBpp" value={formData.noBpp || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
                   <div className="group"> <label className={labelClass}>Tarikh Serah Tapak</label> <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
                   <div className="group"> <label className={labelClass}>ISO (BPP ke Serah Tapak)</label> <input type="text" name="iso" value={formData.iso} className={`${inputClass} bg-slate-50 font-mono`} readOnly placeholder="Auto calc..." /> <p className="text-[10px] text-slate-400 mt-1 italic">Hari bekerja sahaja</p> </div>
-                  <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kerja</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setFormData(prev => ({ ...prev, isManualMulaKerja: !formData.isManualMulaKerja }))} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKerja ?"Reset to Auto" :"Manual Edit"} > {formData.isManualMulaKerja ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>} {formData.isManualMulaKerja ?"Manual" :"Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKerja" value={formData.tarikhMulaKerja} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKerja} className={`${inputClass} ${(!formData.isManualMulaKerja || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKerja} /> {!formData.isManualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari Serah Tapak (Business Days)</p>} </div>
+                  <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kerja</label> {!isPTSectionReadOnly && <button type="button" onClick={() => {
+    setFormData(prev => ({ ...prev, isManualMulaKerja: !formData.isManualMulaKerja }));
+    setHasUnsavedChanges(true);
+}} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKerja ?"Reset to Auto" :"Manual Edit"} > {formData.isManualMulaKerja ? <Unlock className="w-3 h-3"/> : <Lock className="w-3 h-3"/>} {formData.isManualMulaKerja ?"Manual" :"Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKerja" value={formData.tarikhMulaKerja} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKerja} className={`${inputClass} ${(!formData.isManualMulaKerja || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKerja} /> {!formData.isManualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3"/> +2 hari dari Serah Tapak (Business Days)</p>} </div>
                   <div className="group"> <label className={labelClass}>No. Inden</label> <input type="text" name="noInden" value={formData.noInden || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} placeholder="cth: A00321423" /> </div>
                   <div className="group"> <label className={labelClass}>No. Sebutharga</label> <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih No. Sebutharga...</option> {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)} </select> </div>
                 </div>
