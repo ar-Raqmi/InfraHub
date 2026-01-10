@@ -375,7 +375,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         return await supabaseService.getProjectById(project.id);
     },
     enabled: !!project?.id,
-    staleTime: 30000, // 30s stale time because realtime handles updates
+    staleTime: 5000, // 5s stale time to ensure quick verification on page open
     initialData: project
   });
 

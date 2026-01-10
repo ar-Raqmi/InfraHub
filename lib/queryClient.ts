@@ -6,10 +6,11 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Data is considered fresh for 5 minutes
-      // This prevents the "blinking" on slow connections because 
-      // the app won't immediately try to refetch if it has data.
-      staleTime: 1000 * 60 * 5, 
+      // Data is considered fresh for 10 seconds
+      // This ensures that when a user opens a page, it will almost always 
+      // trigger a background sync if they haven't been there recently,
+      // while preventing "hammering" the network during rapid navigation.
+      staleTime: 1000 * 10, 
       
       // Keep unused data in memory/storage for 24 hours
       gcTime: 1000 * 60 * 60 * 24, 

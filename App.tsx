@@ -53,6 +53,21 @@ function App() {
 
   const queryClient = useQueryClient();
 
+  // Sync data whenever page changes (ensures "sync on open")
+  useEffect(() => {
+    const projectPages = ['dashboard', 'projects', 'inbox', 'report'];
+    if (projectPages.includes(currentPage)) {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+    }
+    
+    // Also sync bulletins and users if going to dashboard
+    if (currentPage === 'dashboard') {
+      queryClient.invalidateQueries({ queryKey: ['bulletins'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    }
+  }, [currentPage, queryClient]);
+
   useEffect(() => {
     // Signal to the splash screen that the app is ready
     // @ts-ignore
