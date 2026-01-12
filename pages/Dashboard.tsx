@@ -485,7 +485,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                                  <div className="flex items-center gap-2 mt-1.5">
                                     <span className="text-[20px] font-black bg-slate-100  px-2 py-0.5 rounded text-slate-500">{project.noFail}</span>
                                     {isManagement && pjaFilter === 'ALL' && (
-                                      <span className="text-[10px] font-black text-slate-400 px-1.5 py-0.5 rounded border border-slate-200">PJA: {allUsers.find(u => u.id === project.pjaId)?.username.toUpperCase()}</span>
+                                      <span className="text-[15px] font-black text-slate-400 px-1.5 py-0.5 rounded border border-slate-200">PJA: {allUsers.find(u => u.id === project.pjaId)?.username.toUpperCase()}</span>
                                     )}
                                  </div>
                               </div>
