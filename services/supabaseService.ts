@@ -46,7 +46,7 @@ class SupabaseService {
             noVote: p.no_vote,
             tarikhLantikan: p.tarikh_lantikan,
             tarikhCetakanBpp: p.tarikh_cetakan_bpp,
-            tempoh_kontrak: p.tempoh_kontrak,
+            tempohKontrak: p.tempoh_kontrak,
             tarikhMulaKontrak: p.tarikh_mula_kontrak,
             tarikhTamatKontrak: p.tarikh_tamat_kontrak,
             tarikhSerahTapak: p.tarikh_serah_tapak,
