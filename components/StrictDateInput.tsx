@@ -53,7 +53,7 @@ const StrictDateInput: React.FC<StrictDateInputProps> = ({ name, value, onChange
   const commitDate = () => {
     if (textValue.trim() === '') { 
       setError(false); 
-      onChange({ target: { name, value: '' } }); 
+      onChange({ target: { name, value: null } }); 
       return; 
     }
     const isoDate = validateAndParse(textValue);
@@ -63,13 +63,17 @@ const StrictDateInput: React.FC<StrictDateInputProps> = ({ name, value, onChange
       setTextValue(formatDate(isoDate)); 
     } else { 
       setError(true); 
-      onChange({ target: { name, value: '' } }); 
+      onChange({ target: { name, value: null } }); 
     }
   };
 
   const handleBlur = () => { commitDate(); };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.currentTarget.blur(); } };
-  const handlePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => { setError(false); onChange(e); };
+  const handlePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => { 
+    setError(false); 
+    const val = e.target.value;
+    onChange({ target: { name, value: val || null } }); 
+  };
 
   return (
     <div className="relative">

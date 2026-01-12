@@ -46,7 +46,7 @@ class SupabaseService {
             noVote: p.no_vote,
             tarikhLantikan: p.tarikh_lantikan,
             tarikhCetakanBpp: p.tarikh_cetakan_bpp,
-            tempohKontrak: p.tempoh_kontrak,
+            tempoh_kontrak: p.tempoh_kontrak,
             tarikhMulaKontrak: p.tarikh_mula_kontrak,
             tarikhTamatKontrak: p.tarikh_tamat_kontrak,
             tarikhSerahTapak: p.tarikh_serah_tapak,
@@ -214,9 +214,23 @@ class SupabaseService {
         return this.mapProject(data);
     }
 
+    private sanitizePayload(payload: any): any {
+        const sanitized: any = {};
+        Object.keys(payload).forEach(key => {
+            const value = payload[key];
+            // Convert empty strings to null for the database
+            if (value === '') {
+                sanitized[key] = null;
+            } else {
+                sanitized[key] = value;
+            }
+        });
+        return sanitized;
+    }
+
     async createProject(project: Omit<Project, 'id'>) {
         const newId = Date.now();
-        const dbProject = {
+        const dbProject = this.sanitizePayload({
             id: newId,
             nama_projek: project.namaProjek,
             no_aduan: project.noAduan,
@@ -278,7 +292,7 @@ class SupabaseService {
             cover_unit: project.coverUnit,
             cover_sebut_harga_text: project.coverSebutHargaText,
             updated_at: new Date().toISOString()
-        };
+        });
         
         const { data, error } = await supabase.from('projects').insert(dbProject).select().single();
         if (error) throw error;
@@ -287,75 +301,77 @@ class SupabaseService {
 
     async updateProject(id: number, updates: Partial<Project>) {
         // Map updates to snake_case
-        const dbUpdates: any = {};
-        if (updates.namaProjek !== undefined) dbUpdates.nama_projek = updates.namaProjek;
-        if (updates.noAduan !== undefined) dbUpdates.no_aduan = updates.noAduan;
-        if (updates.aduan !== undefined) dbUpdates.aduan = updates.aduan;
-        if (updates.lokasi !== undefined) dbUpdates.lokasi = updates.lokasi;
-        if (updates.projectLocations !== undefined) dbUpdates.project_locations = updates.projectLocations;
-        if (updates.bp !== undefined) dbUpdates.bp = updates.bp;
-        if (updates.zon !== undefined) dbUpdates.zon = updates.zon;
-        if (updates.mukim !== undefined) dbUpdates.mukim = updates.mukim;
-        if (updates.pjaId !== undefined) dbUpdates.pja_id = updates.pjaId;
-        if (updates.kosProjek !== undefined) dbUpdates.kos_projek = updates.kosProjek;
-        if (updates.tarikhBuka !== undefined) dbUpdates.tarikh_buka = updates.tarikhBuka;
+        const rawUpdates: any = {};
+        if (updates.namaProjek !== undefined) rawUpdates.nama_projek = updates.namaProjek;
+        if (updates.noAduan !== undefined) rawUpdates.no_aduan = updates.noAduan;
+        if (updates.aduan !== undefined) rawUpdates.aduan = updates.aduan;
+        if (updates.lokasi !== undefined) rawUpdates.lokasi = updates.lokasi;
+        if (updates.projectLocations !== undefined) rawUpdates.project_locations = updates.projectLocations;
+        if (updates.bp !== undefined) rawUpdates.bp = updates.bp;
+        if (updates.zon !== undefined) rawUpdates.zon = updates.zon;
+        if (updates.mukim !== undefined) rawUpdates.mukim = updates.mukim;
+        if (updates.pjaId !== undefined) rawUpdates.pja_id = updates.pjaId;
+        if (updates.kosProjek !== undefined) rawUpdates.kos_projek = updates.kosProjek;
+        if (updates.tarikhBuka !== undefined) rawUpdates.tarikh_buka = updates.tarikhBuka;
         
-        if (updates.noFail !== undefined) dbUpdates.no_fail = updates.noFail;
-        if (updates.noSebutharga !== undefined) dbUpdates.no_sebutharga = updates.noSebutharga;
-        if (updates.noInden !== undefined) dbUpdates.no_inden = updates.noInden;
-        if (updates.noBpp !== undefined) dbUpdates.no_bpp = updates.noBpp;
-        if (updates.namaSyarikat !== undefined) dbUpdates.nama_syarikat = updates.namaSyarikat;
-        if (updates.bulan !== undefined) dbUpdates.bulan = updates.bulan;
-        if (updates.noVote !== undefined) dbUpdates.no_vote = updates.noVote;
-        if (updates.tarikhLantikan !== undefined) dbUpdates.tarikh_lantikan = updates.tarikhLantikan;
-        if (updates.tarikhCetakanBpp !== undefined) dbUpdates.tarikh_cetakan_bpp = updates.tarikhCetakanBpp;
-        if (updates.tempohKontrak !== undefined) dbUpdates.tempoh_kontrak = updates.tempohKontrak;
-        if (updates.tarikhMulaKontrak !== undefined) dbUpdates.tarikh_mula_kontrak = updates.tarikhMulaKontrak;
-        if (updates.tarikhTamatKontrak !== undefined) dbUpdates.tarikh_tamat_kontrak = updates.tarikhTamatKontrak;
-        if (updates.tarikhSerahTapak !== undefined) dbUpdates.tarikh_serah_tapak = updates.tarikhSerahTapak;
-        if (updates.iso !== undefined) dbUpdates.iso = updates.iso;
-        if (updates.tarikhMulaKerja !== undefined) dbUpdates.tarikh_mula_kerja = updates.tarikhMulaKerja;
-        if (updates.isManualMulaKontrak !== undefined) dbUpdates.is_manual_mula_kontrak = updates.isManualMulaKontrak;
-        if (updates.isManualMulaKerja !== undefined) dbUpdates.is_manual_mula_kerja = updates.isManualMulaKerja;
+        if (updates.noFail !== undefined) rawUpdates.no_fail = updates.noFail;
+        if (updates.noSebutharga !== undefined) rawUpdates.no_sebutharga = updates.noSebutharga;
+        if (updates.noInden !== undefined) rawUpdates.no_inden = updates.noInden;
+        if (updates.noBpp !== undefined) rawUpdates.no_bpp = updates.noBpp;
+        if (updates.namaSyarikat !== undefined) rawUpdates.nama_syarikat = updates.namaSyarikat;
+        if (updates.bulan !== undefined) rawUpdates.bulan = updates.bulan;
+        if (updates.noVote !== undefined) rawUpdates.no_vote = updates.noVote;
+        if (updates.tarikhLantikan !== undefined) rawUpdates.tarikh_lantikan = updates.tarikhLantikan;
+        if (updates.tarikhCetakanBpp !== undefined) rawUpdates.tarikh_cetakan_bpp = updates.tarikhCetakanBpp;
+        if (updates.tempohKontrak !== undefined) rawUpdates.tempoh_kontrak = updates.tempohKontrak;
+        if (updates.tarikhMulaKontrak !== undefined) rawUpdates.tarikh_mula_kontrak = updates.tarikhMulaKontrak;
+        if (updates.tarikhTamatKontrak !== undefined) rawUpdates.tarikh_tamat_kontrak = updates.tarikhTamatKontrak;
+        if (updates.tarikhSerahTapak !== undefined) rawUpdates.tarikh_serah_tapak = updates.tarikhSerahTapak;
+        if (updates.iso !== undefined) rawUpdates.iso = updates.iso;
+        if (updates.tarikhMulaKerja !== undefined) rawUpdates.tarikh_mula_kerja = updates.tarikhMulaKerja;
+        if (updates.isManualMulaKontrak !== undefined) rawUpdates.is_manual_mula_kontrak = updates.isManualMulaKontrak;
+        if (updates.isManualMulaKerja !== undefined) rawUpdates.is_manual_mula_kerja = updates.isManualMulaKerja;
         
-        if (updates.tarikhPemeriksaan !== undefined) dbUpdates.tarikh_pemeriksaan = updates.tarikhPemeriksaan;
-        if (updates.tarikhSiapSebenar !== undefined) dbUpdates.tarikh_siap_sebenar = updates.tarikhSiapSebenar;
-        if (updates.prestasi !== undefined) dbUpdates.prestasi = updates.prestasi;
-        if (updates.tarikhTuntutanBayaran !== undefined) dbUpdates.tarikh_tuntutan_bayaran = updates.tarikhTuntutanBayaran;
-        if (updates.kosSebenar !== undefined) dbUpdates.kos_sebenar = updates.kosSebenar;
-        if (updates.ladAmount !== undefined) dbUpdates.lad_amount = updates.ladAmount;
-        if (updates.ladDays !== undefined) dbUpdates.lad_days = updates.ladDays;
-        if (updates.locAmount !== undefined) dbUpdates.loc_amount = updates.locAmount;
-        if (updates.locDays !== undefined) dbUpdates.loc_days = updates.locDays;
-        if (updates.wangTahanan !== undefined) dbUpdates.wang_tahanan = updates.wangTahanan;
+        if (updates.tarikhPemeriksaan !== undefined) rawUpdates.tarikh_pemeriksaan = updates.tarikhPemeriksaan;
+        if (updates.tarikhSiapSebenar !== undefined) rawUpdates.tarikh_siap_sebenar = updates.tarikhSiapSebenar;
+        if (updates.prestasi !== undefined) rawUpdates.prestasi = updates.prestasi;
+        if (updates.tarikhTuntutanBayaran !== undefined) rawUpdates.tarikh_tuntutan_bayaran = updates.tarikhTuntutanBayaran;
+        if (updates.kosSebenar !== undefined) rawUpdates.kos_sebenar = updates.kosSebenar;
+        if (updates.ladAmount !== undefined) rawUpdates.lad_amount = updates.ladAmount;
+        if (updates.ladDays !== undefined) rawUpdates.lad_days = updates.ladDays;
+        if (updates.locAmount !== undefined) rawUpdates.loc_amount = updates.locAmount;
+        if (updates.locDays !== undefined) rawUpdates.loc_days = updates.locDays;
+        if (updates.wangTahanan !== undefined) rawUpdates.wang_tahanan = updates.wangTahanan;
         
-        if (updates.skop !== undefined) dbUpdates.skop = updates.skop;
-        if (updates.prestasiScores !== undefined) dbUpdates.prestasi_scores = updates.prestasiScores;
-        if (updates.noInbois !== undefined) dbUpdates.no_inbois = updates.noInbois;
+        if (updates.skop !== undefined) rawUpdates.skop = updates.skop;
+        if (updates.prestasiScores !== undefined) rawUpdates.prestasi_scores = updates.prestasiScores;
+        if (updates.noInbois !== undefined) rawUpdates.no_inbois = updates.noInbois;
         
-        if (updates.tarikhHantarKewangan !== undefined) dbUpdates.tarikh_hantar_kewangan = updates.tarikhHantarKewangan;
-        if (updates.tarikhPadanan !== undefined) dbUpdates.tarikh_padanan = updates.tarikhPadanan;
-        if (updates.peratusSiap !== undefined) dbUpdates.peratus_siap = updates.peratusSiap;
-        if (updates.status !== undefined) dbUpdates.status = updates.status;
+        if (updates.tarikhHantarKewangan !== undefined) rawUpdates.tarikh_hantar_kewangan = updates.tarikhHantarKewangan;
+        if (updates.tarikhPadanan !== undefined) rawUpdates.tarikh_padanan = updates.tarikhPadanan;
+        if (updates.peratusSiap !== undefined) rawUpdates.peratus_siap = updates.peratusSiap;
+        if (updates.status !== undefined) rawUpdates.status = updates.status;
         
-        if (updates.bqData !== undefined) dbUpdates.bq_data = updates.bqData;
-        if (updates.bqDataPelarasan !== undefined) dbUpdates.bq_data_pelarasan = updates.bqDataPelarasan;
-        if (updates.globalDimensions !== undefined) dbUpdates.global_dimensions = updates.globalDimensions;
-        if (updates.locationDimensions !== undefined) dbUpdates.location_dimensions = updates.locationDimensions;
-        if (updates.locationDimensionsPelarasan !== undefined) dbUpdates.location_dimensions_pelarasan = updates.locationDimensionsPelarasan;
-        if (updates.globalCalculations !== undefined) dbUpdates.global_calculations = updates.globalCalculations;
-        if (updates.globalCalculationsPelarasan !== undefined) dbUpdates.global_calculations_pelarasan = updates.globalCalculationsPelarasan;
+        if (updates.bqData !== undefined) rawUpdates.bq_data = updates.bqData;
+        if (updates.bqDataPelarasan !== undefined) rawUpdates.bq_data_pelarasan = updates.bqDataPelarasan;
+        if (updates.globalDimensions !== undefined) rawUpdates.global_dimensions = updates.globalDimensions;
+        if (updates.locationDimensions !== undefined) rawUpdates.location_dimensions = updates.locationDimensions;
+        if (updates.locationDimensionsPelarasan !== undefined) rawUpdates.location_dimensions_pelarasan = updates.locationDimensionsPelarasan;
+        if (updates.globalCalculations !== undefined) rawUpdates.global_calculations = updates.globalCalculations;
+        if (updates.globalCalculationsPelarasan !== undefined) rawUpdates.global_calculations_pelarasan = updates.globalCalculationsPelarasan;
         
-        if (updates.akuJanjiMonth !== undefined) dbUpdates.aku_janji_month = updates.akuJanjiMonth;
-        if (updates.akuJanjiPanelTitle !== undefined) dbUpdates.aku_janji_panel_title = updates.akuJanjiPanelTitle;
-        if (updates.akuJanjiFooterText !== undefined) dbUpdates.aku_janji_footer_text = updates.akuJanjiFooterText;
+        if (updates.akuJanjiMonth !== undefined) rawUpdates.aku_janji_month = updates.akuJanjiMonth;
+        if (updates.akuJanjiPanelTitle !== undefined) rawUpdates.aku_janji_panel_title = updates.akuJanjiPanelTitle;
+        if (updates.akuJanjiFooterText !== undefined) rawUpdates.aku_janji_footer_text = updates.akuJanjiFooterText;
         
-        if (updates.coverJawatan !== undefined) dbUpdates.cover_jawatan = updates.coverJawatan;
-        if (updates.coverBahagian !== undefined) dbUpdates.cover_bahagian = updates.coverBahagian;
-        if (updates.coverUnit !== undefined) dbUpdates.cover_unit = updates.coverUnit;
-        if (updates.coverSebutHargaText !== undefined) dbUpdates.cover_sebut_harga_text = updates.coverSebutHargaText;
+        if (updates.coverJawatan !== undefined) rawUpdates.cover_jawatan = updates.coverJawatan;
+        if (updates.coverBahagian !== undefined) rawUpdates.cover_bahagian = updates.coverBahagian;
+        if (updates.coverUnit !== undefined) rawUpdates.cover_unit = updates.coverUnit;
+        if (updates.coverSebutHargaText !== undefined) rawUpdates.cover_sebut_harga_text = updates.coverSebutHargaText;
         
-        dbUpdates.updated_at = new Date().toISOString();
+        rawUpdates.updated_at = new Date().toISOString();
+
+        const dbUpdates = this.sanitizePayload(rawUpdates);
 
         const { data, error } = await supabase.from('projects').update(dbUpdates).eq('id', id).select().single();
         if (error) throw error;
