@@ -115,6 +115,35 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const [sortKey, setSortKey] = useState<string>('tarikhBuka');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
+  // Long press detection refs
+  const longPressTimer = React.useRef<any>(null);
+  const isLongPress = React.useRef(false);
+
+  const handleMouseDown = () => {
+    isLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true;
+    }, 500);
+  };
+
+  const handleMouseUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
+  const handleProjectClick = (project: Project) => {
+    if (!isLongPress.current) {
+      onEditProject(project);
+    }
+  };
+
   const handleExportRotasiPDF = async () => {
       setIsGeneratingPdf(true);
       setGenerationProgress(10);
@@ -1290,7 +1319,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     <tbody className="divide-y divide-slate-100">
                         {paginatedProjects.length > 0 ? (
                             paginatedProjects.map((project) => (
-                                <tr key={project.id} onClick={() => onEditProject(project)} className="group hover:bg-slate-50/80  transition-colors duration-200 cursor-pointer">
+                                <tr 
+                                    key={project.id} 
+                                    onMouseDown={handleMouseDown}
+                                    onMouseUp={handleMouseUp}
+                                    onMouseLeave={handleMouseLeave}
+                                    onClick={() => handleProjectClick(project)} 
+                                    className="group hover:bg-slate-50/80  transition-colors duration-200 cursor-pointer"
+                                >
                                     {visibleColumns.noFail && <td className="px-6 py-4 whitespace-nowrap"><div className="font-bold text-slate-900  text-sm">{project.noFail}</div><div className="text-[10px] text-slate-400 font-mono mt-0.5">{formatDate(project.tarikhBuka)}</div></td>}
                                     {visibleColumns.namaProjek && <td className="px-6 py-4 min-w-[300px]"><div className="text-sm font-medium text-slate-800  leading-relaxed whitespace-pre-wrap">{project.namaProjek}</div></td>}
                                     {visibleColumns.pjaId && <td className="px-6 py-4 whitespace-nowrap">
@@ -1416,7 +1452,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     const hargaAkhir = getHargaAkhir(p);
                                                     
                                                     return (
-                                                        <tr key={p.id} className="hover:bg-white/60  cursor-pointer transition-colors group/row" onClick={() => onEditProject(p)}>
+                                                        <tr 
+                                                            key={p.id} 
+                                                            className="hover:bg-white/60  cursor-pointer transition-colors group/row" 
+                                                            onMouseDown={handleMouseDown}
+                                                            onMouseUp={handleMouseUp}
+                                                            onMouseLeave={handleMouseLeave}
+                                                            onClick={() => handleProjectClick(p)}
+                                                        >
                                                             <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600  mb-1">{p.noFail}</div><div className="font-medium text-slate-800  leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
                                                             <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white  border border-slate-200  text-xs font-bold text-slate-600  shadow-sm">{p.bulan || '-'}</span></td>
                                                             <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
@@ -1428,7 +1471,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                                                                           </td>
                                                             
                                                             <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{getStatusLabel(p.status)}</span></div></td>
-                                                            <td className="px-6 py-3 text-right align-top"><button className="p-2 rounded-lg bg-white  text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"><ArrowUpRight className="w-4 h-4" /></button></td>
+                                                            <td className="px-6 py-3 text-right align-top">
+                                                                <button 
+                                                                    onClick={(e) => { e.stopPropagation(); onEditProject(p); }}
+                                                                    className="p-2 rounded-lg bg-white  text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"
+                                                                >
+                                                                    <ArrowUpRight className="w-4 h-4" />
+                                                                </button>
+                                                            </td>
                                                         </tr>
                                                     );
                                                 })}
