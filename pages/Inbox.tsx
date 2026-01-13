@@ -191,9 +191,9 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
         // Exclude permanently deleted items
         if (permanentIds.includes(n.id)) return false;
 
-        const matchesSearch = n.projectNoFail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            n.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            n.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = (n.projectNoFail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (n.projectName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (n.title || '').toLowerCase().includes(searchTerm.toLowerCase());
         
         if (!matchesSearch) return false;
 

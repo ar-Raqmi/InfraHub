@@ -90,8 +90,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
     return displayProjects.filter(p => {
       // 1. Search filter
       const matchesSearch = 
-        p.namaProjek.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        (p.noFail && p.noFail.toLowerCase().includes(searchQuery.toLowerCase()));
+        (p.namaProjek || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (p.noFail || '').toLowerCase().includes(searchQuery.toLowerCase());
       
       if (!matchesSearch) return false;
 

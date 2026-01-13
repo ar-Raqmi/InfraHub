@@ -404,8 +404,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
   const filteredProjects = useMemo(() => {
     const filtered = projects.filter(p => {
       const matchesSearch = 
-        p.noFail.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.namaProjek.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.noFail || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (p.namaProjek || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (p.namaSyarikat || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === 'ALL' || p.status === filterStatus;
