@@ -727,154 +727,155 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
           for (const group of groupedProjects) {
               if (group.projects.length === 0) continue;
 
-              if (currentY > pageHeight - 40) {
+              // Check if company header needs a new page
+              if (currentY > pageHeight - 50) {
                   doc.addPage();
                   currentY = printHeader(doc.getNumberOfPages());
               }
 
+              // Company Header
               doc.setFillColor(230, 230, 230);
               doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'F');
               doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'S');
               doc.setFont("helvetica","bold");
               doc.setFontSize(8);
               doc.setTextColor(0, 0, 0);
-              doc.text(group.company, marginX + 2, currentY + 5);
+              doc.text(group.company.toUpperCase(), marginX + 2, currentY + 5);
               currentY += 10;
 
-              const votesInGroup = Object.keys(group.projectsByVote).sort();
+              // Prepare consolidated table body for the company
               let billCounter = 1;
+              const companyProjects = [...group.projects].sort((a, b) => {
+                  const dateA = new Date(a.tarikhMulaKontrak || a.tarikhLantikan || '9999-12-31').getTime();
+                  const dateB = new Date(b.tarikhMulaKontrak || b.tarikhLantikan || '9999-12-31').getTime();
+                  return dateA - dateB;
+              });
 
-              for (const voteCode of votesInGroup) {
-                  const voteData = group.projectsByVote[voteCode];
-                  const projectsForVote = [...voteData.projects].sort((a, b) => {
-                      const dateA = new Date(a.tarikhLantikan || '9999-12-31').getTime();
-                      const dateB = new Date(b.tarikhLantikan || '9999-12-31').getTime();
-                      return dateA - dateB;
-                  });
+              const tableBody = companyProjects.map((p) => {
+                  const pjaUser = getPjaUser(p.pjaId);
+                  const pjaName = pjaUser ? pjaUser.username.toUpperCase() : '-';
+                  
+                  // Title Case Helper
+                  const toTitleCase = (str: string) => {
+                      if (!str) return '';
+                      return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+                  };
 
-                  if (projectsForVote.length === 0) continue;
+                  // Format Status: First letter caps (e.g. Dalam Proses)
+                  const formattedStatus = toTitleCase(p.status.replace(/_/g, ' '));
+                  
+                  const progress = p.peratusSiap !== undefined && p.peratusSiap !== null ? p.peratusSiap : 0;
+                  
+                  // Format Lokasi: Title case and join with comma
+                  const formattedLokasi = (p.lokasi || '-')
+                      .split(/,|\n/) // Split by comma OR newline
+                      .map(part => part.trim())
+                      .filter(part => part.length > 0)
+                      .map(part => toTitleCase(part))
+                      .join(', ');
+                  
+                  const failDanLokasi = `${p.noFail}\n${formattedLokasi}`;
+                  const tarikhGabung = `${formatDate(p.tarikhMulaKontrak)} ${formatDate(p.tarikhTamatKontrak)}`;
+                  const votGabung = `${p.noVote || 'TIADA VOT'}\n${getVoteName(p.noVote || '')}`;
 
-                  // Space check for Vot header
-                  if (currentY > pageHeight - 30) {
-                      doc.addPage();
-                      currentY = printHeader(doc.getNumberOfPages());
-                  }
-
-                  doc.setFont("helvetica", "bold");
-                  doc.setFontSize(7.5);
-                  doc.setTextColor(50, 50, 50);
-                  doc.text(`${voteCode} - ${getVoteName(voteCode)}`, marginX, currentY + 4);
-                  currentY += 6;
-
-                  const tableBody = projectsForVote.map((p) => {
-                      const hargaAkhir = getHargaAkhir(p);
-                      const contractCost = p.kosProjek || 0;
-                      
-                      let displayCostStr = '';
-                      if (costViewMode === 'contract') {
-                          displayCostStr = formatCurrency(contractCost).replace('RM', '').trim();
-                      } else if (costViewMode === 'actual') {
-                          displayCostStr = formatCurrency(hargaAkhir).replace('RM', '').trim();
-                      } else { // both
-                          displayCostStr = `${formatCurrency(contractCost).replace('RM', '').trim()}\n${formatCurrency(hargaAkhir).replace('RM', '').trim()}`;
-                      }
-                      
-                      const pjaUser = getPjaUser(p.pjaId);
-                      const pjaName = pjaUser ? pjaUser.username.toUpperCase() : '-';
-
-                      return [
-                          billCounter++,
-                          p.namaProjek,
-                          formatDate(p.tarikhMulaKontrak),
-                          formatDate(p.tarikhTamatKontrak),
-                          pjaName,
-                          `${p.status.replace(/_/g, ' ')}\n(${p.peratusSiap}%)`,
-                          displayCostStr
-                      ];
-                  });
-
-                  // Add Subtotal row for this Vot
-                  let subtotalDisplayVal = '';
-                  if (costViewMode === 'contract') {
-                      subtotalDisplayVal = formatCurrency(voteData.subtotalContract).replace('RM', '').trim();
-                  } else if (costViewMode === 'actual') {
-                      subtotalDisplayVal = formatCurrency(voteData.subtotalAkhir).replace('RM', '').trim();
-                  } else {
-                      subtotalDisplayVal = `${formatCurrency(voteData.subtotalContract).replace('RM', '').trim()}\n${formatCurrency(voteData.subtotalAkhir).replace('RM', '').trim()}`;
-                  }
-
-                  tableBody.push([
-                      { content: `JUMLAH`, colSpan: 6, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } } as any,
-                      { content: subtotalDisplayVal, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250, 250, 250] } } as any
-                  ]);
-
-                  const costHeaderLabel = costViewMode === 'both' ? 'KOS (ASAL/AKHIR)' : (costViewMode === 'actual' ? 'HARGA AKHIR' : 'HARGA KONTRAK');
-
-                  // @ts-ignore
-                  doc.autoTable({
-                      startY: currentY,
-                      head: [['BIL', 'PROJEK', 'MULA', 'TAMAT', 'PJA', 'STATUS', costHeaderLabel]],
-                      body: tableBody,
-                      theme: 'grid',
-                      styles: { fontSize: 6.5, cellPadding: 1.2, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
-                      headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center' },
-                      columnStyles: {
-                          0: { cellWidth: 6, halign: 'center' },
-                          1: { cellWidth: 'auto' },
-                          2: { cellWidth: 18, halign: 'center' },
-                          3: { cellWidth: 18, halign: 'center' },
-                          4: { cellWidth: 18, halign: 'center' },
-                          5: { cellWidth: 22, halign: 'center' },
-                          6: { cellWidth: 20, halign: 'right', fontStyle: 'bold' }
-                      },
-                      margin: { left: marginX, right: marginX },
-                      rowPageBreak: 'avoid'
-                  });
-
-                  // @ts-ignore
-                  currentY = doc.lastAutoTable.finalY + 4;
-              }
-
-              totalItemsProcessed += group.projects.length;
-              setGenerationProgress(10 + Math.round((totalItemsProcessed / totalItems) * 80));
-
-              let groupTotalDisplay = '';
-              if (costViewMode === 'contract') {
-                  groupTotalDisplay = formatCurrency(group.totalCost).replace('RM', '').trim();
-              } else if (costViewMode === 'actual') {
-                  groupTotalDisplay = formatCurrency(group.totalHargaAkhir).replace('RM', '').trim();
-              } else {
-                  groupTotalDisplay = `${formatCurrency(group.totalCost).replace('RM', '').trim()}\n${formatCurrency(group.totalHargaAkhir).replace('RM', '').trim()}`;
-              }
-
-              const summaryHeight = 15;
-              if (currentY + summaryHeight > pageHeight - 15) {
-                  doc.addPage();
-                  currentY = 15;
-              }
+                  return [
+                      billCounter++,
+                      failDanLokasi,
+                      tarikhGabung,
+                      pjaName,
+                      `${formattedStatus}\n(${progress}%)`,
+                      votGabung,
+                      formatCurrency(p.kosProjek || 0).replace('RM', '').trim()
+                  ];
+              });
 
               // @ts-ignore
               doc.autoTable({
                   startY: currentY,
-                  body: [
-                      [{ content: 'JUMLAH', styles: { halign: 'right', fontStyle: 'bold', cellWidth: 30 } }, 
-                       { content: groupTotalDisplay, styles: { halign: 'right', fontStyle: 'bold', cellWidth: 35 } }]
-                  ],
+                  head: [['BIL', 'NO. FAIL / LOKASI', 'TARIKH', 'PJA', 'STATUS', 'VOT', 'HARGA (RM)']],
+                  body: tableBody,
                   theme: 'grid',
-                  styles: { fontSize: 7, cellPadding: 1.2, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
-                  margin: { left: pageWidth - 75 },
-                  tableWidth: 95,
+                  styles: { fontSize: 6.5, cellPadding: 0.5, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0, valign: 'middle' },
+                  headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center', valign: 'middle' },
+                  columnStyles: {
+                      0: { cellWidth: 7, halign: 'center' },
+                      1: { cellWidth: 77 },
+                      2: { cellWidth: 15, halign: 'center' },
+                      3: { cellWidth: 15, halign: 'center' },
+                      4: { cellWidth: 25, halign: 'center' },
+                      5: { cellWidth: 28 },
+                      6: { cellWidth: 23, halign: 'right', fontStyle: 'bold' }
+                  },
+                  margin: { left: marginX, right: marginX },
+                  rowPageBreak: 'avoid',
+                  didParseCell: (data: any) => {
+                      if (data.section === 'body' && data.column.index === 1) {
+                          data.cell.styles.fontSize = 6;
+                      }
+                  }
+              });
+
+              // @ts-ignore
+              currentY = doc.lastAutoTable.finalY + 3;
+
+              // Budget Summary for this company
+              const votesInGroup = Object.keys(group.projectsByVote).sort();
+              const summaryTableBody = votesInGroup.map(voteCode => {
+                  const voteData = group.projectsByVote[voteCode];
+                  return [
+                      voteCode,
+                      getVoteName(voteCode),
+                      formatCurrency(voteData.subtotalContract).replace('RM', '').trim()
+                  ];
+              });
+
+              // Add Grand Total for company
+              summaryTableBody.push([
+                  { content: 'JUMLAH', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any,
+                  { content: formatCurrency(group.totalCost).replace('RM', '').trim(), styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any
+              ]);
+
+              // Check space for summary table
+              if (currentY > pageHeight - 30) {
+                  doc.addPage();
+                  currentY = printHeader(doc.getNumberOfPages());
+              }
+
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(7);
+              // doc.text(`RINGKASAN BAJET: ${group.company}`, marginX, currentY + 4);
+              currentY += 0;
+
+              // @ts-ignore
+              doc.autoTable({
+                  startY: currentY,
+                  head: [['VOT', 'PERUNTUKAN', 'JUMLAH (RM)']],
+                  body: summaryTableBody,
+                  theme: 'grid',
+                  styles: { fontSize: 6.5, cellPadding: 0.5, lineColor: [0,0,0], lineWidth: 0.1, textColor: 0 },
+                  headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center' },
+                  columnStyles: {
+                      0: { cellWidth: 20, halign: 'center' },
+                      1: { cellWidth: 'auto' },
+                      2: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
+                  },
+                  margin: { left: marginX, right: marginX },
+                  tableWidth: 120 // Keep it smaller than full width
               });
 
               // @ts-ignore
               currentY = doc.lastAutoTable.finalY + 10;
+
+              totalItemsProcessed += group.projects.length;
+              setGenerationProgress(10 + Math.round((totalItemsProcessed / totalItems) * 80));
           }
 
+          // FINAL GLOBAL SUMMARY PAGE
           doc.addPage();
           currentY = 20;
           doc.setFontSize(8);
           doc.setFont("helvetica","bold");
-          doc.text(`RUMUSAN KEWANGAN KESELURUHAN (${selectedYear})`, marginX, currentY);
+          doc.text(`RUMUSAN (${selectedYear})`, marginX, currentY);
           currentY += 5;
 
           const globalSummaryBody = Object.entries(financialSummary).map(([voteCode, data]) => {
@@ -898,7 +899,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
               body: [
                   ...globalSummaryBody,
                   [
-                      { content: 'JUMLAH BESAR', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
+                      { content: 'JUMLAH', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
                       { content: formatCurrency(totalAlloc).replace('RM',''), styles: { halign: 'right', fontStyle: 'bold' } },
                       { content: formatCurrency(totalUsed).replace('RM',''), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 0, 0] } },
                       { content: formatCurrency(totalBal).replace('RM',''), styles: { halign: 'right', fontStyle: 'bold' } }
