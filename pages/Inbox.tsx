@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Project, ProjectStatus, Role, User } from '../types';
+import { Project, ProjectStatus, Role, User, getStatusLabel } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { useUsers } from '../hooks/useUsers';
 import { useProjects } from '../hooks/useProjects';
@@ -414,7 +414,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Status Projek</p>
                       <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700   text-xs font-bold uppercase tracking-wider">
-                        {selectedTask.status.replace(/_/g, ' ')}
+                        {getStatusLabel(selectedTask.status)}
                       </span>
                     </div>
                     <div>

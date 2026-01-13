@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, formatCurrency, getStatusColor, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
+import { Project, ProjectStatus, formatCurrency, getStatusColor, getStatusLabel, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { useUsers } from '../hooks/useUsers';
 import { useSettings } from '../hooks/useSettings';
@@ -605,7 +605,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     const rows = filteredProjects.map(p => {
         return activeCols.map(c => {
              if (c.id === 'status') {
-                 const statusText = p.status ? p.status.replace(/_/g, ' ') : '';
+                 const statusText = p.status ? getStatusLabel(p.status) : '';
                  const progressText = p.peratusSiap !== undefined ? p.peratusSiap : 0;
                  return `"${statusText}","${progressText}"`;
              }
@@ -762,7 +762,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                   };
 
                   // Format Status: First letter caps (e.g. Dalam Proses)
-                  const formattedStatus = toTitleCase(p.status.replace(/_/g, ' '));
+                  const formattedStatus = getStatusLabel(p.status);
                   
                   const progress = p.peratusSiap !== undefined && p.peratusSiap !== null ? p.peratusSiap : 0;
                   
@@ -1070,6 +1070,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                             >
                                 <option value="ALL">Semua Status</option>
+                                <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
+                                <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
                                 <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
                                 <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
                                 <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Pemeriksaan Tapak</option>
@@ -1320,7 +1322,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     {visibleColumns.noInden && <td className="px-6 py-4 text-xs text-slate-500">{project.noInden}</td>}
                                     {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
                                     {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
-                                    {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{project.status.replace(/_/g, ' ')}</span></div></td>}
+                                    {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{getStatusLabel(project.status)}</span></div></td>}
                                     {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
                                     {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(getHargaAkhir(project))}</td>}
                                     {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
@@ -1425,7 +1427,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                                                                               <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600'}>{formatCurrency(getHargaAkhir(p))}</div>
                                                                                                                           </td>
                                                             
-                                                            <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{p.status.replace(/_/g, ' ')}</span></div></td>
+                                                            <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{getStatusLabel(p.status)}</span></div></td>
                                                             <td className="px-6 py-3 text-right align-top"><button className="p-2 rounded-lg bg-white  text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"><ArrowUpRight className="w-4 h-4" /></button></td>
                                                         </tr>
                                                     );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, BulletinItem, getStatusColor } from '../types';
+import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, BulletinItem, getStatusColor, getStatusLabel } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { useBulletins } from '../hooks/useBulletins';
 import { useUsers } from '../hooks/useUsers';
@@ -80,11 +80,12 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
     return count;
   }, [projects, user, projects.length]);
 
-  const phase1 = displayProjects.filter(p => p.status === ProjectStatus.MENUNGGU_LANTIKAN);
-  const phase2 = displayProjects.filter(p => p.status === ProjectStatus.DALAM_PROSES);
-  const phase2b = displayProjects.filter(p => p.status === ProjectStatus.PEMERIKSAAN_TAPAK);
-  const phase3 = displayProjects.filter(p => p.status === ProjectStatus.TUNTUTAN_BAYARAN);
-  const phase4 = displayProjects.filter(p => p.status === ProjectStatus.SIAP);
+  const phase1 = displayProjects.filter(p => p.status === ProjectStatus.FASA_DRAF);
+  const phase2 = displayProjects.filter(p => p.status === ProjectStatus.MENUNGGU_LANTIKAN);
+  const phase3 = displayProjects.filter(p => p.status === ProjectStatus.DALAM_PROSES);
+  const phase4 = displayProjects.filter(p => p.status === ProjectStatus.PEMERIKSAAN_TAPAK);
+  const phase5 = displayProjects.filter(p => p.status === ProjectStatus.TUNTUTAN_BAYARAN);
+  const phase6 = displayProjects.filter(p => p.status === ProjectStatus.SIAP);
 
   const filteredProjects = useMemo(() => {
     return displayProjects.filter(p => {
@@ -317,7 +318,21 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === ProjectStatus.FASA_DRAF ? 'ALL' : ProjectStatus.FASA_DRAF)}
+            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.FASA_DRAF ? 'border-slate-500 ring-2 ring-slate-500/20' : 'border-slate-100'}`}
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+               <Zap className="w-24 h-24 text-slate-500" />
+            </div>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-slate-50  text-slate-600  group-hover:bg-slate-500 group-hover:text-white transition-colors duration-200">
+              <Zap className="w-7 h-7" />
+            </div>
+            <p className="text-3xl font-black text-slate-900  mb-1">{phase1.length}</p>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.FASA_DRAF)}</p>
+          </div>
+
           <div 
             onClick={() => setStatusFilter(statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'ALL' : ProjectStatus.MENUNGGU_LANTIKAN)}
             className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'border-yellow-500 ring-2 ring-yellow-500/20' : 'border-slate-100'}`}
@@ -328,9 +343,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-slate-100  text-slate-600  group-hover:bg-slate-600 group-hover:text-white transition-colors duration-200">
               <FileClock className="w-7 h-7" />
             </div>
-            <p className="text-sm text-slate-500  font-bold uppercase tracking-wider mb-1">Fasa 1</p>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase1.length}</p>
-            <p className="text-xs text-slate-400 font-medium">Menunggu Lantikan</p>
+            <p className="text-3xl font-black text-slate-900  mb-1">{phase2.length}</p>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.MENUNGGU_LANTIKAN)}</p>
           </div>
 
           <div 
@@ -343,9 +357,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-blue-50  text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
               <Clock className="w-7 h-7" />
             </div>
-            <p className="text-sm text-blue-500/80 font-bold uppercase tracking-wider mb-1">Fasa 2</p>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase2.length}</p>
-            <p className="text-xs text-slate-400 font-medium">Dalam Proses</p>
+            <p className="text-3xl font-black text-slate-900  mb-1">{phase3.length}</p>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.DALAM_PROSES)}</p>
           </div>
 
           <div 
@@ -358,9 +371,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-indigo-50  text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-200">
               <ClipboardCheck className="w-7 h-7" />
             </div>
-            <p className="text-sm text-indigo-500/80 font-bold uppercase tracking-wider mb-1">Fasa 2b</p>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase2b.length}</p>
-            <p className="text-xs text-slate-400 font-medium">Pemeriksaan Tapak</p>
+            <p className="text-3xl font-black text-slate-900  mb-1">{phase4.length}</p>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.PEMERIKSAAN_TAPAK)}</p>
           </div>
 
           <div 
@@ -373,9 +385,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-orange-50  text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200">
               <Banknote className="w-7 h-7" />
             </div>
-            <p className="text-sm text-orange-500/80 font-bold uppercase tracking-wider mb-1">Fasa 3</p>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase3.length}</p>
-            <p className="text-xs text-slate-400 font-medium">Tuntutan Bayaran</p>
+            <p className="text-3xl font-black text-slate-900  mb-1">{phase5.length}</p>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.TUNTUTAN_BAYARAN)}</p>
           </div>
 
           <div 
@@ -388,9 +399,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-emerald-50  text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-200">
               <CheckCircle className="w-7 h-7" />
             </div>
-            <p className="text-sm text-emerald-500/80 font-bold uppercase tracking-wider mb-1">Fasa 4</p>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase4.length}</p>
-            <p className="text-xs text-slate-400 font-medium">Siap Sepenuhnya</p>
+            <p className="text-3xl font-black text-slate-900  mb-1">{phase6.length}</p>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.SIAP)}</p>
           </div>
         </div>
       </section>
@@ -497,8 +507,9 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                            </p>
                         </td>
                         <td className="px-6 py-5">
-                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-wide ${getStatusColor(project.status)}`}>
-                              {project.status.replace(/_/g, ' ')}
+                           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)}`}>
+                             <span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>
+                             {getStatusLabel(project.status)}
                            </span>
                         </td>
                         <td className="px-8 py-5 text-right font-bold text-slate-900  font-mono tracking-tight">

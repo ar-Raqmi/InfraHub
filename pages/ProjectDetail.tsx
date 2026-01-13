@@ -252,11 +252,12 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
                   disabled={isReadOnly}
                   className="appearance-none bg-slate-100 border-2 border-slate-200 rounded-xl py-1.5 md:py-2 pl-3 md:pl-4 pr-8 md:pr-10 text-[10px] md:text-[11px] font-black text-slate-700 focus:ring-2 focus:ring-emerald-500 transition-all uppercase tracking-wider cursor-pointer hover:bg-white hover:border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Lantikan</option>
-                    <option value={ProjectStatus.DALAM_PROSES}>Proses</option>
-                    <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Tapak</option>
-                    <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Bayaran</option>
-                    <option value={ProjectStatus.SIAP}>Siap</option>
+                      <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
+                      <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
+                      <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
+                      <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Pemeriksaan Tapak</option>
+                      <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
+                      <option value={ProjectStatus.SIAP}>Siap</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400 pointer-events-none group-hover:text-emerald-500 transition-colors" />
              </div>
@@ -443,7 +444,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [formData, setFormData] = useState<Partial<Project>>(project || {
     namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(), 
     pjaId: initialPjaId, bp: '', zon: '', mukim: '', lokasi: '', 
-    status: ProjectStatus.MENUNGGU_LANTIKAN, 
+    status: ProjectStatus.FASA_DRAF, 
     bqData: [], 
     bqDataPelarasan: [],
     globalDimensions: { length: 0, width: 0, depth: 0 },
