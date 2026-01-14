@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, formatCurrency, getStatusColor, getStatusLabel, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay } from '../types';
+import { Project, ProjectStatus, formatCurrency, getStatusColor, getStatusLabel, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay, Role } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { useUsers } from '../hooks/useUsers';
+import { useProjects } from '../hooks/useProjects';
 import { useSettings } from '../hooks/useSettings';
 import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -67,6 +68,7 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
 
 const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onAddProject, onEditProject, onDeleteProject, user }) => {
   const { users } = useUsers();
+  const { updateProject } = useProjects();
   const { 
     votes: votesList, 
     companyOrder, 
@@ -75,6 +77,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     updateSettings,
     isSyncing: isSettingsSyncing 
   } = useSettings(selectedYear);
+
+  const canQuickEdit = user.role === Role.ADMIN || user.role === Role.JURUTERA;
   
   const [manualFinancials, setManualFinancials] = useState(hookManualFinancials);
 
@@ -1207,14 +1211,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             
                                 <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
                             </label>
-
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <div className={`w-10 h-5 rounded-full p-1 transition-colors ${filterLoC ? 'bg-amber-500' : 'bg-slate-300'}`}>
-                                    <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${filterLoC ? 'translate-x-5' : ''}`}></div>
-                                </div>
-                                <input type="checkbox" className="hidden" checked={filterLoC} onChange={() => setFilterLoC(!filterLoC)} />
-                                <span className="text-xs font-bold text-slate-600">Tunjuk Projek LoC</span>
-                            </label>
                         </div>
                     </div>
                 )}
@@ -1465,12 +1461,51 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                             <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
                                                             <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600  whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
                                                             <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br/>-<br/>{formatDate(p.tarikhTamatKontrak)}</td>
-                                                                                                                          <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
-                                                                                                                              <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600'}>{formatCurrency(p.kosProjek)}</div>
-                                                                                                                              <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600'}>{formatCurrency(getHargaAkhir(p))}</div>
-                                                                                                                          </td>
-                                                            
-                                                            <td className="px-6 py-3 text-center align-top"><div className="flex flex-col items-center gap-1"><span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span><span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{getStatusLabel(p.status)}</span></div></td>
+                                                            <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
+                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600'}>{formatCurrency(p.kosProjek)}</div>
+                                                                <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600'}>{formatCurrency(getHargaAkhir(p))}</div>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-center align-top">
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    {canQuickEdit ? (
+                                                                        <>
+                                                                            <div className="flex items-center gap-1">
+                                                                                <input 
+                                                                                    type="number" 
+                                                                                    min="0" 
+                                                                                    max="100" 
+                                                                                    value={p.peratusSiap ?? 0} 
+                                                                                    onChange={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        updateProject({ id: p.id, updates: { peratusSiap: parseInt(e.target.value) || 0 } });
+                                                                                    }}
+                                                                                    onClick={(e) => e.stopPropagation()}
+                                                                                    className="w-12 text-center text-[10px] font-bold text-emerald-600 bg-white border border-emerald-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-emerald-500 transition-shadow"
+                                                                                />
+                                                                                <span className="text-[10px] font-bold text-emerald-600">%</span>
+                                                                            </div>
+                                                                            <select 
+                                                                                value={p.status} 
+                                                                                onChange={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    updateProject({ id: p.id, updates: { status: e.target.value as ProjectStatus } });
+                                                                                }}
+                                                                                onClick={(e) => e.stopPropagation()}
+                                                                                className={`text-[9px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm outline-none cursor-pointer ${getStatusColor(p.status)}`}
+                                                                            >
+                                                                                {Object.values(ProjectStatus).map(status => (
+                                                                                    <option key={status} value={status}>{getStatusLabel(status)}</option>
+                                                                                ))}
+                                                                            </select>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span>
+                                                                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{getStatusLabel(p.status)}</span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </td>
                                                             <td className="px-6 py-3 text-right align-top">
                                                                 <button 
                                                                     onClick={(e) => { e.stopPropagation(); onEditProject(p); }}
