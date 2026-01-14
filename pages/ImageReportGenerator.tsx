@@ -598,8 +598,10 @@ const ToolBtn = ({ active, onClick, icon, title }: { active: boolean; onClick: (
 // --- MAIN PAGE ---
 
 const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ projects, user }) => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | ProjectStatus.FASA_DRAF | ProjectStatus.MENUNGGU_LANTIKAN>('ALL');
   const [complaints, setComplaints] = useState<ComplaintRow[]>([{ id: '1', location: '', description: '' }]);
   const [mapImage, setMapImage] = useState<string | null>(null);
   const [siteImages, setSiteImages] = useState<string[]>([]);
@@ -616,7 +618,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // xl breakpoint is 1280, md is 768. 1024 is safer for "edit easily"
+      setIsMobile(window.innerWidth < 1024);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -637,7 +639,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     }
   };
 
-  // Global Paste Listener for convenience (Hidden Feature: Ctrl+V)
+  // Global Paste Listener
   useEffect(() => {
     const globalPasteHandler = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
@@ -650,9 +652,8 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
             const reader = new FileReader();
             reader.onload = (ev) => {
               const res = ev.target?.result as string;
-              // Logic: If map is empty, go to map. Otherwise go to site images.
-              if (!mapImage) processImageData(res, 'map');
-              else processImageData(res, 'site');
+              if (currentStep === 2) processImageData(res, 'map');
+              else if (currentStep === 3) processImageData(res, 'site');
             };
             reader.readAsDataURL(blob);
           }
@@ -662,39 +663,38 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
     window.addEventListener('paste', globalPasteHandler);
     return () => window.removeEventListener('paste', globalPasteHandler);
-  }, [mapImage]);
+  }, [currentStep]);
 
   // Filtering Logic
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
       if (user.role === Role.PJA && p.pjaId !== user.id) return false;
-      const excludedStatuses = [
-        ProjectStatus.PEMERIKSAAN_TAPAK,
-        ProjectStatus.TUNTUTAN_BAYARAN,
-        ProjectStatus.SIAP
+      
+      const allowedStatuses = [
+        ProjectStatus.FASA_DRAF,
+        ProjectStatus.MENUNGGU_LANTIKAN
       ];
-      if (excludedStatuses.includes(p.status)) return false;
+      if (!allowedStatuses.includes(p.status)) return false;
+
+      // Status Filter
+      if (statusFilter !== 'ALL' && p.status !== statusFilter) return false;
+
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       return (p.namaProjek?.toLowerCase() || '').includes(q) || (p.noFail?.toLowerCase() || '').includes(q);
     });
-  }, [projects, searchQuery, user]);
+  }, [projects, searchQuery, user, statusFilter]);
 
-  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const projectId = e.target.value;
-    setSelectedProjectId(projectId);
-    
-    const proj = projects.find(p => p.id.toString() === projectId);
-    if (proj) {
-      if (proj.projectLocations?.length) {
-        setComplaints(proj.projectLocations.map(l => ({
-          id: l.id || Math.random().toString(),
-          location: l.lokasi,
-          description: l.aduan
-        })));
-      } else {
-        setComplaints([{ id: '1', location: proj.lokasi || '', description: proj.aduan || '' }]);
-      }
+  const selectProject = (proj: Project) => {
+    setSelectedProjectId(proj.id.toString());
+    if (proj.projectLocations?.length) {
+      setComplaints(proj.projectLocations.map(l => ({
+        id: l.id || Math.random().toString(),
+        location: l.lokasi,
+        description: l.aduan
+      })));
+    } else {
+      setComplaints([{ id: '1', location: proj.lokasi || '', description: proj.aduan || '' }]);
     }
   };
 
@@ -706,13 +706,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       const reader = new FileReader();
       reader.onload = (ev) => {
         const res = ev.target?.result as string;
-        if (type === 'map') setMapImage(res);
-        else setSiteImages(prev => {
-           const next = [...prev, res].slice(0, 4);
-           if (next.length === 2) setLayout('horizontal');
-           if (next.length === 3) setLayout('big-left');
-           return next;
-        });
+        processImageData(res, type);
       };
       reader.readAsDataURL(file);
     });
@@ -758,262 +752,420 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     setIsEditingMap(false);
   };
 
+  const handleReset = () => {
+    if (confirm('Padam semua data dan mula semula?')) {
+      setCurrentStep(1);
+      setSelectedProjectId('');
+      setComplaints([{ id: '1', location: '', description: '' }]);
+      setMapImage(null);
+      setSiteImages([]);
+      setSearchQuery('');
+    }
+  };
+
+  const steps = [
+    { id: 1, label: 'Maklumat Projek', icon: <Briefcase size={16}/> },
+    { id: 2, label: 'Pelan Lokasi', icon: <MapIcon size={16}/> },
+    { id: 3, label: 'Gambar Tapak', icon: <ImageIcon size={16}/> },
+    { id: 4, label: 'Eksport PDF', icon: <FileDown size={16}/> },
+  ];
+
   return (
     <div className={`flex flex-col ${!isMobile ? 'h-[calc(100vh-160px)]' : 'min-h-screen'} gap-4 md:gap-6 animate-fade-in ${!isMobile ? 'overflow-hidden' : ''} pb-6`}>
       
-      {/* Header */}
-      <div className="shrink-0 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900  flex items-center gap-3">
-            <Briefcase className="w-8 h-8 md:w-10 md:h-10 text-emerald-600" />
-            Laporan Bergambar
-          </h1>
-          <p className="text-slate-500 font-medium mt-1 ml-11 md:ml-14 uppercase tracking-widest text-[10px]">Lampiran Cadangan Kerja</p>
+      {/* Step Indicator */}
+      <div className="shrink-0 bg-white  rounded-3xl p-2 shadow-sm border border-slate-100  flex items-center justify-between">
+        <div className="flex items-center gap-1 md:gap-4 overflow-x-auto no-scrollbar px-2 py-1">
+          {steps.map((s, idx) => (
+            <React.Fragment key={s.id}>
+              <div 
+                className={`flex items-center gap-2 px-3 py-2 rounded-2xl transition-all shrink-0 ${currentStep === s.id ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : currentStep > s.id ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400'}`}
+              >
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${currentStep === s.id ? 'bg-white text-emerald-600' : currentStep > s.id ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                  {currentStep > s.id ? <Check size={14} strokeWidth={3}/> : s.id}
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">{s.label}</span>
+              </div>
+              {idx < steps.length - 1 && <div className={`h-px w-4 md:w-8 ${currentStep > s.id ? 'bg-emerald-200' : 'bg-slate-100'}`} />}
+            </React.Fragment>
+          ))}
         </div>
-        <div className="flex items-center gap-2 md:gap-3">
-           <button 
-            onClick={() => confirm('Padam semua data dan mula semula?') && window.location.reload()}
-            className="px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl bg-white  text-slate-600  font-bold shadow-sm border border-slate-200  hover:bg-slate-50  transition-colors flex items-center gap-2 text-xs md:text-sm"
-           >
-            <RefreshCw className="w-4 h-4" /> Reset
-           </button>
-           <button 
-            onClick={handleExportPDF}
-            disabled={isExporting}
-            className="px-6 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/20 hover:shadow-xl   transition-colors flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm"
-           >
-             {isExporting ? <RefreshCw className="w-5 h-5 animate-spin" /> : <FileDown className="w-5 h-5" />}
-             Eksport PDF
-           </button>
+        
+        <div className="flex items-center gap-2 pr-2">
+          {currentStep > 1 && (
+            <button 
+              onClick={() => setCurrentStep(prev => prev - 1)}
+              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+            >
+              <Undo size={20} />
+            </button>
+          )}
+          <button 
+            onClick={handleReset}
+            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+            title="Mula Semula"
+          >
+            <RefreshCw size={20} />
+          </button>
         </div>
       </div>
 
-      {/* Project Section (Table & Details) */}
-      <section className={`shrink-0 bg-white  rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-slate-100  overflow-hidden flex flex-col ${!isMobile ? 'max-h-[30%]' : ''}`}>
-        <div className="p-4 md:p-6 border-b border-slate-100  bg-slate-50/50  flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-           <div className="flex items-center gap-4">
-             <div className="bg-emerald-500 p-2 md:p-3 rounded-xl md:rounded-2xl text-white shadow-lg shadow-emerald-500/20">
-               <Briefcase size={20} className="md:w-6 md:h-6" />
-             </div>
-             <div>
-               <h2 className="text-base md:text-xl font-black text-slate-900  uppercase tracking-tight">Maklumat Projek & Lokasi</h2>
-               <p className="hidden md:block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Pilih Projek Untuk Import Data Secara Automatik</p>
-             </div>
-           </div>
-           
-           <div className="flex flex-col md:flex-row gap-3 flex-1 max-w-4xl justify-end">
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                <input 
-                  type="text" placeholder="Cari..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white  border-none focus:ring-2 focus:ring-emerald-500 transition-colors text-xs  shadow-inner border border-slate-100"
-                  value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <select 
-                className="w-full md:w-96 px-4 py-2.5 rounded-xl bg-white  border-none focus:ring-2 focus:ring-emerald-500 transition-colors text-[10px] md:text-xs appearance-none cursor-pointer  font-bold shadow-sm border border-slate-100  truncate"
-                value={selectedProjectId} onChange={handleProjectChange}
-              >
-                <option value="">-- PILIH PROJEK --</option>
-                {filteredProjects.map(p => (
-                  <option key={p.id} value={p.id}>
-                     {p.noFail ? `[${p.noFail}] ` : ''}{p.namaProjek}
-                  </option>
-                ))}
-              </select>
-           </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
-           <div className="overflow-x-auto rounded-xl border border-slate-100">
-             <table className="w-full text-left">
-                <thead>
-                   <tr className="bg-slate-50">
-                      <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12 text-center">Bil</th>
-                      <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest w-1/3">Lokasi</th>
-                      <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Aduan</th>
-                      <th className="px-4 py-3 w-16"></th>
-                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                   {complaints.map((row, idx) => (
-                      <tr key={row.id} className="group hover:bg-slate-50  transition-colors">
-                        <td className="px-4 py-3 text-center font-black text-slate-300 text-xs">{idx + 1}</td>
-                        <td className="px-2 py-3">
-                           <input 
-                              placeholder="TAIP LOKASI..."
-                              className="w-full bg-slate-50/50  border-none rounded-lg px-3 py-2 text-[10px] md:text-xs font-bold focus:ring-2 focus:ring-emerald-500 uppercase"
-                              value={row.location}
-                              onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, location: e.target.value } : c))}
-                           />
-                        </td>
-                        <td className="px-2 py-3">
-                           <input 
-                              placeholder="TAIP ADUAN..."
-                              className="w-full bg-slate-50/50  border-none rounded-lg px-3 py-2 text-[10px] md:text-xs font-medium focus:ring-2 focus:ring-emerald-500 uppercase  text-slate-600"
-                              value={row.description}
-                              onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, description: e.target.value } : c))}
-                           />
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                           {complaints.length > 1 && (
-                              <button 
-                                onClick={() => setComplaints(complaints.filter(c => c.id !== row.id))}
-                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50  rounded-lg transition-colors"
-                              >
-                                 <Trash2 size={14} />
-                              </button>
-                           )}
-                        </td>
-                      </tr>
-                   ))}
-                </tbody>
-             </table>
-           </div>
-           <div className="mt-4 flex justify-between items-center">
-              <button 
-                onClick={() => setComplaints([...complaints, { id: Date.now().toString(), location: '', description: '' }])}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-50  text-emerald-600 rounded-lg text-[10px] font-bold hover:bg-emerald-100 transition-colors border border-emerald-100  uppercase tracking-widest"
-              >
-                <Plus size={14} /> Tambah
-              </button>
-              
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50  text-amber-800  rounded-xl text-[8px] md:text-[10px] border border-amber-100  font-black uppercase tracking-widest">
-                 <AlertTriangle size={12} />
-                 Data Tidak Akan Simpan
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Editor Section (Map & Site Images) */}
-      <div className={`flex-1 grid grid-cols-1 ${!isMobile ? 'xl:grid-cols-2' : ''} gap-4 md:gap-8 overflow-hidden min-h-0`}>
+      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
         
-        {/* Map Editor */}
-        <section className="bg-white  rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-slate-100  overflow-hidden flex flex-col min-h-[300px]">
-          <div className="p-4 md:p-6 border-b border-slate-100  flex items-center justify-between bg-slate-50/50 shrink-0">
-            <h2 className="font-black text-slate-800  flex items-center gap-2 uppercase tracking-tight text-sm md:text-base">
-               <MapIcon className="text-emerald-500" size={18} />
-               Pelan Lokasi
-            </h2>
-            {!mapImage ? (
-              <button 
-                onClick={() => fileInputMapRef.current?.click()} 
-                className="px-4 md:px-6 py-2 bg-emerald-600 text-white rounded-lg md:rounded-xl text-[10px] font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 uppercase tracking-widest"
-              >
-                Muat Naik
-              </button>
-            ) : (
-              <div className="flex gap-2">
-                <button onClick={() => setIsEditingMap(true)} className="p-2 bg-blue-50 text-blue-600 rounded-lg md:rounded-xl hover:bg-blue-100 transition-colors border border-blue-100" title="Fullscreen Edit">
-                  <Maximize2 size={16} />
-                </button>
-                <button onClick={() => setMapImage(null)} className="px-4 md:px-6 py-2 bg-red-50 text-red-600 rounded-lg md:rounded-xl text-[10px] font-bold hover:bg-red-100 transition-colors border border-red-100 uppercase tracking-widest">Padam</button>
+        {/* Step 1: Maklumat Projek */}
+        {currentStep === 1 && (
+          <div className="flex-1 flex flex-col gap-4 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
+              {/* Left: Project List */}
+              <div className="lg:col-span-4 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden">
+                <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-4 flex items-center gap-2">
+                    <Search size={16} className="text-emerald-500" /> Pilih Projek
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <input 
+                        type="text" placeholder="Cari Projek / No Fail..."
+                        className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-200 focus:ring-2 focus:ring-emerald-500 transition-all text-xs font-bold"
+                        value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+                      <button 
+                        onClick={() => setStatusFilter('ALL')}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === 'ALL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Semua
+                      </button>
+                      <button 
+                        onClick={() => setStatusFilter(ProjectStatus.FASA_DRAF)}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.FASA_DRAF ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Draf
+                      </button>
+                      <button 
+                        onClick={() => setStatusFilter(ProjectStatus.MENUNGGU_LANTIKAN)}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Lantikan
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                  <div className="flex flex-col gap-2">
+                    {filteredProjects.length === 0 ? (
+                      <div className="p-10 text-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tiada Projek Ditemui</p>
+                      </div>
+                    ) : (
+                      filteredProjects.map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => selectProject(p)}
+                          className={`p-4 rounded-2xl text-left transition-all border ${selectedProjectId === p.id.toString() ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-50 border-transparent'}`}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="text-[13px] font-black px-3 py-1 rounded-md bg-white border border-slate-100 text-slate-500">{p.noFail || 'TIADA NO FAIL'}</span>
+                            <div className={`w-3 h-3 rounded-full mt-1 ${p.status === ProjectStatus.FASA_DRAF ? 'bg-slate-300' : 'bg-yellow-400'}`} />
+                          </div>
+                          <p className={`text-[15px] font-black uppercase leading-tight ${selectedProjectId === p.id.toString() ? 'text-emerald-900' : 'text-slate-800'}`}>
+                            {p.namaProjek}
+                          </p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-          <div className="flex-1 p-4 md:p-6 overflow-hidden">
-             <CanvasMapEditor ref={editorRef} initialImage={mapImage} isMobile={isMobile} />
-          </div>
-          <input ref={fileInputMapRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'map')}/>
-        </section>
 
-        {/* Site Images */}
-        <section className="bg-white  rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-slate-100  overflow-hidden flex flex-col min-h-[300px]">
-           <div className="p-4 md:p-6 border-b border-slate-100  flex items-center justify-between bg-slate-50/50 shrink-0">
-              <div className="flex items-center gap-2 md:gap-3">
-                <h2 className="font-black text-slate-800  flex items-center gap-2 uppercase tracking-tight text-sm md:text-base">
-                   <ImageIcon className="text-blue-500" size={18} />
-                   Gambar Tapak
-                </h2>
-                <span className="bg-slate-200  text-slate-500 px-2 py-0.5 md:px-3 md:py-1 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black tracking-widest">{siteImages.length} / 4</span>
-              </div>
-              
-              <div className="flex items-center gap-2 md:gap-3">
-                {siteImages.length === 2 && (
-                   <div className="flex bg-slate-100  p-1 rounded-lg gap-1">
-                     <button onClick={() => setLayout('horizontal')} className={`p-1.5 rounded-md ${layout === 'horizontal' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Side by Side"><Columns size={14}/></button>
-                     <button onClick={() => setLayout('vertical')} className={`p-1.5 rounded-md ${layout === 'vertical' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Stacked"><Rows size={14}/></button>
+              {/* Right: Location Table */}
+              <div className="lg:col-span-8 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden">
+                <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                   <div>
+                      <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Senarai Lokasi & Aduan</h3>
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Sahkan lokasi dan aduan untuk laporan</p>
                    </div>
-                )}
-                {siteImages.length === 3 && (
-                   <div className="flex bg-slate-100  p-1 rounded-lg gap-1">
-                     <button onClick={() => setLayout('big-left')} className={`p-1.5 rounded-md ${layout === 'big-left' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Large Left"><LayoutTemplate size={14} className="-rotate-90"/></button>
-                     <button onClick={() => setLayout('big-top')} className={`p-1.5 rounded-md ${layout === 'big-top' ? 'bg-white  shadow-sm text-emerald-500' : 'text-slate-400'}`} title="Large Top"><LayoutTemplate size={14}/></button>
-                   </div>
-                )}
-                {siteImages.length < 4 && (
+                   <button 
+                    onClick={() => setComplaints([...complaints, { id: Date.now().toString(), location: '', description: '' }])}
+                    className="p-2 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all"
+                   >
+                     <Plus size={18} />
+                   </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                   <table className="w-full">
+                      <thead className="sticky top-0 bg-white z-10">
+                        <tr>
+                          <th className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12 text-center">Bil</th>
+                          <th className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi</th>
+                          <th className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">Aduan</th>
+                          <th className="w-12"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {complaints.map((row, idx) => (
+                          <tr key={row.id} className="group">
+                            <td className="px-4 py-3 text-center text-[10px] font-black text-slate-300">{idx + 1}</td>
+                            <td className="px-2 py-3">
+                              <input 
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase focus:ring-2 focus:ring-emerald-500"
+                                value={row.location}
+                                onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, location: e.target.value } : c))}
+                                placeholder="CONTOH: JALAN 1/1, TAMAN DESA"
+                              />
+                            </td>
+                            <td className="px-2 py-3">
+                              <input 
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-medium uppercase text-slate-600 focus:ring-2 focus:ring-emerald-500"
+                                value={row.description}
+                                onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, description: e.target.value } : c))}
+                                placeholder="CONTOH: KERJA-KERJA MENURAP JALAN"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                               {complaints.length > 1 && (
+                                  <button onClick={() => setComplaints(complaints.filter(c => c.id !== row.id))} className="text-slate-300 hover:text-red-500 transition-colors">
+                                    <Trash2 size={16} />
+                                  </button>
+                               )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                   </table>
+                </div>
+                <div className="p-6 border-t border-slate-100 flex justify-end items-center gap-4">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-800 rounded-xl text-[8px] font-black uppercase tracking-widest">
+                    <AlertTriangle size={12} /> Data Tidak Akan Simpan
+                  </div>
                   <button 
-                    onClick={() => fileInputSiteRef.current?.click()} 
-                    className="px-4 md:px-6 py-2 bg-blue-600 text-white rounded-lg md:rounded-xl text-[10px] font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 uppercase tracking-widest"
+                    onClick={() => setCurrentStep(2)}
+                    disabled={!selectedProjectId && complaints[0].location === ''}
+                    className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs disabled:opacity-50"
                   >
-                    {isMobile ? 'Tambah' : 'Tambah Foto'}
+                    Seterusnya
                   </button>
-                )}
+                </div>
               </div>
-           </div>
+            </div>
+          </div>
+        )}
 
-           <div className="flex-1 p-4 md:p-8 overflow-y-auto custom-scrollbar">
-              {siteImages.length === 0 ? (
-                <div className="w-full h-full min-h-[200px] bg-slate-50  border-2 border-dashed border-slate-200  rounded-[1.5rem] md:rounded-[2rem] flex flex-col items-center justify-center text-slate-400 gap-3 md:gap-4">
-                  <ImageIcon size={48} className="md:w-16 md:h-16 opacity-20" />
-                  <p className="font-bold uppercase tracking-widest text-[10px] md:text-xs">Sila Pilih Imej Tapak</p>
+        {/* Step 2: Pelan Lokasi */}
+        {currentStep === 2 && (
+          <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Pelan Lokasi</h3>
+                  <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Muat naik & lukis tanda pada pelan</p>
                 </div>
-              ) : (
-                <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2'} gap-4 md:gap-6 h-fit`}>
-                   {siteImages.map((img, idx) => (
-                     <div key={idx} className="relative group aspect-square rounded-[1.25rem] md:rounded-[2rem] overflow-hidden bg-slate-100  border-2 md:border-4 border-white  shadow-sm">
+                {!mapImage ? (
+                  <button 
+                    onClick={() => fileInputMapRef.current?.click()} 
+                    className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 uppercase tracking-widest"
+                  >
+                    Muat Naik Imej
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button onClick={() => setIsEditingMap(true)} className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all border border-blue-100">
+                      <Maximize2 size={18} />
+                    </button>
+                    <button onClick={() => setMapImage(null)} className="px-6 py-2.5 bg-red-50 text-red-600 rounded-xl text-[10px] font-black hover:bg-red-100 transition-all border border-red-100 uppercase tracking-widest">
+                      Padam
+                    </button>
+                  </div>
+                )}
+             </div>
+             <div className="flex-1 p-6 overflow-hidden bg-slate-50/30">
+                <CanvasMapEditor ref={editorRef} initialImage={mapImage} isMobile={isMobile} />
+             </div>
+             <div className="p-6 border-t border-slate-100 flex justify-between items-center">
+                <button onClick={() => setCurrentStep(1)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
+                <button onClick={() => setCurrentStep(3)} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
+             </div>
+             <input ref={fileInputMapRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'map')}/>
+          </div>
+        )}
+
+        {/* Step 3: Gambar Tapak */}
+        {currentStep === 3 && (
+          <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Gambar Tapak ({siteImages.length}/4)</h3>
+                  <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Pilih sehingga 4 gambar tapak</p>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {siteImages.length >= 2 && (
+                    <div className="flex bg-slate-200/50 p-1 rounded-xl gap-1">
+                       {siteImages.length === 2 && (
+                         <>
+                           <button onClick={() => setLayout('horizontal')} className={`p-2 rounded-lg ${layout === 'horizontal' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><Columns size={16}/></button>
+                           <button onClick={() => setLayout('vertical')} className={`p-2 rounded-lg ${layout === 'vertical' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><Rows size={16}/></button>
+                         </>
+                       )}
+                       {siteImages.length === 3 && (
+                         <>
+                           <button onClick={() => setLayout('big-left')} className={`p-2 rounded-lg ${layout === 'big-left' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><LayoutTemplate size={16} className="-rotate-90"/></button>
+                           <button onClick={() => setLayout('big-top')} className={`p-2 rounded-lg ${layout === 'big-top' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><LayoutTemplate size={16}/></button>
+                         </>
+                       )}
+                    </div>
+                  )}
+                  {siteImages.length < 4 && (
+                    <button 
+                      onClick={() => fileInputSiteRef.current?.click()} 
+                      className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest"
+                    >
+                      Tambah Gambar
+                    </button>
+                  )}
+                </div>
+             </div>
+             
+             <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50/30">
+                {siteImages.length === 0 ? (
+                  <div 
+                    onClick={() => fileInputSiteRef.current?.click()}
+                    className="w-full h-full border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-400 gap-4 hover:bg-white hover:border-emerald-300 transition-all cursor-pointer group"
+                  >
+                    <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
+                      <ImageIcon size={40} className="opacity-20 group-hover:text-emerald-500 group-hover:opacity-100 transition-all" />
+                    </div>
+                    <p className="font-black uppercase tracking-widest text-xs">Klik untuk muat naik gambar tapak</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {siteImages.map((img, idx) => (
+                      <div key={idx} className="relative group aspect-square rounded-[2rem] overflow-hidden bg-white border-4 border-white shadow-md hover:shadow-xl transition-all">
                         <img src={img} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-colors flex items-center justify-center gap-2 md:gap-4">
-                           {!isMobile && <button onClick={() => setEditingImageIndex(idx)} className="p-2 md:p-4 bg-white text-blue-600 rounded-lg md:rounded-[1.25rem]  transition-transform shadow-xl"><Pencil size={18} className="md:w-6 md:h-6" /></button>}
-                           <button onClick={() => setSiteImages(siteImages.filter((_, i) => i !== idx))} className="p-2 md:p-4 bg-white text-red-600 rounded-lg md:rounded-[1.25rem]  transition-transform shadow-xl"><Trash2 size={18} className="md:w-6 md:h-6" /></button>
+                        <div className="absolute inset-0 bg-emerald-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
+                          <button onClick={() => setEditingImageIndex(idx)} className="p-3 bg-white text-emerald-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Pencil size={20}/></button>
+                          <button onClick={() => setSiteImages(siteImages.filter((_, i) => i !== idx))} className="p-3 bg-white text-red-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Trash2 size={20}/></button>
                         </div>
-                        <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-black/60 text-white text-[8px] md:text-xs font-black px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl">#{idx + 1}</div>
+                        <div className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-lg shadow-lg">#{idx + 1}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+             </div>
+
+             <div className="p-6 border-t border-slate-100 flex justify-between items-center">
+                <button onClick={() => setCurrentStep(2)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
+                <button onClick={() => setCurrentStep(4)} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
+             </div>
+             <input ref={fileInputSiteRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'site')} />
+          </div>
+        )}
+
+        {/* Step 4: Eksport */}
+        {currentStep === 4 && (
+          <div className="flex-1 flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-500">
+            <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden">
+               <div className="bg-emerald-600 p-12 text-center text-white relative">
+                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+                    <FileText className="absolute -top-10 -right-10 w-64 h-64 rotate-12" />
+                 </div>
+                 <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md">
+                    <Check size={48} strokeWidth={3} />
+                 </div>
+                 <h3 className="text-3xl font-black uppercase tracking-tight mb-2">Laporan Sedia Dihasilkan</h3>
+                 <p className="text-emerald-100 font-bold uppercase tracking-widest text-xs opacity-80">Sila semak maklumat di bawah sebelum eksport</p>
+               </div>
+               
+               <div className="p-10 flex flex-col gap-6">
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Status Projek</p>
+                        <p className="text-sm font-black text-slate-800 uppercase truncate">
+                          {projects.find(p => p.id.toString() === selectedProjectId)?.namaProjek || 'TIADA PROJEK DIPILIH'}
+                        </p>
                      </div>
-                   ))}
-                </div>
-              )}
-           </div>
-           <input ref={fileInputSiteRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'site')} />
-        </section>
+                     <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Jumlah Lokasi</p>
+                        <p className="text-sm font-black text-slate-800">{complaints.length} LOKASI</p>
+                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 p-5 bg-emerald-50 rounded-[2rem] border border-emerald-100">
+                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${mapImage ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                        <MapIcon size={24} />
+                     </div>
+                     <div className="flex-1">
+                        <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Pelan Lokasi</p>
+                        <p className="text-[10px] font-bold text-emerald-700/60 uppercase">{mapImage ? 'IMEJ SEDIA' : 'TIADA IMEJ'}</p>
+                     </div>
+                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${siteImages.length > 0 ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                        <ImageIcon size={24} />
+                     </div>
+                     <div className="flex-1">
+                        <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Gambar Tapak</p>
+                        <p className="text-[10px] font-bold text-blue-700/60 uppercase">{siteImages.length} IMEJ SEDIA</p>
+                     </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 mt-4">
+                    <button 
+                      onClick={handleExportPDF}
+                      disabled={isExporting}
+                      className="w-full py-6 bg-emerald-600 text-white font-black rounded-[2rem] shadow-2xl shadow-emerald-600/40 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-4"
+                    >
+                      {isExporting ? <RefreshCw className="w-6 h-6 animate-spin" /> : <FileDown className="w-6 h-6" />}
+                      Eksport PDF Laporan
+                    </button>
+                    <button 
+                      onClick={() => setCurrentStep(3)}
+                      className="w-full py-4 text-slate-400 font-black hover:text-slate-600 transition-colors uppercase tracking-widest text-[10px]"
+                    >
+                      Kembali Untuk Suntingan
+                    </button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Edit Image Modal */}
-      {editingImageIndex !== null && !isMobile && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60  animate-fade-in">
-          <div className="bg-white  rounded-[2rem] md:rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden border border-white/20">
-            <div className="p-6 md:p-8 border-b border-slate-100  flex items-center justify-between bg-slate-50/50 shrink-0">
+      {editingImageIndex !== null && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div>
-                <h3 className="text-xl md:text-2xl font-black text-slate-900  uppercase tracking-tight">Edit Gambar Tapak #{editingImageIndex + 1}</h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan Alat Crop & Anotasi Di Bawah</p>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Edit Gambar Tapak #{editingImageIndex + 1}</h3>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan alat suntingan di bawah</p>
               </div>
-              <div className="flex gap-2 md:gap-4">
-                <button onClick={() => setEditingImageIndex(null)} className="px-4 md:px-8 py-2 md:py-3 text-slate-600  font-bold hover:bg-slate-100  rounded-xl md:rounded-2xl transition-colors uppercase tracking-widest text-[10px] md:text-xs">Batal</button>
-                <button onClick={saveEditedImage} className="px-6 md:px-10 py-2 md:py-3 bg-emerald-600 text-white font-bold rounded-xl md:rounded-2xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors uppercase tracking-widest text-[10px] md:text-xs">Simpan</button>
+              <div className="flex gap-4">
+                <button onClick={() => setEditingImageIndex(null)} className="px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs">Batal</button>
+                <button onClick={saveEditedImage} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
               </div>
             </div>
-            <div className="flex-1 bg-slate-100  p-4 md:p-8 overflow-hidden flex items-center justify-center">
-               <CanvasMapEditor ref={modalEditorRef} initialImage={siteImages[editingImageIndex]} isMobile={isMobile} />
+            <div className="flex-1 bg-slate-100 p-8 overflow-hidden flex items-center justify-center">
+               <CanvasMapEditor ref={modalEditorRef} initialImage={siteImages[editingImageIndex]} isMobile={false} />
             </div>
           </div>
         </div>
       )}
 
-      {/* Edit Map Modal (Fullscreen) */}
+      {/* Edit Map Modal */}
       {isEditingMap && mapImage && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black animate-fade-in">
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900 animate-fade-in">
           <div className="bg-white w-full h-full flex flex-col overflow-hidden">
-            <div className="p-4 md:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div>
-                <h3 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">Edit Pelan Lokasi</h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan Alat Crop & Anotasi Untuk Melaraskan Pelan</p>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Edit Pelan Lokasi</h3>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Laras semula kedudukan atau tambah penanda</p>
               </div>
-              <div className="flex gap-2 md:gap-4">
-                <button onClick={() => setIsEditingMap(false)} className="px-4 md:px-8 py-2 md:py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl md:rounded-2xl transition-colors uppercase tracking-widest text-[10px] md:text-xs">Batal</button>
-                <button onClick={saveEditedMap} className="px-6 md:px-10 py-2 md:py-3 bg-emerald-600 text-white font-bold rounded-xl md:rounded-2xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors uppercase tracking-widest text-[10px] md:text-xs">Simpan</button>
+              <div className="flex gap-4">
+                <button onClick={() => setIsEditingMap(false)} className="px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs">Batal</button>
+                <button onClick={saveEditedMap} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
               </div>
             </div>
-            <div className="flex-1 bg-slate-100 p-4 md:p-8 overflow-hidden">
+            <div className="flex-1 bg-slate-100 p-8 overflow-hidden">
                <CanvasMapEditor ref={modalEditorRef} initialImage={mapImage} isMobile={false} />
             </div>
           </div>
