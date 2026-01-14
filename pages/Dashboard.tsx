@@ -355,7 +355,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-slate-800">Cipta Buletin Baru</h3>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Format seperti dalam Microsoft Word / WPS</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Buletin kepada semua pengguna</p>
                     </div>
                   </div>
 
