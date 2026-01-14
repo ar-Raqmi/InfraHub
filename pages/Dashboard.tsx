@@ -16,7 +16,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, onNewProject, onNavigate, onProfileClick }) => {
-  const { bulletins, addBulletin, deleteBulletin, isSyncing: isBulletinSyncing } = useBulletins();
+  const { bulletins, addBulletin, deleteBulletin, markAsRead, toggleReaction, isSyncing: isBulletinSyncing } = useBulletins();
   const { users: allUsers, isSyncing: isUserSyncing } = useUsers();
 
   const [isAddingBulletin, setIsAddingBulletin] = useState(false);
@@ -24,6 +24,8 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const [selectedBulletin, setSelectedBulletin] = useState<BulletinItem | null>(null);
   const [bulletinToDelete, setBulletinToDelete] = useState<BulletinItem | null>(null);
   const [pjaFilter, setPjaFilter] = useState<string>('ALL');
+
+  const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL');
@@ -137,6 +139,42 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
     }
   };
 
+  const handleMarkAsRead = async (item: BulletinItem) => {
+    setSelectedBulletin(item);
+    if (!item.readBy?.includes(user.id)) {
+      try {
+        await markAsRead({ id: item.id, userId: user.id });
+      } catch (err) {
+        console.error('Failed to mark as read:', err);
+      }
+    }
+  };
+
+  const insertTag = (tag: string, style?: string) => {
+    if (!textAreaRef.current) return;
+    const start = textAreaRef.current.selectionStart;
+    const end = textAreaRef.current.selectionEnd;
+    const text = newBulletinContent;
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+    const selection = text.substring(start, end);
+    
+    let newText = '';
+    if (tag === 'b') newText = `${before}<b>${selection}</b>${after}`;
+    if (tag === 'i') newText = `${before}<i>${selection}</i>${after}`;
+    if (tag === 'span') newText = `${before}<span style="${style}">${selection}</span>${after}`;
+    
+    setNewBulletinContent(newText);
+    setTimeout(() => {
+        if (textAreaRef.current) {
+            textAreaRef.current.focus();
+            textAreaRef.current.setSelectionRange(start + tag.length + 2, end + tag.length + 2);
+        }
+    }, 0);
+  };
+
+  const REACTION_EMOJIS = ['👍', '😊', '😠', '❤️', '🔥', '👏'];
+
   return (
     <div className="w-full space-y-8 pb-20 animate-fade-in">
       
@@ -225,12 +263,19 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
          {isAddingBulletin && (
             <div className="animate-slide-up mb-6">
               <div className="bg-white  p-4 rounded-[2rem] border border-emerald-100  shadow-xl shadow-emerald-500/10">
+                 <div className="flex items-center gap-2 mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                    <button onClick={() => insertTag('b')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100"><b>B</b></button>
+                    <button onClick={() => insertTag('i')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100 italic">I</button>
+                    <button onClick={() => insertTag('span', 'font-size: 1.25rem')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100">Besar</button>
+                    <button onClick={() => insertTag('span', 'font-size: 0.75rem')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100">Kecil</button>
+                 </div>
                  <textarea 
+                   ref={textAreaRef}
                    value={newBulletinContent}
                    onChange={(e) => setNewBulletinContent(e.target.value)}
-                   className="w-full bg-slate-50  border border-slate-200  rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800  mb-3 placeholder-slate-400"
-                   placeholder="Tulis maklumat..."
-                   rows={3}
+                   className="w-full bg-slate-50  border border-slate-200  rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800  mb-3 placeholder-slate-400 font-mono"
+                   placeholder="Tulis maklumat (boleh guna HTML tags)..."
+                   rows={4}
                    autoFocus
                  />
                  <button 
@@ -244,58 +289,85 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           )}
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-           {bulletins.length > 0 ? bulletins.slice(0, 3).map((item, idx) => (
-             <div key={item.id} className="group bg-white  p-5 rounded-[2rem] shadow-lg shadow-slate-200/50  border border-slate-100  transition-shadow hover:shadow-xl relative overflow-hidden h-full flex flex-col justify-between">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-orange-500/10 to-transparent rounded-bl-[3rem] -mr-4 -mt-4 transition-transform group-"></div>
-                
-                <div>
-                    <div className="flex items-center justify-between mb-3 relative z-10">
-                       <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-orange-50  px-2 py-1 rounded-lg">
-                         {formatDate(item.date)}
-                       </span>
-                       {isManagement && (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setBulletinToDelete(item); }}
-                            className="text-slate-300 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                       )}
-                    </div>
-                    
-                    <p className="text-sm text-slate-700  font-medium leading-relaxed mb-4 line-clamp-3 relative z-10">
-                      {item.content}
-                    </p>
-                </div>
-                
-                <div className="flex items-center justify-between pt-3 border-t border-slate-50  relative z-10 mt-auto">
-                   <div className="flex items-center gap-2">
-                      {(() => {
-                        const bulletinUser = allUsers.find(u => {
-                          const displayName = `${u.fullName.split(' ')[0]} (${u.role === Role.ADMIN ? 'PT' : 'JR'})`;
-                          return displayName === item.author;
-                        });
+           {bulletins.length > 0 ? bulletins.slice(0, 3).map((item, idx) => {
+             const isRead = item.readBy?.includes(user.id);
+             return (
+              <div key={item.id} className={`group bg-white p-5 rounded-[2rem] shadow-lg shadow-slate-200/50 border transition-all hover:shadow-xl relative overflow-hidden h-full flex flex-col justify-between ${!isRead ? 'border-red-200 bg-red-50/5' : 'border-slate-100'}`}>
+                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl rounded-bl-[3rem] -mr-4 -mt-4 transition-transform ${!isRead ? 'from-red-500/10' : 'from-orange-500/10'}`}></div>
+                  
+                  <div>
+                      <div className="flex items-center justify-between mb-3 relative z-10">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${!isRead ? 'text-red-500 bg-red-50' : 'text-orange-500 bg-orange-50'}`}>
+                            {formatDate(item.date)}
+                          </span>
+                          {!isRead && <span className="text-[10px] font-black text-red-600 bg-red-100 px-2 py-1 rounded-lg">BARU</span>}
+                        </div>
+                        {isManagement && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setBulletinToDelete(item); }}
+                              className="text-slate-300 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                        )}
+                      </div>
+                      
+                      <div 
+                        className="text-sm text-slate-700 font-medium leading-relaxed mb-4 line-clamp-3 relative z-10"
+                        dangerouslySetInnerHTML={{ __html: item.content }}
+                      />
+                  </div>
+                  
+                  <div className="space-y-3 relative z-10">
+                    <div className="flex flex-wrap gap-1">
+                      {REACTION_EMOJIS.map(emoji => {
+                        const count = item.reactions?.[emoji]?.length || 0;
+                        const hasReacted = item.reactions?.[emoji]?.includes(user.id);
+                        if (count === 0) return null; 
                         return (
-                          <div className="w-6 h-6 rounded-full bg-slate-100  flex items-center justify-center text-[8px] font-black text-slate-500 overflow-hidden ring-1 ring-slate-200">
-                            {bulletinUser?.avatarUrl ? (
-                              <img src={bulletinUser.avatarUrl} alt={item.author} className="w-full h-full object-cover" />
-                            ) : (
-                              item.author.charAt(0)
-                            )}
-                          </div>
+                          <button 
+                            key={emoji}
+                            onClick={(e) => { e.stopPropagation(); toggleReaction({ id: item.id, userId: user.id, emoji }); }}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors ${hasReacted ? 'bg-emerald-100 border border-emerald-200' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100'}`}
+                          >
+                            <span>{emoji}</span>
+                            <span className="font-bold text-[10px]">{count}</span>
+                          </button>
                         );
-                      })()}
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">{item.author}</span>
-                   </div>
-                   <button 
-                    onClick={() => setSelectedBulletin(item)}
-                    className="text-[10px] font-bold text-emerald-600 hover:underline"
-                  >
-                    Baca
-                  </button>
-                </div>
-             </div>
-           )) : (
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                      <div className="flex items-center gap-2">
+                          {(() => {
+                            const bulletinUser = allUsers.find(u => {
+                              const displayName = `${u.fullName.split(' ')[0]} (${u.role === Role.ADMIN ? 'PT' : 'JR'})`;
+                              return displayName === item.author;
+                            });
+                            return (
+                              <div className="w-6 h-6 rounded-full bg-slate-100  flex items-center justify-center text-[8px] font-black text-slate-500 overflow-hidden ring-1 ring-slate-200">
+                                {bulletinUser?.avatarUrl ? (
+                                  <img src={bulletinUser.avatarUrl} alt={item.author} className="w-full h-full object-cover" />
+                                ) : (
+                                  item.author.charAt(0)
+                                )}
+                              </div>
+                            );
+                          })()}
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">{item.author}</span>
+                      </div>
+                      <button 
+                        onClick={() => handleMarkAsRead(item)}
+                        className={`text-[10px] font-bold hover:underline ${!isRead ? 'text-red-600' : 'text-emerald-600'}`}
+                      >
+                        {isRead ? 'Lihat' : 'Baca'}
+                      </button>
+                    </div>
+                  </div>
+              </div>
+             );
+           }) : (
              <div className="col-span-3 p-8 text-center bg-slate-50  rounded-[2rem] border border-dashed border-slate-200">
                <p className="text-slate-400 text-sm italic">Tiada maklumat terkini.</p>
              </div>
@@ -584,9 +656,27 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                  </div>
 
                  <div className="bg-slate-50  p-6 rounded-3xl border border-slate-100">
-                    <p className="text-slate-800  leading-relaxed whitespace-pre-wrap font-medium text-lg">
-                       {selectedBulletin.content}
-                    </p>
+                    <div 
+                      className="text-slate-800 leading-relaxed whitespace-pre-wrap font-medium text-lg bulletin-content"
+                      dangerouslySetInnerHTML={{ __html: selectedBulletin.content }}
+                    />
+                 </div>
+
+                 <div className="flex flex-wrap gap-2">
+                    {REACTION_EMOJIS.map(emoji => {
+                      const count = selectedBulletin.reactions?.[emoji]?.length || 0;
+                      const hasReacted = selectedBulletin.reactions?.[emoji]?.includes(user.id);
+                      return (
+                        <button 
+                          key={emoji}
+                          onClick={() => toggleReaction({ id: selectedBulletin.id, userId: user.id, emoji })}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-lg transition-all ${hasReacted ? 'bg-emerald-100 border-2 border-emerald-500 scale-110' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
+                        >
+                          <span>{emoji}</span>
+                          {count > 0 && <span className="font-bold text-sm">{count}</span>}
+                        </button>
+                      );
+                    })}
                  </div>
 
                  <button 

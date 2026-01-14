@@ -44,6 +44,18 @@ export const useBulletins = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulletins'] }),
   });
 
+  const markAsReadMutation = useMutation({
+    mutationFn: ({ id, userId }: { id: string; userId: number }) => 
+      supabaseService.markBulletinAsRead(id, userId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulletins'] }),
+  });
+
+  const toggleReactionMutation = useMutation({
+    mutationFn: ({ id, userId, emoji }: { id: string; userId: number; emoji: string }) => 
+      supabaseService.toggleReaction(id, userId, emoji),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulletins'] }),
+  });
+
   return {
     bulletins,
     isLoading,
@@ -51,5 +63,7 @@ export const useBulletins = () => {
     error,
     addBulletin: addBulletinMutation.mutateAsync,
     deleteBulletin: deleteBulletinMutation.mutateAsync,
+    markAsRead: markAsReadMutation.mutateAsync,
+    toggleReaction: toggleReactionMutation.mutateAsync,
   };
 };

@@ -109,6 +109,8 @@ export interface BulletinItem {
   content: string;
   date: string;
   author: string;
+  readBy?: number[];
+  reactions?: Record<string, number[]>;
 }
 
 export interface CompanyDetail {

@@ -127,21 +127,81 @@ class SupabaseService {
         const { data, error } = await supabase
             .from('bulletins')
             .select('*')
-            .order('date', { ascending: false });
+            .order('date', { ascending: false }, )
+            .order('id', { ascending: false });
         if (error) throw error;
-        return data || [];
+        
+        return (data || []).map(b => ({
+            ...b,
+            readBy: b.read_by,
+            reactions: b.reactions
+        }));
     }
 
     async addBulletin(content: string, author: string): Promise<BulletinItem> {
+        const { data: currentBulletins } = await supabase
+            .from('bulletins')
+            .select('id')
+            .order('date', { ascending: false })
+            .order('id', { ascending: false });
+
+        if (currentBulletins && currentBulletins.length >= 3) {
+            const idsToDelete = currentBulletins.slice(2).map(b => b.id);
+            await supabase.from('bulletins').delete().in('id', idsToDelete);
+        }
+
         const newItem = {
             id: Date.now().toString(),
             content,
             date: new Date().toISOString().split('T')[0],
-            author
+            author,
+            read_by: [],
+            reactions: {}
         };
         const { data, error } = await supabase.from('bulletins').insert(newItem).select().single();
         if (error) throw error;
-        return data;
+        return {
+            ...data,
+            readBy: data.read_by,
+            reactions: data.reactions
+        };
+    }
+
+    async markBulletinAsRead(id: string, userId: number) {
+        const { data: bulletin } = await supabase.from('bulletins').select('read_by').eq('id', id).single();
+        if (!bulletin) return;
+
+        const readBy = bulletin.read_by || [];
+        if (!readBy.includes(userId)) {
+            const { error } = await supabase
+                .from('bulletins')
+                .update({ read_by: [...readBy, userId] })
+                .eq('id', id);
+            if (error) throw error;
+        }
+    }
+
+    async toggleReaction(id: string, userId: number, emoji: string) {
+        const { data: bulletin } = await supabase.from('bulletins').select('reactions').eq('id', id).single();
+        if (!bulletin) return;
+
+        const reactions = bulletin.reactions || {};
+        const userList = reactions[emoji] || [];
+
+        if (userList.includes(userId)) {
+            // Remove
+            reactions[emoji] = userList.filter((uid: number) => uid !== userId);
+            if (reactions[emoji].length === 0) delete reactions[emoji];
+        } else {
+            // Add
+            reactions[emoji] = [...userList, userId];
+        }
+
+        const { error } = await supabase
+            .from('bulletins')
+            .update({ reactions })
+            .eq('id', id);
+        if (error) throw error;
     }
 
     async deleteBulletin(id: string) {
