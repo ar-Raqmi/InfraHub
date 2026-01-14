@@ -1118,8 +1118,42 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                     {(() => {
                                         let currentLevel0Collapsed = false; 
                                         let currentLevel1Collapsed = false;
-                                        let visibleWorkItemCount = 0;
+                                        let totalWorkItemCount = 0;
+                                        let pendingWarnings: { count: number, splitIdx: number }[] = [];
                                         const items: React.ReactNode[] = [];
+
+                                        const renderWarning = (num: number, splitIdx: number) => {
+                                            const isAmber = num === 8;
+                                            const bgColor = isAmber ? 'bg-amber-50' : 'bg-red-50';
+                                            const borderColor = isAmber ? 'border-amber-200' : 'border-red-200';
+                                            const textColor = isAmber ? 'text-amber-600' : 'text-red-600';
+                                            const dotColor = isAmber ? 'bg-amber-200' : 'bg-red-200';
+                                            const text = isAmber 
+                                                ? 'Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru'
+                                                : 'Pecahan halaman disahkan berlaku di sini';
+
+                                            return (
+                                                <div key={`page-break-warning-${num}`} className="py-6 flex flex-col items-center gap-4">
+                                                    <div className={`w-full flex items-center gap-4 ${isAmber ? 'animate-pulse' : ''}`}>
+                                                        <div className={`flex-1 h-px ${dotColor}`}></div>
+                                                        <div className={`flex items-center gap-2 px-4 py-1.5 ${bgColor} border ${borderColor} rounded-full text-[10px] font-bold ${textColor} uppercase tracking-widest shadow-sm`}>
+                                                            <AlertTriangle className="w-3.5 h-3.5" />
+                                                            {text}
+                                                        </div>
+                                                        <div className={`flex-1 h-px ${dotColor}`}></div>
+                                                    </div>
+                                                    {!readOnly && splitIdx !== -1 && (
+                                                        <button 
+                                                            onClick={() => handleSplitBill(activeBill.id, splitIdx)}
+                                                            className={`px-4 py-2 ${isAmber ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'} text-white text-[10px] font-bold rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105`}
+                                                        >
+                                                            <PlusCircle className="w-4 h-4" />
+                                                            Mula BIL NO baru dari "{activeBill.items[splitIdx].description}"
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            );
+                                        };
 
                                         let lastLevel0Index = -1;
                                         let lastLevel1Index = -1;
@@ -1142,66 +1176,39 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                             } else { 
                                                 if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true; 
                                             }
+
+                                            const currentSplitIdx = lastLevel0Index !== -1 ? lastLevel0Index : lastLevel1Index;
+
+                                            // If this item is visible AND we have pending warnings from previously collapsed items,
+                                            // render them before this item if it's a header.
+                                            if (!isHidden && level < 2 && pendingWarnings.length > 0) {
+                                                pendingWarnings.forEach(w => items.push(renderWarning(w.count, w.splitIdx)));
+                                                pendingWarnings = [];
+                                            }
                                             
                                             const renderedRow = renderItemRow(activeBill, item, idx, isHidden);
                                             if (renderedRow) {
                                                 items.push(renderedRow);
-                                                
-                                                // Count actual work items (not headers/notes)
-                                                if (item.type === 'ITEM' && !isHidden) {
-                                                    visibleWorkItemCount++;
-                                                    
-                                                    const splitIdx = lastLevel0Index !== -1 ? lastLevel0Index : lastLevel1Index;
+                                            }
 
-                                                    // Page break indicators
-                                                    if (visibleWorkItemCount === 8) {
-                                                        items.push(
-                                                            <div key="page-break-warning-8" className="py-6 flex flex-col items-center gap-4">
-                                                                <div className="w-full flex items-center gap-4 animate-pulse">
-                                                                    <div className="flex-1 h-px bg-amber-200"></div>
-                                                                    <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[10px] font-bold text-amber-600 uppercase tracking-widest shadow-sm">
-                                                                        <AlertTriangle className="w-3.5 h-3.5" />
-                                                                        Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru
-                                                                    </div>
-                                                                    <div className="flex-1 h-px bg-amber-200"></div>
-                                                                </div>
-                                                                {!readOnly && splitIdx !== -1 && (
-                                                                    <button 
-                                                                        onClick={() => handleSplitBill(activeBill.id, splitIdx)}
-                                                                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105"
-                                                                    >
-                                                                        <PlusCircle className="w-4 h-4" />
-                                                                        Mula BIL NO baru dari "{activeBill.items[splitIdx].description}"
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    } else if (visibleWorkItemCount === 9) {
-                                                        items.push(
-                                                            <div key="page-break-warning-9" className="py-6 flex flex-col items-center gap-4">
-                                                                <div className="w-full flex items-center gap-4">
-                                                                    <div className="flex-1 h-px bg-red-200"></div>
-                                                                    <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-widest shadow-sm">
-                                                                        <AlertTriangle className="w-3.5 h-3.5" />
-                                                                        Pecahan halaman disahkan berlaku di sini
-                                                                    </div>
-                                                                    <div className="flex-1 h-px bg-red-200"></div>
-                                                                </div>
-                                                                {!readOnly && splitIdx !== -1 && (
-                                                                    <button 
-                                                                        onClick={() => handleSplitBill(activeBill.id, splitIdx)}
-                                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105"
-                                                                    >
-                                                                        <PlusCircle className="w-4 h-4" />
-                                                                        Mula BIL NO baru dari "{activeBill.items[splitIdx].description}"
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        );
+                                            // Count actual work items (not headers/notes)
+                                            if (item.type === 'ITEM') {
+                                                totalWorkItemCount++;
+                                                
+                                                // Page break indicators
+                                                if (totalWorkItemCount === 8 || totalWorkItemCount === 9) {
+                                                    if (isHidden) {
+                                                        pendingWarnings.push({ count: totalWorkItemCount, splitIdx: currentSplitIdx });
+                                                    } else {
+                                                        items.push(renderWarning(totalWorkItemCount, currentSplitIdx));
                                                     }
                                                 }
                                             }
                                         });
+
+                                        // Render any remaining pending warnings at the end
+                                        pendingWarnings.forEach(w => items.push(renderWarning(w.count, w.splitIdx)));
+
                                         return items;
                                     })()}
                                 </div>
