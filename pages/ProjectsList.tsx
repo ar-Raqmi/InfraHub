@@ -1104,7 +1104,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             >
                                 <option value="ALL">Semua Status</option>
                                 <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
-                                <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
                                 <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
                                 <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
                                 <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Pemeriksaan Tapak</option>
