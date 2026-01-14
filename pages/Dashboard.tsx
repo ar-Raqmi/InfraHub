@@ -25,8 +25,6 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const [bulletinToDelete, setBulletinToDelete] = useState<BulletinItem | null>(null);
   const [pjaFilter, setPjaFilter] = useState<string>('ALL');
 
-  const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
-  
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL');
   const [tablePage, setTablePage] = useState(1);
@@ -150,30 +148,117 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
     }
   };
 
-  const insertTag = (tag: string, style?: string) => {
-    if (!textAreaRef.current) return;
-    const start = textAreaRef.current.selectionStart;
-    const end = textAreaRef.current.selectionEnd;
-    const text = newBulletinContent;
-    const before = text.substring(0, start);
-    const after = text.substring(end);
-    const selection = text.substring(start, end);
-    
-    let newText = '';
-    if (tag === 'b') newText = `${before}<b>${selection}</b>${after}`;
-    if (tag === 'i') newText = `${before}<i>${selection}</i>${after}`;
-    if (tag === 'span') newText = `${before}<span style="${style}">${selection}</span>${after}`;
-    
-    setNewBulletinContent(newText);
-    setTimeout(() => {
-        if (textAreaRef.current) {
-            textAreaRef.current.focus();
-            textAreaRef.current.setSelectionRange(start + tag.length + 2, end + tag.length + 2);
-        }
-    }, 0);
+  const editorRef = React.useRef<HTMLDivElement>(null);
+
+  const handleFormat = (command: string, value: string | undefined = undefined) => {
+    document.execCommand('styleWithCSS', false, 'true');
+    document.execCommand(command, false, value);
+    if (editorRef.current) {
+        setNewBulletinContent(editorRef.current.innerHTML);
+    }
   };
 
   const REACTION_EMOJIS = ['👍', '😊', '😠', '❤️', '🔥', '👏'];
+
+  const BulletinCard = ({ 
+    item, 
+    isRead, 
+    onDelete, 
+    onRead, 
+    onToggleReaction, 
+    isAdmin 
+  }: { 
+    item: BulletinItem; 
+    isRead: boolean; 
+    onDelete?: () => void; 
+    onRead?: () => void; 
+    onToggleReaction?: (emoji: string) => void;
+    isAdmin?: boolean;
+  }) => {
+    const bulletinUser = allUsers.find(u => {
+      const displayName = `${u.fullName.split(' ')[0]} (${u.role === Role.ADMIN ? 'PT' : 'JR'})`;
+      return displayName === item.author;
+    });
+
+    return (
+      <div className={`group bg-white p-6 rounded-3xl shadow-sm border transition-all hover:shadow-xl hover:-translate-y-1 relative h-full flex flex-col justify-between ${!isRead ? 'border-red-200 bg-red-50/20' : 'border-slate-100'}`}>
+        <div>
+          <div className="flex items-center justify-between mb-5 relative z-10">
+            <div className="flex items-center gap-2.5">
+              {!isRead && (
+                <div className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </div>
+              )}
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${!isRead ? 'text-red-600' : 'text-slate-400'}`}>
+                {formatDate(item.date)}
+              </span>
+            </div>
+            {isAdmin && onDelete && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="text-slate-300 hover:text-red-500 transition-colors p-1 bg-slate-50 rounded-lg hover:bg-red-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          
+          <div 
+            className="text-sm text-slate-700 font-medium leading-[1.6] mb-6 line-clamp-4 relative z-10 bulletin-content"
+            dangerouslySetInnerHTML={{ __html: item.content || '<span class="text-slate-300 italic">Tiada kandungan...</span>' }}
+          />
+        </div>
+        
+        <div className="space-y-4 relative z-10">
+          {REACTION_EMOJIS.some(emoji => (item.reactions?.[emoji]?.length || 0) > 0) && (
+            <div className="flex flex-wrap gap-1.5">
+              {REACTION_EMOJIS.map(emoji => {
+                const count = item.reactions?.[emoji]?.length || 0;
+                const hasReacted = item.reactions?.[emoji]?.includes(user.id);
+                if (count === 0) return null; 
+                return (
+                  <button 
+                    key={emoji}
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      onToggleReaction?.(emoji); 
+                    }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition-all border ${hasReacted ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-100 hover:border-slate-200 text-slate-500'}`}
+                  >
+                    <span className="text-sm">{emoji}</span>
+                    {count > 0 && <span className="font-bold text-[10px]">{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100/60">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 overflow-hidden ring-1 ring-slate-100">
+                {bulletinUser?.avatarUrl ? (
+                  <img src={bulletinUser.avatarUrl} alt={item.author} className="w-full h-full object-cover" />
+                ) : (
+                  item.author.charAt(0)
+                )}
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{item.author}</span>
+            </div>
+            {onRead && (
+              <button 
+                onClick={onRead}
+                className={`text-[10px] font-bold transition-all px-3 py-1.5 rounded-xl border ${!isRead ? 'bg-slate-900 text-white border-slate-900 hover:bg-emerald-600 hover:border-emerald-600' : 'text-slate-500 bg-white border-slate-100 hover:bg-slate-50 hover:text-emerald-600'}`}
+              >
+                {isRead ? 'Lihat' : 'Baca Penuh'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="w-full space-y-8 pb-20 animate-fade-in">
@@ -261,115 +346,146 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
          </div>
 
          {isAddingBulletin && (
-            <div className="animate-slide-up mb-6">
-              <div className="bg-white  p-4 rounded-[2rem] border border-emerald-100  shadow-xl shadow-emerald-500/10">
-                 <div className="flex items-center gap-2 mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                    <button onClick={() => insertTag('b')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100"><b>B</b></button>
-                    <button onClick={() => insertTag('i')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100 italic">I</button>
-                    <button onClick={() => insertTag('span', 'font-size: 1.25rem')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100">Besar</button>
-                    <button onClick={() => insertTag('span', 'font-size: 0.75rem')} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100">Kecil</button>
-                 </div>
-                 <textarea 
-                   ref={textAreaRef}
-                   value={newBulletinContent}
-                   onChange={(e) => setNewBulletinContent(e.target.value)}
-                   className="w-full bg-slate-50  border border-slate-200  rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800  mb-3 placeholder-slate-400 font-mono"
-                   placeholder="Tulis maklumat (boleh guna HTML tags)..."
-                   rows={4}
-                   autoFocus
-                 />
-                 <button 
-                   onClick={handleAddBulletin}
-                   className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 transition-colors"
-                 >
-                   Siarkan
-                 </button>
+            <div className="animate-slide-up mb-12 max-w-4xl mx-auto">
+              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/40">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-600/20">
+                      <PlusCircle className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800">Cipta Buletin Baru</h3>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Format seperti dalam Microsoft Word / WPS</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+                    <button 
+                      onClick={() => handleFormat('bold')} 
+                      className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-sm font-black hover:bg-slate-100 shadow-sm transition-all active:scale-90"
+                      title="Bold"
+                    >
+                      B
+                    </button>
+                    <button 
+                      onClick={() => handleFormat('italic')} 
+                      className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-sm italic font-serif hover:bg-slate-100 shadow-sm transition-all active:scale-90"
+                      title="Italic"
+                    >
+                      I
+                    </button>
+                    <div className="w-px h-6 bg-slate-200 mx-1"></div>
+                    <button 
+                      onClick={() => handleFormat('fontSize', '5')} 
+                      className="px-3 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-100 shadow-sm transition-all active:scale-95"
+                    >
+                      Besar
+                    </button>
+                    <button 
+                      onClick={() => handleFormat('fontSize', '3')} 
+                      className="px-3 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-100 shadow-sm transition-all active:scale-95"
+                    >
+                      Kecil
+                    </button>
+                    <div className="w-px h-6 bg-slate-200 mx-1"></div>
+                    <div className="flex gap-1.5 px-1.5">
+                      <button onClick={() => handleFormat('foreColor', '#ef4444')} className="w-6 h-6 rounded-full bg-red-500 border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Merah"></button>
+                      <button onClick={() => handleFormat('foreColor', '#3b82f6')} className="w-6 h-6 rounded-full bg-blue-500 border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Biru"></button>
+                      <button onClick={() => handleFormat('foreColor', '#10b981')} className="w-6 h-6 rounded-full bg-emerald-500 border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Hijau"></button>
+                      <button onClick={() => handleFormat('foreColor', '#000000')} className="w-6 h-6 rounded-full bg-black border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Hitam"></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative group mb-8">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-[2rem] blur-xl opacity-50 group-focus-within:opacity-100 transition-opacity"></div>
+                  <div className="relative bg-white border-2 border-slate-100 rounded-[2rem] overflow-hidden group-focus-within:border-emerald-500/50 transition-colors">
+                    <div className="p-8 pb-12">
+                      <div className="flex items-center gap-2.5 mb-6">
+                        <div className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </div>
+                        <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded-md">
+                          BULETIN BARU
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-auto">
+                          {formatDate(new Date().toISOString())}
+                        </span>
+                      </div>
+
+                      <div 
+                        ref={editorRef}
+                        contentEditable
+                        onInput={(e) => setNewBulletinContent(e.currentTarget.innerHTML)}
+                        className="min-h-[150px] outline-none text-slate-700 font-medium leading-[1.6] text-lg bulletin-content"
+                        placeholder="Klik di sini untuk mula menulis maklumat..."
+                      />
+                      
+                      {!newBulletinContent && (
+                        <div className="absolute top-[88px] left-8 pointer-events-none text-slate-300 italic text-lg">
+                          Taip maklumat anda di sini... Gunakan toolbar di atas untuk format teks.
+                        </div>
+                      )}
+
+                      <div className="mt-12 flex items-center justify-between pt-6 border-t border-slate-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 ring-1 ring-slate-100">
+                            {user.avatarUrl ? (
+                              <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover rounded-xl" />
+                            ) : (
+                              user.fullName.charAt(0)
+                            )}
+                          </div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">
+                            {user.fullName.split(' ')[0]} ({user.role === Role.ADMIN ? 'PT' : 'JR'})
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => {
+                      setIsAddingBulletin(false);
+                      setNewBulletinContent('');
+                    }}
+                    className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={handleAddBulletin}
+                    disabled={!newBulletinContent || newBulletinContent === '<br>'}
+                    className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <Megaphone className="w-4 h-4" />
+                    Siarkan Maklumat Sekarang
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-           {bulletins.length > 0 ? bulletins.slice(0, 3).map((item, idx) => {
-             const isRead = item.readBy?.includes(user.id);
-             return (
-              <div key={item.id} className={`group bg-white p-5 rounded-[2rem] shadow-lg shadow-slate-200/50 border transition-all hover:shadow-xl relative overflow-hidden h-full flex flex-col justify-between ${!isRead ? 'border-red-200 bg-red-50/5' : 'border-slate-100'}`}>
-                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl rounded-bl-[3rem] -mr-4 -mt-4 transition-transform ${!isRead ? 'from-red-500/10' : 'from-orange-500/10'}`}></div>
-                  
-                  <div>
-                      <div className="flex items-center justify-between mb-3 relative z-10">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${!isRead ? 'text-red-500 bg-red-50' : 'text-orange-500 bg-orange-50'}`}>
-                            {formatDate(item.date)}
-                          </span>
-                          {!isRead && <span className="text-[10px] font-black text-red-600 bg-red-100 px-2 py-1 rounded-lg">BARU</span>}
-                        </div>
-                        {isManagement && (
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); setBulletinToDelete(item); }}
-                              className="text-slate-300 hover:text-red-500 transition-colors"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                        )}
-                      </div>
-                      
-                      <div 
-                        className="text-sm text-slate-700 font-medium leading-relaxed mb-4 line-clamp-3 relative z-10"
-                        dangerouslySetInnerHTML={{ __html: item.content }}
-                      />
-                  </div>
-                  
-                  <div className="space-y-3 relative z-10">
-                    <div className="flex flex-wrap gap-1">
-                      {REACTION_EMOJIS.map(emoji => {
-                        const count = item.reactions?.[emoji]?.length || 0;
-                        const hasReacted = item.reactions?.[emoji]?.includes(user.id);
-                        if (count === 0) return null; 
-                        return (
-                          <button 
-                            key={emoji}
-                            onClick={(e) => { e.stopPropagation(); toggleReaction({ id: item.id, userId: user.id, emoji }); }}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors ${hasReacted ? 'bg-emerald-100 border border-emerald-200' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100'}`}
-                          >
-                            <span>{emoji}</span>
-                            <span className="font-bold text-[10px]">{count}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                      <div className="flex items-center gap-2">
-                          {(() => {
-                            const bulletinUser = allUsers.find(u => {
-                              const displayName = `${u.fullName.split(' ')[0]} (${u.role === Role.ADMIN ? 'PT' : 'JR'})`;
-                              return displayName === item.author;
-                            });
-                            return (
-                              <div className="w-6 h-6 rounded-full bg-slate-100  flex items-center justify-center text-[8px] font-black text-slate-500 overflow-hidden ring-1 ring-slate-200">
-                                {bulletinUser?.avatarUrl ? (
-                                  <img src={bulletinUser.avatarUrl} alt={item.author} className="w-full h-full object-cover" />
-                                ) : (
-                                  item.author.charAt(0)
-                                )}
-                              </div>
-                            );
-                          })()}
-                          <span className="text-[10px] font-bold text-slate-400 uppercase">{item.author}</span>
-                      </div>
-                      <button 
-                        onClick={() => handleMarkAsRead(item)}
-                        className={`text-[10px] font-bold hover:underline ${!isRead ? 'text-red-600' : 'text-emerald-600'}`}
-                      >
-                        {isRead ? 'Lihat' : 'Baca'}
-                      </button>
-                    </div>
-                  </div>
-              </div>
-             );
-           }) : (
-             <div className="col-span-3 p-8 text-center bg-slate-50  rounded-[2rem] border border-dashed border-slate-200">
-               <p className="text-slate-400 text-sm italic">Tiada maklumat terkini.</p>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+           {bulletins.length > 0 ? bulletins.slice(0, 3).map((item) => (
+             <BulletinCard
+               key={item.id}
+               item={item}
+               isRead={item.readBy?.includes(user.id) || false}
+               onDelete={() => setBulletinToDelete(item)}
+               onRead={() => handleMarkAsRead(item)}
+               onToggleReaction={(emoji) => toggleReaction({ id: item.id, userId: user.id, emoji })}
+               isAdmin={isManagement}
+             />
+           )) : (
+             <div className="col-span-3 p-12 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm text-slate-300">
+                  <Megaphone className="w-8 h-8" />
+               </div>
+               <p className="text-slate-400 font-medium">Tiada maklumat terkini untuk dipaparkan.</p>
              </div>
            )}
          </div>
