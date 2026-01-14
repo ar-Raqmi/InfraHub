@@ -687,7 +687,16 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target; const finalValue = name === 'namaProjek' ? value.toUpperCase() : value;
-    setFormData(prev => ({ ...prev, [name]: finalValue }));
+    
+    setFormData(prev => {
+        const next = { ...prev, [name]: finalValue };
+        
+        if (name === 'namaSyarikat' && value) {
+            next.status = ProjectStatus.DALAM_PROSES;
+        }
+        
+        return next;
+    });
     setHasUnsavedChanges(true);
   };
 
