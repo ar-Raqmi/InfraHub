@@ -763,7 +763,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         doc.text("(CERTIFICATE OF NON-COMPLETION)", pageWidth / 2, y, { align:"center" });
         y += 15;
 
-        const refNo = `Bil (   ) ${project.noFail || ''}`;
+        const refNo = `${project.noFail || ''} (   )`;
         const addressData = [
             [
                 `Rujukan : ${refNo}`,

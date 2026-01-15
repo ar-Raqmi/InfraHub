@@ -85,7 +85,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             const leftColX = margin;
             const rightColX = pageWidth / 2 + 10; 
 
-            doc.text(`Rujukan : Bil (   ) ${project.noFail || ''}`, leftColX, currentY);
+            doc.text(`Rujukan : ${project.noFail || ''} (   )`, leftColX, currentY);
             
             doc.setFont("helvetica","bold");
             doc.text("Majlis Perbandaran Selayang", rightColX, currentY);
@@ -267,7 +267,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
 
                         <div className="flex justify-between items-start mb-6 text-[9pt]">
                             <div className="w-[50%]">
-                                <p>Rujukan : Bil ( &nbsp;&nbsp; ) {project.noFail}</p>
+                                <p>Rujukan : {project.noFail || ''} ( &nbsp;&nbsp; )</p>
                             </div>
                             <div className="w-[45%]">
                                 <p className="font-bold">Majlis Perbandaran Selayang</p>
