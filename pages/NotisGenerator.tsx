@@ -154,7 +154,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         // Header
         doc.setFont("helvetica","normal");
         doc.setFontSize(10);
-        const refNo = `Bil(   )dlm.${project.noFail || '................'}`;
+        const refNo = `${project.noFail || '................'} (   )`;
         doc.text(refNo, pageWidth - margin, y, { align: 'right' });
         y += 5;
         
@@ -247,7 +247,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         // Ref & Date
         doc.setFont("helvetica","normal");
         doc.setFontSize(10);
-        const refNo = `Bil(   )dlm.${project.noFail || '................'}`;
+        const refNo = `${project.noFail || '................'} (   )`;
         doc.text(refNo, pageWidth - margin, y, { align: 'right' });
         y += 5;
         doc.text(letterMonthYear, pageWidth - margin, y, { align: 'right' });
@@ -416,7 +416,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         // Ref & Date
         doc.setFont("helvetica","normal");
         doc.setFontSize(10);
-        const refNo = `Bil(   )dlm.${project.noFail || '................'}`;
+        const refNo = `${project.noFail || '................'} (   )`;
         doc.text(refNo, pageWidth - margin, y, { align: 'right' });
         y += 5;
         doc.text(letterMonthYear, pageWidth - margin, y, { align: 'right' });
@@ -578,7 +578,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         // Ref & Date
         doc.setFont("helvetica","normal");
         doc.setFontSize(10);
-        const refNo = `Bil(   )dlm.${project.noFail || '................'}`;
+        const refNo = `${project.noFail || '................'} (   )`;
         doc.text(refNo, pageWidth - margin, y, { align: 'right' });
         y += 5;
         doc.text(letterMonthYear, pageWidth - margin, y, { align: 'right' });
