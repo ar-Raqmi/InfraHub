@@ -183,7 +183,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         const startStr = formatMalayDateLong(startDate);
         const endStr = formatMalayDateLong(endDate);
         const boldDateStr = `${startStr} sehingga ${endStr}`;
-        const para2Part1 ="Adalah dimaklumkan bahawa pihak Majlis Perbandaran Selayang akan melaksanakan kerja-kerja berkaitan di kawasan berkenaan. Kerja-kerja tersebut akan dilaksanakan pada";
+        const para2Part1 ="Adalah dimaklumkan bahawa pihak Majlis Perbandaran Selayang akan melaksanakan kerja-kerja berkaitan di kawasan berkenaan. Kerja-kerja tersebut akan dilaksanakan pada ";
         const fullPara2 = `${para2Part1}${boldDateStr}.`;
         const splitPara2 = doc.splitTextToSize(fullPara2, contentWidth);
         doc.text(splitPara2, margin, y, { align: 'justify', maxWidth: contentWidth });
