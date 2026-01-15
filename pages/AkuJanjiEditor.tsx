@@ -66,7 +66,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             doc.setFontSize(11);
 
             // Ref No & Date (Top Right)
-            const refNo = `Bil (   ) dlm.${project.noFail || '................'}`;
+            const refNo = `${project.noFail || '................'} (   )`;
             const dateStr = `${currentMonth} ${selectedYear}`;
             
             doc.text(refNo, pageWidth - margin, 30, { align: 'right' });
@@ -221,7 +221,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                 >
                     <div className="flex flex-col items-end text-[13px] mb-8 font-bold">
                          <div className="text-right">
-                             <p>Bil (&nbsp;&nbsp;&nbsp;) dlm.{project.noFail}</p>
+                             <p>{project.noFail} (&nbsp;&nbsp;&nbsp;)</p>
                              <p className="mt-1">{currentMonth} {selectedYear}</p>
                          </div>
                     </div>
