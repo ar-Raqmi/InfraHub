@@ -678,6 +678,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         if (name === 'namaSyarikat' && value) {
             next.status = ProjectStatus.DALAM_PROSES;
         }
+
+        if (name === 'tarikhPemeriksaan' && value) {
+            next.status = ProjectStatus.PEMERIKSAAN_TAPAK;
+            next.peratusSiap = 100;
+        }
         
         return next;
     });
