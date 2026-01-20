@@ -670,10 +670,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   }, [formData.tarikhCetakanBpp, formData.tarikhSerahTapak]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target; const finalValue = name === 'namaProjek' ? value.toUpperCase() : value;
+    const { name, value } = e.target;
     
     setFormData(prev => {
-        const next = { ...prev, [name]: finalValue };
+        const next = { ...prev, [name]: value };
         
         if (name === 'namaSyarikat' && value) {
             next.status = ProjectStatus.DALAM_PROSES;
@@ -687,6 +687,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         return next;
     });
     setHasUnsavedChanges(true);
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      if (name === 'namaProjek') {
+          setFormData(prev => ({ ...prev, [name]: value.toUpperCase() }));
+      }
   };
 
     const handleLocationDimensionsChange = (calculationId: string, dims: GlobalDimensions[]) => {
@@ -1541,7 +1548,7 @@ Jabatan Kejuruteraan` }],
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
                 <h3 className="text-lg font-bold text-yellow-600 mb-6 flex items-center gap-3"> <Zap className="h-5 w-5"/> Maklumat Asas (PJA) </h3>
                 <div className="flex flex-col gap-6">
-                  <div className="group w-full"> <label className={labelClass}>Cadangan Kerja (Nama Projek)</label> <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} min-h-[60px] text-sm font-bold resize-y`} placeholder="CADANGAN KERJA-KERJA..." /> </div>
+                  <div className="group w-full"> <label className={labelClass}>Cadangan Kerja (Nama Projek)</label> <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isGlobalReadOnly} className={`${inputClass} min-h-[60px] text-sm font-bold resize-y uppercase`} placeholder="CADANGAN KERJA-KERJA..." /> </div>
                   <div className="group w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
                       <div className="flex items-center justify-between mb-3">
                          <div className="flex items-center gap-2"> <div className="w-1 h-3 bg-emerald-500 rounded-full"></div> <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lokasi & No. Aduan</label> </div>
