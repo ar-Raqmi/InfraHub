@@ -30,6 +30,35 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const [tablePage, setTablePage] = useState(1);
   const itemsPerPage = 5;
 
+  // Long press detection refs
+  const longPressTimer = React.useRef<any>(null);
+  const isLongPress = React.useRef(false);
+
+  const handleMouseDown = () => {
+    isLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true;
+    }, 500);
+  };
+
+  const handleMouseUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
+  const handleDashboardProjectClick = (project: Project) => {
+    if (!isLongPress.current) {
+      onProjectClick(project);
+    }
+  };
+
   const isManagement = user.role === Role.ADMIN || user.role === Role.JURUTERA;
 
   const allPjas = useMemo(() => {
@@ -419,7 +448,6 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                         contentEditable
                         onInput={(e) => setNewBulletinContent(e.currentTarget.innerHTML)}
                         className="min-h-[150px] outline-none text-slate-700 font-medium leading-[1.6] text-lg bulletin-content"
-                        placeholder="Klik di sini untuk mula menulis maklumat..."
                       />
                       
                       {!newBulletinContent && (
@@ -670,7 +698,10 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                     {paginatedProjects.length > 0 ? paginatedProjects.map((project) => (
                       <tr 
                         key={project.id} 
-                        onClick={() => onProjectClick(project)}
+                        onMouseDown={handleMouseDown}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onClick={() => handleDashboardProjectClick(project)}
                         className="hover:bg-emerald-50/30  transition-colors cursor-pointer group"
                       >
                         <td className="px-8 py-5">
@@ -730,7 +761,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
       {selectedBulletin && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 animate-fade-in" onClick={() => setSelectedBulletin(null)}>
           <div 
-            className="bg-white  rounded-[2.5rem] shadow-2xl max-w-xl w-full border border-slate-200  animate-slide-up relative" 
+            className="bg-white rounded-[2.5rem] shadow-2xl max-w-xl w-full border border-slate-200 animate-slide-up relative max-h-[90vh] overflow-y-auto custom-scrollbar" 
             onClick={e => e.stopPropagation()}
           >
             <div className="p-8">
