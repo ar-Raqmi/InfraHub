@@ -771,7 +771,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   ];
 
   return (
-    <div className={`flex flex-col ${!isMobile ? 'h-[calc(100vh-160px)]' : 'min-h-screen'} gap-4 md:gap-6 animate-fade-in ${!isMobile ? 'overflow-hidden' : ''} pb-6`}>
+    <div className={`flex flex-col gap-4 md:gap-6 animate-fade-in pb-12`}>
       
       {/* Step Indicator */}
       <div className="shrink-0 bg-white  rounded-3xl p-2 shadow-sm border border-slate-100  flex items-center justify-between">
@@ -810,14 +810,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+      <div className="flex flex-col min-h-0">
         
         {/* Step 1: Maklumat Projek */}
         {currentStep === 1 && (
-          <div className="flex-1 flex flex-col gap-4 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
+          <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Left: Project List */}
-              <div className="lg:col-span-4 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden">
+              <div className="lg:col-span-4 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col min-h-[500px]">
                 <div className="p-5 border-b border-slate-100 bg-slate-50/50">
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-4 flex items-center gap-2">
                     <Search size={16} className="text-emerald-500" /> Pilih Projek
@@ -853,7 +853,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                     </div>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto max-h-[600px] p-2 custom-scrollbar">
                   <div className="flex flex-col gap-2">
                     {filteredProjects.length === 0 ? (
                       <div className="p-10 text-center">
@@ -881,7 +881,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               </div>
 
               {/* Right: Location Table */}
-              <div className="lg:col-span-8 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden">
+              <div className="lg:col-span-8 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col min-h-[500px]">
                 <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                    <div>
                       <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Senarai Lokasi & Aduan</h3>
@@ -894,7 +894,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                      <Plus size={18} />
                    </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto max-h-[600px] p-4 custom-scrollbar">
                    <table className="w-full">
                       <thead className="sticky top-0 bg-white z-10">
                         <tr>
@@ -955,7 +955,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
         {/* Step 2: Pelan Lokasi */}
         {currentStep === 2 && (
-          <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Pelan Lokasi</h3>
@@ -979,7 +979,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   </div>
                 )}
              </div>
-             <div className="flex-1 p-6 overflow-hidden bg-slate-50/30">
+             <div className="h-[600px] p-6 bg-slate-50/30">
                 <CanvasMapEditor ref={editorRef} initialImage={mapImage} isMobile={isMobile} />
              </div>
              <div className="p-6 border-t border-slate-100 flex justify-between items-center">
@@ -992,7 +992,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
         {/* Step 3: Gambar Tapak */}
         {currentStep === 3 && (
-          <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Gambar Tapak ({siteImages.length}/4)</h3>
@@ -1027,11 +1027,11 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                 </div>
              </div>
              
-             <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50/30">
+             <div className="p-8 bg-slate-50/30">
                 {siteImages.length === 0 ? (
                   <div 
                     onClick={() => fileInputSiteRef.current?.click()}
-                    className="w-full h-full border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-400 gap-4 hover:bg-white hover:border-emerald-300 transition-all cursor-pointer group"
+                    className="w-full h-96 border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-400 gap-4 hover:bg-white hover:border-emerald-300 transition-all cursor-pointer group"
                   >
                     <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
                       <ImageIcon size={40} className="opacity-20 group-hover:text-emerald-500 group-hover:opacity-100 transition-all" />
@@ -1064,7 +1064,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
         {/* Step 4: Eksport */}
         {currentStep === 4 && (
-          <div className="flex-1 flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-500">
+          <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-500 py-8">
             <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden">
                <div className="bg-emerald-600 p-12 text-center text-white relative">
                  <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
