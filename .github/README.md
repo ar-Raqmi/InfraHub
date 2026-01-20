@@ -1,124 +1,209 @@
 # InfraHub
 
-> Infrastructure Project Management Workflow System for Majlis Perbandaran Selayang
+> Infrastructure Project Management System for Majlis Perbandaran Selayang
 
 <p align="center">
-  <img src="https://i.imgur.com/8Smw9sf.png"
-       alt="InfraHub Main Image"
-       style="height:520px; width:auto; border-radius:6px;" />
+  <img src="../images/dashboard.png"
+       alt="InfraHub Dashboard"
+       style="height:400px; width:auto; border-radius:12px; border: 1px solid #e2e8f0;" />
 </p>
 
-**Note**: This system operates fully in **Bahasa Malaysia** (Malay language). This README is provided in English for broader accessibility, but all system documentation, forms, and workflows are in Bahasa Malaysia.
+---
 
-## Overview
+## 📌 What is InfraHub?
 
-InfraHub is a comprehensive project management documentation system designed to standardize and track infrastructure development projects under the Selayang Municipal Council (Majlis Perbandaran Selayang). The system manages workflows, documentation, and procedural steps for construction projects from initial planning through project completion and financial closure.
+**InfraHub** is a project management system for Majlis Perbandaran Selayang that helps with:
 
-**Current Status**: Active Development (Integrated with Supabase Backend)
+- ✅ Managing construction projects from start to finish
+- ✅ Automatically generating official documents
+- ✅ Tracking project costs and progress
+- ✅ Facilitating communication between officers
 
-## Tech Stack
+---
 
-- **Frontend**: React 19 + TypeScript
-- **Backend/Database**: Supabase (PostgreSQL)
-- **Styling**: Tailwind CSS with dark mode support
-- **Build Tool**: Vite
-- **Icons**: Lucide React
-- **Data Visualization**: Recharts
-- **PDF Export**: jsPDF & @react-pdf/renderer
-- **Canvas Editing**: Konva (React-Konva) for image annotations
+## 🎯 Who Is It For?
 
-## Features
+| Role | Main Responsibilities |
+|------|----------------------|
+| **Admin (Pembantu Tadbir)** | Manage contractor companies, vote numbers, and system settings |
+| **PJA (Penolong Jurutera)** | Prepare BQ, monitor progress, and generate reports |
+| **Jurutera** | Sign documents and approve projects |
 
-### Implemented
+---
 
-- **4-Phase Project Workflow** - Complete lifecycle management from BQ creation to project closure.
-- **Bill of Quantities (BQ) Editor** - Interactive editor with calculation parts, global dimensions, and library presets.
-- **BQ Pelarasan Editor** - Adjustment/revision editor with location-based dimensions for final measurements.
-- **Image Report Generator** - Create "Laporan Bergambar" with built-in image cropping, rotation, and annotation tools (arrows, shapes, text).
-- **Notice Generator** - Generate official notices:
-    - Notis Pemberitahuan (Awam)
-    - Notis Peringatan 1, 2, & 3
-    - Perakuan Kerja Tidak Siap (CNC)
-- **Aku Janji Generator** - Personal commitment letter document generation.
-- **Cover Page Editor** - "Ulasan Pengarah" document with meeting date integration.
-- **Certificate Generators**:
-  - CPC Certificate (Sijil Siap Kerja) with DLP calculation.
-  - LAD Certificate (Liquidated Ascertained Damages) with auto-calculation.
-  - Prestasi Certificate (Borang Penilaian Prestasi) with scoring system.
-- **Project List** - Advanced filtering (Status, PJA, Zon, BP), column visibility toggle, and data export.
-- **Admin Settings** - Year-based management of companies, vote numbers (Vot), BQ templates, and system configurations.
-- **Role-Based Access** - Admin, PJA (Penolong Jurutera), and Jurutera roles.
-- **Dark Mode** - Full dark theme support for all modules.
+## 🚀 Key Features
 
-### Project Phases
+### 1️⃣ Dashboard
 
-#### Phase 1: BQ Building (Bill of Quantities)
-Initial phase for creating Bill of Quantities and project specifications.
+<p align="center">
+  <img src="../images/dashboard.png"
+       alt="Dashboard View"
+       style="height:300px; width:auto; border-radius:8px; border: 1px solid #e2e8f0;" />
+</p>
 
-**Key Fields**: Cadangan Kerja, No Aduan, Lokasi, BP, Zon, PJA, Kos Projek, Tarikh Buka
+- **Project Statistics**: View the number of projects by status in one glance
+- **Bulletins**: Latest announcements from administration
+- **Search**: Find projects easily
+- **Notifications**: Reminders about project deadlines
 
-**Components**: `BQEditor.tsx`, `BQTemplateCreator.tsx`
+### 2️⃣ Project List
 
-#### Phase 2: File Creation (Execution)
-Establishes formal contract and commitment documentation.
+<p align="center">
+  <img src="../images/projectlist.png"
+       alt="Project List"
+       style="height:300px; width:auto; border-radius:8px; border: 1px solid #e2e8f0;" />
+</p>
 
-**Key Fields**: No Fail, Syarikat, No Vot, No Sebutharga, Tarikh Lantikan, Tempoh Kontrak, Tarikh Mula/Tamat Kontrak
+- **List View**: See all projects with status and cost
+- **Filters**: Filter by status, PJA, zone, or BP
+- **Group View**: View projects by company
+- **Export**: Download data for analysis
 
-**Components**:
-- `AkuJanjiEditor.tsx` - Aku Janji document generator
-- `CoverPageEditor.tsx` - Ulasan Pengarah cover page
-- `NotisGenerator.tsx` - Notification notices for public/contractors
+### 3️⃣ BQ Editor (Bill of Quantities)
 
-#### Phase 3: BQ Pelarasan (Adjustment)
-Handles site inspections, work progress, and cost adjustments.
+<p align="center">
+  <img src="../images/bqeditor.png"
+       alt="BQ Editor"
+       style="height:300px; width:auto; border-radius:8px; border: 1px solid #e2e8f0;" />
+</p>
 
-**Key Fields**: Tarikh Pemeriksaan, Tarikh Siap Sebenar, % Siap, Kos Sebenar, LAD
+- **Automatic Calculations**: Measure dimensions and costs are calculated automatically
+- **Preset Library**: Use existing work templates
+- **Multiple Locations**: Measure work in different areas
+- **Secure Storage**: Data is saved in Cloud for security
 
-**Components**:
-- `BQPelarasanEditor.tsx` - Adjustment BQ with location-based dimensions
-- `ImageReportGenerator.tsx` - Photo report with annotations
-- `LADCertificate.tsx` - LAD calculation and document
-- `CPCCertificate.tsx` - Completion certificate with DLP dates
-- `PrestasiCertificate.tsx` - Contractor performance evaluation
+### 4️⃣ Document Generators
 
-#### Phase 4: Closing File/Project
-Final phase for project completion and financial closure.
+The system automatically generates various official documents:
 
-**Key Fields**: Tarikh Hantar Kewangan, Tarikh Padanan, Wang Tahanan
+| Document | Purpose |
+|----------|---------|
+| **Aku Janji** | Contractor commitment letter |
+| **Notis** | Notification and warning notices |
+| **CPC Certificate** | Work completion certificate with DLP calculation |
+| **LAD Certificate** | Late work damages penalty |
+| **Performance Certificate** | Contractor performance evaluation |
+| **Photo Report** | Site report with images and annotations |
 
-## Getting Started
+### 5️⃣ Admin Settings
+
+- **Manage Companies**: Add and edit contractor company details
+- **Manage Votes**: Organize vote codes and budget allocations
+- **BQ Templates**: Create and save templates for repeated use
+- **Bulletins**: Publish announcements to all users
+
+---
+
+## 📋 Project Phases
+
+Each project goes through **6 phases**:
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| **Phase 1** | 📝 Draft | Preparing BQ and initial planning |
+| **Phase 2** | ⏳ Pending Appointment | Waiting for company appointment |
+| **Phase 3** | 🔧 In Progress | Work is being done |
+| **Phase 4** | ✅ Site Inspection | Inspecting progress on site |
+| **Phase 5** | 💰 Payment Claim | Processing contractor payments |
+| **Phase 6** | 🎉 Complete | Project finished and file closed |
+
+---
+
+## 🛠️ Technology Stack
+
+```
+Frontend:    React 19 + TypeScript
+Styling:     Tailwind CSS
+Database:    PostgreSQL
+Icons:       Lucide React
+PDF:         jsPDF + @react-pdf/renderer
+Build:       Vite
+Photo Edit:  Konva (React-Konva) for image annotations 
+```
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+
+- Node.js (version 18+)
+- PostgreSQL
+
+### Installation Steps
 
 ```bash
-# Install dependencies
+# 1. Clone the repository
+git clone <repository-url>
+cd InfraHub
+
+# 2. Install dependencies
 npm install
 
-# Setup Environment Variables (.env)
+# 3. Set up environment variables (If you use Supabase)
+# Create a .env file with:
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Run development server
+# 4. Run the development server
 npm run dev
 
-# Seed Database (Optional)
-npm run seed
+# 5. Open browser at
+http://localhost:5173 or http://localhost:3000 
 ```
 
-## Database Schema
+### Build for Production
 
-The system uses a PostgreSQL schema on Supabase with the following main tables:
-- `projects`: Stores all project data, BQ JSON, and phase tracking.
-- `app_users`: User profiles and roles.
-- `system_settings`: Year-based configurations (companies, votes, templates).
-- `library_groups`: BQ preset library items.
-- `bulletins`: Dashboard announcements.
+```bash
+# Build the application
+npm run build
 
-## Language Note
+# Preview the build
+npm run preview
+```
 
-**System Language**: Bahasa Malaysia (Malay)
-**Technical Documentation**: English with Malay term references
+---
 
-All forms, field names, and user-facing content are in Bahasa Malaysia to serve the primary users (municipal council staff and contractors).
+## 💾 Database Structure
 
-## License
+The system designed for **Supabase** with main tables:
 
-This project is developed for Majlis Perbandaran Selayang. Usage and distribution rights are subject to municipal council policies.
+| Table | Purpose |
+|-------|---------|
+| `projects` | All project data, BQ, and phase tracking |
+| `app_users` | User profiles and roles |
+| `system_settings` | Yearly settings (companies, votes, templates) |
+| `library_groups` | BQ preset templates |
+| `bulletins` | Dashboard announcements |
+
+---
+
+## 🌐 Language
+
+**Primary Language**: Bahasa Malaysia (Malay)
+**Technical Documentation**: English
+
+All forms, field names, and user-facing content are in **Bahasa Malaysia** for the convenience of primary users (council staff and contractors).
+
+---
+
+## 📞 Support
+
+For any questions or technical support:
+
+- Contact: PT Syafiq
+- Location: Jabatan Kejuruteraan, MPS
+
+---
+
+## 📄 License
+
+This project is developed by **ar-Raqmi**.
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Unit Infrastruktur, Jabatan Kejuruteraan MPS**
+
+</div>
