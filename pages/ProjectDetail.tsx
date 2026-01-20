@@ -1344,6 +1344,8 @@ Jabatan Kejuruteraan` }],
                   }
               });
           const billTotal = bill.items.reduce((s, i) => s + (i.amount || 0), 0);
+          const originalBillTotal = originalBill?.items.reduce((s, i) => s + (i.amount || 0), 0) || 0;
+
           let tableStartY = 15;
           if (pelSectionIdx === 0) {
               // @ts-ignore
@@ -1391,9 +1393,13 @@ Jabatan Kejuruteraan` }],
 
           // @ts-ignore
           doc.autoTable({
-            body: [[ { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }, { content: billTotal === 0 ? '' : formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } } ]],
+            body: [[ 
+                { content: 'TO COLLECTION', styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } }, 
+                { content: originalBillTotal === 0 ? '' : formatCurrency(originalBillTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } },
+                { content: billTotal === 0 ? '' : formatCurrency(billTotal).replace('RM', ''), styles: { fontStyle: 'bold', halign: 'right', lineWidth: 0.1 } } 
+            ]],
             startY: footerY, theme: 'grid', styles: { fontSize: 7, cellPadding: 0.8, lineColor: 0, lineWidth: 0.1, textColor: 0 },
-            columnStyles: { 0: { cellWidth: 170 }, 1: { cellWidth: 20 } },
+            columnStyles: { 0: { cellWidth: 150 }, 1: { cellWidth: 20 }, 2: { cellWidth: 20 } },
             margin: { left: 10, right: 10 }, showHead: false
           });
           pelSectionIdx++;
