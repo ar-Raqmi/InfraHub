@@ -58,6 +58,41 @@ interface Shape {
 type ToolType = 'select' | 'rect' | 'circle' | 'arrow' | 'line' | 'crop';
 type LayoutType = 'grid' | 'horizontal' | 'vertical' | 'big-left' | 'big-top';
 
+const splitTextToLines = (doc: any, text: string, maxWidth: number): string[] => {
+  const lines: string[] = [];
+  const words = text.split(' ');
+  let currentLine = '';
+  
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const testWidth = doc.getTextWidth(testLine);
+    
+    if (testWidth > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+  
+  return lines;
+};
+
+const truncateText = (doc: any, text: string, maxWidth: number, suffix = '...'): string => {
+  if (doc.getTextWidth(text) <= maxWidth) return text;
+  
+  let truncated = text;
+  while (doc.getTextWidth(truncated + suffix) > maxWidth && truncated.length > 0) {
+    truncated = truncated.slice(0, -1);
+  }
+  
+  return truncated + suffix;
+};
+
 const processImageForPdf = (base64: string, widthMm: number, heightMm: number, mode: 'cover' | 'contain' = 'cover'): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -132,7 +167,12 @@ const generatePDF = async ({ complaints, mapImageBase64, siteImagesBase64, layou
   const margin = 10;
   const contentWidth = pageWidth - margin * 2;
 
-  doc.setFontSize(10);
+  let scaleFactor = 1.0;
+  let fontScaleFactor = 1.0;
+  let titleFontSize = 10;
+  let currentFontSize = 8;
+
+  doc.setFontSize(titleFontSize * fontScaleFactor);
   doc.setFont('helvetica', 'bold');
   doc.text('LAPORAN BERGAMBAR', pageWidth / 2, 15, { align: 'center' });
 
@@ -141,7 +181,7 @@ const generatePDF = async ({ complaints, mapImageBase64, siteImagesBase64, layou
   const col2Width = 80;
   const col3Width = contentWidth - col1Width - col2Width;
 
-  doc.setFontSize(8);
+  doc.setFontSize(currentFontSize * fontScaleFactor);
   doc.setFillColor(240, 240, 240);
   doc.setDrawColor(0);
   doc.rect(margin, currentY, col1Width, 5, 'FD');
@@ -156,32 +196,61 @@ const generatePDF = async ({ complaints, mapImageBase64, siteImagesBase64, layou
   currentY += 5;
 
   doc.setFont('helvetica', 'normal');
-  const rowHeight = 5;
+  const minRowHeight = 5;
+  const col1Pad = 2;
+  const col2Pad = 2;
+  const col3Pad = 2;
+  const col2MaxWidth = col2Width - (col2Pad * 2);
+  const col3MaxWidth = col3Width - (col3Pad * 2);
   
   complaints.forEach((row, index) => {
+    const bil = (index + 1).toString();
+    const locationLines = splitTextToLines(doc, row.location.toUpperCase(), col2MaxWidth);
+    const descLines = splitTextToLines(doc, row.description.toUpperCase(), col3MaxWidth);
+    const maxLines = Math.max(locationLines.length, descLines.length);
+    const rowHeight = minRowHeight + ((maxLines - 1) * 3);
+    
     doc.rect(margin, currentY, col1Width, rowHeight, 'S');
     doc.rect(margin + col1Width, currentY, col2Width, rowHeight, 'S');
     doc.rect(margin + col1Width + col2Width, currentY, col3Width, rowHeight, 'S');
 
-    doc.text((index + 1).toString(), margin + 2, currentY + 3.2);
-    doc.text(row.location.toUpperCase(), margin + col1Width + 2, currentY + 3.2);
-    doc.text(row.description.toUpperCase(), margin + col1Width + col2Width + 2, currentY + 3.2);
+    doc.text(bil, margin + col1Pad, currentY + 3.2);
+    locationLines.forEach((line, i) => {
+      doc.text(line, margin + col1Width + col2Pad, currentY + 3.2 + (i * 3));
+    });
+    descLines.forEach((line, i) => {
+      doc.text(line, margin + col1Width + col2Width + col3Pad, currentY + 3.2 + (i * 3));
+    });
 
     currentY += rowHeight;
   });
 
+  const gapAfterTable = 5;
+  const minimumImageSectionHeight = 60;
+  const requiredForImages = gapAfterTable + 6 + minimumImageSectionHeight;
+  const spaceRemainingForImages = pageHeight - currentY - 10;
+
+  if (spaceRemainingForImages < requiredForImages) {
+    scaleFactor = spaceRemainingForImages / requiredForImages;
+    
+    if (scaleFactor < 0.5) {
+      scaleFactor = 0.5;
+      fontScaleFactor = 0.8;
+    }
+  }
+
   currentY += 5;
 
   const bottomMargin = 10;
-  const availableHeight = pageHeight - currentY - bottomMargin;
+  const availableHeight = (pageHeight - currentY - bottomMargin) * scaleFactor;
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
+  doc.setFontSize(titleFontSize * fontScaleFactor);
   doc.text('PELAN LOKASI', margin, currentY + 4);
   
-  const mapBoxY = currentY + 6;
-  const mapBoxHeight = availableHeight - 6;
-  const mapBoxWidth = (contentWidth / 2) - 2;
+  const mapBoxY = currentY + (6 * scaleFactor);
+  const mapBoxHeight = (availableHeight - 6) * scaleFactor;
+  const mapBoxWidth = ((contentWidth / 2) - 2) * scaleFactor;
 
   doc.setDrawColor(0);
   doc.rect(margin, mapBoxY, mapBoxWidth, mapBoxHeight);
@@ -195,9 +264,10 @@ const generatePDF = async ({ complaints, mapImageBase64, siteImagesBase64, layou
     }
   }
 
-  const rightStartX = margin + mapBoxWidth + 4;
+  const rightStartX = margin + (mapBoxWidth + 4);
   doc.setTextColor(0);
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(titleFontSize * fontScaleFactor);
   doc.text('GAMBAR TAPAK', rightStartX, currentY + 4);
 
   const gridBoxY = mapBoxY;
@@ -207,7 +277,7 @@ const generatePDF = async ({ complaints, mapImageBase64, siteImagesBase64, layou
   interface ImageBox { x: number, y: number, w: number, h: number, img: string }
   const tasks: ImageBox[] = [];
   const count = siteImagesBase64.length;
-  const gap = 2;
+  const gap = 2 * scaleFactor;
 
   if (count === 1) {
     tasks.push({ x: rightStartX, y: gridBoxY, w: gridBoxWidth, h: gridBoxHeight, img: siteImagesBase64[0] });
@@ -763,6 +833,16 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     }
   };
 
+  const handleNextStep2 = () => {
+    if (editorRef.current) {
+      const processedMap = editorRef.current.exportImage();
+      if (processedMap) {
+        setMapImage(processedMap);
+      }
+    }
+    setCurrentStep(3);
+  };
+
   const steps = [
     { id: 1, label: 'Maklumat Projek', icon: <Briefcase size={16}/> },
     { id: 2, label: 'Pelan Lokasi', icon: <MapIcon size={16}/> },
@@ -982,10 +1062,10 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
              <div className="h-[600px] p-6 bg-slate-50/30">
                 <CanvasMapEditor ref={editorRef} initialImage={mapImage} isMobile={isMobile} />
              </div>
-             <div className="p-6 border-t border-slate-100 flex justify-between items-center">
-                <button onClick={() => setCurrentStep(1)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
-                <button onClick={() => setCurrentStep(3)} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
-             </div>
+              <div className="p-6 border-t border-slate-100 flex justify-between items-center">
+                 <button onClick={() => setCurrentStep(1)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
+                 <button onClick={handleNextStep2} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
+              </div>
              <input ref={fileInputMapRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'map')}/>
           </div>
         )}
