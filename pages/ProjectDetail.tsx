@@ -441,7 +441,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     skop: 'BEKALAN',
     noInbois: '',
     isManualMulaKontrak: project?.isManualMulaKontrak || false,
-    isManualMulaKerja: project?.isManualMulaKerja || false
+    isManualMulaKerja: project?.isManualMulaKerja || false,
+    isLocDeductionEnabled: project?.isLocDeductionEnabled ?? true
   });
 
   const isPJA = currentUser?.role === Role.PJA;
@@ -608,26 +609,32 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
   // --- LoC Calculation Effect ---
   useEffect(() => {
-    if (formData.tarikhSiapSebenar && formData.tarikhTuntutanBayaran) {
-        const siapDate = new Date(formData.tarikhSiapSebenar);
-        const tuntutanDate = new Date(formData.tarikhTuntutanBayaran);
-        
-        const timeDiff = tuntutanDate.getTime() - siapDate.getTime();
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        
-        const locDays = Math.max(0, dayDiff - 14);
-        const locRate = 100.00;
-        const totalLoC = locDays * locRate;
+    if (formData.isLocDeductionEnabled !== false) {
+        if (formData.tarikhSiapSebenar && formData.tarikhTuntutanBayaran) {
+            const siapDate = new Date(formData.tarikhSiapSebenar);
+            const tuntutanDate = new Date(formData.tarikhTuntutanBayaran);
+            
+            const timeDiff = tuntutanDate.getTime() - siapDate.getTime();
+            const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            const locDays = Math.max(0, dayDiff - 14);
+            const locRate = 100.00;
+            const totalLoC = locDays * locRate;
 
-        if (formData.locDays !== locDays || formData.locAmount !== totalLoC) {
-            setFormData(prev => ({ ...prev, locDays: locDays, locAmount: totalLoC }));
+            if (formData.locDays !== locDays || formData.locAmount !== totalLoC) {
+                setFormData(prev => ({ ...prev, locDays: locDays, locAmount: totalLoC }));
+            }
+        } else {
+            if (formData.locDays !== 0 && formData.locDays !== undefined) {
+                 setFormData(prev => ({ ...prev, locDays: 0, locAmount: 0 }));
+            }
         }
     } else {
-        if (formData.locDays !== 0 && formData.locDays !== undefined) {
-             setFormData(prev => ({ ...prev, locDays: 0, locAmount: 0 }));
+        if (formData.locDays !== 0 || formData.locAmount !== 0) {
+            setFormData(prev => ({ ...prev, locDays: 0, locAmount: 0 }));
         }
     }
-  }, [formData.tarikhSiapSebenar, formData.tarikhTuntutanBayaran]);
+  }, [formData.tarikhSiapSebenar, formData.tarikhTuntutanBayaran, formData.isLocDeductionEnabled]);
 
   useEffect(() => {
     const bqSum = formData.bqDataPelarasan?.reduce((acc, group) => {
@@ -1659,7 +1666,29 @@ Jabatan Kejuruteraan` }],
                   <div className="group"> <label className={labelClass}>Tarikh Tuntutan Bayaran</label> <StrictDateInput name="tarikhTuntutanBayaran" value={formData.tarikhTuntutanBayaran || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
                   <div className="group"> <label className={labelClass}>Hari LAD (Auto)</label> <input type="number" name="ladDays" value={formData.ladDays || 0} onChange={() => {}} className={`${inputClass} bg-slate-100 text-red-500 font-bold`} readOnly /> </div>
                   <div className="group"> <label className={labelClass}>Jumlah LAD (RM) (Auto)</label> <input type="text" name="ladAmount" value={formatCurrency(formData.ladAmount || 0)} onChange={() => {}} className={`${inputClass} bg-slate-100 text-red-500 font-bold`} readOnly /> </div>
-                  <div className="group"> <label className={labelClass}>Hari LoC (Auto)</label> <input type="number" name="locDays" value={formData.locDays || 0} onChange={() => {}} className={`${inputClass} bg-slate-100 text-amber-600 font-bold`} readOnly /> </div>
+                  <div className="group"> 
+                      <div className="flex justify-between items-center mb-1">
+                          <label className={labelClass}>Hari LoC (Auto)</label> 
+                          {!isGlobalReadOnly && (
+                               <div className="flex items-center gap-1.5" title="Enable LoC Deduction?">
+                                   <input 
+                                       type="checkbox" 
+                                       checked={formData.isLocDeductionEnabled !== false} 
+                                       onChange={(e) => {
+                                           setFormData(prev => ({ ...prev, isLocDeductionEnabled: e.target.checked }));
+                                           setHasUnsavedChanges(true);
+                                       }}
+                                       className="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300 cursor-pointer"
+                                   />
+                                   <span className="text-[12px] font-bold text-slate-400 uppercase tracking-tight cursor-pointer" onClick={() => {
+                                        setFormData(prev => ({ ...prev, isLocDeductionEnabled: !prev.isLocDeductionEnabled }));
+                                        setHasUnsavedChanges(true);
+                                   }}>LEWAT</span>
+                               </div>
+                          )}
+                      </div>
+                      <input type="number" name="locDays" value={formData.locDays || 0} onChange={() => {}} className={`${inputClass} bg-slate-100 text-amber-600 font-bold ${formData.isLocDeductionEnabled === false ? 'opacity-50' : ''}`} readOnly /> 
+                  </div>
                   <div className="group"> <label className={labelClass}>Jumlah LoC (RM) (Auto)</label> <input type="text" name="locAmount" value={formatCurrency(formData.locAmount || 0)} onChange={() => {}} className={`${inputClass} bg-slate-100 text-amber-600 font-bold`} readOnly /> </div>
                   <div className="group"> <label className={labelClass}>Wang Tahanan (RM)</label> <input type="number" name="wangTahanan" value={formData.wangTahanan} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} placeholder="0.00" /> </div>
                   <div className="group"> <label className={labelClass}>Harga Kontrak (Asal)</label> <div className={`${inputClass} bg-slate-50 text-slate-500 font-bold flex items-center`}> {formatCurrency(formData.kosProjek || 0)} </div> </div>

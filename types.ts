@@ -268,6 +268,7 @@ export interface Project {
   ladDays?: number;
   locAmount?: number; // Late of Claim Amount (Denda Lewat)
   locDays?: number;   // Late of Claim Days
+  isLocDeductionEnabled?: boolean; // Toggle for LoC deduction
   wangTahanan?: number; // Retention Money
 
   // --- PRESTASI FORM DATA (NEW) ---
