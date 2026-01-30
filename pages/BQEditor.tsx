@@ -176,6 +176,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
   const [recentItems, setRecentItems] = useState<{groupId: string, itemId: string, variantId?: string}[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [librarySearchTerm, setLibrarySearchTerm] = useState('');
+  const [templateSearchTerm, setTemplateSearchTerm] = useState('');
   
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
 
@@ -344,6 +345,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
     setSelectedTemplate(null);
     setTemplateLocation('');
     setTemplateDims({ length: 0, width: 0, depth: 0 });
+    setTemplateSearchTerm('');
     setTemplateError(false);
     setIsTemplateModalOpen(true);
   };
@@ -1555,30 +1557,76 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
         {isTemplateModalOpen && createPortal(
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsTemplateModalOpen(false)}>
-              <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-4xl w-full p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-emerald-500 to-teal-500"></div>
-                  <div className="flex justify-between items-center mb-8">
-                      <div><h3 className="text-2xl font-bold text-slate-900">Template Wizard</h3><p className="text-sm text-slate-500">Pilih template permulaan atau bina secara manual.</p></div>
-                      <div className="flex items-center gap-2"><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 1 ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600'}`}>1</span><div className="w-8 h-0.5 bg-slate-100"></div><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 2 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>2</span></div>
-                  </div>
-                  {step === 1 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                          {bqTemplates.map(tpl => {
-                              const IconComp = ICON_MAP[tpl.icon as keyof typeof ICON_MAP] || FileText;
-                              const isSelected = selectedTemplate?.id === tpl.id;
-                              const colorClass = getColorStyles(tpl.color);
-
-                              return (
-                                  <div key={tpl.id} onClick={() => { setSelectedTemplate(tpl); if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { handleFinishTemplate(tpl); } else { setStep(2); } }} className={`p-6 rounded-[2rem] border-2 cursor-pointer transition-colors hover:scale-[1.02] flex items-center gap-6 group ${isSelected ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-100 bg-slate-50/30 hover:border-emerald-200'}`}>
-                                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 ${colorClass}`}><IconComp className="w-8 h-8" /></div>
-                                      <div className="flex-1 min-w-0"><h4 className="font-bold text-slate-800  text-lg">{tpl.title}</h4><p className="text-xs text-slate-500  mt-1">{tpl.subtitle}</p></div>
-                                      <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-emerald-500 translate-x-1' : 'text-slate-300'}`} />
-                                  </div>
-                              );
-                          })}
+                  <div className="p-8 pb-4 shrink-0">
+                      <div className="flex justify-between items-center">
+                          <div><h3 className="text-2xl font-bold text-slate-900">Template Wizard</h3><p className="text-sm text-slate-500">Pilih template permulaan atau bina secara manual.</p></div>
+                          <div className="flex items-center gap-2"><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 1 ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600'}`}>1</span><div className="w-8 h-0.5 bg-slate-100"></div><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 2 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>2</span></div>
                       </div>
-                  ) : (
-                      <div className="space-y-8 animate-fade-in">
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
+                      {step === 1 ? (
+                          <div className="space-y-6 animate-fade-in">
+                              <div className="sticky top-0 bg-white z-10 pb-4 mb-2">
+                                  <div className="relative group">
+                                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                      <input 
+                                          type="text" 
+                                          placeholder="Cari template..." 
+                                          value={templateSearchTerm}
+                                          onChange={(e) => setTemplateSearchTerm(e.target.value)}
+                                          className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] text-sm focus:border-emerald-500 focus:bg-white outline-none transition-all shadow-sm"
+                                          autoFocus
+                                      />
+                                      {templateSearchTerm && (
+                                          <button 
+                                              onClick={() => setTemplateSearchTerm('')}
+                                              className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-200 rounded-full text-slate-400 transition-colors"
+                                          >
+                                              <X className="w-4 h-4" />
+                                          </button>
+                                      )}
+                                  </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {(() => {
+                                      const filtered = bqTemplates.filter(tpl => 
+                                          tpl.title.toLowerCase().includes(templateSearchTerm.toLowerCase()) || 
+                                          tpl.subtitle.toLowerCase().includes(templateSearchTerm.toLowerCase())
+                                      );
+
+                                      if (filtered.length === 0) {
+                                          return (
+                                              <div className="col-span-full py-12 flex flex-col items-center justify-center text-slate-400">
+                                                  <Search className="w-16 h-16 mb-4 opacity-10" />
+                                                  <p className="text-lg font-medium text-slate-500">Tiada template dijumpai</p>
+                                                  <p className="text-sm">Cuba carian lain atau semak ejaan anda.</p>
+                                                  <button onClick={() => setTemplateSearchTerm('')} className="mt-4 text-emerald-600 font-bold hover:underline">Kosongkan carian</button>
+                                              </div>
+                                          );
+                                      }
+
+                                      return filtered.map(tpl => {
+                                          const IconComp = ICON_MAP[tpl.icon as keyof typeof ICON_MAP] || FileText;
+                                          const isSelected = selectedTemplate?.id === tpl.id;
+                                          const colorClass = getColorStyles(tpl.color);
+
+                                          return (
+                                              <div key={tpl.id} onClick={() => { setSelectedTemplate(tpl); if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { handleFinishTemplate(tpl); } else { setStep(2); } }} className={`p-6 rounded-[2rem] border-2 cursor-pointer transition-colors hover:scale-[1.02] flex items-center gap-6 group ${isSelected ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-100 bg-slate-50/30 hover:border-emerald-200'}`}>
+                                                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 ${colorClass}`}><IconComp className="w-8 h-8" /></div>
+                                                  <div className="flex-1 min-w-0"><h4 className="font-bold text-slate-800  text-lg">{tpl.title}</h4><p className="text-xs text-slate-500  mt-1">{tpl.subtitle}</p></div>
+                                                  <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-emerald-500 translate-x-1' : 'text-slate-300'}`} />
+                                              </div>
+                                          );
+                                      });
+                                  })()}
+                              </div>
+                          </div>
+                      ) : (
+                          <div className="space-y-8 animate-fade-in">
                           <div className="bg-slate-50  p-6 rounded-3xl border border-slate-100  shadow-inner">
                               <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi & Dimensi</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1591,14 +1639,21 @@ const BQEditor: React.FC<BQEditorProps> = ({
                               </div>
                               {isDimsModified && (<div className="mt-6 p-4 bg-orange-50  rounded-2xl border border-orange-200  flex items-center gap-3"><Info className="w-5 h-5 text-orange-500 shrink-0" /><p className="text-xs text-orange-700  font-medium">Dimensi telah berubah. Semua item berkaitan untuk lokasi ini akan dikemaskini secara automatik.</p></div>)}
                           </div>
-                          <div className="flex gap-4 pt-4"><button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100  text-slate-600  font-bold rounded-2xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm"><RotateCcw className="w-5 h-5" /> Kembali</button><button onClick={() => handleFinishTemplate()} className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 hover:shadow-xl shadow-emerald-500/20 transition-colors flex items-center justify-center gap-2"><Play className="w-5 h-5" /> Jana Template</button></div>
+                          <div className="flex gap-4 pt-4">
+                              <button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                  <RotateCcw className="w-5 h-5" /> Kembali
+                              </button>
+                              <button onClick={() => handleFinishTemplate()} className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 hover:shadow-xl shadow-emerald-500/20 transition-colors flex items-center justify-center gap-2">
+                                  <Play className="w-5 h-5" /> Jana Template
+                              </button>
+                          </div>
                       </div>
                   )}
               </div>
-          </div>,
-          document.body
-        )}
-
+          </div>
+        </div>,
+        document.body
+      )}
         {isLinkModalOpen && createPortal(
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsLinkModalOpen(false)}>
               <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
