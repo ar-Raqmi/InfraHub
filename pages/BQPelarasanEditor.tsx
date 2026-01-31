@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, Role, PresetGroup } from '../types';
+import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, Role, PresetGroup, BQTemplateDefinition, BQTemplateItemRef } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { createItem, createHeader } from '../data/bqPresets';
-import { ChevronDown, ChevronRight, Save, Ruler, ChevronUp, Link, Unlink, PlusCircle, MinusCircle, FolderPlus, Calculator, MapPin, Layers, Info, AlertTriangle, X, Type, List, Trash2, Bookmark, Plus, Search, History, Clock } from 'lucide-react';
+import { ChevronDown, ChevronRight, Save, Ruler, ChevronUp, Link, Unlink, PlusCircle, MinusCircle, FolderPlus, Calculator, MapPin, Layers, Info, AlertTriangle, X, Type, List, Trash2, Bookmark, Plus, Search, History, Clock, LayoutTemplate, RotateCcw, Play, FileText, FilePlus, Edit3, Grid, CheckSquare, ClipboardList, Box, Package, Truck, Wrench, Hammer, Zap, Briefcase, Archive, Star, Award, PenTool } from 'lucide-react';
 
 interface BQPelarasanEditorProps {
   originalData: BQGroup[];
@@ -16,6 +16,56 @@ interface BQPelarasanEditorProps {
   onGlobalCalculationsPelarasanChange: (calcId: string, dims: GlobalDimensions[]) => void;
   readOnly?: boolean;
 }
+
+const ICON_MAP = {
+    file: FileText,
+    'file-text': FileText,
+    edit: Edit3,
+    layout: LayoutTemplate,
+    list: List,
+    grid: Grid,
+    plus: Plus,
+    check: CheckSquare,
+    clipboard: ClipboardList,
+    layers: Layers,
+    box: Box,
+    package: Package,
+    truck: Truck,
+    wrench: Wrench,
+    hammer: Hammer,
+    ruler: Ruler,
+    zap: Zap,
+    briefcase: Briefcase,
+    archive: Archive,
+    star: Star,
+    award: Award,
+    bookmark: Bookmark,
+    tool: PenTool
+};
+
+const getColorStyles = (color: string) => {
+    const colors: Record<string, string> = {
+        slate: "bg-slate-100 text-slate-600 border-slate-200",
+        red: "bg-red-100 text-red-600 border-red-200",
+        orange: "bg-orange-100 text-orange-600 border-orange-200",
+        amber: "bg-amber-100 text-amber-600 border-amber-200",
+        yellow: "bg-yellow-100 text-yellow-600 border-yellow-200",
+        lime: "bg-lime-100 text-lime-600 border-lime-200",
+        green: "bg-green-100 text-green-600 border-green-200",
+        emerald: "bg-emerald-100 text-emerald-600 border-emerald-200",
+        teal: "bg-teal-100 text-teal-600 border-teal-200",
+        cyan: "bg-cyan-100 text-cyan-600 border-cyan-200",
+        sky: "bg-sky-100 text-sky-600 border-sky-200",
+        blue: "bg-blue-100 text-blue-600 border-blue-200",
+        indigo: "bg-indigo-100 text-indigo-600 border-indigo-200",
+        violet: "bg-violet-100 text-violet-600 border-violet-200",
+        purple: "bg-purple-100 text-purple-600 border-purple-200",
+        fuchsia: "bg-fuchsia-100 text-fuchsia-600 border-fuchsia-200",
+        pink: "bg-pink-100 text-pink-600 border-pink-200",
+        rose: "bg-rose-100 text-rose-600 border-rose-200",
+    };
+    return colors[color] || colors['blue'];
+};
 
 const AutoResizeTextarea = ({ 
     value, 
@@ -144,10 +194,18 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const [isGlobalLinkModalOpen, setIsGlobalLinkModalOpen] = useState<{itemId: string, partId: string} | null>(null);
 
     const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
+    const [bqTemplates, setBqTemplates] = useState<BQTemplateDefinition[]>([]);
     const [recentItems, setRecentItems] = useState<{groupId: string, itemId: string, variantId?: string}[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [librarySearchTerm, setLibrarySearchTerm] = useState('');
+    const [templateSearchTerm, setTemplateSearchTerm] = useState('');
     const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState<BQTemplateDefinition | null>(null);
+    const [templateLocation, setTemplateLocation] = useState<string>('');
+    const [templateDims, setTemplateDims] = useState<GlobalDimensions>({ length: 0, width: 0, depth: 0 });
+    const [step, setStep] = useState(1);
+    const [templateError, setTemplateError] = useState(false);
     const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; type: 'BILL' | 'ITEM' | 'HEADER'; billId: string; itemId?: string; title: string; count?: number; } | null>(null);
 
@@ -165,10 +223,14 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     useEffect(() => {
         const fetchLibrary = async () => {
             try {
-                const library = await supabaseService.getLibraryGroups();
+                const [library, templates] = await Promise.all([
+                    supabaseService.getLibraryGroups(),
+                    supabaseService.getTemplates()
+                ]);
                 setBqLibrary(library);
+                setBqTemplates(templates);
             } catch (err) {
-                console.error('Failed to load BQ library:', err);
+                console.error('Failed to load BQ library/templates:', err);
             }
         };
         fetchLibrary();
@@ -178,6 +240,25 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             try { setRecentItems(JSON.parse(saved)); } catch (e) { console.error('Failed to load recent items:', e); }
         }
     }, []);
+
+    const resequenceTitles = (currentBills: BQGroup[]): BQGroup[] => {
+        const isInsurans = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS');
+        const isPermulaan = (b: BQGroup) => b.title.toUpperCase().includes('PERMULAAN') || b.id.includes('permulaan');
+
+        const insuransBills = currentBills.filter(isInsurans);
+        const permulaanBills = currentBills.filter(b => isPermulaan(b) && !isInsurans(b));
+        const otherBills = currentBills.filter(b => !isInsurans(b) && !isPermulaan(b));
+        const sortedBills = [...insuransBills, ...permulaanBills, ...otherBills];
+
+        let counter = 1;
+        return sortedBills.map(bill => {
+            const { content } = parseTitle(bill.title);
+            const displayContent = content.trim() || 'BUTIRAN KERJA';
+            const newTitle = `BIL NO. ${counter} - ${displayContent.toUpperCase()}`;
+            counter++;
+            return { ...bill, title: newTitle };
+        });
+    };
 
     useEffect(() => {
         if (pelarasanData.length > 0 && !activeBillId) { setActiveBillId(pelarasanData[0].id); }
@@ -495,20 +576,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         newData[billIndex] = { ...sourceBill, items: remainingItems };
         newData.splice(billIndex + 1, 0, newBill);
         
-        for (let i = billIndex + 2; i < newData.length; i++) {
-            const b = newData[i];
-            const { prefix: bPrefix, content: bContent } = parseTitle(b.title);
-            const bMatch = bPrefix.match(/BIL NO\.\s*(\d+)/i);
-            if (bMatch) {
-                const bNo = parseInt(bMatch[1]);
-                newData[i] = {
-                    ...b,
-                    title: `BIL NO. ${bNo + 1} - ${bContent}`
-                };
-            }
-        }
-        
-        onDataChange(newData);
+        const renumbered = resequenceTitles(newData);
+        onDataChange(renumbered);
         setActiveBillId(newBill.id);
     };
 
@@ -558,11 +627,172 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         setDeleteConfirm({ isOpen: true, type: item.type === 'HEADER' ? 'HEADER' : 'ITEM', billId: billId, itemId: item.id, title: item.description, count: childCount });
     };
 
+    const handleAddTemplate = () => {
+        if (readOnly) return;
+        setStep(1);
+        setSelectedTemplate(null);
+        setTemplateLocation('');
+        setTemplateDims({ length: 0, width: 0, depth: 0 });
+        setTemplateSearchTerm('');
+        setTemplateError(false);
+        setIsTemplateModalOpen(true);
+    };
+
+    const handleFinishTemplate = (tplOverride?: BQTemplateDefinition) => {
+        if (readOnly) return;
+        const tpl = tplOverride || selectedTemplate;
+        if (!tpl) return;
+        
+        const isMultistep = (tpl.key === 'LONGKANG' || tpl.key === 'EMPTY' || tpl.key === 'CUSTOM');
+        if (isMultistep && !templateLocation) { 
+            setTemplateError(true); 
+            return; 
+        }
+        
+        const newGroups: BQGroup[] = [];
+        if (tpl.bills && tpl.bills.length > 0) {
+            tpl.bills.forEach((billDef, bIdx) => {
+                const billCalcId = `calc-pelarasan-${Math.random().toString(36).substr(2, 9)}`;
+                
+                // Save initial dimensions for this new bill
+                if (isMultistep && templateLocation) {
+                    onGlobalCalculationsPelarasanChange(billCalcId, [templateDims]);
+                }
+
+                const bill: BQGroup = { 
+                    id: `bil-pelarasan-${Date.now()}-${bIdx}`, 
+                    calculationId: billCalcId,
+                    title: `BIL NO. 999 - ${billDef.title.toUpperCase()}`, 
+                    locationId: tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY' ? undefined : templateLocation, 
+                    items: [] 
+                };
+
+                billDef.items.forEach(itemOrRef => {
+                    const isFullItem = (itemOrRef as BQItem).type !== undefined;
+                    
+                    if (isFullItem) {
+                        const itemSnapshot = itemOrRef as BQItem;
+                        const newItem = { 
+                            ...itemSnapshot, 
+                            id: Math.random().toString(36).substr(2, 9),
+                            isAdjustment: true 
+                        };
+                        
+                        // Sync with Library if source exists
+                        if (newItem.sourceItemId) {
+                            const group = bqLibrary.find(g => g.id === newItem.sourceGroupId);
+                            const libItem = group?.items.find(i => i.id === newItem.sourceItemId);
+                            if (libItem) {
+                                if (newItem.sourceVariantId) {
+                                    const libVariant = libItem.variants?.find(v => v.id === newItem.sourceVariantId);
+                                    if (libVariant) {
+                                        newItem.rate = libVariant.rate;
+                                        newItem.unit = libVariant.unit;
+                                    }
+                                } else {
+                                    newItem.rate = libItem.rate || 0;
+                                    newItem.unit = libItem.unit || '';
+                                }
+                            }
+                        }
+
+                        // Apply Global Dimensions
+                        const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
+                        if (newItem.isGlobal && currentTplDims && newItem.calculationParts) {
+                            newItem.calculationParts = newItem.calculationParts.map(p => ({
+                                ...p,
+                                length: p.hasLength ? currentTplDims.length : p.length,
+                                width: p.hasWidth ? currentTplDims.width : p.width,
+                                depth: p.hasDepth ? currentTplDims.depth : p.depth
+                            }));
+                            const qty = recalculateQtyFromParts(newItem.calculationParts);
+                            newItem.qty = parseFloat(qty.toFixed(2));
+                            newItem.amount = parseFloat((qty * newItem.rate).toFixed(2));
+                        }
+                        
+                        bill.items.push(newItem);
+                    } else {
+                        const ref = itemOrRef as BQTemplateItemRef;
+                        const group = bqLibrary.find(g => g.id === ref.groupId);
+                        if (group) {
+                            const libItem = group.items.find(i => i.id === ref.itemId);
+                            if (libItem) {
+                                const bqIt = createItem(bqLibrary, ref.groupId, ref.itemId, ref.variantId);
+                                bqIt.sourceGroupId = ref.groupId;
+                                bqIt.sourceItemId = ref.itemId;
+                                bqIt.sourceVariantId = ref.variantId;
+                                bqIt.isAdjustment = true;
+
+                                const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
+                                if (bqIt.isGlobal && currentTplDims && bqIt.calculationParts) {
+                                    bqIt.calculationParts = bqIt.calculationParts.map(p => ({ 
+                                        ...p, 
+                                        length: p.hasLength ? currentTplDims.length : p.length, 
+                                        width: p.hasWidth ? currentTplDims.width : p.width, 
+                                        depth: p.hasDepth ? currentTplDims.depth : p.depth 
+                                    }));
+                                    const qty = recalculateQtyFromParts(bqIt.calculationParts);
+                                    bqIt.qty = parseFloat(qty.toFixed(2));
+                                    bqIt.amount = parseFloat((qty * bqIt.rate).toFixed(2));
+                                }
+                                bill.items.push(bqIt);
+                            }
+                        }
+                    }
+                });
+                newGroups.push(bill);
+            });
+        } else if (tpl.key === 'EMPTY') { 
+            const billCalcId = `calc-pelarasan-${Math.random().toString(36).substr(2, 9)}`;
+            newGroups.push({ 
+                id: `bil-pelarasan-${Date.now()}`, 
+                calculationId: billCalcId, 
+                title: `BIL NO. 999 - BUTIRAN KERJA-KERJA`, 
+                locationId: templateLocation, 
+                items: [] 
+            }); 
+        }
+
+        const newBills = [...pelarasanData, ...newGroups];
+        const renumberedBills = resequenceTitles(newBills);
+        onDataChange(renumberedBills);
+        if (newGroups.length > 0) {
+            setActiveBillId(newGroups[0].id);
+        }
+        setIsTemplateModalOpen(false);
+    };
+
+    const moveBill = (billId: string, direction: 'up' | 'down') => {
+        if (readOnly) return;
+        const index = pelarasanData.findIndex(b => b.id === billId);
+        if (index === -1) return;
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= pelarasanData.length) return;
+        const newBills = [...pelarasanData];
+        const temp = newBills[index];
+        newBills[index] = newBills[newIndex];
+        newBills[newIndex] = temp;
+        onDataChange(resequenceTitles(newBills));
+    };
+
+    const requestDeleteBill = (bill: BQGroup) => {
+        if (readOnly) return;
+        setDeleteConfirm({ isOpen: true, type: 'BILL', billId: bill.id, title: bill.title });
+    };
+
     const performDelete = () => {
         if (!deleteConfirm || readOnly) return;
-        const newData = pelarasanData.map(bill => {
-            if (bill.id !== deleteConfirm.billId) return bill;
-            if (deleteConfirm.type === 'HEADER') {
+        let newData = [...pelarasanData];
+        if (deleteConfirm.type === 'BILL') {
+            newData = newData.filter(b => b.id !== deleteConfirm.billId);
+            const renumbered = resequenceTitles(newData);
+            onDataChange(renumbered);
+            if (activeBillId === deleteConfirm.billId) {
+                setActiveBillId(renumbered.length > 0 ? renumbered[0].id : null);
+            }
+        } else if (deleteConfirm.type === 'HEADER') {
+            newData = newData.map(bill => {
+                if (bill.id !== deleteConfirm.billId) return bill;
                 const itemIndex = bill.items.findIndex(i => i.id === deleteConfirm.itemId);
                 if (itemIndex === -1) return bill;
                 const currentLevel = getItemLevel(bill.items[itemIndex]);
@@ -571,9 +801,15 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 const newItems = [...bill.items];
                 newItems.splice(itemIndex, nextHeaderIndex - itemIndex);
                 return { ...bill, items: newItems };
-            } else { return { ...bill, items: bill.items.filter(i => i.id !== deleteConfirm.itemId) }; }
-        });
-        onDataChange(newData);
+            });
+            onDataChange(newData);
+        } else {
+            newData = newData.map(bill => {
+                if (bill.id !== deleteConfirm.billId) return bill;
+                return { ...bill, items: bill.items.filter(i => i.id !== deleteConfirm.itemId) };
+            });
+            onDataChange(newData);
+        }
         setDeleteConfirm(null);
     };
 
@@ -927,9 +1163,13 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     });
     const sortedLocationIds = Array.from(new Set(pelarasanData.filter(b => b.locationId && !isTopBill(b)).map(b => b.locationId!))) as string[];
 
-    const renderSidebarItem = (b: BQGroup) => {
+    const renderSidebarItem = (b: BQGroup, index: number, total: number) => {
         const isActive = activeBillId === b.id;
         const { prefix, content } = parseTitle(b.title);
+        
+        // Check if this bill is an "adjustment" (not in original data)
+        const isOriginalBill = originalData.some(ob => ob.id === b.id);
+
         return (
             <div key={b.id} onClick={() => setActiveBillId(b.id)} className={`w-full text-left p-3 rounded-xl text-xs transition-colors relative group cursor-pointer border ${isActive ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 border-amber-500 ring-1 ring-amber-500' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 hover:border-amber-300'}`}>
                 <div className="flex justify-between items-start gap-2">
@@ -937,6 +1177,13 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                         {prefix && <div className={`text-[9px] font-black tracking-widest uppercase mb-1 ${isActive ? 'text-amber-100' : 'text-slate-400 group-hover:text-amber-600'}`}>{prefix}</div>}
                         <div className={`font-bold leading-snug line-clamp-2 ${isActive ? 'text-white' : 'text-slate-700'}`}>{content || b.title}</div>
                     </div>
+                    {!readOnly && !isOriginalBill && (
+                        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 bg-white/90 rounded-lg p-0.5 shadow-sm">
+                            <button onClick={(e) => { e.stopPropagation(); moveBill(b.id, 'up'); }} disabled={index === 0} className="p-1 hover:bg-slate-100 rounded disabled:opacity-30 text-slate-500"><ChevronUp className="w-3 h-3" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); moveBill(b.id, 'down'); }} disabled={index === total - 1} className="p-1 hover:bg-slate-100 rounded disabled:opacity-30 text-slate-500"><ChevronDown className="w-3 h-3" /></button>
+                            <button type="button" onClick={(e) => { e.stopPropagation(); requestDeleteBill(b); }} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors mt-1"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -962,11 +1209,16 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     if (isPrintView) return null;
 
     return (
-        <div className="flex flex-col md:flex-row gap-4 items-start">
+        <div className="flex flex-col md:flex-row gap-4 items-start p-4 md:p-6 w-full">
             {/* Editor Sidebar */}
             <div className="w-full md:w-72 flex flex-col gap-2 shrink-0 sticky top-24 max-h-[calc(100vh-8rem)]">
                 <div className="bg-amber-50/80 p-3 rounded-xl border border-amber-200 shadow-sm flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-amber-700 tracking-wider">Navigasi Pelarasan</span>
+                    {!readOnly && (
+                        <button onClick={handleAddTemplate} className="p-1 bg-amber-100 text-amber-600 rounded hover:bg-amber-200 transition-colors" title="Tambah Template (Pelarasan)">
+                            <Plus className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
                 
                 {extraPrice > 0 && (
@@ -988,7 +1240,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     {permulaanBills.length > 0 && (
                         <div className="space-y-1">
                              <div className="px-2 text-[10px] font-bold text-slate-400 uppercase">Permulaan</div>
-                             {permulaanBills.map(b => renderSidebarItem(b))}
+                             {permulaanBills.map((b, idx) => renderSidebarItem(b, idx, pelarasanData.length))}
                         </div>
                     )}
                     {sortedLocationIds.map(locId => {
@@ -1000,14 +1252,14 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                 <div className="px-2 text-[10px] font-bold text-slate-400 uppercase flex items-center justify-between mt-4 mb-2">
                                     <div className="flex items-center gap-1 truncate" title={locName}><MapPin className="w-3 h-3 shrink-0" /> {locName}</div>
                                 </div>
-                                <div className="space-y-2">{groupBills.map(b => renderSidebarItem(b))}</div>
+                                <div className="space-y-2">{groupBills.map((b, idx) => renderSidebarItem(b, pelarasanData.indexOf(b), pelarasanData.length))}</div>
                             </div>
                         );
                     })}
                     {otherBills.length > 0 && (
                         <div className="space-y-1">
                             <div className="px-2 text-[10px] font-bold text-slate-400 uppercase mt-4">Lain-lain</div>
-                            {otherBills.map(b => renderSidebarItem(b))}
+                            {otherBills.map((b, idx) => renderSidebarItem(b, pelarasanData.indexOf(b), pelarasanData.length))}
                         </div>
                     )}
                 </div>
@@ -1019,7 +1271,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     <>
                         <div className="p-4 border-b border-slate-100 bg-slate-50/50 sticky top-20 z-20">
                             <div className="flex items-center justify-between mb-2">
-                                <h2 className="text-lg font-bold text-slate-800 uppercase">{activeBill.title}</h2>
+                                <h2 className={`text-lg font-bold uppercase ${originalData.some(ob => ob.id === activeBill.id) ? 'text-slate-800' : 'text-blue-600'}`}>{activeBill.title}</h2>
                                 <div className="flex items-center gap-4">
                                     <div className="text-right text-xs text-slate-400 shrink-0">
                                         Asal: <span className="text-slate-600 font-bold text-sm">{formatCurrency(originalData.find(ob => ob.id === activeBill.id)?.items.reduce((s,i) => s + (i.amount||0), 0) || 0)}</span>
@@ -1410,6 +1662,104 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                         <button onClick={() => setIsGlobalLinkModalOpen(null)} className="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
                             Batal
                         </button>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {isTemplateModalOpen && createPortal(
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 animate-fade-in" onClick={() => setIsTemplateModalOpen(false)}>
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200 transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-amber-500 to-orange-500"></div>
+                        <div className="p-8 pb-4 shrink-0">
+                            <div className="flex justify-between items-center">
+                                <div><h3 className="text-2xl font-bold text-slate-900">Wizard Pelarasan</h3><p className="text-sm text-slate-500">Pilih template untuk penambahan item baru.</p></div>
+                                <div className="flex items-center gap-2"><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 1 ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-600'}`}>1</span><div className="w-8 h-0.5 bg-slate-100"></div><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 2 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-400'}`}>2</span></div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
+                            {step === 1 ? (
+                                <div className="space-y-6 animate-fade-in">
+                                    <div className="sticky top-0 bg-white z-10 pb-4 mb-2">
+                                        <div className="relative group">
+                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
+                                            <input 
+                                                type="text" 
+                                                placeholder="Cari template..." 
+                                                value={templateSearchTerm}
+                                                onChange={(e) => setTemplateSearchTerm(e.target.value)}
+                                                className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] text-sm focus:border-amber-500 focus:bg-white outline-none transition-all shadow-sm"
+                                                autoFocus
+                                            />
+                                            {templateSearchTerm && (
+                                                <button onClick={() => setTemplateSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-200 rounded-full text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {(() => {
+                                            const filtered = bqTemplates.filter(tpl => 
+                                                tpl.title.toLowerCase().includes(templateSearchTerm.toLowerCase()) || 
+                                                tpl.subtitle.toLowerCase().includes(templateSearchTerm.toLowerCase())
+                                            );
+
+                                            if (filtered.length === 0) {
+                                                return (
+                                                    <div className="col-span-full py-12 flex flex-col items-center justify-center text-slate-400">
+                                                        <Search className="w-16 h-16 mb-4 opacity-10" />
+                                                        <p className="text-lg font-medium text-slate-500">Tiada template dijumpai</p>
+                                                        <button onClick={() => setTemplateSearchTerm('')} className="mt-4 text-amber-600 font-bold hover:underline">Kosongkan carian</button>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return filtered.map(tpl => {
+                                                const IconComp = ICON_MAP[tpl.icon as keyof typeof ICON_MAP] || FileText;
+                                                const isSelected = selectedTemplate?.id === tpl.id;
+                                                const colorClass = getColorStyles(tpl.color);
+
+                                                return (
+                                                    <div key={tpl.id} onClick={() => { setSelectedTemplate(tpl); if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { handleFinishTemplate(tpl); } else { setStep(2); } }} className={`p-6 rounded-[2rem] border-2 cursor-pointer transition-colors hover:scale-[1.02] flex items-center gap-6 group ${isSelected ? 'border-amber-500 bg-amber-50/50' : 'border-slate-100 bg-slate-50/30 hover:border-amber-200'}`}>
+                                                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 ${colorClass}`}><IconComp className="w-8 h-8" /></div>
+                                                        <div className="flex-1 min-w-0"><h4 className="font-bold text-slate-800 text-lg">{tpl.title}</h4><p className="text-xs text-slate-500 mt-1">{tpl.subtitle}</p></div>
+                                                        <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-amber-500 translate-x-1' : 'text-slate-300'}`} />
+                                                    </div>
+                                                );
+                                            });
+                                        })()}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-8 animate-fade-in">
+                                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner">
+                                        <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi & Dimensi (Laras)</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 pl-1">Pilih Lokasi</label>
+                                                <select value={templateLocation} onChange={(e) => setTemplateLocation(e.target.value)} className={`w-full px-4 py-3 rounded-xl bg-white border-2 outline-none transition-colors font-bold text-sm ${templateError && !templateLocation ? 'border-red-400' : 'border-slate-100 focus:border-amber-500'}`}>
+                                                    <option value="">-- Pilih Lokasi --</option>
+                                                    {locationRows.map(row => <option key={row.id} value={row.id}>{row.lokasi || '(Tiada Nama Lokasi)'}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {['P', 'L', 'T'].map((label, idx) => (
+                                                    <div key={label} className="space-y-2">
+                                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{label}</label>
+                                                        <DimensionInput value={idx === 0 ? templateDims.length : idx === 1 ? templateDims.width : templateDims.depth} onChange={val => setTemplateDims(prev => ({ ...prev, [idx === 0 ? 'length' : idx === 1 ? 'width' : 'depth']: val }))} className="w-full text-center px-2 py-3 rounded-xl bg-white border-2 border-slate-100 focus:border-amber-500 outline-none font-bold text-lg shadow-sm transition-colors" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4 pt-4">
+                                        <button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm"><RotateCcw className="w-5 h-5" /> Kembali</button>
+                                        <button onClick={() => handleFinishTemplate()} className="flex-[2] py-4 bg-amber-600 text-white font-bold rounded-2xl hover:bg-amber-700 hover:shadow-xl shadow-amber-500/20 transition-colors flex items-center justify-center gap-2"><Play className="w-5 h-5" /> Jana Template</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>,
                 document.body
