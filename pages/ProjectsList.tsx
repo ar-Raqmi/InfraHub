@@ -688,16 +688,16 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
     // --- Financial Summary Logic ---
     const financialSummary = useMemo(() => {
-        const summary: Record<string, { allocated: number; used: number }> = {};
+        const summary: Record<string, { allocated: number; used: number; projectCount: number }> = {};
 
         votesList.forEach(v => {
-            summary[v.code] = { allocated: v.allocation, used: 0 };
+            summary[v.code] = { allocated: v.allocation, used: 0, projectCount: 0 };
         });
 
         filteredProjects.forEach(p => {
             if (p.noVote) {
                 if (!summary[p.noVote]) {
-                    summary[p.noVote] = { allocated: 0, used: 0 };
+                    summary[p.noVote] = { allocated: 0, used: 0, projectCount: 0 };
                 }
 
                 let costToAdd = 0;
@@ -709,12 +709,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 }
 
                 summary[p.noVote].used += costToAdd;
+                summary[p.noVote].projectCount += 1;
             }
         });
 
         return summary;
     }, [filteredProjects, votesList, costViewMode]);
-
     const handleExportRealPDF = async () => {
         if (!exportBilMesyuarat) {
             alert('Sila masukkan Bil. Mesyuarat.');
@@ -859,6 +859,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     return [
                         voteCode,
                         getVoteName(voteCode),
+                        voteData.projects.length,
                         formatCurrency(voteData.subtotalContract).replace('RM', '').trim()
                     ];
                 });
@@ -866,6 +867,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 // Add Grand Total for company
                 summaryTableBody.push([
                     { content: 'JUMLAH KOS', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any,
+                    { content: '', styles: { fillColor: [240, 240, 240] } } as any,
                     { content: formatCurrency(group.totalCost).replace('RM', '').trim(), styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any
                 ]);
 
@@ -883,7 +885,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 // @ts-ignore
                 doc.autoTable({
                     startY: currentY,
-                    head: [['VOT', 'PERUNTUKAN', 'JUMLAH (RM)']],
+                    head: [['VOT', 'PERUNTUKAN', 'BIL. PROJEK', 'JUMLAH (RM)']],
                     body: summaryTableBody,
                     theme: 'grid',
                     styles: { fontSize: 6.5, cellPadding: 0.5, lineColor: [0, 0, 0], lineWidth: 0.1, textColor: 0 },
@@ -891,10 +893,11 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     columnStyles: {
                         0: { cellWidth: 20, halign: 'center' },
                         1: { cellWidth: 'auto' },
-                        2: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
+                        2: { cellWidth: 20, halign: 'center' },
+                        3: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
                     },
                     margin: { left: marginX, right: marginX },
-                    tableWidth: 120 // Keep it smaller than full width
+                    tableWidth: 140 // Slightly wider to accommodate new column
                 });
 
                 // @ts-ignore
@@ -916,6 +919,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 return [
                     voteCode,
                     getVoteName(voteCode),
+                    (data as any).projectCount,
                     formatCurrency((data as any).allocated).replace('RM', ''),
                     formatCurrency((data as any).used).replace('RM', ''),
                     formatCurrency((data as any).allocated - (data as any).used).replace('RM', '')
@@ -924,20 +928,22 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
             const totalAlloc = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0);
             const totalUsed = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0);
+            const totalProjectCount = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0);
             const totalBal = totalAlloc - totalUsed;
 
             // @ts-ignore
             doc.autoTable({
                 startY: currentY,
-                head: [['VOT', 'PERUNTUKAN', 'JUMLAH', 'PERBELANJAAN', 'BAKI']],
+                head: [['VOT', 'PERUNTUKAN', 'BIL. PROJEK', 'JUMLAH', 'PERBELANJAAN', 'BAKI']],
                 body: [
                     ...globalSummaryBody,
                     [
                         { content: 'JUMLAH PROJEK', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
-                        { content: `${filteredProjects.length} PROJEK`, colSpan: 3, styles: { halign: 'center', fontStyle: 'bold', fillColor: [240, 240, 240] } }
+                        { content: `${totalProjectCount} PROJEK`, colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fillColor: [240, 240, 240] } }
                     ],
                     [
                         { content: 'JUMLAH KOS', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
+                        { content: '', styles: { fillColor: [240, 240, 240] } },
                         { content: formatCurrency(totalAlloc).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } },
                         { content: formatCurrency(totalUsed).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 0, 0] } },
                         { content: formatCurrency(totalBal).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } }
@@ -948,10 +954,11 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center' },
                 columnStyles: {
                     0: { cellWidth: 20, halign: 'center' },
-                    1: { cellWidth: "auto" },
-                    2: { cellWidth: 35, halign: 'right' },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 20, halign: 'center' },
                     3: { cellWidth: 35, halign: 'right' },
-                    4: { cellWidth: 35, halign: 'right' }
+                    4: { cellWidth: 35, halign: 'right' },
+                    5: { cellWidth: 35, halign: 'right' }
                 },
                 margin: { left: marginX, right: marginX }
             });
@@ -1558,23 +1565,22 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <div className="overflow-hidden rounded-xl border border-slate-200">
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-50">
-                                        <tr><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider w-20">Kod Vot</th><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider">Butiran</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Peruntukan</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Belanja</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Baki</th></tr>
+                                        <tr><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider w-20">Kod Vot</th><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider">Butiran</th><th className="py-3 px-4 text-center font-extrabold text-slate-500  uppercase tracking-wider">Bil. Projek</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Peruntukan</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Belanja</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Baki</th></tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {Object.entries(financialSummary).map(([voteCode, data]) => (
                                             <tr key={voteCode} className="hover:bg-slate-50">
-                                                <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
+                                                <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-center font-bold text-slate-600">{data.projectCount}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
+                                        <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-center font-bold text-slate-800">{(Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0)}</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
                                         <tr className="bg-emerald-50/30  font-bold border-t border-emerald-100">
-                                            <td colSpan={3} className="py-3 px-4 text-right uppercase text-[10px] text-emerald-600 tracking-wider">Jumlah Projek Keseluruhan</td>
+                                            <td colSpan={4} className="py-3 px-4 text-right uppercase text-[10px] text-emerald-600 tracking-wider">Jumlah Projek Keseluruhan</td>
                                             <td colSpan={2} className="py-3 px-4 text-right font-mono text-emerald-700">{filteredProjects.length} Projek</td>
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                            <div className="mt-6 flex flex-col gap-4 border-t border-slate-200  pt-4">
+                            </div>                            <div className="mt-6 flex flex-col gap-4 border-t border-slate-200  pt-4">
                                 <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
                                 <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
                                 <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-emerald-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
