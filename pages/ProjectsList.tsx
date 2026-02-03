@@ -934,16 +934,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
             // @ts-ignore
             doc.autoTable({
                 startY: currentY,
-                head: [['VOT', 'PERUNTUKAN', 'BIL. PROJEK', 'JUMLAH', 'PERBELANJAAN', 'BAKI']],
+                head: [['VOT', 'PERUNTUKAN', 'PROJEK', 'JUMLAH', 'PERBELANJAAN', 'BAKI']],
                 body: [
                     ...globalSummaryBody,
                     [
-                        { content: 'JUMLAH PROJEK', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
-                        { content: `${totalProjectCount} PROJEK`, colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fillColor: [240, 240, 240] } }
-                    ],
-                    [
-                        { content: 'JUMLAH KOS', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
-                        { content: '', styles: { fillColor: [240, 240, 240] } },
+                        { content: 'JUMLAH', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
+                        { content: `${totalProjectCount}`, styles: { halign: 'center', fontStyle: 'bold' } },
                         { content: formatCurrency(totalAlloc).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } },
                         { content: formatCurrency(totalUsed).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 0, 0] } },
                         { content: formatCurrency(totalBal).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } }
@@ -955,7 +951,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 columnStyles: {
                     0: { cellWidth: 20, halign: 'center' },
                     1: { cellWidth: 'auto' },
-                    2: { cellWidth: 20, halign: 'center' },
+                    2: { cellWidth: 15, halign: 'center' },
                     3: { cellWidth: 35, halign: 'right' },
                     4: { cellWidth: 35, halign: 'right' },
                     5: { cellWidth: 35, halign: 'right' }
@@ -1544,7 +1540,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             })}
                                             <div className="px-6 py-4 bg-emerald-50/50  flex justify-end items-center gap-6 border-t border-emerald-100">
                                                 <div className="flex items-center gap-2 mr-auto">
-                                                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Jumlah Projek:</span>
+                                                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                                                        :</span>
                                                     <span className="text-xs font-black text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm">{group.count}</span>
                                                 </div>
                                                 <span className="text-[11px] font-bold uppercase text-emerald-600  tracking-wider">Jumlah Keseluruhan ({group.company})</span>
