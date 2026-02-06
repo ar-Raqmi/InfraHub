@@ -443,7 +443,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
             const matchesStatus = filterStatus === 'ALL' || p.status === filterStatus;
             const matchesPja = filterPja === 'ALL' || p.pjaId === Number(filterPja);
-            const matchesZon = filterZon === 'ALL' || p.zon === filterZon;
+            const matchesZon = filterZon === 'ALL' || (p.zon && p.zon.includes(filterZon));
             const matchesBp = filterBp === 'ALL' || p.bp === filterBp;
             const matchesMukim = filterMukim === 'ALL' || p.mukim === filterMukim;
             const matchesVote = filterVote === 'ALL' || p.noVote === filterVote;
@@ -811,12 +811,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     const failDanLokasi = `${p.noFail}\n${formattedLokasi}`;
                     const tarikhGabung = `${formatDate(p.tarikhMulaKontrak)} ${formatDate(p.tarikhTamatKontrak)}`;
                     const votGabung = `${p.noVote || 'TIADA VOT'}\n${getVoteName(p.noVote || '')}`;
+                    const formattedZon = (p.zon || '-').replace(/Zon /g, '');
 
                     return [
                         billCounter++,
                         failDanLokasi,
                         tarikhGabung,
                         pjaName,
+                        formattedZon,
                         `${formattedStatus}\n(${progress}%)`,
                         votGabung,
                         formatCurrency(p.kosProjek || 0).replace('RM', '').trim()
@@ -826,19 +828,20 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 // @ts-ignore
                 doc.autoTable({
                     startY: currentY,
-                    head: [['BIL', 'NO. FAIL / LOKASI', 'TARIKH', 'PJA', 'STATUS', 'VOT', 'HARGA (RM)']],
+                    head: [['BIL', 'NO. FAIL / LOKASI', 'TARIKH', 'PJA', 'ZON', 'STATUS', 'VOT', 'HARGA (RM)']],
                     body: tableBody,
                     theme: 'grid',
                     styles: { fontSize: 6.5, cellPadding: 0.5, lineColor: [0, 0, 0], lineWidth: 0.1, textColor: 0, valign: 'middle' },
                     headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center', valign: 'middle' },
                     columnStyles: {
-                        0: { cellWidth: 7, halign: 'center' },
-                        1: { cellWidth: 77 },
+                        0: { cellWidth: 6, halign: 'center' },
+                        1: { cellWidth: 70 },
                         2: { cellWidth: 15, halign: 'center' },
-                        3: { cellWidth: 15, halign: 'center' },
-                        4: { cellWidth: 25, halign: 'center' },
-                        5: { cellWidth: 28 },
-                        6: { cellWidth: 23, halign: 'right', fontStyle: 'bold' }
+                        3: { cellWidth: 14, halign: 'center' },
+                        4: { cellWidth: 12, halign: 'center' },
+                        5: { cellWidth: 23, halign: 'center' },
+                        6: { cellWidth: 27 },
+                        7: { cellWidth: 23, halign: 'right', fontStyle: 'bold' }
                     },
                     margin: { left: marginX, right: marginX },
                     rowPageBreak: 'avoid',

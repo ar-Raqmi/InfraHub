@@ -421,7 +421,24 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [isCPCOpen, setIsCPCOpen] = useState(false);
   const [isPrestasiOpen, setIsPrestasiOpen] = useState(false);
   const [isNotisOpen, setIsNotisOpen] = useState(false);
+  const [isZonDropdownOpen, setIsZonDropdownOpen] = useState(false);
+  const zonDropdownRef = useRef<HTMLDivElement>(null);
+  const zonPortalRef = useRef<HTMLDivElement>(null);
   const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | null; }>({ isOpen: false, type: null });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as Node;
+        const isOutsideTrigger = zonDropdownRef.current && !zonDropdownRef.current.contains(target);
+        const isOutsidePortal = zonPortalRef.current && !zonPortalRef.current.contains(target);
+        
+        if (isOutsideTrigger && isOutsidePortal) {
+            setIsZonDropdownOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const initialPjaId = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (project?.pjaId || 0);
 
@@ -1574,7 +1591,62 @@ Jabatan Kejuruteraan` }],
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="group"> <label className={labelClass}>BP</label> <select name="bp" value={formData.bp} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)} </select> </div>
-                    <div className="group"> <label className={labelClass}>Zon</label> <select name="zon" value={formData.zon} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)} </select> </div>
+                    <div className="group" ref={zonDropdownRef}> 
+                      <label className={labelClass}>Zon</label> 
+                      <div className="relative">
+                        <div 
+                          className={`${inputClass} py-2 font-bold cursor-pointer flex items-center justify-between min-h-[42px] ${isGlobalReadOnly ? 'bg-slate-50' : ''}`} 
+                          onClick={() => !isGlobalReadOnly && setIsZonDropdownOpen(!isZonDropdownOpen)}
+                        >
+                          <span className={`${!formData.zon ? 'text-slate-400 font-normal' : ''} truncate pr-2`}>
+                            {formData.zon || 'Pilih...'}
+                          </span>
+                          <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${isZonDropdownOpen ? 'rotate-180' : ''}`} />
+                        </div>
+
+                        {isZonDropdownOpen && createPortal(
+                          <div 
+                            ref={zonPortalRef}
+                            className="fixed bg-white border border-slate-200 rounded-xl shadow-2xl z-[9999] max-h-64 overflow-y-auto p-2 grid grid-cols-2 gap-1 w-72"
+                            style={{ 
+                              top: zonDropdownRef.current ? zonDropdownRef.current.getBoundingClientRect().bottom + 5 : 0,
+                              left: zonDropdownRef.current ? zonDropdownRef.current.getBoundingClientRect().left : 0
+                            }}
+                          >
+                            {ZON_OPTIONS.map(z => {
+                              const currentZons = formData.zon ? formData.zon.split(', ').filter(Boolean) : [];
+                              const isChecked = currentZons.includes(z);
+                              
+                              return (
+                                <div 
+                                  key={z} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    let nextZons;
+                                    if (isChecked) {
+                                      nextZons = currentZons.filter(item => item !== z);
+                                    } else {
+                                      nextZons = [...currentZons, z].sort((a, b) => {
+                                        const numA = parseInt(a.replace('Zon ', ''));
+                                        const numB = parseInt(b.replace('Zon ', ''));
+                                        return numA - numB;
+                                      });
+                                    }
+                                    setFormData(prev => ({ ...prev, zon: nextZons.join(', ') }));
+                                    setHasUnsavedChanges(true);
+                                  }}
+                                  className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${isChecked ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
+                                >
+                                  <span className="text-[11px] font-bold select-none">{z}</span>
+                                  {isChecked && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                                </div>
+                              );
+                            })}
+                          </div>,
+                          document.body
+                        )}
+                      </div>
+                    </div>
                     <div className="group"> <label className={labelClass}>Mukim</label> <select name="mukim" value={formData.mukim || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)} </select> </div>
                     <div className="group"> <label className={labelClass}>Tarikh Buka</label> <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`} /> </div>
                     
