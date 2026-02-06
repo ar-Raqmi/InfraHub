@@ -869,7 +869,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                 // Add Grand Total for company
                 summaryTableBody.push([
-                    { content: 'JUMLAH KOS', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any,
+                    { content: 'JUMLAH', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any,
                     { content: '', styles: { fillColor: [240, 240, 240] } } as any,
                     { content: formatCurrency(group.totalCost).replace('RM', '').trim(), styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any
                 ]);
