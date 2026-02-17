@@ -62,29 +62,29 @@ export type PresetGroup = {
 export type BQTemplateType = 'PERMULAAN_BASIC' | 'PERMULAAN_EMPTY' | 'LONGKANG' | 'EMPTY' | 'CUSTOM';
 
 export interface BQTemplateItemRef {
-    groupId: string;
-    itemId: string;
-    variantId?: string;
+  groupId: string;
+  itemId: string;
+  variantId?: string;
 }
 
 export interface BQTemplateBillDefinition {
-    id: string;
-    title: string;
-    items: (BQTemplateItemRef | BQItem)[];
+  id: string;
+  title: string;
+  items: (BQTemplateItemRef | BQItem)[];
 }
 
 export interface BQTemplateDefinition {
-    id: string;
-    key: BQTemplateType;
-    title: string;
-    subtitle: string;
-    icon: string;
-    color: string;
-    // Structured bills for multi-bill creation
-    bills: BQTemplateBillDefinition[];
-    // Legacy support
-    groupRefs: string[]; 
-    orderIndex?: number;
+  id: string;
+  key: BQTemplateType;
+  title: string;
+  subtitle: string;
+  icon: string;
+  color: string;
+  // Structured bills for multi-bill creation
+  bills: BQTemplateBillDefinition[];
+  // Legacy support
+  groupRefs: string[];
+  orderIndex?: number;
 }
 
 export interface User {
@@ -96,8 +96,8 @@ export interface User {
   email?: string;
   phone?: string;
   department?: string; // Legacy field, keeping for compat
-  avatarUrl?: string; 
-  
+  avatarUrl?: string;
+
   // NEW FIELDS FOR COVER PAGE BINDING
   jawatan?: string;
   bahagian?: string;
@@ -122,7 +122,7 @@ export interface CompanyDetail {
   email: string;
   gred: string; // e.g. "G1"
   registrationNumber?: string;
-  limit?: number; 
+  limit?: number;
 }
 
 export interface VoteDefinition {
@@ -141,7 +141,7 @@ export interface GlobalDimensions {
 export interface CalculationPart {
   id: string;
   label?: string; // Optional: e.g. "Base", "Wall 1"
-  
+
   // Flags
   hasLength: boolean;
   hasWidth: boolean;
@@ -160,22 +160,22 @@ export interface CalculationPart {
 
 export interface BQItem {
   id: string;
-  
+
   // Structure
-  type: 'HEADER' | 'ITEM' | 'NOTE'; 
+  type: 'HEADER' | 'ITEM' | 'NOTE';
   isCollapsed?: boolean; // NEW: Controls visibility of children
-  
+
   // Content
   description: string; // Main Description
   variant?: string; // e.g., "i) Dengan tangan"
-  
+
   // Pricing & Unit
   unit: string;
   rate: number;
-  
+
   // Dimensions for Calculation
   isGlobal?: boolean; // NEW: If true, syncs with location global dims
-  
+
   // --- NEW: Multiple Calculation Parts ---
   calculationParts?: CalculationPart[];
 
@@ -183,11 +183,11 @@ export interface BQItem {
   hasLength?: boolean;
   hasWidth?: boolean;
   hasDepth?: boolean;
-  dimLength?: number; 
-  dimWidth?: number;  
-  dimDepth?: number;  
-  dimMultiplier?: number; 
-  
+  dimLength?: number;
+  dimWidth?: number;
+  dimDepth?: number;
+  dimMultiplier?: number;
+
   // Custom Calculation Override (String Mode)
   isCustomCalc?: boolean;
   customCalc?: string; // The manual text string "80 x 0.5 = 40"
@@ -208,7 +208,8 @@ export interface BQItem {
 export interface BQGroup {
   id: string;
   title: string; // e.g., "KERJA-KERJA PERMULAAN"
-  locationId?: string; // Links to a specific locationRow ID
+  locationId?: string; // act as a fallback for old datas
+  locationIds?: string[]; // NEW: Links to multiple locationRow IDs
   calculationId?: string; // NEW: Links to a unique Global Calculation ID
   items: BQItem[];
 }
@@ -222,7 +223,7 @@ export interface ProjectLocation {
 export interface Project {
   id: number;
   updatedAt?: string; // Tracking for "Recent Changes"
-  
+
   // --- PHASE 1: BQ BUILDING (Yellow - PJA) ---
   namaProjek: string;
   noAduan?: string;
@@ -235,7 +236,7 @@ export interface Project {
   pjaId: number; // The PJA in charge
   kosProjek?: number; // Auto take from BQ
   tarikhBuka: string; // Today's date default
-  
+
   // --- PHASE 2: FILE CREATION (Blue - Admin/PT) ---
   noFail: string;
   noSebutharga?: string; // NEW: No. Sebutharga (e.g. MPS/SH/192/23)
@@ -260,10 +261,10 @@ export interface Project {
   tarikhSiapSebenar?: string; // Tarikh Siap (Pemeriksa)
   prestasi?: string; // Changed to string for % input
   tarikhTuntutanBayaran?: string; // Changed from number amount to date
-  
+
   kosSebenar?: number; // Calculated from BQPelarasan (Capped at kosProjek)
   bqPelarasanExtra?: number; // Extra price overflow (uncapped amount above kosProjek)
-  
+
   ladAmount?: number;
   ladDays?: number;
   locAmount?: number; // Late of Claim Amount (Denda Lewat)
@@ -285,12 +286,12 @@ export interface Project {
   // DATA
   bqData?: BQGroup[]; // Original Contract BQ
   bqDataPelarasan?: BQGroup[]; // Adjusted BQ (Pelarasan)
-  
+
   // Dimensions
   globalDimensions?: GlobalDimensions; // DEPRECATED: Keep for backward compat
   locationDimensions?: Record<string, GlobalDimensions>; // Map location string to dims (Contract)
   locationDimensionsPelarasan?: Record<string, GlobalDimensions>; // NEW: Map location string to dims (Pelarasan)
-  
+
   // NEW DIMENSIONS (BINDED BY BIL NO / CALCULATION ID)
   globalCalculations?: Record<string, GlobalDimensions | GlobalDimensions[]>;
   globalCalculationsPelarasan?: Record<string, GlobalDimensions | GlobalDimensions[]>;
@@ -317,15 +318,15 @@ export const formatCurrency = (amount: number | undefined) => {
 
 export const formatDate = (dateString?: string) => {
   if (!dateString) return '-';
-  
+
   const cleanDate = dateString.split('T')[0];
   const parts = cleanDate.split('-');
-  
+
   if (parts.length === 3) {
-      const [year, month, day] = parts;
-      return `${day}/${month}/${year}`;
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
   }
-  
+
   return dateString;
 };
 
@@ -334,11 +335,11 @@ export const formatDateMalay = (dateString?: string) => {
   const months = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"];
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return '-';
-  
+
   const day = date.getDate();
   const month = months[date.getMonth()];
   const year = date.getFullYear();
-  
+
   return `${day} ${month} ${year}`;
 };
 
