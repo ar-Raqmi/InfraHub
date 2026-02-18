@@ -714,6 +714,36 @@ class SupabaseService {
         const { error: dbError } = await supabase.from('temporary_gallery').delete().eq('id', id);
         if (dbError) throw dbError;
     }
+
+    async cleanupExpiredGalleryImages() {
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+        // 1. Query for expired images
+        const { data: expiredImages, error } = await supabase
+            .from('temporary_gallery')
+            .select('id, image_url')
+            .lt('created_at', twentyFourHoursAgo);
+
+        if (error) {
+            console.error('Error fetching expired images for cleanup:', error);
+            return;
+        }
+
+        if (!expiredImages || expiredImages.length === 0) return;
+
+        console.log(`Found ${expiredImages.length} expired images to cleanup.`);
+
+        // 2. Delete them one by one (to ensure both storage and DB are cleaned)
+        // We use map to execute them in parallel, or for...of for sequential.
+        // Parallel is fine here as Supabase can handle concurrent requests.
+        await Promise.all(expiredImages.map(async (img) => {
+            try {
+                await this.deleteTemporaryImage(img.id, img.image_url);
+            } catch (err) {
+                console.error(`Failed to cleanup image ${img.id}:`, err);
+            }
+        }));
+    }
 }
 
 export const supabaseService = new SupabaseService();

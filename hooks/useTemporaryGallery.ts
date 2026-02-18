@@ -6,6 +6,8 @@ import { TemporaryImage } from '../types';
 export const useTemporaryGallery = () => {
     const queryClient = useQueryClient();
 
+    useAutoCleanupGallery();
+
     const {
         data: galleryImages = [],
         isLoading,
@@ -60,4 +62,14 @@ export const useTemporaryGallery = () => {
         isUploading: uploadMutation.isPending,
         deleteImage: deleteMutation.mutateAsync
     };
+};
+
+export const useAutoCleanupGallery = () => {
+    useEffect(() => {
+        const runCleanup = async () => {
+            console.log("Running gallery cleanup check...");
+            await supabaseService.cleanupExpiredGalleryImages();
+        };
+        runCleanup();
+    }, []);
 };
