@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, Role, CompanyDetail, VoteDefinition } from '../types';
+import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, Role, CompanyDetail, VoteDefinition, TemporaryImage } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -26,6 +26,18 @@ class SupabaseService {
         };
     }
 
+    public mapTemporaryImage(img: any): TemporaryImage {
+        return {
+            id: img.id,
+            createdAt: img.created_at,
+            userId: img.user_id,
+            userFullName: img.user_full_name,
+            imageUrl: img.image_url,
+            projectId: img.project_id,
+            locationTag: img.location_tag
+        };
+    }
+
     public mapProject(p: any): Project {
         return {
             ...p,
@@ -37,7 +49,7 @@ class SupabaseService {
             pjaId: p.pja_id,
             kosProjek: p.kos_projek,
             tarikhBuka: p.tarikh_buka,
-            
+
             noFail: p.no_fail,
             noSebutharga: p.no_sebutharga,
             noInden: p.no_inden,
@@ -53,7 +65,7 @@ class SupabaseService {
             tarikhMulaKerja: p.tarikh_mula_kerja,
             isManualMulaKontrak: p.is_manual_mula_kontrak,
             isManualMulaKerja: p.is_manual_mula_kerja,
-            
+
             tarikhPemeriksaan: p.tarikh_pemeriksaan,
             tarikhSiapSebenar: p.tarikh_siap_sebenar,
             tarikhTuntutanBayaran: p.tarikh_tuntutan_bayaran,
@@ -63,14 +75,14 @@ class SupabaseService {
             locAmount: p.loc_amount,
             locDays: p.loc_days,
             wangTahanan: p.wang_tahanan,
-            
+
             prestasiScores: p.prestasi_scores,
             noInbois: p.no_inbois,
-            
+
             tarikhHantarKewangan: p.tarikh_hantar_kewangan,
             tarikhPadanan: p.tarikh_padanan,
             peratusSiap: p.peratus_siap,
-            
+
             bqData: p.bq_data,
             bqDataPelarasan: p.bq_data_pelarasan,
             globalDimensions: p.global_dimensions,
@@ -78,22 +90,22 @@ class SupabaseService {
             locationDimensionsPelarasan: p.location_dimensions_pelarasan,
             globalCalculations: p.global_calculations,
             globalCalculationsPelarasan: p.global_calculations_pelarasan,
-            
+
             akuJanjiMonth: p.aku_janji_month,
             akuJanjiPanelTitle: p.aku_janji_panel_title,
             akuJanjiFooterText: p.aku_janji_footer_text,
-            
+
             coverJawatan: p.cover_jawatan,
             coverBahagian: p.cover_bahagian,
             coverUnit: p.cover_unit,
             coverSebutHargaText: p.cover_sebut_harga_text,
-            
+
             updatedAt: p.updated_at
         };
     }
-    
+
     private currentUser: User | null = null;
-    
+
     constructor() {
     }
 
@@ -108,7 +120,7 @@ class SupabaseService {
             .ilike('username', username)
             .eq('password', password)
             .single();
-        
+
         if (error || !data) throw new Error('Invalid credentials');
         const user = this.mapUser(data);
         this.setCurrentUser(user);
@@ -127,10 +139,10 @@ class SupabaseService {
         const { data, error } = await supabase
             .from('bulletins')
             .select('*')
-            .order('date', { ascending: false }, )
+            .order('date', { ascending: false },)
             .order('id', { ascending: false });
         if (error) throw error;
-        
+
         return (data || []).map(b => ({
             ...b,
             readBy: b.read_by,
@@ -353,7 +365,7 @@ class SupabaseService {
             cover_sebut_harga_text: project.coverSebutHargaText,
             updated_at: new Date().toISOString()
         });
-        
+
         const { data, error } = await supabase.from('projects').insert(dbProject).select().single();
         if (error) throw error;
         return this.mapProject(data);
@@ -373,7 +385,7 @@ class SupabaseService {
         if (updates.pjaId !== undefined) rawUpdates.pja_id = updates.pjaId;
         if (updates.kosProjek !== undefined) rawUpdates.kos_projek = updates.kosProjek;
         if (updates.tarikhBuka !== undefined) rawUpdates.tarikh_buka = updates.tarikhBuka;
-        
+
         if (updates.noFail !== undefined) rawUpdates.no_fail = updates.noFail;
         if (updates.noSebutharga !== undefined) rawUpdates.no_sebutharga = updates.noSebutharga;
         if (updates.noInden !== undefined) rawUpdates.no_inden = updates.noInden;
@@ -391,7 +403,7 @@ class SupabaseService {
         if (updates.tarikhMulaKerja !== undefined) rawUpdates.tarikh_mula_kerja = updates.tarikhMulaKerja;
         if (updates.isManualMulaKontrak !== undefined) rawUpdates.is_manual_mula_kontrak = updates.isManualMulaKontrak;
         if (updates.isManualMulaKerja !== undefined) rawUpdates.is_manual_mula_kerja = updates.isManualMulaKerja;
-        
+
         if (updates.tarikhPemeriksaan !== undefined) rawUpdates.tarikh_pemeriksaan = updates.tarikhPemeriksaan;
         if (updates.tarikhSiapSebenar !== undefined) rawUpdates.tarikh_siap_sebenar = updates.tarikhSiapSebenar;
         if (updates.prestasi !== undefined) rawUpdates.prestasi = updates.prestasi;
@@ -402,16 +414,16 @@ class SupabaseService {
         if (updates.locAmount !== undefined) rawUpdates.loc_amount = updates.locAmount;
         if (updates.locDays !== undefined) rawUpdates.loc_days = updates.locDays;
         if (updates.wangTahanan !== undefined) rawUpdates.wang_tahanan = updates.wangTahanan;
-        
+
         if (updates.skop !== undefined) rawUpdates.skop = updates.skop;
         if (updates.prestasiScores !== undefined) rawUpdates.prestasi_scores = updates.prestasiScores;
         if (updates.noInbois !== undefined) rawUpdates.no_inbois = updates.noInbois;
-        
+
         if (updates.tarikhHantarKewangan !== undefined) rawUpdates.tarikh_hantar_kewangan = updates.tarikhHantarKewangan;
         if (updates.tarikhPadanan !== undefined) rawUpdates.tarikh_padanan = updates.tarikhPadanan;
         if (updates.peratusSiap !== undefined) rawUpdates.peratus_siap = updates.peratusSiap;
         if (updates.status !== undefined) rawUpdates.status = updates.status;
-        
+
         if (updates.bqData !== undefined) rawUpdates.bq_data = updates.bqData;
         if (updates.bqDataPelarasan !== undefined) rawUpdates.bq_data_pelarasan = updates.bqDataPelarasan;
         if (updates.globalDimensions !== undefined) rawUpdates.global_dimensions = updates.globalDimensions;
@@ -419,16 +431,16 @@ class SupabaseService {
         if (updates.locationDimensionsPelarasan !== undefined) rawUpdates.location_dimensions_pelarasan = updates.locationDimensionsPelarasan;
         if (updates.globalCalculations !== undefined) rawUpdates.global_calculations = updates.globalCalculations;
         if (updates.globalCalculationsPelarasan !== undefined) rawUpdates.global_calculations_pelarasan = updates.globalCalculationsPelarasan;
-        
+
         if (updates.akuJanjiMonth !== undefined) rawUpdates.aku_janji_month = updates.akuJanjiMonth;
         if (updates.akuJanjiPanelTitle !== undefined) rawUpdates.aku_janji_panel_title = updates.akuJanjiPanelTitle;
         if (updates.akuJanjiFooterText !== undefined) rawUpdates.aku_janji_footer_text = updates.akuJanjiFooterText;
-        
+
         if (updates.coverJawatan !== undefined) rawUpdates.cover_jawatan = updates.coverJawatan;
         if (updates.coverBahagian !== undefined) rawUpdates.cover_bahagian = updates.coverBahagian;
         if (updates.coverUnit !== undefined) rawUpdates.cover_unit = updates.coverUnit;
         if (updates.coverSebutHargaText !== undefined) rawUpdates.cover_sebut_harga_text = updates.coverSebutHargaText;
-        
+
         rawUpdates.updated_at = new Date().toISOString();
 
         const dbUpdates = this.sanitizePayload(rawUpdates);
@@ -486,7 +498,7 @@ class SupabaseService {
 
         const { data, error } = await supabase.from('app_users').update(dbUpdates).eq('id', id).select().single();
         if (error) throw error;
-        
+
         const mapped = this.mapUser(data);
         if (this.currentUser && this.currentUser.id === id) {
             this.setCurrentUser(mapped);
@@ -498,18 +510,18 @@ class SupabaseService {
         const { error } = await supabase.from('app_users').delete().eq('id', id);
         if (error) throw error;
     }
-    
+
     private async getSystemSettings(year: number) {
         const { data, error } = await supabase.from('system_settings').select('*').eq('year', year).single();
-        if (error && error.code !== 'PGRST116') throw error; 
+        if (error && error.code !== 'PGRST116') throw error;
         return data || {};
     }
-    
+
     private async updateSystemSettings(year: number, updates: any) {
         const { error } = await supabase
             .from('system_settings')
             .upsert({ year, ...updates }, { onConflict: 'year' });
-        
+
         if (error) throw error;
     }
 
@@ -517,38 +529,38 @@ class SupabaseService {
         const s = await this.getSystemSettings(year);
         return s.companies || [];
     }
-    
+
     async getCompanyOrder(year: number): Promise<string[]> {
         const s = await this.getSystemSettings(year);
         return s.company_order || [];
     }
-    
+
     async saveCompanyOrder(year: number, order: string[]) {
         await this.updateSystemSettings(year, { company_order: order });
     }
-    
+
     async addCompany(year: number, name: string) {
         const s = await this.getSystemSettings(year);
         const companies = s.companies || [];
         const order = s.company_order || [];
-        
+
         if (!companies.includes(name)) {
             companies.push(name);
             order.push(name);
             await this.updateSystemSettings(year, { companies, company_order: order });
         }
     }
-    
+
     async deleteCompany(year: number, name: string) {
         const s = await this.getSystemSettings(year);
         const companies = (s.companies || []).filter((c: string) => c !== name);
         const order = (s.company_order || []).filter((c: string) => c !== name);
         const details = s.company_details || {};
-        if(details[name]) delete details[name];
-        
+        if (details[name]) delete details[name];
+
         await this.updateSystemSettings(year, { companies, company_order: order, company_details: details });
     }
-    
+
     async getCompanyDetails(year: number, name: string): Promise<CompanyDetail | undefined> {
         const s = await this.getSystemSettings(year);
         return s.company_details?.[name];
@@ -558,80 +570,149 @@ class SupabaseService {
         const s = await this.getSystemSettings(year);
         return s.company_details || {};
     }
-    
+
     async saveCompanyDetails(year: number, detail: CompanyDetail) {
         const s = await this.getSystemSettings(year);
         const details = s.company_details || {};
         details[detail.name] = detail;
-        
+
         const companies = s.companies || [];
-        if(!companies.includes(detail.name)) companies.push(detail.name);
-        
+        if (!companies.includes(detail.name)) companies.push(detail.name);
+
         await this.updateSystemSettings(year, { company_details: details, companies });
     }
-    
+
     async getVoteNumbers(year: number): Promise<string[]> {
         const votes = await this.getVotes(year);
         return votes.map(v => v.code);
     }
-    
+
     async getVotes(year: number): Promise<VoteDefinition[]> {
         const s = await this.getSystemSettings(year);
         return s.vote_numbers || [];
     }
-    
+
     async saveVote(year: number, vote: VoteDefinition) {
         const s = await this.getSystemSettings(year);
         let votes = s.vote_numbers || [];
         const index = votes.findIndex((v: any) => v.code === vote.code);
         if (index >= 0) votes[index] = vote;
         else votes.push(vote);
-        
+
         await this.updateSystemSettings(year, { vote_numbers: votes });
     }
-    
+
     async deleteVoteNumber(year: number, voteCode: string) {
         const s = await this.getSystemSettings(year);
         const votes = (s.vote_numbers || []).filter((v: any) => v.code !== voteCode);
         await this.updateSystemSettings(year, { vote_numbers: votes });
     }
-    
+
     async getSebuthargaNumbers(year: number): Promise<string[]> {
         const s = await this.getSystemSettings(year);
         return s.sebutharga_numbers || [];
     }
-    
+
     async addSebuthargaNumber(year: number, sh: string) {
         const s = await this.getSystemSettings(year);
         const nums = s.sebutharga_numbers || [];
-        if(!nums.includes(sh)) {
+        if (!nums.includes(sh)) {
             nums.push(sh);
             await this.updateSystemSettings(year, { sebutharga_numbers: nums });
         }
     }
-    
+
     async deleteSebuthargaNumber(year: number, sh: string) {
         const s = await this.getSystemSettings(year);
         const nums = (s.sebutharga_numbers || []).filter((n: string) => n !== sh);
         await this.updateSystemSettings(year, { sebutharga_numbers: nums });
     }
-    
+
     async getSettings(year: number) {
         const s = await this.getSystemSettings(year);
         return s;
     }
-    
+
     async updateSettings(year: number, settings: any) {
         await this.updateSystemSettings(year, settings);
     }
-    
+
     async getManualFinancials(year: number) {
         const s = await this.getSystemSettings(year);
         return s.manual_financials || { outsource: 0, ydp: 0 };
     }
-    
+
     async saveManualFinancials(year: number, data: { outsource: number, ydp: number }) {
         await this.updateSystemSettings(year, { manual_financials: data });
+    }
+
+    // --- TEMPORARY GALLERY ---
+    async getTemporaryGallery(): Promise<TemporaryImage[]> {
+        const { data, error } = await supabase
+            .from('temporary_gallery')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return (data || []).map(img => this.mapTemporaryImage(img));
+    }
+
+    async uploadTemporaryImage(file: File, userId: number, userFullName: string, projectId?: number, location?: string): Promise<TemporaryImage> {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}_${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // 1. Upload to Storage
+        const { error: uploadError } = await supabase.storage
+            .from('temp_gallery')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: file.type,
+            });
+
+        if (uploadError) {
+            console.error('Storage upload error:', uploadError);
+            throw uploadError;
+        }
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('temp_gallery')
+            .getPublicUrl(filePath);
+
+        // 3. Save to Database
+        const newItem = {
+            user_id: userId,
+            user_full_name: userFullName,
+            image_url: publicUrl,
+            project_id: projectId || null,
+            location_tag: location || null,
+            created_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase.from('temporary_gallery').insert(newItem).select().single();
+        if (error) throw error;
+
+        return this.mapTemporaryImage(data);
+    }
+
+    async deleteTemporaryImage(id: string, imageUrl: string) {
+        // Extract filename from URL (assuming Supabase standard public URL)
+        // URL like: .../storage/v1/object/public/temp_gallery/123_456.jpg
+        const parts = imageUrl.split('/');
+        const fileName = parts[parts.length - 1];
+
+        // 1. Delete from Storage
+        const { error: storageError } = await supabase.storage
+            .from('temp_gallery')
+            .remove([fileName]);
+
+        if (storageError) console.error("Storage delete error", storageError);
+
+        // 2. Delete from Database
+        const { error: dbError } = await supabase.from('temporary_gallery').delete().eq('id', id);
+        if (dbError) throw dbError;
     }
 }
 

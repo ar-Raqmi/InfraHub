@@ -104,6 +104,16 @@ export interface User {
   unit?: string;
 }
 
+export interface TemporaryImage {
+  id: string;
+  createdAt: string;
+  userId: number;
+  userFullName: string;
+  imageUrl: string;
+  projectId?: number;
+  locationTag?: string;
+}
+
 export interface BulletinItem {
   id: string;
   content: string;
