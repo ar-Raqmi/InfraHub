@@ -752,6 +752,15 @@ class SupabaseService {
         return this.mapTemporaryImage(data);
     }
 
+    async updateTemporaryImageLocation(id: string, location: string): Promise<void> {
+        const { error } = await supabase
+            .from('temporary_gallery')
+            .update({ location_tag: location })
+            .eq('id', id);
+
+        if (error) throw error;
+    }
+
     async deleteTemporaryImage(id: string, imageUrl: string) {
         // Extract filename from URL (assuming Supabase standard public URL)
         // URL like: .../storage/v1/object/public/temp_gallery/123_456.jpg

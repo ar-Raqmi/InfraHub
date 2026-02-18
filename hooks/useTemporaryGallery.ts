@@ -47,6 +47,12 @@ export const useTemporaryGallery = () => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] }),
     });
 
+    const updateImageMutation = useMutation({
+        mutationFn: ({ id, location }: { id: string, location: string }) =>
+            supabaseService.updateTemporaryImageLocation(id, location),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] }),
+    });
+
     const deleteMutation = useMutation({
         mutationFn: ({ id, imageUrl }: { id: string, imageUrl: string }) =>
             supabaseService.deleteTemporaryImage(id, imageUrl),
@@ -60,6 +66,8 @@ export const useTemporaryGallery = () => {
         error,
         uploadImage: uploadMutation.mutateAsync,
         isUploading: uploadMutation.isPending,
+        updateImage: updateImageMutation.mutateAsync,
+        isUpdating: updateImageMutation.isPending,
         deleteImage: deleteMutation.mutateAsync
     };
 };

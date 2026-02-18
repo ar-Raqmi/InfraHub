@@ -697,12 +697,17 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     galleryImages,
     isUploading,
     uploadImage,
-    deleteImage
+    deleteImage,
+    updateImage,
+    isUpdating
   } = useTemporaryGallery();
 
   const [gallerySearch, setGallerySearch] = useState('');
   const [showGallery, setShowGallery] = useState(false);
   const [tagLocation, setTagLocation] = useState('');
+  const [editingGalleryId, setEditingGalleryId] = useState<string | null>(null);
+  const [editingLocationTag, setEditingLocationTag] = useState('');
+
   const editorRef = useRef<CanvasMapEditorRef>(null);
   const modalEditorRef = useRef<CanvasMapEditorRef>(null);
   const fileInputMapRef = useRef<HTMLInputElement>(null);
@@ -727,23 +732,54 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   };
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (files.length > 10) {
+      alert("Maksimum 10 gambar dibenarkan pada satu masa.");
+      return;
+    }
 
     try {
-      await uploadImage({
-        file,
-        userId: user.id,
-        userFullName: user.fullName,
-        projectId: selectedProjectId ? Number(selectedProjectId) : undefined,
-        location: tagLocation
-      });
+      const uploadPromises = Array.from(files).map(file =>
+        uploadImage({
+          file,
+          userId: user.id,
+          userFullName: user.fullName,
+          projectId: selectedProjectId ? Number(selectedProjectId) : undefined,
+          location: tagLocation
+        })
+      );
+
+      await Promise.all(uploadPromises);
+
       setTagLocation('');
       e.target.value = '';
     } catch (err) {
       console.error('Upload failed:', err);
       alert("Gagal memuat naik gambar.");
     }
+  };
+
+  const handleStartEdit = (img: TemporaryImage) => {
+    setEditingGalleryId(img.id);
+    setEditingLocationTag(img.locationTag || '');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingGalleryId) return;
+    try {
+      await updateImage({ id: editingGalleryId, location: editingLocationTag });
+      setEditingGalleryId(null);
+      setEditingLocationTag('');
+    } catch (e) {
+      alert("Gagal mengemaskini info gambar.");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingGalleryId(null);
+    setEditingLocationTag('');
   };
 
   const getTimeRemaining = (createdAt: string) => {
@@ -1011,7 +1047,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               <label className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm cursor-pointer hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 shrink-0">
                 <Upload size={16} />
                 Muat Naik
-                <input type="file" className="hidden" accept="image/*" onChange={handleGalleryUpload} />
+                <input type="file" className="hidden" accept="image/*" multiple onChange={handleGalleryUpload} />
               </label>
             )}
           </div>
@@ -1048,18 +1084,49 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                     </button>
                   </div>
                   {/* Info Bar - Solid Titlebar Style */}
-                  <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-slate-900/95 text-white border-t border-white/10 backdrop-blur-sm">
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 p-2.5 bg-slate-900/95 text-white border-t border-white/10 backdrop-blur-sm transition-colors z-20 ${editingGalleryId !== img.id ? 'cursor-pointer hover:bg-slate-800' : ''}`}
+                    onClick={(e) => {
+                      if (editingGalleryId !== img.id) {
+                        e.stopPropagation();
+                        handleStartEdit(img);
+                      }
+                    }}
+                  >
                     <div className="flex flex-col gap-0.5">
                       <div className="text-[11px] font-black uppercase tracking-tight truncate leading-tight text-white/90">
                         {user.role === Role.PJA
                           ? ''
                           : `PJA ${(allUsers.find(u => u.id === img.userId)?.username || img.userFullName || '').toUpperCase()}`}
                       </div>
-                      {img.locationTag && (
-                        <div className="flex items-start gap-1.5 text-emerald-400 pt-0.5">
-                          <MapPin size={14} strokeWidth={3} className="shrink-0 mt-[3px]" />
-                          <span className="text-[13px] font-bold leading-tight break-words text-wrap">{img.locationTag}</span>
+
+                      {editingGalleryId === img.id ? (
+                        <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+                          <input
+                            autoFocus
+                            className="w-full text-[12px] text-slate-900 px-1.5 py-0.5 rounded bg-white outline-none ring-2 ring-emerald-500"
+                            value={editingLocationTag}
+                            onChange={e => setEditingLocationTag(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleSaveEdit();
+                              if (e.key === 'Escape') handleCancelEdit();
+                            }}
+                          />
+                          <button onClick={handleSaveEdit} className="p-0.5 bg-emerald-500 text-white rounded hover:bg-emerald-600"><Check size={20} /></button>
+                          <button onClick={handleCancelEdit} className="p-0.5 bg-red-500 text-white rounded hover:bg-red-600"><X size={20} /></button>
                         </div>
+                      ) : (
+                        img.locationTag ? (
+                          <div className="flex items-start gap-1.5 text-emerald-400 pt-0.5 group/tag">
+                            <MapPin size={14} strokeWidth={3} className="shrink-0 mt-[3px]" />
+                            <span className="text-[13px] font-bold leading-tight break-words text-wrap flex-1">{img.locationTag}</span>
+                            <Pencil size={14} className="opacity-0 group-hover/tag:opacity-100 text-slate-400" />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-slate-500 pt-0.5 group-hover:text-emerald-400 transition-colors">
+                            <Pencil size={14} /> <span className="text-[12px] italic">Tambah Label</span>
+                          </div>
+                        )
                       )}
                     </div>
                   </div>
