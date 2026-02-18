@@ -84,7 +84,10 @@ function App() {
   const handleRefresh = async () => {
     showToast('Mengemaskini data...', 'info');
     // Invalidate ALL queries to force a fresh background fetch
-    await queryClient.invalidateQueries();
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['temporary_gallery'], exact: false }),
+      queryClient.invalidateQueries()
+    ]);
     showToast('Data dikemaskini!', 'success');
   };
 

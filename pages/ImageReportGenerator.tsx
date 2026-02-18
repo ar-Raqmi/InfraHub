@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useUsers } from '../hooks/useUsers';
+import { useTemporaryGallery } from '../hooks/useTemporaryGallery';
 
 const COLORS = [
   '#ef4444',
@@ -103,6 +104,7 @@ const truncateText = (doc: any, text: string, maxWidth: number, suffix = '...'):
 const processImageForPdf = (base64: string, widthMm: number, heightMm: number, mode: 'cover' | 'contain' = 'cover'): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.src = base64;
     img.onload = () => {
       const density = 8;
@@ -690,12 +692,16 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   const [isExporting, setIsExporting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // --- TEMPORARY GALLERY STATE ---
-  const [galleryImages, setGalleryImages] = useState<TemporaryImage[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  // --- TEMPORARY GALLERY STATE (React Query) ---
+  const {
+    galleryImages,
+    isUploading,
+    uploadImage,
+    deleteImage
+  } = useTemporaryGallery();
+
   const [gallerySearch, setGallerySearch] = useState('');
   const [showGallery, setShowGallery] = useState(false);
-
   const [tagLocation, setTagLocation] = useState('');
   const editorRef = useRef<CanvasMapEditorRef>(null);
   const modalEditorRef = useRef<CanvasMapEditorRef>(null);
@@ -711,54 +717,32 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // --- GALLERY LOGIC ---
-  const loadGallery = async () => {
+  const handleGalleryDelete = async (img: TemporaryImage) => {
+    if (!confirm("Padam gambar ini?")) return;
     try {
-      const data = await supabaseService.getTemporaryGallery();
-      setGalleryImages(data);
+      await deleteImage({ id: img.id, imageUrl: img.imageUrl });
     } catch (e) {
-      console.error("Gagal memuatkan galeri", e);
+      alert("Gagal memadam gambar.");
     }
   };
-
-  useEffect(() => {
-    loadGallery();
-    // Refresh every minute to update timers
-    const interval = setInterval(loadGallery, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(true);
     try {
-      await supabaseService.uploadTemporaryImage(
+      await uploadImage({
         file,
-        user.id,
-        user.fullName,
-        selectedProjectId ? Number(selectedProjectId) : undefined,
-        tagLocation
-      );
-      await loadGallery();
+        userId: user.id,
+        userFullName: user.fullName,
+        projectId: selectedProjectId ? Number(selectedProjectId) : undefined,
+        location: tagLocation
+      });
       setTagLocation('');
+      e.target.value = '';
     } catch (err) {
       console.error('Upload failed:', err);
       alert("Gagal memuat naik gambar.");
-    } finally {
-      setIsUploading(false);
-      e.target.value = '';
-    }
-  };
-
-  const handleGalleryDelete = async (img: TemporaryImage) => {
-    if (!confirm("Padam gambar ini?")) return;
-    try {
-      await supabaseService.deleteTemporaryImage(img.id, img.imageUrl);
-      setGalleryImages(prev => prev.filter(i => i.id !== img.id));
-    } catch (e) {
-      alert("Gagal memadam gambar.");
     }
   };
 
