@@ -657,18 +657,73 @@ class SupabaseService {
         return (data || []).map(img => this.mapTemporaryImage(img));
     }
 
+    private async compressImage(file: File): Promise<Blob> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Maximum dimension 1600px
+                    const MAX_SIZE = 1600;
+                    if (width > height) {
+                        if (width > MAX_SIZE) {
+                            height *= MAX_SIZE / width;
+                            width = MAX_SIZE;
+                        }
+                    } else {
+                        if (height > MAX_SIZE) {
+                            width *= MAX_SIZE / height;
+                            height = MAX_SIZE;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return reject(new Error('Canvas context failed'));
+
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Quality 0.7-0.8 typically yields 200-500kb for 1600px images
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) resolve(blob);
+                            else reject(new Error('Canvas toBlob failed'));
+                        },
+                        'image/jpeg',
+                        0.75
+                    );
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    }
+
     async uploadTemporaryImage(file: File, userId: number, userFullName: string, projectId?: number, location?: string): Promise<TemporaryImage> {
-        const fileExt = file.name.split('.').pop();
+        console.log(`Original image size: ${(file.size / 1024).toFixed(2)} KB`);
+
+        // Compress image
+        const compressedBlob = await this.compressImage(file);
+        console.log(`Compressed image size: ${(compressedBlob.size / 1024).toFixed(2)} KB`);
+
+        const fileExt = 'jpg'; // We convert everything to jpeg during compression
         const fileName = `${userId}_${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
 
         // 1. Upload to Storage
         const { error: uploadError } = await supabase.storage
             .from('temp_gallery')
-            .upload(filePath, file, {
+            .upload(filePath, compressedBlob, {
                 cacheControl: '3600',
                 upsert: true,
-                contentType: file.type,
+                contentType: 'image/jpeg',
             });
 
         if (uploadError) {
