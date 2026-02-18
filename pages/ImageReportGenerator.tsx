@@ -699,7 +699,9 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     uploadImage,
     deleteImage,
     updateImage,
-    isUpdating
+    isUpdating,
+    batchUpdateImages,
+    batchDeleteImages
   } = useTemporaryGallery();
 
   const [gallerySearch, setGallerySearch] = useState('');
@@ -707,6 +709,12 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   const [tagLocation, setTagLocation] = useState('');
   const [editingGalleryId, setEditingGalleryId] = useState<string | null>(null);
   const [editingLocationTag, setEditingLocationTag] = useState('');
+
+  // Selection & Batch Action State
+  const [selectedGalleryIds, setSelectedGalleryIds] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const didLongPressRef = useRef(false);
 
   const editorRef = useRef<CanvasMapEditorRef>(null);
   const modalEditorRef = useRef<CanvasMapEditorRef>(null);
@@ -780,6 +788,71 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   const handleCancelEdit = () => {
     setEditingGalleryId(null);
     setEditingLocationTag('');
+  };
+
+  // --- Selection Logic ---
+  const toggleSelection = (id: string) => {
+    const newSet = new Set(selectedGalleryIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedGalleryIds(newSet);
+
+    // Auto-exit selection mode if empty? Optional.
+    if (newSet.size === 0) setIsSelectionMode(false);
+  };
+
+  const handleTouchStart = (id: string) => {
+    didLongPressRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      setIsSelectionMode(true);
+      toggleSelection(id);
+      didLongPressRef.current = true;
+    }, 500); // 500ms long press
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  // --- Batch Actions ---
+  const handleBatchDelete = async () => {
+    if (!confirm(`Padam ${selectedGalleryIds.size} gambar terpilih?`)) return;
+
+    const itemsToDelete = galleryImages
+      .filter(img => selectedGalleryIds.has(img.id))
+      .map(img => ({ id: img.id, imageUrl: img.imageUrl }));
+
+    try {
+      await batchDeleteImages(itemsToDelete);
+      setSelectedGalleryIds(new Set());
+      setIsSelectionMode(false);
+    } catch (e) {
+      alert("Gagal memadam gambar.");
+    }
+  };
+
+  const handleBatchEdit = async () => {
+    const newLocation = prompt("Masukkan label baru untuk gambar terpilih:");
+    if (newLocation === null) return; // Cancelled
+
+    try {
+      await batchUpdateImages({ ids: Array.from(selectedGalleryIds), location: newLocation });
+      setSelectedGalleryIds(new Set());
+      setIsSelectionMode(false);
+    } catch (e) {
+      alert("Gagal mengemaskini gambar.");
+    }
+  };
+
+  const handleCancelSelection = () => {
+    setSelectedGalleryIds(new Set());
+    setIsSelectionMode(false);
   };
 
   const getTimeRemaining = (createdAt: string) => {
@@ -1050,6 +1123,24 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                 <input type="file" className="hidden" accept="image/*" multiple onChange={handleGalleryUpload} />
               </label>
             )}
+
+            {/* Batch Action Bar */}
+            {isSelectionMode && selectedGalleryIds.size > 0 && (
+              <div className="flex items-center gap-2 p-2 bg-slate-900 text-white rounded-xl text-sm animate-in slide-in-from-top-2 fade-in duration-200">
+                <span className="font-bold px-2">{selectedGalleryIds.size} Dipilih</span>
+                <div className="h-4 w-px bg-white/20 mx-1" />
+                <button onClick={handleBatchEdit} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded-lg transition-colors text-emerald-300">
+                  <Pencil size={14} /> Edit
+                </button>
+                <button onClick={handleBatchDelete} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded-lg transition-colors text-red-300">
+                  <Trash2 size={14} /> Padam
+                </button>
+                <div className="flex-1" />
+                <button onClick={handleCancelSelection} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded-lg transition-colors">
+                  <X size={14} /> Batal
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -1060,8 +1151,24 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               </div>
             ) : (
               filteredGallery.map((img) => (
-                <div key={img.id} className="group relative aspect-square bg-slate-100  rounded-2xl overflow-hidden border border-slate-200  hover:shadow-lg transition-all">
-                  <img src={img.imageUrl} alt="Temp" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                <div
+                  key={img.id}
+                  className={`group relative aspect-square bg-slate-100 rounded-2xl overflow-hidden border transition-all ${selectedGalleryIds.has(img.id) ? 'border-emerald-500 ring-2 ring-emerald-500 ring-offset-2' : 'border-slate-200 hover:shadow-lg'}`}
+                  onPointerDown={() => handleTouchStart(img.id)}
+                  onPointerUp={handleTouchEnd}
+                  onPointerLeave={handleTouchEnd}
+                >
+                  <img src={img.imageUrl} alt="Temp" className={`w-full h-full object-cover transition-transform ${selectedGalleryIds.has(img.id) ? 'scale-90' : 'group-hover:scale-110'}`} />
+
+                  {/* Selection Checkmark Overlay */}
+                  {selectedGalleryIds.has(img.id) && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-30 pointer-events-none">
+                      <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in duration-200">
+                        <Check size={24} strokeWidth={3} />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] text-white flex items-center gap-1 font-medium">
                     <Clock size={10} />
                     {getTimeRemaining(img.createdAt)}
@@ -1069,9 +1176,18 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
                     <button
                       onClick={() => {
-                        if (currentStep === 2) { setMapImage(img.imageUrl); }
-                        else if (currentStep === 3) { processImageData(img.imageUrl, 'site'); }
-                        else { alert("Sila pilih langkah pertama/kedua dahulu."); }
+                        if (didLongPressRef.current) {
+                          didLongPressRef.current = false;
+                          return;
+                        }
+
+                        if (isSelectionMode) {
+                          toggleSelection(img.id);
+                        } else {
+                          if (currentStep === 2) { setMapImage(img.imageUrl); }
+                          else if (currentStep === 3) { processImageData(img.imageUrl, 'site'); }
+                          else { alert("Sila pilih langkah pertama/kedua dahulu."); }
+                        }
                       }}
                       className="w-full h-full absolute inset-0 bg-transparent cursor-pointer z-10"
                     >

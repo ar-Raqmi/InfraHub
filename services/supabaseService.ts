@@ -798,8 +798,6 @@ class SupabaseService {
         console.log(`Found ${expiredImages.length} expired images to cleanup.`);
 
         // 2. Delete them one by one (to ensure both storage and DB are cleaned)
-        // We use map to execute them in parallel, or for...of for sequential.
-        // Parallel is fine here as Supabase can handle concurrent requests.
         await Promise.all(expiredImages.map(async (img) => {
             try {
                 await this.deleteTemporaryImage(img.id, img.image_url);
@@ -807,6 +805,40 @@ class SupabaseService {
                 console.error(`Failed to cleanup image ${img.id}:`, err);
             }
         }));
+    }
+
+    async batchUpdateTemporaryImageLocation(ids: string[], location: string): Promise<void> {
+        const { error } = await supabase
+            .from('temporary_gallery')
+            .update({ location_tag: location })
+            .in('id', ids);
+
+        if (error) throw error;
+    }
+
+    async batchDeleteTemporaryImages(items: { id: string, imageUrl: string }[]): Promise<void> {
+        if (items.length === 0) return;
+
+        // 1. Delete from Storage
+        const filenames = items.map(item => {
+            const parts = item.imageUrl.split('/');
+            return parts[parts.length - 1];
+        });
+
+        const { error: storageError } = await supabase.storage
+            .from('temp_gallery')
+            .remove(filenames);
+
+        if (storageError) console.error("Storage delete error", storageError);
+
+        // 2. Delete from Database
+        const ids = items.map(item => item.id);
+        const { error: dbError } = await supabase
+            .from('temporary_gallery')
+            .delete()
+            .in('id', ids);
+
+        if (dbError) throw dbError;
     }
 }
 
