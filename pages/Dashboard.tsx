@@ -696,15 +696,13 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                 Lihat Semua <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
-              {isManagement && (
-                <button
-                  onClick={onNewProject}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 group"
-                >
-                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
-                  <span className="text-xs font-bold tracking-tight whitespace-nowrap">Tambah Projek</span>
-                </button>
-              )}
+              <button
+                onClick={onNewProject}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 group"
+              >
+                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                <span className="text-xs font-bold tracking-tight whitespace-nowrap">Tambah Projek</span>
+              </button>
             </div>
           </div>
 
