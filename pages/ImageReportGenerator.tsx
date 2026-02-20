@@ -30,6 +30,7 @@ import {
   Upload,
   Tag,
   History,
+  RotateCw,
   MapPin
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
@@ -359,6 +360,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
   const [currentShape, setCurrentShape] = useState<Shape | null>(null);
   const [cropRect, setCropRect] = useState<Shape | null>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
+  const [rotation, setRotation] = useState<number | string>(0);
 
   useEffect(() => {
     if (initialImage) {
@@ -368,6 +370,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
       img.onload = () => {
         setBgImage(img);
         setShapes([]);
+        setRotation(0);
       };
     } else {
       setBgImage(null);
@@ -391,6 +394,10 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((Number(rotation) || 0) * Math.PI / 180);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
     if (bgImage) {
       const placement = getImagePlacement();
@@ -458,9 +465,10 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
         ctx.setLineDash([]);
       }
     }
+    ctx.restore();
   };
 
-  useEffect(() => { draw(); }, [shapes, currentShape, bgImage, selectedTool, cropRect]);
+  useEffect(() => { draw(); }, [shapes, currentShape, bgImage, selectedTool, cropRect, rotation]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -477,7 +485,21 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 
   const getMousePos = (e: React.MouseEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (Number(rotation) === 0) return { x, y };
+
+    const cx = canvasRef.current!.width / 2;
+    const cy = canvasRef.current!.height / 2;
+    const rad = -(Number(rotation) || 0) * Math.PI / 180;
+    const dx = x - cx;
+    const dy = y - cy;
+
+    return {
+      x: cx + (dx * Math.cos(rad) - dy * Math.sin(rad)),
+      y: cy + (dx * Math.sin(rad) + dy * Math.cos(rad))
+    };
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -544,6 +566,10 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
     };
   };
 
+  const handleRotate90 = () => {
+    setRotation(prev => (Number(prev) + 90) % 360);
+  };
+
   useImperativeHandle(ref, () => ({
     exportImage: () => {
       const canvas = canvasRef.current;
@@ -558,6 +584,10 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
       const ctx = exportCanvas.getContext('2d');
       if (!ctx) return canvas.toDataURL('image/png');
 
+      ctx.save();
+      ctx.translate(exportCanvas.width / 2, exportCanvas.height / 2);
+      ctx.rotate((Number(rotation) || 0) * Math.PI / 180);
+      ctx.translate(-exportCanvas.width / 2, -exportCanvas.height / 2);
       ctx.drawImage(bgImage, 0, 0);
 
       const scaleFactor = 1 / placement.scale;
@@ -600,6 +630,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
         }
       });
 
+      ctx.restore();
       return exportCanvas.toDataURL('image/png');
     }
   }));
@@ -618,35 +649,92 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
       {!isMobile && (
         <div className="bg-slate-50  p-3 border-b border-slate-200  flex flex-wrap gap-2 items-center justify-between z-10">
           <div className="flex gap-1 items-center">
-            <ToolBtn active={selectedTool === 'select'} onClick={() => setSelectedTool('select')} icon={<MousePointer2 size={16} />} title="View" />
-            <div className="w-px h-5 bg-slate-300  mx-1" />
-            <ToolBtn active={selectedTool === 'crop'} onClick={() => setSelectedTool('crop')} icon={<Crop size={16} />} title="Crop Area" />
-            <div className="w-px h-5 bg-slate-300  mx-1" />
-            <ToolBtn active={selectedTool === 'rect'} onClick={() => setSelectedTool('rect')} icon={<Square size={16} />} title="Rectangle" />
-            <ToolBtn active={selectedTool === 'circle'} onClick={() => setSelectedTool('circle')} icon={<Circle size={16} />} title="Circle" />
-            <ToolBtn active={selectedTool === 'line'} onClick={() => setSelectedTool('line')} icon={<Minus size={16} />} title="Line" />
-            <ToolBtn active={selectedTool === 'arrow'} onClick={() => setSelectedTool('arrow')} icon={<MoveUpRight size={16} />} title="Arrow" />
+            <ToolBtn active={selectedTool === 'select'} onClick={() => setSelectedTool('select')} icon={<MousePointer2 size={20} />} title="View" />
+            <div className="w-px h-5 bg-slate-200  mx-1" />
+
+            <div className="flex items-center gap-2 px-2 py-1 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <button
+                onClick={() => setRotation(prev => (Number(prev) - 90) % 360)}
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+                title="Rotate -90°"
+              >
+                <RotateCw size={18} className="scale-x-[-1]" />
+              </button>
+
+              <div className="flex items-center gap-1.5 min-w-[120px]">
+                <input
+                  type="range" min="-180" max="180" step="1" value={Number(rotation) || 0}
+                  onChange={(e) => setRotation(Number(e.target.value))}
+                  className="w-40 accent-emerald-500 cursor-pointer h-1"
+                />
+                <div className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    value={rotation}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '' || val === '-' || !isNaN(Number(val))) {
+                        setRotation(val);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (rotation === '' || rotation === '-') setRotation(0);
+                      else setRotation(Number(rotation));
+                    }}
+                    className="text-[11px] font-black w-10 text-slate-700 text-center bg-slate-50 border border-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all py-0.5"
+                  />
+                  <span className="text-[11px] font-black text-slate-400">°</span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleRotate90}
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+                title="Rotate +90°"
+              >
+                <RotateCw size={18} />
+              </button>
+
+              {Number(rotation) !== 0 && (
+                <button
+                  onClick={() => setRotation(0)}
+                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100"
+                  title="Reset Orientation"
+                >
+                  <RefreshCw size={16} />
+                </button>
+              )}
+            </div>
+
+            <div className="w-px h-5 bg-slate-200  mx-1" />
+            <ToolBtn active={selectedTool === 'crop'} onClick={() => setSelectedTool('crop')} icon={<Crop size={20} />} title="Crop Area" />
+            <div className="w-px h-5 bg-slate-200  mx-1" />
+            <ToolBtn active={selectedTool === 'rect'} onClick={() => setSelectedTool('rect')} icon={<Square size={20} />} title="Rectangle" />
+            <ToolBtn active={selectedTool === 'circle'} onClick={() => setSelectedTool('circle')} icon={<Circle size={20} />} title="Circle" />
+            <ToolBtn active={selectedTool === 'line'} onClick={() => setSelectedTool('line')} icon={<Minus size={20} />} title="Line" />
+            <ToolBtn active={selectedTool === 'arrow'} onClick={() => setSelectedTool('arrow')} icon={<MoveUpRight size={20} />} title="Arrow" />
           </div>
 
           <div className="flex gap-2 items-center">
             <input
               type="range" min="1" max="15" value={strokeWidth}
               onChange={(e) => setStrokeWidth(Number(e.target.value))}
-              className="w-25 accent-emerald-500 cursor-pointer"
+              className="w-32 accent-emerald-500 cursor-pointer h-1.5"
+              title="Saiz Garisan"
             />
             <div className="flex gap-1">
               {COLORS.map(c => (
                 <button
                   key={c}
-                  className={`w-4 h-4 rounded-full border border-white/20 ${selectedColor === c ? 'ring-2 ring-emerald-500' : ''}`}
+                  className={`w-5 h-5 rounded-full border border-white/20 transition-transform hover:scale-125 ${selectedColor === c ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
                   style={{ backgroundColor: c }}
                   onClick={() => setSelectedColor(c)}
                 />
               ))}
             </div>
             <div className="w-px h-5 bg-slate-300  mx-1" />
-            <button onClick={() => setShapes(prev => prev.slice(0, -1))} className="p-1.5 hover:bg-slate-200  rounded transition-colors"><Undo size={16} /></button>
-            <button onClick={() => setShapes([])} className="p-1.5 hover:bg-red-100 hover:text-red-500 rounded transition-colors"><Trash2 size={16} /></button>
+            <button onClick={() => setShapes(prev => prev.slice(0, -1))} className="p-2.5 hover:bg-slate-200  rounded-xl transition-colors border border-slate-100"><Undo size={20} /></button>
+            <button onClick={() => setShapes([])} className="p-2.5 hover:bg-red-100 hover:text-red-500 rounded-xl transition-colors border border-slate-100"><Trash2 size={20} /></button>
           </div>
         </div>
       )}
@@ -668,7 +756,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 const ToolBtn = ({ active, onClick, icon, title }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string }) => (
   <button
     onClick={onClick} title={title}
-    className={`p-2 rounded-xl transition-colors ${active ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'}`}
+    className={`p-3 rounded-2xl transition-all ${active ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shadow-sm'}`}
   >
 
     {icon}
