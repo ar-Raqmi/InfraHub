@@ -708,6 +708,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         next.peratusSiap = 100;
       }
 
+      if (name === 'tarikhTuntutanBayaran' && value) {
+        next.status = ProjectStatus.TUNTUTAN_BAYARAN;
+        next.peratusSiap = 100;
+      }
+
       return next;
     });
     setHasUnsavedChanges(true);
