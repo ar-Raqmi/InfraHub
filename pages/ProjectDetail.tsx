@@ -425,6 +425,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const zonDropdownRef = useRef<HTMLDivElement>(null);
   const zonPortalRef = useRef<HTMLDivElement>(null);
   const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | null; }>({ isOpen: false, type: null });
+  const [showPelarasanWarning, setShowPelarasanWarning] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1735,10 +1736,54 @@ Jabatan Kejuruteraan` }],
               <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4">
                 <h3 className="text-lg font-bold text-yellow-600 flex items-center gap-3"> <Info className="h-5 w-5" /> BQ Pelarasan Building </h3>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setIsCPCOpen(true)} className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors" > <Award className="w-4 h-4" /> CPC (Siap Kerja) </button>
-                  <button onClick={() => setIsLADOpen(true)} className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors" > <FileWarning className="w-4 h-4" /> Perakuan LAD </button>
-                  <button onClick={() => setIsLoCOpen(true)} className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors" > <FileWarning className="w-4 h-4" /> Perakuan LoC </button>
-                  <button onClick={() => setIsPrestasiOpen(true)} className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors" > <Star className="w-4 h-4" /> Borang Penilaian Prestasi </button>
+                  <button
+                    onClick={() => {
+                      if (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0) {
+                        setShowPelarasanWarning(true);
+                        return;
+                      }
+                      setIsCPCOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors"
+                  >
+                    <Award className="w-4 h-4" /> CPC (Siap Kerja)
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0) {
+                        setShowPelarasanWarning(true);
+                        return;
+                      }
+                      setIsLADOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors"
+                  >
+                    <FileWarning className="w-4 h-4" /> Perakuan LAD
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0) {
+                        setShowPelarasanWarning(true);
+                        return;
+                      }
+                      setIsLoCOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors"
+                  >
+                    <FileWarning className="w-4 h-4" /> Perakuan LoC
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0) {
+                        setShowPelarasanWarning(true);
+                        return;
+                      }
+                      setIsPrestasiOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors"
+                  >
+                    <Star className="w-4 h-4" /> Borang Penilaian Prestasi
+                  </button>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
@@ -1852,6 +1897,23 @@ Jabatan Kejuruteraan` }],
                   {confirmationState.type === 'back' ? 'Ya, Kembali' : confirmationState.type === 'reset_pelarasan' ? 'Ya, Set Semula' : 'Ya, Simpan'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showPelarasanWarning && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 animate-fade-in" onClick={() => setShowPelarasanWarning(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()} >
+            <button onClick={() => setShowPelarasanWarning(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100"> <X className="w-5 h-5" /> </button>
+            <div className="flex flex-col items-center text-center pt-2">
+              <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-6 text-amber-500">
+                <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center"> <AlertCircle className="w-8 h-8 stroke-[1.5]" /> </div>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2 font-jakarta"> Pelarasan Diperlukan </h3>
+              <p className="text-slate-500 mb-8 text-sm leading-relaxed px-4"> Sila sediakan Pelarasan terlebih dahulu sebelum menjana dokumen ini. </p>
+              <button onClick={() => setShowPelarasanWarning(false)} className="w-full py-3.5 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-amber-500/30" > Tutup </button>
             </div>
           </div>
         </div>,
