@@ -714,6 +714,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         next.peratusSiap = 100;
       }
 
+      if (name === 'tarikhPadanan' && value) {
+        next.status = ProjectStatus.SIAP;
+        next.peratusSiap = 100;
+      }
+
       return next;
     });
     setHasUnsavedChanges(true);
