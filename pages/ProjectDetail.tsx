@@ -911,7 +911,12 @@ Jabatan Kejuruteraan` }],
     doc.addPage(); doc.rect(20, 20, 170, 120); doc.rect(20, 145, 170, 120); y = 30; doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("ULASAN JURUTERA", 25, y); y += 10;
     doc.setFontSize(10.5);
     const titleLines = doc.splitTextToSize(formData.namaProjek?.toUpperCase() || '', 160); doc.text(titleLines, 25, y); y += (titleLines.length * 5) + 10;
-    doc.setFontSize(9); doc.text("Anggaran Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8; doc.text("Tempoh Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8; doc.text("Lantikan", 25, y); doc.text(": ___________________________________________________________", 60, y);
+    doc.setFontSize(9);
+    doc.text("Anggaran Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8;
+    doc.text("Tempoh Kontrak", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8;
+    doc.text("Lantikan", 25, y); doc.text(": ___________________________________________________________", 60, y); y += 8;
+    doc.text("________________________________________________________________________________", 25, y); y += 8;
+    doc.text("________________________________________________________________________________", 25, y); y += 8;
     y = 125; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);
     y = 155; doc.setFontSize(11); doc.text("ULASAN PENGARAH", 25, y); y += 10; doc.setFontSize(10.5); doc.setFont("helvetica", "normal");
     const ulasanText = `Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) Bil. ${meetingNumber} yang bersidang pada ${meetingDate} dengan rotasi bagi syarikat :-`;
