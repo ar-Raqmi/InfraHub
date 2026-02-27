@@ -74,6 +74,7 @@ class SupabaseService {
             ladDays: p.lad_days,
             locAmount: p.loc_amount,
             locDays: p.loc_days,
+            isLocDeductionEnabled: p.is_loc_deduction_enabled,
             wangTahanan: p.wang_tahanan,
 
             prestasiScores: p.prestasi_scores,
@@ -341,6 +342,7 @@ class SupabaseService {
             lad_days: project.ladDays,
             loc_amount: project.locAmount,
             loc_days: project.locDays,
+            is_loc_deduction_enabled: project.isLocDeductionEnabled,
             wang_tahanan: project.wangTahanan,
             skop: project.skop,
             prestasi_scores: project.prestasiScores,
@@ -413,6 +415,7 @@ class SupabaseService {
         if (updates.ladDays !== undefined) rawUpdates.lad_days = updates.ladDays;
         if (updates.locAmount !== undefined) rawUpdates.loc_amount = updates.locAmount;
         if (updates.locDays !== undefined) rawUpdates.loc_days = updates.locDays;
+        if (updates.isLocDeductionEnabled !== undefined) rawUpdates.is_loc_deduction_enabled = updates.isLocDeductionEnabled;
         if (updates.wangTahanan !== undefined) rawUpdates.wang_tahanan = updates.wangTahanan;
 
         if (updates.skop !== undefined) rawUpdates.skop = updates.skop;

@@ -460,7 +460,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     noInbois: '',
     isManualMulaKontrak: project?.isManualMulaKontrak || false,
     isManualMulaKerja: project?.isManualMulaKerja || false,
-    isLocDeductionEnabled: project?.isLocDeductionEnabled ?? true
+    isLocDeductionEnabled: project?.isLocDeductionEnabled ?? false
   });
 
   const isPJA = currentUser?.role === Role.PJA;
