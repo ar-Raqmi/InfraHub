@@ -1500,11 +1500,12 @@ Jabatan Kejuruteraan` }],
     const valWT = Number(formData.wangTahanan) || 0;
     const valLAD = Number(formData.ladAmount) || 0;
     const valLoC = Number(formData.locAmount) || 0;
-    const finalPayment = valBQLarasRaw - valWT - valLAD - valLoC;
+    const valBase = Math.min(valBQLarasRaw, valBQAsal);
+    const finalPayment = valBase - valWT - valLAD - valLoC;
 
     const calculationData = [
       ["HARGA KONTRAK", formatCurrency(valBQAsal).replace('RM', '').trim()],
-      ["POTONGAN", valPotongan !== 0 ? formatCurrency(valPotongan).replace('RM', '').trim() : '-'],
+      ["POTONGAN", valPotongan > 0 ? formatCurrency(valPotongan).replace('RM', '').trim() : '-'],
       ["WANG TAHANAN", valWT > 0 ? `-${formatCurrency(valWT).replace('RM', '').trim()}` : '-'],
       ["LAD", valLAD > 0 ? `-${formatCurrency(valLAD).replace('RM', '').trim()}` : '-'],
       ["LOC", valLoC > 0 ? `-${formatCurrency(valLoC).replace('RM', '').trim()}` : '-'],
