@@ -400,10 +400,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
     const recalculateQtyFromParts = (parts: CalculationPart[]): number => {
         return parts.reduce((acc, part) => {
             let product = 1;
-            if (part.hasLength) product *= part.length;
-            if (part.hasWidth) product *= part.width;
-            if (part.hasDepth) product *= part.depth;
-            return acc + (product * part.multiplier);
+            if (part.hasLength) product *= (part.length || 0);
+            if (part.hasWidth) product *= (part.width || 0);
+            if (part.hasDepth) product *= (part.depth || 0);
+            const res = product * (part.multiplier || 0);
+            return acc + (isNaN(res) ? 0 : res);
         }, 0);
     };
 

@@ -318,8 +318,8 @@ export interface Project {
   coverSebutHargaText?: string; // Multiline text for Page 2
 }
 
-export const formatCurrency = (amount: number | undefined) => {
-  if (amount === undefined) return '-';
+export const formatCurrency = (amount: number | undefined | null) => {
+  if (amount === undefined || amount === null || isNaN(Number(amount))) return '-';
   return new Intl.NumberFormat('ms-MY', {
     style: 'currency',
     currency: 'MYR',

@@ -656,7 +656,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
 
   useEffect(() => {
     const bqSum = formData.bqDataPelarasan?.reduce((acc, group) => {
-      return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
+      const gSum = group.items.reduce((itemSum, item) => {
+        const val = Number(item.amount) || 0;
+        return itemSum + (isNaN(val) ? 0 : val);
+      }, 0);
+      return acc + gSum;
     }, 0);
 
     const rawAdjustedBqSum = (bqSum === 0 && (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0))
@@ -949,7 +953,7 @@ Jabatan Kejuruteraan` }],
 
         const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
         const activeParts = rawParts.filter(p =>
-          (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1
+          (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1
         );
 
         let hideMainValues = activeParts.length > 0;
@@ -957,7 +961,7 @@ Jabatan Kejuruteraan` }],
 
         if (activeParts.length === 1) {
           const p = activeParts[0];
-          const hasDimensions = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
+          const hasDimensions = (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number');
 
           if (!hasDimensions) {
             showSubRows = false;
@@ -982,15 +986,15 @@ Jabatan Kejuruteraan` }],
         if (showSubRows && activeParts.length > 0) {
           activeParts.forEach(p => {
             let product = 1;
-            if (p.hasLength) product *= p.length;
-            if (p.hasWidth) product *= p.width;
-            if (p.hasDepth) product *= p.depth;
+            if (p.hasLength && typeof p.length === 'number') product *= p.length;
+            if (p.hasWidth && typeof p.width === 'number') product *= p.width;
+            if (p.hasDepth && typeof p.depth === 'number') product *= p.depth;
             const partQtyVal = product * p.multiplier;
             const partQty = partQtyVal % 1 === 0 ? partQtyVal : parseFloat(partQtyVal.toFixed(2));
             const partAmount = partQtyVal * item.rate;
 
             const partsStr = [];
-            const hasDim = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
+            const hasDim = (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number');
             if (p.hasLength) partsStr.push(`${p.length}m(P)`);
             if (p.hasWidth) partsStr.push(`${p.width}m(L)`);
             if (p.hasDepth) partsStr.push(`${p.depth}m(T)`);
@@ -1177,28 +1181,29 @@ Jabatan Kejuruteraan` }],
         const textColor = isAddition ? [0, 80, 200] : [0, 0, 0];
 
         const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
-        const activeParts = rawParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
+        const activeParts = rawParts.filter(p => (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
 
         const rawOrigParts = (originalItem && !isHeader && originalItem.calculationParts) ? originalItem.calculationParts : [];
-        const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0) || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
+        const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
 
         const fmtQty = (val: number | undefined) => {
-          if (val === undefined || val === 0) return '';
+          if (val === undefined || val === null || isNaN(val)) return '';
           return val % 1 === 0 ? val.toString() : parseFloat(val.toFixed(2)).toString();
         };
-        const fmtAmt = (val: number | undefined, allowZero: boolean = false) => {
-          if (val === undefined) return '';
+        const fmtAmt = (val: number | undefined, allowZero: boolean = true) => {
+          if (val === undefined || val === null || isNaN(val)) return '';
           if (val === 0 && !allowZero) return '';
           return formatCurrency(val).replace('RM', '');
         };
 
         const getDimStr = (p: any, includeItemDesc: boolean = false) => {
+          if (!p) return includeItemDesc ? (item.description || '') : '';
           const partsStr = [];
-          const hasDimensions = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
+          const hasDimensions = (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number');
 
-          if (p.hasLength) partsStr.push(`${p.length}m(P)`);
-          if (p.hasWidth) partsStr.push(`${p.width}m(L)`);
-          if (p.hasDepth) partsStr.push(`${p.depth}m(T)`);
+          if (p.hasLength && typeof p.length === 'number') partsStr.push(`${p.length}m(P)`);
+          if (p.hasWidth && typeof p.width === 'number') partsStr.push(`${p.width}m(L)`);
+          if (p.hasDepth && typeof p.depth === 'number') partsStr.push(`${p.depth}m(T)`);
 
           let str = partsStr.join(' x ');
 
@@ -1305,10 +1310,13 @@ Jabatan Kejuruteraan` }],
           activeParts.forEach(p => {
             const pOrig = activeOrigParts.find(op => op.id === p.id);
             if (pOrig) processedOrigIds.add(pOrig.id);
-            let product = 1; if (p.hasLength) product *= p.length; if (p.hasWidth) product *= p.width; if (p.hasDepth) product *= p.depth;
+            let product = 1;
+            if (p.hasLength && typeof p.length === 'number') product *= p.length;
+            if (p.hasWidth && typeof p.width === 'number') product *= p.width;
+            if (p.hasDepth && typeof p.depth === 'number') product *= p.depth;
             const pQtyVal = product * p.multiplier;
             const pAmt = pQtyVal * item.rate;
-            const hasDimensions = (p.hasLength && p.length > 0) || (p.hasWidth && p.width > 0) || (p.hasDepth && p.depth > 0);
+            const hasDimensions = (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number');
             const isPartInlineType = !hasDimensions && activeParts.length === 1;
             const dimStr = getDimStr(p, isPartInlineType);
 
@@ -1540,7 +1548,13 @@ Jabatan Kejuruteraan` }],
     doc.save(`BQ_Pelarasan_${formData.noFail || 'Draft'}.pdf`);
   };
 
-  const grandTotal = formData.bqData?.reduce((acc, group) => { return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0); }, 0) || 0;
+  const grandTotal = formData.bqData?.reduce((acc, group) => {
+    const gSum = group.items.reduce((itemSum, item) => {
+      const val = Number(item.amount) || 0;
+      return itemSum + (isNaN(val) ? 0 : val);
+    }, 0);
+    return acc + gSum;
+  }, 0) || 0;
   const finalTotalDisplay = formData.kosSebenar;
 
   const actionButtons = (
@@ -1610,7 +1624,7 @@ Jabatan Kejuruteraan` }],
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
               <h3 className="text-lg font-bold text-yellow-600 mb-6 flex items-center gap-3"> <Zap className="h-5 w-5" /> Maklumat Asas (PJA) </h3>
               <div className="flex flex-col gap-6">
-                <div className="group w-full"> <label className={labelClass}>Cadangan Kerja (Nama Projek)</label> <textarea name="namaProjek" value={formData.namaProjek} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isGlobalReadOnly} className={`${inputClass} min-h-[60px] text-sm font-bold resize-y uppercase`} placeholder="CADANGAN KERJA-KERJA..." /> </div>
+                <div className="group w-full"> <label className={labelClass}>Cadangan Kerja (Nama Projek)</label> <textarea name="namaProjek" value={formData.namaProjek || ''} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isGlobalReadOnly} className={`${inputClass} min-h-[60px] text-sm font-bold resize-y uppercase`} placeholder="CADANGAN KERJA-KERJA..." /> </div>
                 <div className="group w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2"> <div className="w-1 h-3 bg-emerald-500 rounded-full"></div> <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lokasi & No. Aduan</label> </div>
@@ -1628,7 +1642,7 @@ Jabatan Kejuruteraan` }],
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="group"> <label className={labelClass}>BP</label> <select name="bp" value={formData.bp} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)} </select> </div>
+                  <div className="group"> <label className={labelClass}>BP</label> <select name="bp" value={formData.bp || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)} </select> </div>
                   <div className="group" ref={zonDropdownRef}>
                     <label className={labelClass}>Zon</label>
                     <div className="relative">
@@ -1686,7 +1700,7 @@ Jabatan Kejuruteraan` }],
                     </div>
                   </div>
                   <div className="group"> <label className={labelClass}>Mukim</label> <select name="mukim" value={formData.mukim || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`}> <option value="">Pilih...</option> {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)} </select> </div>
-                  <div className="group"> <label className={labelClass}>Tarikh Buka</label> <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`} /> </div>
+                  <div className="group"> <label className={labelClass}>Tarikh Buka</label> <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`} /> </div>
 
                   <div className="group">
                     <label className={labelClass}>Pegawai (PJA)</label>
@@ -1724,12 +1738,12 @@ Jabatan Kejuruteraan` }],
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
               <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4"> <h3 className="text-lg font-bold text-blue-600 flex items-center gap-3"> <Folder className="h-5 w-5" /> Maklumat Fail & Kontrak (PT) </h3> <button onClick={() => setIsNotisOpen(true)} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors shadow-red-500/20" > <Megaphone className="w-4 h-4" /> Jana Notis </button> </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
-                <div className="group"> <label className={labelClass}>No. Fail</label> <input type="text" name="noFail" value={formData.noFail} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
-                <div className="group lg:col-span-2"> <label className={labelClass}>Nama Syarikat</label> <select name="namaSyarikat" value={formData.namaSyarikat} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih Syarikat...</option> {companies.map(c => <option key={c} value={c}>{c}</option>)} </select> </div>
-                <div className="group"> <label className={labelClass}>Bulan</label> <select name="bulan" value={formData.bulan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih...</option> {['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'].map(m => (<option key={m} value={m}>{m}</option>))} </select> </div>
-                <div className="group"> <label className={labelClass}>No. Vot</label> <select name="noVote" value={formData.noVote} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih Vot...</option> {voteNumbers.map(v => <option key={v.code} value={v.code}>{v.code} ({v.name})</option>)} </select> </div>
-                <div className="group"> <label className={labelClass}>Tarikh Lantikan</label> <StrictDateInput name="tarikhLantikan" value={formData.tarikhLantikan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
-                <div className="group"> <label className={labelClass}>Tarikh BPP</label> <StrictDateInput name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                <div className="group"> <label className={labelClass}>No. Fail</label> <input type="text" name="noFail" value={formData.noFail || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                <div className="group lg:col-span-2"> <label className={labelClass}>Nama Syarikat</label> <select name="namaSyarikat" value={formData.namaSyarikat || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih Syarikat...</option> {companies.map(c => <option key={c} value={c}>{c}</option>)} </select> </div>
+                <div className="group"> <label className={labelClass}>Bulan</label> <select name="bulan" value={formData.bulan || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih...</option> {['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'].map(m => (<option key={m} value={m}>{m}</option>))} </select> </div>
+                <div className="group"> <label className={labelClass}>No. Vot</label> <select name="noVote" value={formData.noVote || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih Vot...</option> {voteNumbers.map(v => <option key={v.code} value={v.code}>{v.code} ({v.name})</option>)} </select> </div>
+                <div className="group"> <label className={labelClass}>Tarikh Lantikan</label> <StrictDateInput name="tarikhLantikan" value={formData.tarikhLantikan || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                <div className="group"> <label className={labelClass}>Tarikh BPP</label> <StrictDateInput name="tarikhCetakanBpp" value={formData.tarikhCetakanBpp || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
                 <div className="group"> <label className={labelClass}>Tempoh Kontrak</label> <div className="flex gap-2"> <input type="number" value={tempohVal || ''} onChange={(e) => {
                   setTempohVal(Number(e.target.value));
                   setHasUnsavedChanges(true);
@@ -1737,15 +1751,15 @@ Jabatan Kejuruteraan` }],
                   setTempohUnit(e.target.value as any);
                   setHasUnsavedChanges(true);
                 }} disabled={isPTSectionReadOnly} className={`${inputClass} w-32`} > <option value="Minggu">Minggu</option> <option value="Bulan">Bulan</option> <option value="Tahun">Tahun</option> </select> </div> </div>
-                <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kontrak</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setFormData(prev => ({ ...prev, isManualMulaKontrak: !formData.isManualMulaKontrak }))} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKontrak ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKontrak ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKontrak ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKontrak" value={formData.tarikhMulaKontrak} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKontrak} className={`${inputClass} ${(!formData.isManualMulaKontrak || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKontrak} /> {!formData.isManualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari BPP (Business Days)</p>} </div>
-                <div className="group"> <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label> <StrictDateInput name="tarikhTamatKontrak" value={formData.tarikhTamatKontrak} onChange={() => { }} className={`${inputClass} bg-slate-50 cursor-not-allowed`} readOnly /> </div>
+                <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kontrak</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setFormData(prev => ({ ...prev, isManualMulaKontrak: !formData.isManualMulaKontrak }))} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKontrak ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKontrak ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKontrak ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKontrak" value={formData.tarikhMulaKontrak || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKontrak} className={`${inputClass} ${(!formData.isManualMulaKontrak || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKontrak} /> {!formData.isManualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari BPP (Business Days)</p>} </div>
+                <div className="group"> <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label> <StrictDateInput name="tarikhTamatKontrak" value={formData.tarikhTamatKontrak || ''} onChange={() => { }} className={`${inputClass} bg-slate-50 cursor-not-allowed`} readOnly /> </div>
                 <div className="group"> <label className={labelClass}>No. BPP</label> <input type="text" name="noBpp" value={formData.noBpp || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
-                <div className="group"> <label className={labelClass}>Tarikh Serah Tapak</label> <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
-                <div className="group"> <label className={labelClass}>ISO (BPP ke Serah Tapak)</label> <input type="text" name="iso" value={formData.iso} className={`${inputClass} bg-slate-50 font-mono`} readOnly placeholder="Auto calc..." /> <p className="text-[10px] text-slate-400 mt-1 italic">Hari bekerja sahaja</p> </div>
+                <div className="group"> <label className={labelClass}>Tarikh Serah Tapak</label> <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                <div className="group"> <label className={labelClass}>ISO (BPP ke Serah Tapak)</label> <input type="text" name="iso" value={formData.iso || ''} className={`${inputClass} bg-slate-50 font-mono`} readOnly placeholder="Auto calc..." /> <p className="text-[10px] text-slate-400 mt-1 italic">Hari bekerja sahaja</p> </div>
                 <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kerja</label> {!isPTSectionReadOnly && <button type="button" onClick={() => {
                   setFormData(prev => ({ ...prev, isManualMulaKerja: !formData.isManualMulaKerja }));
                   setHasUnsavedChanges(true);
-                }} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKerja ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKerja ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKerja ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKerja" value={formData.tarikhMulaKerja} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKerja} className={`${inputClass} ${(!formData.isManualMulaKerja || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKerja} /> {!formData.isManualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari Serah Tapak (Business Days)</p>} </div>
+                }} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKerja ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKerja ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKerja ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKerja" value={formData.tarikhMulaKerja || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKerja} className={`${inputClass} ${(!formData.isManualMulaKerja || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKerja} /> {!formData.isManualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari Serah Tapak (Business Days)</p>} </div>
                 <div className="group"> <label className={labelClass}>No. Inden</label> <input type="text" name="noInden" value={formData.noInden || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} placeholder="cth: A00321423" /> </div>
                 <div className="group"> <label className={labelClass}>No. Sebutharga</label> <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih No. Sebutharga...</option> {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)} </select> </div>
               </div>
@@ -1814,8 +1828,8 @@ Jabatan Kejuruteraan` }],
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
-                <div className="group"> <label className={labelClass}>Tarikh Pemeriksaan</label> <StrictDateInput name="tarikhPemeriksaan" value={formData.tarikhPemeriksaan} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
-                <div className="group"> <label className={labelClass}>Tarikh Siap (Sebenar)</label> <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
+                <div className="group"> <label className={labelClass}>Tarikh Pemeriksaan</label> <StrictDateInput name="tarikhPemeriksaan" value={formData.tarikhPemeriksaan || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
+                <div className="group"> <label className={labelClass}>Tarikh Siap (Sebenar)</label> <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
                 <div className="group"> <label className={labelClass}>Prestasi (%) - Auto</label> <div className="relative"> <input type="text" name="prestasi" value={formData.prestasi || ''} readOnly className={`${inputClass} bg-slate-100 text-slate-500 cursor-not-allowed`} placeholder="0%" /> </div> </div>
                 <div className="group"> <label className={labelClass}>Tarikh Tuntutan Bayaran</label> <StrictDateInput name="tarikhTuntutanBayaran" value={formData.tarikhTuntutanBayaran || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
                 <div className="group"> <label className={labelClass}>Hari LAD (Auto)</label> <input type="number" name="ladDays" value={formData.ladDays || 0} onChange={() => { }} className={`${inputClass} bg-slate-100 text-red-500 font-bold`} readOnly /> </div>
@@ -1844,7 +1858,7 @@ Jabatan Kejuruteraan` }],
                   <input type="number" name="locDays" value={formData.locDays || 0} onChange={() => { }} className={`${inputClass} bg-slate-100 text-amber-600 font-bold ${formData.isLocDeductionEnabled === false ? 'opacity-50' : ''}`} readOnly />
                 </div>
                 <div className="group"> <label className={labelClass}>Jumlah LoC (RM) (Auto)</label> <input type="text" name="locAmount" value={formatCurrency(formData.locAmount || 0)} onChange={() => { }} className={`${inputClass} bg-slate-100 text-amber-600 font-bold`} readOnly /> </div>
-                <div className="group"> <label className={labelClass}>Wang Tahanan (RM)</label> <input type="number" name="wangTahanan" value={formData.wangTahanan} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} placeholder="0.00" /> </div>
+                <div className="group"> <label className={labelClass}>Wang Tahanan (RM)</label> <input type="number" name="wangTahanan" value={formData.wangTahanan ?? ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} placeholder="0.00" /> </div>
                 <div className="group"> <label className={labelClass}>Harga Kontrak (Asal)</label> <div className={`${inputClass} bg-slate-50 text-slate-500 font-bold flex items-center`}> {formatCurrency(formData.kosProjek || 0)} </div> </div>
                 <div className="group"> <label className={labelClass}>Harga Akhir (Bersih)</label> <div className={`${inputClass} bg-slate-100 font-bold flex items-center ${(formData.kosSebenar || 0) < (formData.kosProjek || 0) ? 'text-red-600' : (formData.kosSebenar || 0) > (formData.kosProjek || 0) ? 'text-blue-600' : 'text-slate-600'}`}> {formatCurrency(formData.kosSebenar)} </div> </div>
               </div>
@@ -1885,8 +1899,8 @@ Jabatan Kejuruteraan` }],
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4"> <h3 className="text-lg font-bold text-orange-600 flex items-center gap-3"> <CheckCircle className="h-5 w-5" /> Closing File / Project  </h3> </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
-                <div className="group"> <label className={labelClass}>Tarikh Hantar Kewangan</label> <StrictDateInput name="tarikhHantarKewangan" value={formData.tarikhHantarKewangan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
-                <div className="group"> <label className={labelClass}>Tarikh Padanan</label> <StrictDateInput name="tarikhPadanan" value={formData.tarikhPadanan} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                <div className="group"> <label className={labelClass}>Tarikh Hantar Kewangan</label> <StrictDateInput name="tarikhHantarKewangan" value={formData.tarikhHantarKewangan || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
+                <div className="group"> <label className={labelClass}>Tarikh Padanan</label> <StrictDateInput name="tarikhPadanan" value={formData.tarikhPadanan || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
               </div>
             </div>
           </div>

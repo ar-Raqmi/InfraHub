@@ -6,15 +6,15 @@ import { createItem, createHeader } from '../data/bqPresets';
 import { ChevronDown, ChevronRight, Save, Ruler, ChevronUp, Link, Unlink, PlusCircle, MinusCircle, FolderPlus, Calculator, MapPin, Layers, Info, AlertTriangle, X, Type, List, Trash2, Bookmark, Plus, Search, History, Clock, LayoutTemplate, RotateCcw, Play, FileText, FilePlus, Edit3, Grid, CheckSquare, ClipboardList, Box, Package, Truck, Wrench, Hammer, Zap, Briefcase, Archive, Star, Award, PenTool } from 'lucide-react';
 
 interface BQPelarasanEditorProps {
-  originalData: BQGroup[];
-  pelarasanData: BQGroup[];
-  onDataChange: (data: BQGroup[]) => void;
-  projectData: Project;
-  isPrintView?: boolean;
-  locationRows: ProjectLocation[];
-  globalCalculationsPelarasan?: Record<string, GlobalDimensions | GlobalDimensions[]>;
-  onGlobalCalculationsPelarasanChange: (calcId: string, dims: GlobalDimensions[]) => void;
-  readOnly?: boolean;
+    originalData: BQGroup[];
+    pelarasanData: BQGroup[];
+    onDataChange: (data: BQGroup[]) => void;
+    projectData: Project;
+    isPrintView?: boolean;
+    locationRows: ProjectLocation[];
+    globalCalculationsPelarasan?: Record<string, GlobalDimensions | GlobalDimensions[]>;
+    onGlobalCalculationsPelarasanChange: (calcId: string, dims: GlobalDimensions[]) => void;
+    readOnly?: boolean;
 }
 
 const ICON_MAP = {
@@ -67,15 +67,15 @@ const getColorStyles = (color: string) => {
     return colors[color] || colors['blue'];
 };
 
-const AutoResizeTextarea = ({ 
-    value, 
-    onChange, 
-    className, 
+const AutoResizeTextarea = ({
+    value,
+    onChange,
+    className,
     placeholder,
     autoFocus,
     minHeight = 24,
     disabled
-}: { 
+}: {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     className?: string;
@@ -107,16 +107,16 @@ const AutoResizeTextarea = ({
     );
 };
 
-const DimensionInput = ({ 
-    value, 
-    onChange, 
-    className, 
+const DimensionInput = ({
+    value,
+    onChange,
+    className,
     placeholder,
     disabled
-}: { 
-    value: number, 
-    onChange: (val: number) => void, 
-    className?: string, 
+}: {
+    value: number,
+    onChange: (val: number) => void,
+    className?: string,
     placeholder?: string,
     disabled?: boolean
 }) => {
@@ -124,8 +124,8 @@ const DimensionInput = ({
     useEffect(() => {
         const parsedLocal = parseFloat(localValue);
         if (parsedLocal !== value) {
-             if (value === 0 && (localValue === '' || isNaN(parsedLocal))) return;
-             setLocalValue(value?.toString() || '');
+            if (value === 0 && (localValue === '' || isNaN(parsedLocal))) return;
+            setLocalValue(value?.toString() || '');
         }
     }, [value]);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,11 +135,11 @@ const DimensionInput = ({
         if (!isNaN(parsed)) { onChange(parsed); } else { if (val === '') onChange(0); }
     };
     return (
-        <input 
-            type="number" 
-            value={localValue} 
-            onChange={handleChange} 
-            className={className} 
+        <input
+            type="number"
+            value={localValue}
+            onChange={handleChange}
+            className={className}
             placeholder={placeholder}
             step="any"
             disabled={disabled}
@@ -152,22 +152,22 @@ const getItemLevel = (item: BQItem): 0 | 1 | 2 => {
         const isUppercase = item.description === item.description.toUpperCase() && /[A-Z]/.test(item.description);
         return isUppercase ? 0 : 1;
     }
-    return 2; 
+    return 2;
 };
 
 function toRoman(num: number): string {
-  const lookup: { [key: string]: number } = {m:1000,cm:900,d:500,cd:400,c:100,xc:90,l:50,xl:40,x:10,ix:9,v:5,iv:4,i:1};
-  let roman = '';
-  for (let i in lookup ) { while ( num >= lookup[i] ) { roman += i; num -= lookup[i]; } }
-  return roman;
+    const lookup: { [key: string]: number } = { m: 1000, cm: 900, d: 500, cd: 400, c: 100, xc: 90, l: 50, xl: 40, x: 10, ix: 9, v: 5, iv: 4, i: 1 };
+    let roman = '';
+    for (let i in lookup) { while (num >= lookup[i]) { roman += i; num -= lookup[i]; } }
+    return roman;
 }
 
 const getAutoNumber = (items: BQItem[], currentIndex: number) => {
     let sectionIndex = 0; let itemIndex = 0; let variantIndex = 0; let lastHeaderType: 'NONE' | 'SECTION' | 'ITEM_PARENT' = 'NONE';
     for (let i = 0; i <= currentIndex; i++) {
         const item = items[i]; const level = getItemLevel(item);
-        if (level === 0) { sectionIndex++; itemIndex = 0; variantIndex = 0; lastHeaderType = 'SECTION'; } 
-        else if (level === 1) { itemIndex++; variantIndex = 0; lastHeaderType = 'ITEM_PARENT'; } 
+        if (level === 0) { sectionIndex++; itemIndex = 0; variantIndex = 0; lastHeaderType = 'SECTION'; }
+        else if (level === 1) { itemIndex++; variantIndex = 0; lastHeaderType = 'ITEM_PARENT'; }
         else { if (lastHeaderType === 'ITEM_PARENT') { variantIndex++; } else { itemIndex++; } }
     }
     const currentItem = items[currentIndex]; const level = getItemLevel(currentItem);
@@ -176,11 +176,11 @@ const getAutoNumber = (items: BQItem[], currentIndex: number) => {
     if (lastHeaderType === 'ITEM_PARENT') { return `${toRoman(variantIndex)})`; } else { return `${sectionIndex}.${itemIndex}`; }
 };
 
-const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({ 
-    originalData, 
-    pelarasanData, 
-    onDataChange, 
-    projectData, 
+const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
+    originalData,
+    pelarasanData,
+    onDataChange,
+    projectData,
     isPrintView,
     locationRows,
     globalCalculationsPelarasan,
@@ -191,11 +191,11 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const [localDimsArray, setLocalDimsArray] = useState<GlobalDimensions[]>([]);
     const [isDimsDirty, setIsDimsDirty] = useState(false);
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-    const [isGlobalLinkModalOpen, setIsGlobalLinkModalOpen] = useState<{itemId: string, partId: string} | null>(null);
+    const [isGlobalLinkModalOpen, setIsGlobalLinkModalOpen] = useState<{ itemId: string, partId: string } | null>(null);
 
     const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
     const [bqTemplates, setBqTemplates] = useState<BQTemplateDefinition[]>([]);
-    const [recentItems, setRecentItems] = useState<{groupId: string, itemId: string, variantId?: string}[]>([]);
+    const [recentItems, setRecentItems] = useState<{ groupId: string, itemId: string, variantId?: string }[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [librarySearchTerm, setLibrarySearchTerm] = useState('');
     const [templateSearchTerm, setTemplateSearchTerm] = useState('');
@@ -234,7 +234,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             }
         };
         fetchLibrary();
-        
+
         const saved = localStorage.getItem('bq_recent_items');
         if (saved) {
             try { setRecentItems(JSON.parse(saved)); } catch (e) { console.error('Failed to load recent items:', e); }
@@ -282,91 +282,91 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             if (b.id !== activeBillId) return b;
             let newItems = [...b.items];
             const libraryItem = group.items.find(i => i.id === itemId)!;
-            const groupHeaderDesc = group.title.toUpperCase(); 
-            
+            const groupHeaderDesc = group.title.toUpperCase();
+
             let level0Index = -1;
             for (let i = newItems.length - 1; i >= 0; i--) {
                 if (getItemLevel(newItems[i]) === 0 && newItems[i].description === groupHeaderDesc) { level0Index = i; break; }
             }
-            
-            let insertionIndex = newItems.length; 
+
+            let insertionIndex = newItems.length;
             let needsGroupHeader = level0Index === -1;
             if (!needsGroupHeader) {
                 let groupEndIndex = newItems.length;
                 for (let i = level0Index + 1; i < newItems.length; i++) {
                     if (getItemLevel(newItems[i]) === 0) { groupEndIndex = i; break; }
                 }
-                insertionIndex = groupEndIndex; 
+                insertionIndex = groupEndIndex;
             }
 
             const itemsToAdd: BQItem[] = [];
-            if (needsGroupHeader) { 
+            if (needsGroupHeader) {
                 const header = createHeader(groupHeaderDesc);
                 header.isAdjustment = true;
-                itemsToAdd.push(header); 
+                itemsToAdd.push(header);
             }
-            
+
             if (variantId || (libraryItem.variants && libraryItem.variants.length > 0)) {
                 const rawParentDesc = libraryItem.description;
                 const parentDesc = rawParentDesc.charAt(0).toUpperCase() + rawParentDesc.slice(1).toLowerCase();
-                
+
                 let needsParentHeader = true;
                 const prevItem = newItems.length > 0 ? newItems[insertionIndex - 1] : null;
-                
+
                 if (prevItem) {
-                     if (prevItem.sourceItemId === itemId && prevItem.type === 'ITEM') { needsParentHeader = false; }
-                     if (prevItem.type === 'HEADER' && prevItem.description === parentDesc) { needsParentHeader = false; }
+                    if (prevItem.sourceItemId === itemId && prevItem.type === 'ITEM') { needsParentHeader = false; }
+                    if (prevItem.type === 'HEADER' && prevItem.description === parentDesc) { needsParentHeader = false; }
                 }
 
-                if (needsParentHeader) { 
+                if (needsParentHeader) {
                     const header = createHeader(parentDesc);
                     header.isAdjustment = true;
-                    itemsToAdd.push(header); 
+                    itemsToAdd.push(header);
                 }
-                if (variantId) { 
-                    const newItem = createItem(bqLibrary, groupId, itemId, variantId); 
+                if (variantId) {
+                    const newItem = createItem(bqLibrary, groupId, itemId, variantId);
                     newItem.sourceGroupId = groupId;
                     newItem.sourceItemId = itemId;
                     newItem.sourceVariantId = variantId;
                     newItem.isAdjustment = true;
-                    itemsToAdd.push(newItem); 
+                    itemsToAdd.push(newItem);
                 }
-            } else { 
-                const newItem = createItem(bqLibrary, groupId, itemId); 
+            } else {
+                const newItem = createItem(bqLibrary, groupId, itemId);
                 newItem.sourceGroupId = groupId;
                 newItem.sourceItemId = itemId;
                 newItem.isAdjustment = true;
-                itemsToAdd.push(newItem); 
+                itemsToAdd.push(newItem);
             }
 
             const dArray = localDimsArray;
             if (dArray.length > 0) {
-                 itemsToAdd.forEach(newItem => {
-                     if (newItem.type === 'ITEM' && newItem.calculationParts && newItem.isGlobal) {
-                         const basePart = newItem.calculationParts[0] || { 
-                             id: Math.random().toString(36).substr(2, 9), 
-                             label: '', 
-                             length: 0, width: 0, depth: 0, multiplier: 1, 
-                             hasLength: false, hasWidth: false, hasDepth: false 
-                         };
-                         
-                         const newParts: CalculationPart[] = dArray.map((gDim, idx) => ({
-                              ...basePart,
-                              id: `${basePart.id}-${idx}`,
-                              label: gDim.label || `Kiraan ${idx + 1}`,
-                              isGlobal: true,
-                              globalIndex: idx,
-                              length: basePart.hasLength ? gDim.length : basePart.length,
-                              width: basePart.hasWidth ? gDim.width : basePart.width,
-                              depth: basePart.hasDepth ? gDim.depth : basePart.depth
-                         }));
-  
-                         newItem.calculationParts = newParts;
-                         const qty = recalculateQtyFromParts(newParts);
-                         newItem.qty = parseFloat(qty.toFixed(2));
-                         newItem.amount = parseFloat((qty * newItem.rate).toFixed(2));
-                     }
-                 });
+                itemsToAdd.forEach(newItem => {
+                    if (newItem.type === 'ITEM' && newItem.calculationParts && newItem.isGlobal) {
+                        const basePart = newItem.calculationParts[0] || {
+                            id: Math.random().toString(36).substr(2, 9),
+                            label: '',
+                            length: 0, width: 0, depth: 0, multiplier: 1,
+                            hasLength: false, hasWidth: false, hasDepth: false
+                        };
+
+                        const newParts: CalculationPart[] = dArray.map((gDim, idx) => ({
+                            ...basePart,
+                            id: `${basePart.id}-${idx}`,
+                            label: gDim.label || `Kiraan ${idx + 1}`,
+                            isGlobal: true,
+                            globalIndex: idx,
+                            length: basePart.hasLength ? gDim.length : basePart.length,
+                            width: basePart.hasWidth ? gDim.width : basePart.width,
+                            depth: basePart.hasDepth ? gDim.depth : basePart.depth
+                        }));
+
+                        newItem.calculationParts = newParts;
+                        const qty = recalculateQtyFromParts(newParts);
+                        newItem.qty = parseFloat(qty.toFixed(2));
+                        newItem.amount = parseFloat((qty * newItem.rate).toFixed(2));
+                    }
+                });
             }
 
             if (itemsToAdd.length > 0) {
@@ -397,9 +397,9 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         const bill = pelarasanData.find(b => b.id === activeBillId);
         if (bill && bill.calculationId) {
             let rawDims: any = null;
-            if (globalCalculationsPelarasan?.[bill.calculationId]) { 
-                rawDims = globalCalculationsPelarasan[bill.calculationId]; 
-            } 
+            if (globalCalculationsPelarasan?.[bill.calculationId]) {
+                rawDims = globalCalculationsPelarasan[bill.calculationId];
+            }
             else {
                 let foundSharedDims: GlobalDimensions[] | GlobalDimensions | null = null;
                 for (const b of pelarasanData) {
@@ -410,23 +410,23 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 }
 
                 if (foundSharedDims) { rawDims = foundSharedDims; }
-                else if (projectData.globalCalculationsPelarasan?.[bill.calculationId]) { 
-                    rawDims = projectData.globalCalculationsPelarasan[bill.calculationId]; 
+                else if (projectData.globalCalculationsPelarasan?.[bill.calculationId]) {
+                    rawDims = projectData.globalCalculationsPelarasan[bill.calculationId];
                 }
-                else if (projectData.globalCalculations?.[bill.calculationId]) { 
-                    rawDims = projectData.globalCalculations[bill.calculationId]; 
+                else if (projectData.globalCalculations?.[bill.calculationId]) {
+                    rawDims = projectData.globalCalculations[bill.calculationId];
                 }
-                else { 
-                    rawDims = [{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]; 
+                else {
+                    rawDims = [{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }];
                 }
             }
 
             if (Array.isArray(rawDims)) { setLocalDimsArray(rawDims); }
             else if (rawDims) { setLocalDimsArray([rawDims]); }
             else { setLocalDimsArray([{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]); }
-            
-        } else { 
-            setLocalDimsArray([{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]); 
+
+        } else {
+            setLocalDimsArray([{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]);
         }
         setIsDimsDirty(false);
     }, [activeBillId, globalCalculationsPelarasan, projectData.globalCalculationsPelarasan, projectData.globalCalculations, pelarasanData]);
@@ -449,7 +449,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         if (!activeBillId) return;
         const bill = pelarasanData.find(b => b.id === activeBillId);
         if (!bill) return;
-        
+
         const hasExpanded = bill.items.some(item => item.type === 'HEADER' && !item.isCollapsed);
         const newState = hasExpanded;
 
@@ -457,7 +457,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             if (b.id !== activeBillId) return b;
             return {
                 ...b,
-                items: b.items.map(item => 
+                items: b.items.map(item =>
                     item.type === 'HEADER' ? { ...item, isCollapsed: newState } : item
                 )
             };
@@ -467,8 +467,12 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
     const recalculateQtyFromParts = (parts: CalculationPart[]): number => {
         return parts.reduce((acc, part) => {
-             let product = 1; if (part.hasLength) product *= part.length; if (part.hasWidth) product *= part.width; if (part.hasDepth) product *= part.depth;
-             return acc + (product * part.multiplier);
+            let product = 1;
+            if (part.hasLength) product *= (part.length || 0);
+            if (part.hasWidth) product *= (part.width || 0);
+            if (part.hasDepth) product *= (part.depth || 0);
+            const res = product * (part.multiplier || 0);
+            return acc + (isNaN(res) ? 0 : res);
         }, 0);
     };
 
@@ -481,11 +485,11 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     if (!part.isGlobal || part.globalIndex === undefined) return part;
                     const gDim = newDimsArray[part.globalIndex];
                     if (!gDim) return part;
-                    return { 
-                        ...part, 
-                        length: part.hasLength ? gDim.length : part.length, 
-                        width: part.hasWidth ? gDim.width : part.width, 
-                        depth: part.hasDepth ? gDim.depth : part.depth 
+                    return {
+                        ...part,
+                        length: part.hasLength ? gDim.length : part.length,
+                        width: part.hasWidth ? gDim.width : part.width,
+                        depth: part.hasDepth ? gDim.depth : part.depth
                     };
                 });
                 const newQty = recalculateQtyFromParts(newParts);
@@ -500,8 +504,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         if (readOnly) return;
         const bill = pelarasanData.find(b => b.id === activeBillId);
         if (!bill || !bill.calculationId) return;
-        if (onGlobalCalculationsPelarasanChange) { 
-            onGlobalCalculationsPelarasanChange(bill.calculationId, localDimsArray); 
+        if (onGlobalCalculationsPelarasanChange) {
+            onGlobalCalculationsPelarasanChange(bill.calculationId, localDimsArray);
         }
         updateBillsWithNewDimensions(bill.calculationId, localDimsArray);
         setIsDimsDirty(false);
@@ -512,11 +516,11 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         const updatedBills = pelarasanData.map(b => {
             if (b.id !== activeBillId) return b;
             const newBill = { ...b, calculationId: targetCalcId };
-            
+
             const rawTargetDims = globalCalculationsPelarasan?.[targetCalcId] || projectData.globalCalculationsPelarasan?.[targetCalcId] || projectData.globalCalculations?.[targetCalcId] || { length: 0, width: 0, depth: 0 };
             const targetDimsArray = Array.isArray(rawTargetDims) ? rawTargetDims : [rawTargetDims];
             setLocalDimsArray(targetDimsArray);
-            
+
             const firstDim = targetDimsArray[0];
             const updatedItems = newBill.items.map(item => {
                 if (!item.isGlobal || !item.calculationParts) return item;
@@ -550,32 +554,32 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
     const handleSplitBill = (billId: string, splitItemIndex: number) => {
         if (readOnly) return;
-        
+
         const billIndex = pelarasanData.findIndex(b => b.id === billId);
         if (billIndex === -1) return;
-        
+
         const sourceBill = pelarasanData[billIndex];
         const itemsToMove = sourceBill.items.slice(splitItemIndex);
         const remainingItems = sourceBill.items.slice(0, splitItemIndex);
-        
+
         const { prefix, content } = parseTitle(sourceBill.title);
         const match = prefix.match(/BIL NO\.\s*(\d+)/i);
         const currentNo = match ? parseInt(match[1]) : 0;
-        
+
         const cleanContent = content.replace(/\s+SAMBUNGAN$/i, "");
         const newTitle = `BIL NO. ${currentNo + 1} - ${cleanContent} SAMBUNGAN`;
-        
+
         const newBill: BQGroup = {
             ...sourceBill,
             id: `bill-split-${Math.random().toString(36).substr(2, 9)}`,
             title: newTitle,
             items: itemsToMove,
         };
-        
+
         let newData = [...pelarasanData];
         newData[billIndex] = { ...sourceBill, items: remainingItems };
         newData.splice(billIndex + 1, 0, newBill);
-        
+
         const renumbered = resequenceTitles(newData);
         onDataChange(renumbered);
         setActiveBillId(newBill.id);
@@ -594,16 +598,16 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             while (blockEnd < items.length && getItemLevel(items[blockEnd]) > currentLevel) blockEnd++;
             const block = items.slice(index, blockEnd);
             if (direction === 'up') {
-                if (index === 0) return bill; 
+                if (index === 0) return bill;
                 let prevSiblingIndex = index - 1;
                 while (prevSiblingIndex >= 0) { const level = getItemLevel(items[prevSiblingIndex]); if (level === currentLevel) break; if (level < currentLevel) return bill; prevSiblingIndex--; }
                 if (prevSiblingIndex < 0) return bill;
                 const beforePrev = items.slice(0, prevSiblingIndex); const prevBlock = items.slice(prevSiblingIndex, index); const afterBlock = items.slice(blockEnd);
                 return { ...bill, items: [...beforePrev, ...block, ...prevBlock, ...afterBlock] };
             } else {
-                if (blockEnd >= items.length) return bill; 
+                if (blockEnd >= items.length) return bill;
                 const nextItem = items[blockEnd];
-                if (getItemLevel(nextItem) < currentLevel) return bill; 
+                if (getItemLevel(nextItem) < currentLevel) return bill;
                 let nextSiblingEnd = blockEnd + 1;
                 while (nextSiblingEnd < items.length && getItemLevel(items[nextSiblingEnd]) > currentLevel) nextSiblingEnd++;
                 const before = items.slice(0, index); const nextBlock = items.slice(blockEnd, nextSiblingEnd); const after = items.slice(nextSiblingEnd);
@@ -642,42 +646,42 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         if (readOnly) return;
         const tpl = tplOverride || selectedTemplate;
         if (!tpl) return;
-        
+
         const isMultistep = (tpl.key === 'LONGKANG' || tpl.key === 'EMPTY' || tpl.key === 'CUSTOM');
-        if (isMultistep && !templateLocation) { 
-            setTemplateError(true); 
-            return; 
+        if (isMultistep && !templateLocation) {
+            setTemplateError(true);
+            return;
         }
-        
+
         const newGroups: BQGroup[] = [];
         if (tpl.bills && tpl.bills.length > 0) {
             tpl.bills.forEach((billDef, bIdx) => {
                 const billCalcId = `calc-pelarasan-${Math.random().toString(36).substr(2, 9)}`;
-                
+
                 // Save initial dimensions for this new bill
                 if (isMultistep && templateLocation) {
                     onGlobalCalculationsPelarasanChange(billCalcId, [templateDims]);
                 }
 
-                const bill: BQGroup = { 
-                    id: `bil-pelarasan-${Date.now()}-${bIdx}`, 
+                const bill: BQGroup = {
+                    id: `bil-pelarasan-${Date.now()}-${bIdx}`,
                     calculationId: billCalcId,
-                    title: `BIL NO. 999 - ${billDef.title.toUpperCase()}`, 
-                    locationId: tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY' ? undefined : templateLocation, 
-                    items: [] 
+                    title: `BIL NO. 999 - ${billDef.title.toUpperCase()}`,
+                    locationId: tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY' ? undefined : templateLocation,
+                    items: []
                 };
 
                 billDef.items.forEach(itemOrRef => {
                     const isFullItem = (itemOrRef as BQItem).type !== undefined;
-                    
+
                     if (isFullItem) {
                         const itemSnapshot = itemOrRef as BQItem;
-                        const newItem = { 
-                            ...itemSnapshot, 
+                        const newItem = {
+                            ...itemSnapshot,
                             id: Math.random().toString(36).substr(2, 9),
-                            isAdjustment: true 
+                            isAdjustment: true
                         };
-                        
+
                         // Sync with Library if source exists
                         if (newItem.sourceItemId) {
                             const group = bqLibrary.find(g => g.id === newItem.sourceGroupId);
@@ -709,7 +713,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                             newItem.qty = parseFloat(qty.toFixed(2));
                             newItem.amount = parseFloat((qty * newItem.rate).toFixed(2));
                         }
-                        
+
                         bill.items.push(newItem);
                     } else {
                         const ref = itemOrRef as BQTemplateItemRef;
@@ -725,11 +729,11 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
                                 const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
                                 if (bqIt.isGlobal && currentTplDims && bqIt.calculationParts) {
-                                    bqIt.calculationParts = bqIt.calculationParts.map(p => ({ 
-                                        ...p, 
-                                        length: p.hasLength ? currentTplDims.length : p.length, 
-                                        width: p.hasWidth ? currentTplDims.width : p.width, 
-                                        depth: p.hasDepth ? currentTplDims.depth : p.depth 
+                                    bqIt.calculationParts = bqIt.calculationParts.map(p => ({
+                                        ...p,
+                                        length: p.hasLength ? currentTplDims.length : p.length,
+                                        width: p.hasWidth ? currentTplDims.width : p.width,
+                                        depth: p.hasDepth ? currentTplDims.depth : p.depth
                                     }));
                                     const qty = recalculateQtyFromParts(bqIt.calculationParts);
                                     bqIt.qty = parseFloat(qty.toFixed(2));
@@ -742,15 +746,15 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 });
                 newGroups.push(bill);
             });
-        } else if (tpl.key === 'EMPTY') { 
+        } else if (tpl.key === 'EMPTY') {
             const billCalcId = `calc-pelarasan-${Math.random().toString(36).substr(2, 9)}`;
-            newGroups.push({ 
-                id: `bil-pelarasan-${Date.now()}`, 
-                calculationId: billCalcId, 
-                title: `BIL NO. 999 - BUTIRAN KERJA-KERJA`, 
-                locationId: templateLocation, 
-                items: [] 
-            }); 
+            newGroups.push({
+                id: `bil-pelarasan-${Date.now()}`,
+                calculationId: billCalcId,
+                title: `BIL NO. 999 - BUTIRAN KERJA-KERJA`,
+                locationId: templateLocation,
+                items: []
+            });
         }
 
         const newBills = [...pelarasanData, ...newGroups];
@@ -817,7 +821,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         if (readOnly) return;
         const newData = pelarasanData.map(bill => {
             if (bill.id !== billId) return bill;
-            return { ...bill, items: bill.items.map(item => {
+            return {
+                ...bill, items: bill.items.map(item => {
                     if (item.id !== itemId) return item;
                     const newItem = { ...item, ...updates };
                     if (updates.qty !== undefined) { newItem.amount = parseFloat((newItem.qty * newItem.rate).toFixed(2)); }
@@ -832,21 +837,22 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         if (readOnly) return;
         const newData = pelarasanData.map(bill => {
             if (bill.id !== billId) return bill;
-            return { ...bill, items: bill.items.map(item => {
+            return {
+                ...bill, items: bill.items.map(item => {
                     if (item.id !== itemId) return item;
                     const newGlobal = !item.isGlobal; let newItems = { ...item, isGlobal: newGlobal };
                     if (newGlobal && item.calculationParts) {
-                         const firstDim = localDimsArray[0] || { length: 0, width: 0, depth: 0 };
-                         const newParts = item.calculationParts.map(part => ({ 
-                             ...part, 
-                             isGlobal: true,
-                             globalIndex: 0,
-                             length: part.hasLength ? firstDim.length : part.length, 
-                             width: part.hasWidth ? firstDim.width : part.width, 
-                             depth: part.hasDepth ? firstDim.depth : part.depth 
-                         }));
-                         newItems.calculationParts = newParts; const newQty = recalculateQtyFromParts(newParts);
-                         newItems.qty = parseFloat(newQty.toFixed(2)); newItems.amount = parseFloat((newQty * newItems.rate).toFixed(2));
+                        const firstDim = localDimsArray[0] || { length: 0, width: 0, depth: 0 };
+                        const newParts = item.calculationParts.map(part => ({
+                            ...part,
+                            isGlobal: true,
+                            globalIndex: 0,
+                            length: part.hasLength ? firstDim.length : part.length,
+                            width: part.hasWidth ? firstDim.width : part.width,
+                            depth: part.hasDepth ? firstDim.depth : part.depth
+                        }));
+                        newItems.calculationParts = newParts; const newQty = recalculateQtyFromParts(newParts);
+                        newItems.qty = parseFloat(newQty.toFixed(2)); newItems.amount = parseFloat((newQty * newItems.rate).toFixed(2));
                     } else if (!newGlobal && item.calculationParts) {
                         const newParts = item.calculationParts.map(part => ({ ...part, isGlobal: false, globalIndex: undefined }));
                         newItems.calculationParts = newParts;
@@ -861,19 +867,20 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const toggleCustomCalc = (billId: string, itemId: string) => {
         if (readOnly) return;
         const newData = pelarasanData.map(bill => {
-           if (bill.id !== billId) return bill;
-           return { ...bill, items: bill.items.map(item => {
-                   if (item.id !== itemId) return item;
-                   const newMode = !item.isCustomCalc;
-                   let calcStr = item.customCalc || '';
-                   if (newMode && !calcStr && item.calculationParts) {
-                       calcStr = item.calculationParts.map(p => {
-                           const parts = []; if (p.hasLength) parts.push(`${p.length}m(P)`); if (p.hasWidth) parts.push(`${p.width}m(L)`); if (p.hasDepth) parts.push(`${p.depth}m(T)`); if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`); return parts.join(' x ');
-                       }).join(' + ');
-                   }
-                   return { ...item, isCustomCalc: newMode, customCalc: calcStr };
-               })
-           };
+            if (bill.id !== billId) return bill;
+            return {
+                ...bill, items: bill.items.map(item => {
+                    if (item.id !== itemId) return item;
+                    const newMode = !item.isCustomCalc;
+                    let calcStr = item.customCalc || '';
+                    if (newMode && !calcStr && item.calculationParts) {
+                        calcStr = item.calculationParts.map(p => {
+                            const parts = []; if (p.hasLength) parts.push(`${p.length}m(P)`); if (p.hasWidth) parts.push(`${p.width}m(L)`); if (p.hasDepth) parts.push(`${p.depth}m(T)`); if (p.multiplier !== 1) parts.push(`x ${p.multiplier}`); return parts.join(' x ');
+                        }).join(' + ');
+                    }
+                    return { ...item, isCustomCalc: newMode, customCalc: calcStr };
+                })
+            };
         });
         onDataChange(newData);
     };
@@ -882,11 +889,12 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         if (readOnly) return;
         const newData = pelarasanData.map(bill => {
             if (bill.id !== billId) return bill;
-            return { ...bill, items: bill.items.map(item => {
+            return {
+                ...bill, items: bill.items.map(item => {
                     if (item.id !== itemId) return item;
                     const existingParts = item.calculationParts || [];
                     const partToUpdate = existingParts.find(p => p.id === partId);
-                    
+
                     if (partToUpdate?.isGlobal && partToUpdate.globalIndex !== undefined) {
                         const gDim = localDimsArray[partToUpdate.globalIndex];
                         if (gDim) {
@@ -897,30 +905,31 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     }
                     const newParts = (item.calculationParts || []).map(p => p.id === partId ? { ...p, ...updates } : p);
                     const newQty = recalculateQtyFromParts(newParts);
-                     return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
+                    return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
                 })
             };
         });
         onDataChange(newData);
     };
-  
+
     const addCalculationPart = (billId: string, itemId: string) => {
         if (readOnly) return;
         const newData = pelarasanData.map(bill => {
             if (bill.id !== billId) return bill;
-            return { ...bill, items: bill.items.map(item => {
+            return {
+                ...bill, items: bill.items.map(item => {
                     if (item.id !== itemId) return item;
                     const newPart: CalculationPart = { id: Math.random().toString(36).substr(2, 9), label: '', length: 0, width: 0, depth: 0, multiplier: 1, hasLength: false, hasWidth: false, hasDepth: false };
-                    if (item.isGlobal && localDimsArray.length > 0) { 
+                    if (item.isGlobal && localDimsArray.length > 0) {
                         const gDim = localDimsArray[0];
                         newPart.isGlobal = true;
                         newPart.globalIndex = 0;
-                        newPart.length = gDim.length; 
-                        newPart.width = gDim.width; 
-                        newPart.depth = gDim.depth; 
+                        newPart.length = gDim.length;
+                        newPart.width = gDim.width;
+                        newPart.depth = gDim.depth;
                     }
                     const existingParts = item.calculationParts || [];
-                    if (existingParts.length > 0) { const last = existingParts[existingParts.length-1]; newPart.hasLength = last.hasLength; newPart.hasWidth = last.hasWidth; newPart.hasDepth = last.hasDepth; }
+                    if (existingParts.length > 0) { const last = existingParts[existingParts.length - 1]; newPart.hasLength = last.hasLength; newPart.hasWidth = last.hasWidth; newPart.hasDepth = last.hasDepth; }
                     const newParts = [...existingParts, newPart]; const newQty = recalculateQtyFromParts(newParts);
                     return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
                 })
@@ -928,16 +937,17 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         });
         onDataChange(newData);
     };
-  
+
     const removeCalculationPart = (billId: string, itemId: string, partId: string) => {
         if (readOnly) return;
         const newData = pelarasanData.map(bill => {
             if (bill.id !== billId) return bill;
-            return { ...bill, items: bill.items.map(item => {
+            return {
+                ...bill, items: bill.items.map(item => {
                     if (item.id !== itemId) return item;
                     const newParts = (item.calculationParts || []).filter(p => p.id !== partId);
                     const newQty = recalculateQtyFromParts(newParts);
-                     return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
+                    return { ...item, calculationParts: newParts, qty: parseFloat(newQty.toFixed(2)), amount: parseFloat((newQty * item.rate).toFixed(2)) };
                 })
             };
         });
@@ -946,43 +956,43 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
     const renderCalculationPartRow = (bill: BQGroup, item: BQItem, part: CalculationPart) => {
         const isGlobal = part.isGlobal;
-        const inputClassBase ="w-12 outline-none text-right font-bold text-sm transition-colors";
+        const inputClassBase = "w-12 outline-none text-right font-bold text-sm transition-colors";
         const inputClass = isGlobal || readOnly ? `${inputClassBase} bg-transparent text-slate-400 cursor-not-allowed` : `${inputClassBase} bg-amber-50/50  text-amber-700  border-b border-amber-300  rounded-sm`;
-        
+
         const gDimLabel = isGlobal && part.globalIndex !== undefined ? (localDimsArray[part.globalIndex]?.label || `Kiraan ${part.globalIndex + 1}`) : '';
 
         return (
-          <div key={part.id} className={`flex flex-wrap items-center gap-2 text-xs p-1.5 rounded-lg border mb-1 last:mb-0 transition-colors ${isGlobal ? 'bg-amber-50/30 border-amber-100' : 'bg-white border-slate-200'}`}>
-               {!readOnly && (
-                   <button 
-                      onClick={() => setIsGlobalLinkModalOpen({ itemId: item.id, partId: part.id })}
-                      className={`p-1 rounded transition-colors ${isGlobal ? 'text-amber-600 bg-amber-100' : 'text-slate-300 hover:text-amber-500 hover:bg-amber-50'}`}
-                      title={isGlobal ? `Terhubung dengan: ${gDimLabel}` : "Hubungkan dengan Global Calculation"}
-                   >
-                      {isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}
-                   </button>
-               )}
-               <input type="text" value={part.label || ''} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { label: e.target.value })} disabled={readOnly} className="w-16 bg-transparent border-b border-dashed border-slate-300  focus:border-amber-500 outline-none text-slate-500 placeholder-slate-400 text-[10px]" placeholder="Label" />
-              <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasLength ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasLength} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasLength: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">P</span>{part.hasLength && (<input type="number" value={part.length || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { length: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
-              {part.hasLength && (part.hasWidth || part.hasDepth) && <span className="text-slate-300">×</span>}
-              <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasWidth ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasWidth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasWidth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">L</span>{part.hasWidth && (<input type="number" value={part.width || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { width: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
-              {part.hasWidth && part.hasDepth && <span className="text-slate-300">×</span>}
-              <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<input type="number" value={part.depth || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { depth: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
-              <span className="text-slate-300">×</span>
-              <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><input type="number" value={part.multiplier || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { multiplier: parseFloat(e.target.value) })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" /></div>
-              
-              <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
-                  {isGlobal && <span className="text-[8px] font-bold text-amber-500 uppercase tracking-tighter bg-amber-50 px-1 rounded">{gDimLabel}</span>}
-                  <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
-                  <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
-                      {(() => {
-                          let product = 1; if (part.hasLength) product *= part.length; if (part.hasWidth) product *= part.width; if (part.hasDepth) product *= part.depth;
-                          const qty = product * part.multiplier; return qty % 1 === 0 ? qty : qty.toFixed(2);
-                      })()}
-                  </div>
-                  {!readOnly && <button onClick={() => removeCalculationPart(bill.id, item.id, part.id)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><MinusCircle className="w-4 h-4" /></button>}
-              </div>
-          </div>
+            <div key={part.id} className={`flex flex-wrap items-center gap-2 text-xs p-1.5 rounded-lg border mb-1 last:mb-0 transition-colors ${isGlobal ? 'bg-amber-50/30 border-amber-100' : 'bg-white border-slate-200'}`}>
+                {!readOnly && (
+                    <button
+                        onClick={() => setIsGlobalLinkModalOpen({ itemId: item.id, partId: part.id })}
+                        className={`p-1 rounded transition-colors ${isGlobal ? 'text-amber-600 bg-amber-100' : 'text-slate-300 hover:text-amber-500 hover:bg-amber-50'}`}
+                        title={isGlobal ? `Terhubung dengan: ${gDimLabel}` : "Hubungkan dengan Global Calculation"}
+                    >
+                        {isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}
+                    </button>
+                )}
+                <input type="text" value={part.label || ''} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { label: e.target.value })} disabled={readOnly} className="w-16 bg-transparent border-b border-dashed border-slate-300  focus:border-amber-500 outline-none text-slate-500 placeholder-slate-400 text-[10px]" placeholder="Label" />
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasLength ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasLength} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasLength: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">P</span>{part.hasLength && (<input type="number" value={part.length || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { length: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
+                {part.hasLength && (part.hasWidth || part.hasDepth) && <span className="text-slate-300">×</span>}
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasWidth ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasWidth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasWidth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">L</span>{part.hasWidth && (<input type="number" value={part.width || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { width: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
+                {part.hasWidth && part.hasDepth && <span className="text-slate-300">×</span>}
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<input type="number" value={part.depth || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { depth: parseFloat(e.target.value) })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
+                <span className="text-slate-300">×</span>
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><input type="number" value={part.multiplier || ''} onChange={e => updateCalculationPart(bill.id, item.id, part.id, { multiplier: parseFloat(e.target.value) })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" /></div>
+
+                <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
+                    {isGlobal && <span className="text-[8px] font-bold text-amber-500 uppercase tracking-tighter bg-amber-50 px-1 rounded">{gDimLabel}</span>}
+                    <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
+                    <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
+                        {(() => {
+                            let product = 1; if (part.hasLength) product *= part.length; if (part.hasWidth) product *= part.width; if (part.hasDepth) product *= part.depth;
+                            const qty = product * part.multiplier; return qty % 1 === 0 ? qty : qty.toFixed(2);
+                        })()}
+                    </div>
+                    {!readOnly && <button onClick={() => removeCalculationPart(bill.id, item.id, part.id)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><MinusCircle className="w-4 h-4" /></button>}
+                </div>
+            </div>
         );
     };
 
@@ -990,28 +1000,28 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         if (isHidden) return null;
         const autoNumber = getAutoNumber(bill.items, index);
         const hierarchyLevel = getItemLevel(item);
-        
+
         let originalItem: BQItem | undefined;
         // Search across all original bills since items might have moved due to split
         for (const ob of originalData) {
             originalItem = ob.items.find(i => i.id === item.id);
             if (originalItem) break;
         }
-        
+
         const originalQty = originalItem?.qty || 0;
         const originalAmount = originalItem?.amount || 0;
         const currentAmount = item.amount || 0;
         const diff = currentAmount - originalAmount;
-        
+
         // Coloring logic
         const isLess = diff < -0.01;
         const isMore = diff > 0.01;
         const isRecentlyAdded = lastAddedItemId === item.id;
-        
-        const cardStyle = isRecentlyAdded 
-            ? 'bg-blue-50/80 ring-2 ring-blue-500 border-blue-200' 
+
+        const cardStyle = isRecentlyAdded
+            ? 'bg-blue-50/80 ring-2 ring-blue-500 border-blue-200'
             : (isLess ? 'border-red-200 ring-1 ring-red-100' : (isMore ? 'border-blue-200 ring-1 ring-blue-100' : 'border-slate-100'));
-        
+
         const diffTextClass = isLess ? 'text-red-600 font-bold' : (isMore ? 'text-blue-600 font-bold' : 'text-slate-500');
 
         if (item.type === 'HEADER') {
@@ -1040,42 +1050,42 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             <div key={item.id} id={`bq-item-${item.id}`} className={`py-4 border border-transparent border-b-slate-100 last:border-0 hover:bg-slate-50 px-2 rounded-xl transition-all duration-700 ${cardStyle}`}>
                 <div className="flex flex-col xl:flex-row gap-4">
                     <div className="flex-1 min-w-0">
-                         <div className="flex gap-3 mb-2">
-                             <div className="text-xs font-black text-slate-400 mt-1 min-w-[30px]">{autoNumber}</div>
-                             <div className="flex-1 pl-10">
-                                 {item.isAdjustment ? (
-                                     <AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className="w-full bg-transparent outline-none text-sm font-medium text-blue-600" minHeight={40} />
-                                 ) : (
-                                     <p className="text-sm font-medium text-slate-800 leading-relaxed">{item.description}</p>
-                                 )}
-                                 {item.variant && <p className="text-xs text-slate-500 italic mt-1">{item.variant}</p>}
-                                 <div className="mt-2 flex items-center gap-2">
-                                     {item.isAdjustment ? (
-                                         <input type="text" value={item.unit} onChange={(e) => updateItem(bill.id, item.id, { unit: e.target.value })} disabled={readOnly} className="text-xs bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-mono w-16 outline-none border border-blue-100" />
-                                     ) : (
-                                         <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-mono">{item.unit}</span>
-                                     )}
-                                     <span className="text-xs text-slate-400">@ </span>
-                                     {item.isAdjustment ? (
-                                         <input type="number" value={item.rate} onChange={(e) => updateItem(bill.id, item.id, { rate: parseFloat(e.target.value) })} disabled={readOnly} className="text-xs bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-mono w-20 outline-none border border-blue-100" />
-                                     ) : (
-                                         <span className="text-xs text-slate-400">{formatCurrency(item.rate)}</span>
-                                     )}
-                                 </div>
-                             </div>
-                         </div>
-                         <div className={`ml-12 ${item.isAdjustment ? 'bg-blue-50/30 border-blue-100' : 'bg-amber-50/30 border-amber-100'} p-3 rounded-lg border`}>
-                             <div className="flex items-center justify-between mb-2">
-                                 <div className={`text-[10px] font-bold ${item.isAdjustment ? 'text-blue-600' : 'text-amber-600'} uppercase tracking-wider flex items-center gap-1`}>
-                                     <Calculator className="w-3 h-3" /> {item.isAdjustment ? 'Penambahan (New)' : 'Pelarasan (Adjusted)'}
-                                 </div>
-                                 <div className="flex items-center gap-1">
+                        <div className="flex gap-3 mb-2">
+                            <div className="text-xs font-black text-slate-400 mt-1 min-w-[30px]">{autoNumber}</div>
+                            <div className="flex-1 pl-10">
+                                {item.isAdjustment ? (
+                                    <AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className="w-full bg-transparent outline-none text-sm font-medium text-blue-600" minHeight={40} />
+                                ) : (
+                                    <p className="text-sm font-medium text-slate-800 leading-relaxed">{item.description}</p>
+                                )}
+                                {item.variant && <p className="text-xs text-slate-500 italic mt-1">{item.variant}</p>}
+                                <div className="mt-2 flex items-center gap-2">
+                                    {item.isAdjustment ? (
+                                        <input type="text" value={item.unit} onChange={(e) => updateItem(bill.id, item.id, { unit: e.target.value })} disabled={readOnly} className="text-xs bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-mono w-16 outline-none border border-blue-100" />
+                                    ) : (
+                                        <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-mono">{item.unit}</span>
+                                    )}
+                                    <span className="text-xs text-slate-400">@ </span>
+                                    {item.isAdjustment ? (
+                                        <input type="number" value={item.rate} onChange={(e) => updateItem(bill.id, item.id, { rate: parseFloat(e.target.value) })} disabled={readOnly} className="text-xs bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-mono w-20 outline-none border border-blue-100" />
+                                    ) : (
+                                        <span className="text-xs text-slate-400">{formatCurrency(item.rate)}</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className={`ml-12 ${item.isAdjustment ? 'bg-blue-50/30 border-blue-100' : 'bg-amber-50/30 border-amber-100'} p-3 rounded-lg border`}>
+                            <div className="flex items-center justify-between mb-2">
+                                <div className={`text-[10px] font-bold ${item.isAdjustment ? 'text-blue-600' : 'text-amber-600'} uppercase tracking-wider flex items-center gap-1`}>
+                                    <Calculator className="w-3 h-3" /> {item.isAdjustment ? 'Penambahan (New)' : 'Pelarasan (Adjusted)'}
+                                </div>
+                                <div className="flex items-center gap-1">
                                     <button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1 rounded-md transition-colors border text-[10px] flex items-center gap-1 ${item.isGlobal ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white text-slate-400 border-slate-200'}`}>{item.isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}{item.isGlobal ? 'Linked' : 'Manual'}</button>
                                     <button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-3.5 h-3.5" /> : <Type className="w-3.5 h-3.5" />}</button>
-                                 </div>
-                             </div>
+                                </div>
+                            </div>
 
-                             {item.isCustomCalc ? (
+                            {item.isCustomCalc ? (
                                 <div className="flex-1 w-full flex items-center gap-2">
                                     <input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white border border-slate-200 rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" />
                                     <div className="flex items-center gap-1 bg-white rounded px-2 py-1 border border-slate-200">
@@ -1083,7 +1093,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                         <DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" />
                                     </div>
                                 </div>
-                             ) : (
+                            ) : (
                                 <div className="space-y-1">
                                     {(item.calculationParts || []).map(part => renderCalculationPartRow(bill, item, part))}
                                     {!readOnly && (
@@ -1100,40 +1110,40 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                         </div>
                                     )}
                                 </div>
-                             )}
-                         </div>
+                            )}
+                        </div>
                     </div>
                     <div className="w-full xl:w-[320px] shrink-0 bg-slate-50  rounded-xl border border-slate-200  p-4 text-xs flex flex-col">
-                         <div className="grid grid-cols-2 gap-x-4 gap-y-2 flex-1">
-                             <div className="col-span-2 border-b border-slate-200  pb-1 mb-1 font-bold text-slate-400 uppercase tracking-widest text-[10px]">Perbandingan</div>
-                             
-                             <div className="text-slate-500">Asal (Qty)</div>
-                             <div className="text-right font-mono text-slate-600">{originalQty}</div>
-                             
-                             <div className="text-slate-500">Asal (RM)</div>
-                             <div className="text-right font-mono text-slate-600">{formatCurrency(originalAmount)}</div>
-                             
-                             <div className="col-span-2 border-b border-slate-200  my-1"></div>
-                             
-                             <div className="text-slate-500 font-bold">Laras (Qty)</div>
-                             <div className="text-right font-mono font-bold text-slate-800">{item.qty}</div>
-                             
-                             <div className="text-slate-500 font-bold">Laras (RM)</div>
-                             <div className="text-right font-mono font-bold text-slate-800">{formatCurrency(item.amount)}</div>
-                             
-                             <div className="col-span-2 border-b border-slate-200  my-1"></div>
-                             
-                             <div className="font-bold">Beza (RM)</div>
-                             <div className={`text-right font-mono ${diffTextClass}`}>{diff > 0 ? '+' : ''}{formatCurrency(diff)}</div>
-                         </div>
-                         
-                         {!readOnly && item.isAdjustment && (
-                             <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end gap-2">
-                                 <button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
-                                 <button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
-                                 <button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-                             </div>
-                         )}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 flex-1">
+                            <div className="col-span-2 border-b border-slate-200  pb-1 mb-1 font-bold text-slate-400 uppercase tracking-widest text-[10px]">Perbandingan</div>
+
+                            <div className="text-slate-500">Asal (Qty)</div>
+                            <div className="text-right font-mono text-slate-600">{originalQty}</div>
+
+                            <div className="text-slate-500">Asal (RM)</div>
+                            <div className="text-right font-mono text-slate-600">{formatCurrency(originalAmount)}</div>
+
+                            <div className="col-span-2 border-b border-slate-200  my-1"></div>
+
+                            <div className="text-slate-500 font-bold">Laras (Qty)</div>
+                            <div className="text-right font-mono font-bold text-slate-800">{item.qty}</div>
+
+                            <div className="text-slate-500 font-bold">Laras (RM)</div>
+                            <div className="text-right font-mono font-bold text-slate-800">{formatCurrency(item.amount)}</div>
+
+                            <div className="col-span-2 border-b border-slate-200  my-1"></div>
+
+                            <div className="font-bold">Beza (RM)</div>
+                            <div className={`text-right font-mono ${diffTextClass}`}>{diff > 0 ? '+' : ''}{formatCurrency(diff)}</div>
+                        </div>
+
+                        {!readOnly && item.isAdjustment && (
+                            <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end gap-2">
+                                <button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
+                                <button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
+                                <button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -1153,20 +1163,20 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
 
     const billsByLocation: Record<string, BQGroup[]> = {};
-    const permulaanBills: BQGroup[] = []; 
+    const permulaanBills: BQGroup[] = [];
     const otherBills: BQGroup[] = [];
-    
-    pelarasanData.forEach(b => { 
-        if (isTopBill(b)) { permulaanBills.push(b); } 
-        else if (b.locationId) { if (!billsByLocation[b.locationId]) billsByLocation[b.locationId] = []; billsByLocation[b.locationId].push(b); } 
-        else { otherBills.push(b); } 
+
+    pelarasanData.forEach(b => {
+        if (isTopBill(b)) { permulaanBills.push(b); }
+        else if (b.locationId) { if (!billsByLocation[b.locationId]) billsByLocation[b.locationId] = []; billsByLocation[b.locationId].push(b); }
+        else { otherBills.push(b); }
     });
     const sortedLocationIds = Array.from(new Set(pelarasanData.filter(b => b.locationId && !isTopBill(b)).map(b => b.locationId!))) as string[];
 
     const renderSidebarItem = (b: BQGroup, index: number, total: number) => {
         const isActive = activeBillId === b.id;
         const { prefix, content } = parseTitle(b.title);
-        
+
         // Check if this bill is an "adjustment" (not in original data)
         const isOriginalBill = originalData.some(ob => ob.id === b.id);
 
@@ -1190,7 +1200,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     };
 
     const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
-    
+
     const libraryGroups = (() => {
         const searchLower = librarySearchTerm.toLowerCase();
         const recentGroupIds = Array.from(new Set(recentItems.map(ri => ri.groupId)));
@@ -1220,7 +1230,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                         </button>
                     )}
                 </div>
-                
+
                 {extraPrice > 0 && (
                     <div className="bg-blue-50  p-3 rounded-xl border border-blue-200 animate-pulse">
                         <div className="flex items-center gap-2 text-blue-600 mb-1">
@@ -1239,8 +1249,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 bg-white/40 rounded-xl p-2">
                     {permulaanBills.length > 0 && (
                         <div className="space-y-1">
-                             <div className="px-2 text-[10px] font-bold text-slate-400 uppercase">Permulaan</div>
-                             {permulaanBills.map((b, idx) => renderSidebarItem(b, idx, pelarasanData.length))}
+                            <div className="px-2 text-[10px] font-bold text-slate-400 uppercase">Permulaan</div>
+                            {permulaanBills.map((b, idx) => renderSidebarItem(b, idx, pelarasanData.length))}
                         </div>
                     )}
                     {sortedLocationIds.map(locId => {
@@ -1274,20 +1284,20 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                 <h2 className={`text-lg font-bold uppercase ${originalData.some(ob => ob.id === activeBill.id) ? 'text-slate-800' : 'text-blue-600'}`}>{activeBill.title}</h2>
                                 <div className="flex items-center gap-4">
                                     <div className="text-right text-xs text-slate-400 shrink-0">
-                                        Asal: <span className="text-slate-600 font-bold text-sm">{formatCurrency(originalData.find(ob => ob.id === activeBill.id)?.items.reduce((s,i) => s + (i.amount||0), 0) || 0)}</span>
+                                        Asal: <span className="text-slate-600 font-bold text-sm">{formatCurrency(originalData.find(ob => ob.id === activeBill.id)?.items.reduce((s, i) => s + (i.amount || 0), 0) || 0)}</span>
                                     </div>
                                     <div className="text-right text-xs text-slate-400 shrink-0">
-                                        Laras: <span className="text-amber-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s,i) => s + (i.amount||0), 0))}</span>
+                                        Laras: <span className="text-amber-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s, i) => s + (i.amount || 0), 0))}</span>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className={`mt-2 p-3 rounded-xl border transition-colors ${isDimsDirty ? 'bg-orange-50 border-orange-200' : 'bg-amber-50/50 border-amber-100'}`}>
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                                     <div className="flex items-center gap-2">
                                         {activeBill.items.some(i => i.type === 'HEADER') && (
-                                            <button 
-                                                onClick={toggleAllCollapse} 
+                                            <button
+                                                onClick={toggleAllCollapse}
                                                 className="p-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
                                                 title={activeBill.items.some(item => item.type === 'HEADER' && !item.isCollapsed) ? "Collapse All" : "Expand All"}
                                             >
@@ -1329,8 +1339,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                     <div className="flex flex-col gap-2 w-full sm:w-auto">
                                         {localDimsArray.map((dims, idx) => (
                                             <div key={idx} className="flex flex-wrap items-center gap-2">
-                                                <input 
-                                                    value={dims.label || ''} 
+                                                <input
+                                                    value={dims.label || ''}
                                                     onChange={e => {
                                                         const newArray = [...localDimsArray];
                                                         newArray[idx] = { ...dims, label: e.target.value };
@@ -1365,15 +1375,15 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                             </div>
                         </div>
                         <div className="flex-1 p-4">
-                             {activeBill.items.length === 0 ? (
-                                 <div className="h-40 flex flex-col items-center justify-center text-slate-400">
-                                     <FolderPlus className="w-10 h-10 mb-2 opacity-50" />
-                                     <p className="text-sm">Tiada item dalam senarai ini.</p>
-                                 </div>
-                             ) : (
+                            {activeBill.items.length === 0 ? (
+                                <div className="h-40 flex flex-col items-center justify-center text-slate-400">
+                                    <FolderPlus className="w-10 h-10 mb-2 opacity-50" />
+                                    <p className="text-sm">Tiada item dalam senarai ini.</p>
+                                </div>
+                            ) : (
                                 <div className="space-y-2">
                                     {(() => {
-                                        let currentLevel0Collapsed = false; 
+                                        let currentLevel0Collapsed = false;
                                         let currentLevel1Collapsed = false;
                                         let totalWorkItemCount = 0;
                                         let pendingWarnings: { count: number, splitIdx: number }[] = [];
@@ -1385,7 +1395,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                             const borderColor = isAmber ? 'border-amber-200' : 'border-red-200';
                                             const textColor = isAmber ? 'text-amber-600' : 'text-red-600';
                                             const dotColor = isAmber ? 'bg-amber-200' : 'bg-red-200';
-                                            const text = isAmber 
+                                            const text = isAmber
                                                 ? 'Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru'
                                                 : 'Pecahan halaman disahkan berlaku di sini';
 
@@ -1400,7 +1410,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                                         <div className={`flex-1 h-px ${dotColor}`}></div>
                                                     </div>
                                                     {!readOnly && splitIdx !== -1 && (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleSplitBill(activeBill.id, splitIdx)}
                                                             className={`px-4 py-2 ${isAmber ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'} text-white text-[10px] font-bold rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105`}
                                                         >
@@ -1415,23 +1425,23 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                         let lastLevel0Index = -1;
                                         let lastLevel1Index = -1;
                                         activeBill.items.forEach((item, idx) => {
-                                            const level = getItemLevel(item); 
+                                            const level = getItemLevel(item);
                                             if (level === 0) {
                                                 lastLevel0Index = idx;
-                                                lastLevel1Index = -1; 
+                                                lastLevel1Index = -1;
                                             } else if (level === 1) {
                                                 lastLevel1Index = idx;
                                             }
-                                            
+
                                             let isHidden = false;
-                                            if (level === 0) { 
-                                                currentLevel1Collapsed = false; 
-                                                currentLevel0Collapsed = !!item.isCollapsed; 
-                                            } else if (level === 1) { 
-                                                if (currentLevel0Collapsed) isHidden = true; 
-                                                else currentLevel1Collapsed = !!item.isCollapsed; 
-                                            } else { 
-                                                if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true; 
+                                            if (level === 0) {
+                                                currentLevel1Collapsed = false;
+                                                currentLevel0Collapsed = !!item.isCollapsed;
+                                            } else if (level === 1) {
+                                                if (currentLevel0Collapsed) isHidden = true;
+                                                else currentLevel1Collapsed = !!item.isCollapsed;
+                                            } else {
+                                                if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true;
                                             }
 
                                             const currentSplitIdx = lastLevel0Index !== -1 ? lastLevel0Index : lastLevel1Index;
@@ -1442,7 +1452,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                                 pendingWarnings.forEach(w => items.push(renderWarning(w.count, w.splitIdx)));
                                                 pendingWarnings = [];
                                             }
-                                            
+
                                             const renderedRow = renderItemRow(activeBill, item, idx, isHidden);
                                             if (renderedRow) {
                                                 items.push(renderedRow);
@@ -1451,7 +1461,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                             // Count actual work items (not headers/notes)
                                             if (item.type === 'ITEM') {
                                                 totalWorkItemCount++;
-                                                
+
                                                 // Page break indicators
                                                 if (totalWorkItemCount === 8 || totalWorkItemCount === 9) {
                                                     if (isHidden) {
@@ -1469,14 +1479,14 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                         return items;
                                     })()}
                                 </div>
-                         )}
-                         {!readOnly && (
-                             <button onClick={openAddItemModal} className="mt-4 w-full py-3 border-2 border-dashed border-amber-200 rounded-xl text-amber-500 font-bold text-sm hover:border-amber-500 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2">
-                                 <Plus className="w-4 h-4" /> Tambah Item (Pelarasan)
-                             </button>
-                         )}
-                    </div>
-                </>
+                            )}
+                            {!readOnly && (
+                                <button onClick={openAddItemModal} className="mt-4 w-full py-3 border-2 border-dashed border-amber-200 rounded-xl text-amber-500 font-bold text-sm hover:border-amber-500 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2">
+                                    <Plus className="w-4 h-4" /> Tambah Item (Pelarasan)
+                                </button>
+                            )}
+                        </div>
+                    </>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8">
                         <Layers className="w-16 h-16 mb-4 opacity-20" />
@@ -1503,7 +1513,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                 <div className="h-px bg-slate-200 my-2 mx-2"></div>
                                 {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-amber-600 text-white shadow-md' : 'text-slate-500 hover:bg-amber-50'}`}>{cat}</button>))}
                             </div>
-                            
+
                             <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
                                 <div className="sticky top-0 bg-white z-10 pb-4 mb-2 border-b border-slate-50 flex items-center justify-between gap-4">
                                     <div className="relative group flex-1">
@@ -1581,25 +1591,25 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                             </h3>
                             <p className="text-sm text-slate-500 mt-1">Pilih BIL NO. untuk berkongsi Global Calculation yang sama.</p>
                         </div>
-                        
+
                         <div className="space-y-2 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2 mb-6">
                             {pelarasanData
                                 .filter(b => b.id !== activeBillId && b.calculationId !== activeBill?.calculationId)
                                 .map(b => (
-                                <button 
-                                    key={b.id} 
-                                    onClick={() => handleLinkCalculation(b.calculationId!)}
-                                    className="w-full text-left p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-amber-500 hover:bg-amber-50 transition-colors group"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-amber-600 transition-colors">{parseTitle(b.title).prefix}</div>
-                                            <div className="text-sm font-bold text-slate-700">{parseTitle(b.title).content || b.title}</div>
+                                    <button
+                                        key={b.id}
+                                        onClick={() => handleLinkCalculation(b.calculationId!)}
+                                        className="w-full text-left p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-amber-500 hover:bg-amber-50 transition-colors group"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-amber-600 transition-colors">{parseTitle(b.title).prefix}</div>
+                                                <div className="text-sm font-bold text-slate-700">{parseTitle(b.title).content || b.title}</div>
+                                            </div>
+                                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-amber-500 transition-colors" />
                                         </div>
-                                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-amber-500 transition-colors" />
-                                    </div>
-                                </button>
-                            ))}
+                                    </button>
+                                ))}
                             {pelarasanData.filter(b => b.id !== activeBillId && b.calculationId !== activeBill?.calculationId).length === 0 && (
                                 <div className="text-center py-8 text-slate-400">
                                     <Info className="w-8 h-8 mx-auto mb-2 opacity-20" />
@@ -1607,7 +1617,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                 </div>
                             )}
                         </div>
-                        
+
                         <button onClick={() => setIsLinkModalOpen(false)} className="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
                             Batal
                         </button>
@@ -1628,7 +1638,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                             <p className="text-sm text-slate-500 mt-1">Hubungkan baris kiraan ini dengan salah satu set Global Calculation.</p>
                         </div>
                         <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar mb-6">
-                            <button 
+                            <button
                                 onClick={() => {
                                     updateCalculationPart(activeBillId!, isGlobalLinkModalOpen.itemId, isGlobalLinkModalOpen.partId, { isGlobal: false, globalIndex: undefined });
                                     setIsGlobalLinkModalOpen(null);
@@ -1638,16 +1648,16 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                 <span className="font-bold text-slate-700">Tiada Hubungan (Manual)</span>
                                 <Unlink className="w-4 h-4 text-slate-300 group-hover:text-red-500" />
                             </button>
-                            
+
                             <div className="h-px bg-slate-100 my-2"></div>
-                            
+
                             {localDimsArray.map((dims, idx) => (
-                                <button 
-                                    key={idx} 
+                                <button
+                                    key={idx}
                                     onClick={() => {
                                         updateCalculationPart(activeBillId!, isGlobalLinkModalOpen.itemId, isGlobalLinkModalOpen.partId, { isGlobal: true, globalIndex: idx, length: dims.length, width: dims.width, depth: dims.depth });
                                         setIsGlobalLinkModalOpen(null);
-                                    }} 
+                                    }}
                                     className="w-full text-left p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-amber-500 hover:bg-amber-50 transition-all group flex items-center justify-between"
                                 >
                                     <div>
@@ -1684,9 +1694,9 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                     <div className="sticky top-0 bg-white z-10 pb-4 mb-2">
                                         <div className="relative group">
                                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
-                                            <input 
-                                                type="text" 
-                                                placeholder="Cari template..." 
+                                            <input
+                                                type="text"
+                                                placeholder="Cari template..."
                                                 value={templateSearchTerm}
                                                 onChange={(e) => setTemplateSearchTerm(e.target.value)}
                                                 className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] text-sm focus:border-amber-500 focus:bg-white outline-none transition-all shadow-sm"
@@ -1700,8 +1710,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {(() => {
-                                            const filtered = bqTemplates.filter(tpl => 
-                                                tpl.title.toLowerCase().includes(templateSearchTerm.toLowerCase()) || 
+                                            const filtered = bqTemplates.filter(tpl =>
+                                                tpl.title.toLowerCase().includes(templateSearchTerm.toLowerCase()) ||
                                                 tpl.subtitle.toLowerCase().includes(templateSearchTerm.toLowerCase())
                                             );
 
