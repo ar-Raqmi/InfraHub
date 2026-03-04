@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, formatCurrency, formatDate } from '../types';
 import { supabaseService } from '../services/supabaseService';
-import { Download, Loader2, X, Star, Save, Eye, ArrowLeft } from 'lucide-react';
+import { Download, Loader2, X, Star, Save, Eye, ArrowLeft, AlertCircle } from 'lucide-react';
 
 interface PrestasiCertificateProps {
     project: Project;
@@ -39,8 +39,16 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
     const [companyDetails, setCompanyDetails] = useState<any>(null);
 
     const [localScores, setLocalScores] = useState<number[]>(project.prestasiScores || [0, 0, 0, 0, 0, 0]);
-    const [localSkop, setLocalSkop] = useState<'BEKALAN' | 'PERKHIDMATAN' | 'KERJA'>(project.skop || 'BEKALAN');
-    const [localNoInbois, setLocalNoInbois] = useState<string>(project.noInbois || '');
+    const [localSkop, setLocalSkop] = useState<'BEKALAN' | 'PERKHIDMATAN' | 'KERJA' | null>((project.skop as any) || null);
+    const [showErrors, setShowErrors] = useState(false);
+
+    const skopRef = useRef<HTMLDivElement>(null);
+    const scoreRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    useEffect(() => {
+        scoreRefs.current = scoreRefs.current.slice(0, 6);
+    }, []);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -62,8 +70,43 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
 
     const handleSave = () => {
         if (onUpdate) {
-            onUpdate(localScores, percentage, localSkop, localNoInbois);
+            onUpdate(localScores, percentage, (localSkop as any) || 'BEKALAN', project.noInbois || '');
         }
+    };
+
+    const handlePratonton = () => {
+        const hasInvoiceError = !project.noInbois?.trim();
+        const hasSkopError = !localSkop;
+        const hasScoreErrors = localScores.some(score => score === 0);
+
+        if (hasInvoiceError || hasSkopError || hasScoreErrors) {
+            setShowErrors(true);
+
+            // Auto-scroll to first error
+            if (hasInvoiceError) {
+                // Since Invoice is in parent, we can't scroll to it from here easily,
+                // but we can scroll to the top of the modal to show the error message if we added one,
+                // or just scroll to the next error inside the modal.
+                // For now, let's prioritize scrolling to Skop if it exists.
+                if (hasSkopError) {
+                    skopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (hasScoreErrors) {
+                    const firstScoreErrorIdx = localScores.findIndex(score => score === 0);
+                    scoreRefs.current[firstScoreErrorIdx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else if (hasSkopError) {
+                skopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                const firstScoreErrorIdx = localScores.findIndex(score => score === 0);
+                if (firstScoreErrorIdx !== -1) {
+                    scoreRefs.current[firstScoreErrorIdx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+            return;
+        }
+
+        handleSave();
+        setView('PREVIEW');
     };
 
     const handleDownload = async () => {
@@ -143,7 +186,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                     "Lanjutan Masa (Sehingga) :",
                     "-",
                     "No. Inbois :",
-                    localNoInbois || ''
+                    project.noInbois || ''
                 ]
             ];
 
@@ -448,7 +491,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                         {view === 'FORM' ? (
                             <>
                                 <button
-                                    onClick={() => { handleSave(); setView('PREVIEW'); }}
+                                    onClick={handlePratonton}
                                     className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-md"
                                 >
                                     <Eye className="w-4 h-4" />
@@ -502,31 +545,32 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                             <div className="bg-white  p-6 rounded-2xl shadow-sm border border-slate-200">
                                 <h4 className="font-bold text-slate-900  mb-4 text-sm uppercase tracking-wide">Maklumat Tambahan</h4>
                                 <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">No. Inbois</label>
-                                        <input
-                                            type="text"
-                                            value={localNoInbois}
-                                            onChange={(e) => setLocalNoInbois(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-violet-500 transition-colors text-sm text-slate-900"
-                                            placeholder="Masukkan No. Inbois..."
-                                        />
-                                    </div>
+                                    {showErrors && !project.noInbois?.trim() && (
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-600 text-xs font-bold animate-pulse">
+                                            <AlertCircle className="w-4 h-4" />
+                                            Sila masukkan No. Inbois di bahagian maklumat projek sebelum pratonton.
+                                        </div>
+                                    )}
 
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Skop Perkhidmatan</label>
+                                    <div ref={skopRef}>
+                                        <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${showErrors && !localSkop ? 'text-red-500 animate-pulse' : 'text-slate-500'}`}>
+                                            Skop Perkhidmatan {showErrors && !localSkop && <span className="text-red-500 ml-1">(Sila Pilih)</span>}
+                                        </label>
                                         <div className="flex flex-wrap gap-4">
                                             {['BEKALAN', 'PERKHIDMATAN', 'KERJA'].map((scope) => (
-                                                <label key={scope} className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${localSkop === scope ? 'bg-violet-50 border-violet-500 ring-1 ring-violet-500' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
+                                                <label key={scope} className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${localSkop === scope ? 'bg-violet-50 border-violet-500 ring-2 ring-violet-500 shadow-md' : showErrors && !localSkop ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
                                                     <input
                                                         type="radio"
                                                         name="skop"
                                                         value={scope}
                                                         checked={localSkop === scope}
-                                                        onChange={() => setLocalSkop(scope as any)}
+                                                        onChange={() => {
+                                                            setLocalSkop(scope as any);
+                                                            if (showErrors) setShowErrors(false);
+                                                        }}
                                                         className="hidden"
                                                     />
-                                                    <span className={`font-bold text-sm ${localSkop === scope ? 'text-violet-700' : 'text-slate-600'}`}>
+                                                    <span className={`font-bold text-sm ${localSkop === scope ? 'text-violet-700' : showErrors && !localSkop ? 'text-red-300' : 'text-slate-600'}`}>
                                                         {scope}
                                                     </span>
                                                 </label>
@@ -545,25 +589,41 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                     "Penilaian terhadap kontraktor/pembekal dari segi sikap dan kerjasama yang ditunjukkan oleh kontraktor/pembekal.",
                                     "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
                                 ].map((q, idx) => (
-                                    <div key={idx} className="bg-white  p-6 rounded-2xl shadow-sm border border-slate-200">
+                                    <div
+                                        key={idx}
+                                        ref={el => { scoreRefs.current[idx] = el; }}
+                                        className={`bg-white p-6 rounded-2xl shadow-sm border transition-all ${showErrors && localScores[idx] === 0 ? 'border-red-500 ring-2 ring-red-50 shadow-md transform scale-[1.01]' : 'border-slate-200'}`}
+                                    >
                                         <div className="flex gap-4 mb-4">
-                                            <div className="w-8 h-8 rounded-full bg-slate-100  flex items-center justify-center font-bold text-slate-600  shrink-0">{idx + 1}</div>
-                                            <p className="text-sm font-medium text-slate-800  leading-relaxed pt-1">{q}</p>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 transition-colors ${showErrors && localScores[idx] === 0 ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                                {idx + 1}
+                                            </div>
+                                            <p className={`text-sm font-medium leading-relaxed pt-1 ${showErrors && localScores[idx] === 0 ? 'text-red-600' : 'text-slate-800'}`}>{q}</p>
                                         </div>
                                         <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
                                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(score => (
                                                 <button
                                                     key={score}
-                                                    onClick={() => updateScore(idx, score)}
-                                                    className={`h-10 rounded-lg font-bold text-sm transition-colors border ${localScores[idx] === score
+                                                    onClick={() => {
+                                                        updateScore(idx, score);
+                                                        // Optional: reset errors if all filled
+                                                    }}
+                                                    className={`h-10 rounded-lg font-bold text-sm transition-all border ${localScores[idx] === score
                                                         ? 'bg-violet-600 text-white border-violet-600 shadow-lg transform scale-110'
-                                                        : 'bg-slate-50  text-slate-500 border-slate-200  hover:border-violet-300'
+                                                        : showErrors && localScores[idx] === 0
+                                                            ? 'bg-red-50 text-red-200 border-red-200 hover:border-red-400'
+                                                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-violet-300'
                                                         }`}
                                                 >
                                                     {score}
                                                 </button>
                                             ))}
                                         </div>
+                                        {showErrors && localScores[idx] === 0 && (
+                                            <p className="text-[11px] text-red-500 mt-3 font-bold flex items-center gap-1">
+                                                <X className="w-3 h-3" /> Sila berikan penilaian bagi kriteria ini
+                                            </p>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -633,7 +693,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                                 <td className="border border-black p-1.5">Lanjutan Masa (Sehingga) :</td>
                                                 <td className="border border-black p-1.5">-</td>
                                                 <td className="border border-black p-1.5">No. Inbois :</td>
-                                                <td className="border border-black p-1.5 uppercase">{localNoInbois || ''}</td>
+                                                <td className="border border-black p-1.5 uppercase">{project.noInbois || ''}</td>
                                             </tr>
                                         </tbody>
                                     </table>

@@ -456,7 +456,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
     coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
     prestasiScores: [0, 0, 0, 0, 0, 0],
-    skop: 'BEKALAN',
+    skop: undefined,
     noInbois: '',
     isManualMulaKontrak: project?.isManualMulaKontrak || false,
     isManualMulaKerja: project?.isManualMulaKerja || false,
@@ -1830,10 +1830,19 @@ Jabatan Kejuruteraan` }],
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
                 <div className="group"> <label className={labelClass}>Tarikh Pemeriksaan</label> <StrictDateInput name="tarikhPemeriksaan" value={formData.tarikhPemeriksaan || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
                 <div className="group"> <label className={labelClass}>Tarikh Siap (Sebenar)</label> <StrictDateInput name="tarikhSiapSebenar" value={formData.tarikhSiapSebenar || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
-                <div className="group"> <label className={labelClass}>Prestasi (%) - Auto</label> <div className="relative"> <input type="text" name="prestasi" value={formData.prestasi || ''} readOnly className={`${inputClass} bg-slate-100 text-slate-500 cursor-not-allowed`} placeholder="0%" /> </div> </div>
                 <div className="group"> <label className={labelClass}>Tarikh Tuntutan Bayaran</label> <StrictDateInput name="tarikhTuntutanBayaran" value={formData.tarikhTuntutanBayaran || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} /> </div>
-                <div className="group"> <label className={labelClass}>Hari LAD (Auto)</label> <input type="number" name="ladDays" value={formData.ladDays || 0} onChange={() => { }} className={`${inputClass} bg-slate-100 text-red-500 font-bold`} readOnly /> </div>
-                <div className="group"> <label className={labelClass}>Jumlah LAD (RM) (Auto)</label> <input type="text" name="ladAmount" value={formatCurrency(formData.ladAmount || 0)} onChange={() => { }} className={`${inputClass} bg-slate-100 text-red-500 font-bold`} readOnly /> </div>
+                <div className="group">
+                  <label className={labelClass}>No. Inbois</label>
+                  <input
+                    type="text"
+                    name="noInbois"
+                    value={formData.noInbois || ''}
+                    onChange={handleInputChange}
+                    disabled={isGlobalReadOnly}
+                    className={inputClass}
+                    placeholder="Masukkan No. Inbois..."
+                  />
+                </div>
                 <div className="group">
                   <div className="flex justify-between items-center mb-1">
                     <label className={labelClass}>Hari LoC (Auto)</label>
@@ -1858,6 +1867,9 @@ Jabatan Kejuruteraan` }],
                   <input type="number" name="locDays" value={formData.locDays || 0} onChange={() => { }} className={`${inputClass} bg-slate-100 text-amber-600 font-bold ${formData.isLocDeductionEnabled === false ? 'opacity-50' : ''}`} readOnly />
                 </div>
                 <div className="group"> <label className={labelClass}>Jumlah LoC (RM) (Auto)</label> <input type="text" name="locAmount" value={formatCurrency(formData.locAmount || 0)} onChange={() => { }} className={`${inputClass} bg-slate-100 text-amber-600 font-bold`} readOnly /> </div>
+                <div className="group"> <label className={labelClass}>Hari LAD (Auto)</label> <input type="number" name="ladDays" value={formData.ladDays || 0} onChange={() => { }} className={`${inputClass} bg-slate-100 text-red-500 font-bold`} readOnly /> </div>
+                <div className="group"> <label className={labelClass}>Jumlah LAD (RM) (Auto)</label> <input type="text" name="ladAmount" value={formatCurrency(formData.ladAmount || 0)} onChange={() => { }} className={`${inputClass} bg-slate-100 text-red-500 font-bold`} readOnly /> </div>
+                <div className="group"> <label className={labelClass}>Prestasi (%) - Auto</label> <div className="relative"> <input type="text" name="prestasi" value={formData.prestasi || ''} readOnly className={`${inputClass} bg-slate-100 text-slate-500 cursor-not-allowed`} placeholder="0%" /> </div> </div>
                 <div className="group"> <label className={labelClass}>Wang Tahanan (RM)</label> <input type="number" name="wangTahanan" value={formData.wangTahanan ?? ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={inputClass} placeholder="0.00" /> </div>
                 <div className="group"> <label className={labelClass}>Harga Kontrak (Asal)</label> <div className={`${inputClass} bg-slate-50 text-slate-500 font-bold flex items-center`}> {formatCurrency(formData.kosProjek || 0)} </div> </div>
                 <div className="group"> <label className={labelClass}>Harga Akhir (Bersih)</label> <div className={`${inputClass} bg-slate-100 font-bold flex items-center ${(formData.kosSebenar || 0) < (formData.kosProjek || 0) ? 'text-red-600' : (formData.kosSebenar || 0) > (formData.kosProjek || 0) ? 'text-blue-600' : 'text-slate-600'}`}> {formatCurrency(formData.kosSebenar)} </div> </div>
