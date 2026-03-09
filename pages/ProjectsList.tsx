@@ -6,7 +6,8 @@ import { supabaseService } from '../services/supabaseService';
 import { useUsers } from '../hooks/useUsers';
 import { useProjects } from '../hooks/useProjects';
 import { useSettings } from '../hooks/useSettings';
-import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown, CalendarX } from 'lucide-react';
+import StrictDateInput from '../components/StrictDateInput';
 
 interface ProjectsListProps {
     projects: Project[];
@@ -103,6 +104,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     const [filterMukim, setFilterMukim] = useState<string>('ALL');
     const [filterVote, setFilterVote] = useState<string>('ALL');
     const [filterLoC, setFilterLoC] = useState(false);
+    const [filterDateType, setFilterDateType] = useState<string>('tarikhBuka');
+    const [filterDateStart, setFilterDateStart] = useState<string | null>(null);
+    const [filterDateEnd, setFilterDateEnd] = useState<string | null>(null);
 
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
     const [deleteCountdown, setDeleteCountdown] = useState(0);
@@ -418,6 +422,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         setSearchTerm('');
         setShowSiap(true);
         setFilterLoC(false);
+        setFilterDateType('tarikhBuka');
+        setFilterDateStart(null);
+        setFilterDateEnd(null);
         setSortKey('tarikhBuka');
         setSortDirection('desc');
         handleResetColumns();
@@ -430,8 +437,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         filterBp !== 'ALL',
         filterMukim !== 'ALL',
         filterVote !== 'ALL',
-        filterLoC === true,
-        showSiap === false
+        showSiap === false,
+        filterDateStart !== null,
+        filterDateEnd !== null
     ].filter(Boolean).length;
 
     const filteredProjects = useMemo(() => {
@@ -448,7 +456,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
             const matchesMukim = filterMukim === 'ALL' || p.mukim === filterMukim;
             const matchesVote = filterVote === 'ALL' || p.noVote === filterVote;
 
-            return matchesSearch && matchesStatus && matchesPja && matchesZon && matchesBp && matchesMukim && matchesVote;
+            const rawDateVal = p[filterDateType as keyof Project] as string | undefined;
+            const dateVal = rawDateVal ? rawDateVal.split('T')[0] : '';
+            const matchesDate = (!filterDateStart || (dateVal && dateVal >= filterDateStart)) &&
+                (!filterDateEnd || (dateVal && dateVal <= filterDateEnd));
+
+            return matchesSearch && matchesStatus && matchesPja && matchesZon && matchesBp && matchesMukim && matchesVote && matchesDate;
         });
 
         return filtered.sort((a, b) => {
@@ -495,7 +508,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
             return sortDirection === 'asc' ? comparison : -comparison;
         });
-    }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterMukim, filterVote, sortKey, sortDirection]);
+    }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterMukim, filterVote, sortKey, sortDirection, filterDateType, filterDateStart, filterDateEnd]);
 
     // Reset pagination when filter changes
     useEffect(() => {
@@ -1168,6 +1181,59 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                         ))}
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-6 pt-6 border-t border-slate-100">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Penapisan Tarikh (Date Range)</div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                        <Calendar className="w-4 h-4 text-slate-400" />
+                                    </div>
+                                    <select
+                                        value={filterDateType}
+                                        onChange={(e) => setFilterDateType(e.target.value)}
+                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
+                                    >
+                                        <option value="tarikhBuka">Tarikh Buka</option>
+                                        <option value="tarikhLantikan">Tarikh Lantikan</option>
+                                        <option value="tarikhMulaKontrak">Tarikh Mula Kontrak</option>
+                                        <option value="tarikhTamatKontrak">Tarikh Tamat Kontrak</option>
+                                        <option value="tarikhSiapSebenar">Tarikh Siap Sebenar</option>
+                                        <option value="tarikhTuntutanBayaran">Tarikh Tuntutan Bayaran</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                        <StrictDateInput
+                                            name="filterDateStart"
+                                            value={filterDateStart || ''}
+                                            onChange={(e) => setFilterDateStart(e.target.value)}
+                                            placeholder="Dari (DD/MM/YYYY)"
+                                            className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
+                                        />
+                                    </div>
+                                    {(filterDateStart || filterDateEnd) && (
+                                        <button
+                                            onClick={() => { setFilterDateStart(null); setFilterDateEnd(null); }}
+                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                                            title="Kosongkan Tarikh"
+                                        >
+                                            <CalendarX className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <StrictDateInput
+                                        name="filterDateEnd"
+                                        value={filterDateEnd || ''}
+                                        onChange={(e) => setFilterDateEnd(e.target.value)}
+                                        placeholder="Hingga (DD/MM/YYYY)"
+                                        className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
+                                    />
                                 </div>
                             </div>
                         </div>
