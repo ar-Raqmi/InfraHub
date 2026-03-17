@@ -1186,11 +1186,12 @@ Jabatan Kejuruteraan` }],
         const rawOrigParts = (originalItem && !isHeader && originalItem.calculationParts) ? originalItem.calculationParts : [];
         const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
 
-        const fmtQty = (val: number | undefined) => {
+        const fmtQty = (val: number | undefined, forceZero: boolean = false) => {
           if (val === undefined || val === null || isNaN(val)) return '';
+          if (val === 0 && !forceZero) return '';
           return val % 1 === 0 ? val.toString() : parseFloat(val.toFixed(2)).toString();
         };
-        const fmtAmt = (val: number | undefined, allowZero: boolean = true) => {
+        const fmtAmt = (val: number | undefined, allowZero: boolean = false) => {
           if (val === undefined || val === null || isNaN(val)) return '';
           if (val === 0 && !allowZero) return '';
           return formatCurrency(val).replace('RM', '');
@@ -1255,15 +1256,18 @@ Jabatan Kejuruteraan` }],
           if (inline) descText += ` ${inline}`;
         }
 
+        const showZero = !!(originalItem && (originalItem.qty || 0) > 0);
+        const cellTextColor = (item.qty === 0 && showZero) ? [200, 0, 0] : textColor;
+
         // 1. Push Main Item Row
         tableBody.push([
           { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, fontStyle: rowFontStyle as any, textColor: textColor as any } },
           { content: isInlineChange ? '' : descText, styles: { fontStyle: rowFontStyle as any, lineWidth: sideOnlyBorder, textColor: textColor as any } },
-          { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-          { content: hideMainValues ? '' : fmtQty(item.qty), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-          { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-          { content: (!hasChanged && !hideMainValues) ? fmtAmt(item.amount) : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
-          { content: hideMainValues ? '' : fmtAmt(item.amount), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any, fontStyle: rowFontStyle as any } }
+          { content: (hideMainValues || isHeader) ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: cellTextColor as any } },
+          { content: (hideMainValues || isHeader) ? '' : fmtQty(item.qty, showZero), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder, textColor: cellTextColor as any } },
+          { content: (hideMainValues || isHeader) ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: cellTextColor as any } },
+          { content: (!hasChanged && !hideMainValues && !isHeader) ? fmtAmt(item.amount, showZero) : '', styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: textColor as any } },
+          { content: (hideMainValues || isHeader) ? '' : fmtAmt(item.amount, showZero), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder, textColor: cellTextColor as any, fontStyle: rowFontStyle as any } }
         ]);
 
         // 2. Push Calculation Parts with Side-by-Side logic
