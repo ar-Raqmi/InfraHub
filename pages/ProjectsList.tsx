@@ -326,6 +326,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         { id: 'noBpp', label: 'No. BPP', group: 'Kontrak', default: false },
         { id: 'tempohKontrak', label: 'Tempoh', group: 'Kontrak', default: false },
         { id: 'status', label: 'Status & Progress', group: 'Status', default: true },
+        { id: 'prestasi', label: 'Prestasi', group: 'Status', default: false },
         { id: 'kosProjek', label: 'Harga Kontrak', group: 'Kewangan', default: false },
         { id: 'kosSebenar', label: 'Harga Akhir', group: 'Kewangan', default: false },
         { id: 'wangTahanan', label: 'Wang Tahanan', group: 'Kewangan', default: false },
@@ -1202,7 +1203,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                         <option value="tarikhMulaKontrak">Tarikh Mula Kontrak</option>
                                         <option value="tarikhTamatKontrak">Tarikh Tamat Kontrak</option>
                                         <option value="tarikhSiapSebenar">Tarikh Siap Sebenar</option>
-                                        <option value="tarikhTuntutanBayaran">Tarikh Tuntutan Bayaran</option>
+                                        <option value="tarikhTuntutanBayaran">Tarikh Tuntutan</option>
+                                        <option value="tarikhHantarKewangan">Tarikh Hantar Kewangan</option>
+                                        <option value="tarikhPadanan">Tarikh Padanan</option>
+                                        <option value="tarikhSerahTapak">Tarikh Serah Tapak</option>
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                 </div>
@@ -1431,6 +1435,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
                                             {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
                                             {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{getStatusLabel(project.status)}</span></div></td>}
+                                            {visibleColumns.prestasi && <td className="px-6 py-4 text-center font-bold text-slate-700">{project.prestasi || '-'}</td>}
                                             {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
                                             {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(getHargaAkhir(project))}</td>}
                                             {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
