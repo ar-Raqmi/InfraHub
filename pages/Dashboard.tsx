@@ -123,6 +123,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
       const matchesSearch =
         (p.namaProjek || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.noFail || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.noAduan || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.namaSyarikat || '').toLowerCase().includes(searchQuery.toLowerCase());
 
       if (!matchesSearch) return false;
@@ -653,7 +654,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                 </div>
                 <input
                   type="text"
-                  placeholder="Cari No. Fail / Tajuk / Syarikat..."
+                  placeholder="Cari No. Fail / Aduan / Tajuk / Syarikat..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 text-sm outline-none"

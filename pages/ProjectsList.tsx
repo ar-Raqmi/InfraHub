@@ -448,6 +448,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
             const matchesSearch =
                 (p.noFail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (p.namaProjek || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (p.noAduan || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (p.namaSyarikat || '').toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesStatus = filterStatus === 'ALL' || p.status === filterStatus;
@@ -1040,7 +1041,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Cari No. Fail, Projek, Syarikat..."
+                                placeholder="Cari No. Fail, Aduan, Projek, Syarikat..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50  border-transparent focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-colors text-slate-900  placeholder-slate-400 font-medium"
