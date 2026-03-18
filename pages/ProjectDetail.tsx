@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate, ProjectLocation, BQItem, CalculationPart } from '../types';
-import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star, Megaphone, User as UserIcon, ChevronDown, Check, ShieldCheck, CloudDownload } from 'lucide-react';
+import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star, Megaphone, User as UserIcon, ChevronDown, Check, ShieldCheck, CloudDownload, Search } from 'lucide-react';
 import BQEditor from './BQEditor';
 import BQPelarasanEditor from './BQPelarasanEditor';
 import AkuJanjiEditor from './AkuJanjiEditor';
@@ -103,9 +103,11 @@ const getBase64ImageFromURL = (url: string): Promise<string | null> => {
 
 interface ProjectDetailProps {
   project?: Project;
+  projects?: Project[];
   onClose: () => void;
   onSave: () => void;
-  currentUserRole: string;
+  onSwitchProject?: (project: Project) => void;
+  currentUserRole: Role;
   selectedYear: number;
   onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
@@ -345,7 +347,7 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
   );
 };
 
-const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave, currentUserRole, selectedYear, onShowToast }) => {
+const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], onClose, onSave, onSwitchProject, currentUserRole, selectedYear, onShowToast }) => {
   const { createProject, updateProject } = useProjects();
   const { users } = useUsers();
   const queryClient = useQueryClient();
@@ -396,10 +398,61 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
     }
   };
 
-  // Detect project switch and reset flags
+  // Detect project switch and reset ALL local state to reflect the new project
   useEffect(() => {
     setHasUnsavedChanges(false);
     setShowRemoteUpdateNotice(false);
+    setIsSwitcherOpen(false);
+    setSwitcherSearchQuery('');
+
+    // Reset formData to the new project's data (or blank defaults for new project)
+    const initialPja = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (project?.pjaId || 0);
+    setFormData(project || {
+      namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(),
+      pjaId: initialPja, bp: '', zon: '', mukim: '', lokasi: '',
+      status: ProjectStatus.FASA_DRAF,
+      bqData: [],
+      bqDataPelarasan: [],
+      globalDimensions: { length: 0, width: 0, depth: 0 },
+      locationDimensions: {},
+      locationDimensionsPelarasan: {},
+      coverJawatan: (currentUser?.role === Role.PJA && !project) ? currentUser.jawatan : '',
+      coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
+      coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
+      prestasiScores: [0, 0, 0, 0, 0, 0],
+      skop: undefined,
+      noInbois: '',
+      isManualMulaKontrak: false,
+      isManualMulaKerja: false,
+      isLocDeductionEnabled: false
+    });
+
+    // Reset tempoh values
+    if (project?.tempohKontrak) {
+      const parts = project.tempohKontrak.split(' ');
+      if (parts.length === 2) {
+        setTempohVal(Number(parts[0]));
+        setTempohUnit(parts[1] as any);
+      }
+    } else {
+      setTempohVal(0);
+      setTempohUnit('Minggu');
+    }
+
+    // Reset location rows
+    if (project) {
+      if (project.projectLocations && project.projectLocations.length > 0) {
+        setLocationRows(project.projectLocations);
+      } else {
+        const locs = (project.lokasi || '').split('\n').filter(l => l.trim() !== '');
+        const aduans = (project.noAduan || '').split('\n');
+        let rows = locs.map((l, i) => ({ id: Math.random().toString(36).substr(2, 9), lokasi: l, aduan: aduans[i] || '' }));
+        if (rows.length === 0) rows = [{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }];
+        setLocationRows(rows);
+      }
+    } else {
+      setLocationRows([{ id: Math.random().toString(36).substr(2, 9), lokasi: '', aduan: '' }]);
+    }
   }, [project?.id]);
 
   const TABS = [
@@ -424,8 +477,61 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
   const [isZonDropdownOpen, setIsZonDropdownOpen] = useState(false);
   const zonDropdownRef = useRef<HTMLDivElement>(null);
   const zonPortalRef = useRef<HTMLDivElement>(null);
-  const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | null; }>({ isOpen: false, type: null });
+  const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | 'switch' | null; }>({ isOpen: false, type: null });
   const [showPelarasanWarning, setShowPelarasanWarning] = useState(false);
+
+  // Project Switcher State
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
+  const [switcherSearchQuery, setSwitcherSearchQuery] = useState('');
+  const [showSiapProjects, setShowSiapProjects] = useState(false);
+  const [pendingSwitchProject, setPendingSwitchProject] = useState<Project | null>(null);
+  const switcherRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutsideSwitcher = (event: MouseEvent) => {
+      if (switcherRef.current && !switcherRef.current.contains(event.target as Node)) {
+        setIsSwitcherOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideSwitcher);
+    return () => document.removeEventListener('mousedown', handleClickOutsideSwitcher);
+  }, []);
+
+  const filteredSwitcherProjects = useMemo(() => {
+    return projects.filter(p => {
+      // Role-based filtering
+      if (currentUserRole === Role.PJA && p.pjaId !== currentUser?.id) return false;
+      
+      // Status filtering (Toggle "Siap")
+      if (!showSiapProjects && p.status === ProjectStatus.SIAP) return false;
+
+      // Search filtering
+      const searchLower = switcherSearchQuery.toLowerCase();
+      const matchesSearch = 
+        (p.namaProjek || '').toLowerCase().includes(searchLower) ||
+        (p.noFail || '').toLowerCase().includes(searchLower);
+
+      return matchesSearch;
+    }).sort((a, b) => {
+      // Natural sort by file number
+      return (a.noFail || '').localeCompare(b.noFail || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }, [projects, switcherSearchQuery, showSiapProjects, currentUserRole, currentUser?.id]);
+
+  const handleProjectSwitch = (p: Project) => {
+    if (p.id === project?.id) {
+      setIsSwitcherOpen(false);
+      return;
+    }
+
+    if (hasUnsavedChanges) {
+      setPendingSwitchProject(p);
+      setConfirmationState({ isOpen: true, type: 'switch' });
+    } else {
+      onSwitchProject?.(p);
+      setIsSwitcherOpen(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -530,9 +636,42 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose, onSave,
         setIsSaving(false);
       }
     }
+    else if (confirmationState.type === 'switch') {
+      // Save current project first, then switch
+      setConfirmationState({ isOpen: false, type: null }); setIsSaving(true);
+      try {
+        if (project && project.id) {
+          await updateProject({ id: project.id, updates: formData });
+        } else {
+          await createProject(formData as any);
+        }
+        setHasUnsavedChanges(false);
+        if (onShowToast) onShowToast("Projek disimpan. Menukar projek...", "success");
+        if (pendingSwitchProject) {
+          onSwitchProject?.(pendingSwitchProject);
+          setPendingSwitchProject(null);
+          setIsSwitcherOpen(false);
+        }
+      } catch (e) {
+        console.error(e);
+        if (onShowToast) onShowToast("Ralat menyimpan projek.", "error");
+      } finally {
+        setIsSaving(false);
+      }
+    }
     else if (confirmationState.type === 'reset_pelarasan') {
       setConfirmationState({ isOpen: false, type: null });
       handleInitializePelarasan();
+    }
+  };
+
+  const discardAndSwitch = () => {
+    setConfirmationState({ isOpen: false, type: null });
+    setHasUnsavedChanges(false);
+    if (pendingSwitchProject) {
+      onSwitchProject?.(pendingSwitchProject);
+      setPendingSwitchProject(null);
+      setIsSwitcherOpen(false);
     }
   };
 
@@ -1605,10 +1744,89 @@ Jabatan Kejuruteraan` }],
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 px-2 no-print gap-4">
           <div className="flex items-center gap-4">
             <div>
+            <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-1.5 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"></div>
-                <div> <h1 className="text-xl font-bold text-slate-900 tracking-tight">{project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}</h1> <p className="text-xs text-slate-500 font-mono mt-0.5 uppercase tracking-wider">{formData.noFail || 'No. Fail Belum Ditetapkan'}</p> </div>
+                <div className="relative" ref={switcherRef}>
+                  <button
+                    onClick={() => project && setIsSwitcherOpen(!isSwitcherOpen)}
+                    className={`flex flex-col items-start transition-all ${project ? 'hover:bg-slate-50 p-2 -m-2 rounded-xl group/title' : ''}`}
+                    disabled={!project}
+                  >
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        {project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}
+                        {project && <ChevronDown className={`w-4 h-4 text-slate-400 group-hover/title:text-emerald-500 transition-all ${isSwitcherOpen ? 'rotate-180' : ''}`} />}
+                      </h1>
+                    </div>
+                    <p className="text-xs text-slate-500 font-mono mt-0.5 uppercase tracking-wider">
+                      {formData.noFail || 'No. Fail Belum Ditetapkan'}
+                    </p>
+                  </button>
+
+                  {isSwitcherOpen && (
+                    <div className="absolute top-full left-0 mt-3 w-[400px] md:w-[600px] bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] animate-slide-up overflow-hidden">
+                      <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                        <div className="relative mb-3">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                          <input
+                            type="text"
+                            placeholder="Cari No. Fail atau Nama Projek..."
+                            value={switcherSearchQuery}
+                            onChange={(e) => setSwitcherSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={showSiapProjects}
+                              onChange={(e) => setShowSiapProjects(e.target.checked)}
+                              className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300"
+                            />
+                            <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
+                          </label>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{filteredSwitcherProjects.length} Projek Dijumpai</span>
+                        </div>
+                      </div>
+                      <div className="max-h-[400px] overflow-y-auto p-2 custom-scrollbar">
+                        {filteredSwitcherProjects.length > 0 ? (
+                          filteredSwitcherProjects.map((p) => (
+                            <button
+                              key={p.id}
+                              onClick={() => handleProjectSwitch(p)}
+                              className={`w-full text-left p-3 rounded-xl transition-all mb-1 group/item ${p.id === project?.id ? 'bg-emerald-50 ring-1 ring-emerald-500/20' : 'hover:bg-slate-50'}`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${p.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-amber-400'}`}></div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                                    <span className="text-[10px] font-black text-slate-400 font-mono uppercase tracking-tighter">{p.noFail}</span>
+                                    {p.id === project?.id && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Aktif</span>}
+                                  </div>
+                                  <h4 className="text-xs font-bold text-slate-800 leading-normal line-clamp-2 md:line-clamp-none group-hover/item:text-emerald-700 transition-colors">
+                                    {p.namaProjek}
+                                  </h4>
+                                </div>
+                              </div>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center">
+                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Search className="w-6 h-6 text-slate-300" />
+                            </div>
+                            <p className="text-sm font-bold text-slate-400">Tiada projek yang sepadan.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
             </div>
           </div>
           {isGlobalReadOnly && (
@@ -1935,25 +2153,51 @@ Jabatan Kejuruteraan` }],
                 <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6 text-red-500">
                   <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center"> <RefreshCw className="w-8 h-8 stroke-[1.5]" /> </div>
                 </div>
+              ) : confirmationState.type === 'switch' ? (
+                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6 text-blue-500">
+                  <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center"> <HelpCircle className="w-8 h-8 stroke-[1.5]" /> </div>
+                </div>
               ) : (
                 <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500">
                   <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center"> <CheckCircle className="w-8 h-8 stroke-[1.5]" /> </div>
                 </div>
               )}
               <h3 className="text-xl font-bold text-slate-900 mb-2 font-jakarta">
-                {confirmationState.type === 'back' ? 'Kembali ke Senarai?' : confirmationState.type === 'reset_pelarasan' ? 'Set Semula Pelarasan?' : 'Simpan Projek?'}
+                {confirmationState.type === 'back' ? 'Kembali ke Senarai?' :
+                  confirmationState.type === 'reset_pelarasan' ? 'Set Semula Pelarasan?' :
+                  confirmationState.type === 'switch' ? 'Terdapat Perubahan Belum Disimpan' :
+                  'Simpan Projek?'}
               </h3>
               <p className="text-slate-500 mb-8 text-sm leading-relaxed px-4">
                 {confirmationState.type === 'back' ? 'Sebarang perubahan yang belum disimpan mungkin akan hilang. Adakah anda pasti mahu kembali?' :
                   confirmationState.type === 'reset_pelarasan' ? 'Semua maklumat pelarasan yang telah diisi akan dipadam dan diset semula mengikut BQ asal. Adakah anda pasti?' :
-                    'Adakah anda pasti mahu menyimpan maklumat projek ini? Pastikan semua maklumat adalah tepat.'}
+                  confirmationState.type === 'switch' ? 'Anda mempunyai perubahan yang belum disimpan. Apa yang anda mahu lakukan?' :
+                  'Adakah anda pasti mahu menyimpan maklumat projek ini? Pastikan semua maklumat adalah tepat.'}
               </p>
-              <div className="flex gap-3 w-full">
-                <button onClick={cancelConfirmation} className="flex-1 py-3.5 px-4 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm hover:shadow-md" > Batal </button>
-                <button onClick={confirmAction} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${confirmationState.type === 'back' ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' : confirmationState.type === 'reset_pelarasan' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'}`} >
-                  {confirmationState.type === 'back' ? 'Ya, Kembali' : confirmationState.type === 'reset_pelarasan' ? 'Ya, Set Semula' : 'Ya, Simpan'}
-                </button>
-              </div>
+
+              {confirmationState.type === 'switch' ? (
+                <div className="flex flex-col gap-3 w-full">
+                  <button
+                    onClick={confirmAction}
+                    className="w-full py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30"
+                  >
+                    <Save className="w-4 h-4" /> Simpan & Tukar Projek
+                  </button>
+                  <button
+                    onClick={discardAndSwitch}
+                    className="w-full py-3 px-4 bg-white text-slate-600 rounded-xl font-bold hover:bg-red-50 hover:text-red-600 transition-colors border border-slate-200 hover:border-red-200 shadow-sm text-sm"
+                  >
+                    Teruskan Tanpa Simpan
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-3 w-full">
+                  <button onClick={cancelConfirmation} className="flex-1 py-3.5 px-4 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm hover:shadow-md" > Batal </button>
+                  <button onClick={confirmAction} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${confirmationState.type === 'back' ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' : confirmationState.type === 'reset_pelarasan' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'}`} >
+                    {confirmationState.type === 'back' ? 'Ya, Kembali' : confirmationState.type === 'reset_pelarasan' ? 'Ya, Set Semula' : 'Ya, Simpan'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>,
