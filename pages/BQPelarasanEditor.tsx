@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, Role, PresetGroup, BQTemplateDefinition, BQTemplateItemRef } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { createItem, createHeader } from '../data/bqPresets';
 import { ChevronDown, ChevronRight, Save, Ruler, ChevronUp, Link, Unlink, PlusCircle, MinusCircle, FolderPlus, Calculator, MapPin, Layers, Info, AlertTriangle, X, Type, List, Trash2, Bookmark, Plus, Search, History, Clock, LayoutTemplate, RotateCcw, Play, FileText, FilePlus, Edit3, Grid, CheckSquare, ClipboardList, Box, Package, Truck, Wrench, Hammer, Zap, Briefcase, Archive, Star, Award, PenTool } from 'lucide-react';
 
@@ -224,8 +224,8 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         const fetchLibrary = async () => {
             try {
                 const [library, templates] = await Promise.all([
-                    supabaseService.getLibraryGroups(),
-                    supabaseService.getTemplates()
+                    apiService.getLibraryGroups(),
+                    apiService.getTemplates()
                 ]);
                 setBqLibrary(library);
                 setBqTemplates(templates);
@@ -261,7 +261,15 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     };
 
     useEffect(() => {
-        if (pelarasanData.length > 0 && !activeBillId) { setActiveBillId(pelarasanData[0].id); }
+        const nextData = pelarasanData || [];
+        // Check if current activeBillId still exists in new data
+        const stillValid = activeBillId && nextData.some(b => b.id === activeBillId);
+        
+        if (!stillValid && nextData.length > 0) {
+            setActiveBillId(nextData[0].id);
+        } else if (nextData.length === 0) {
+            setActiveBillId(null);
+        }
     }, [pelarasanData]);
 
     const handleLibraryAddItem = (groupId: string, itemId?: string, variantId?: string) => {

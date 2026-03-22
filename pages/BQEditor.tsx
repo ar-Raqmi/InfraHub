@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { createItem, createHeader } from '../data/bqPresets';
 import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, Search, History, Clock } from 'lucide-react';
 
@@ -178,6 +178,24 @@ const BQEditor: React.FC<BQEditorProps> = ({
     const [librarySearchTerm, setLibrarySearchTerm] = useState('');
     const [templateSearchTerm, setTemplateSearchTerm] = useState('');
 
+    // Sync initialData if it changes from outside (e.g., loaded from API after mount)
+    useEffect(() => {
+        const nextBills = initialData || [];
+        if (JSON.stringify(nextBills) !== JSON.stringify(bills)) {
+            setBills(nextBills);
+            
+            // Check if current activeBillId still exists in new bills
+            const stillValid = activeBillId && nextBills.some(b => b.id === activeBillId);
+            
+            // If not valid or didn't have one, and we have bills, select the first one
+            if (!stillValid && nextBills.length > 0) {
+                setActiveBillId(nextBills[0].id);
+            } else if (nextBills.length === 0) {
+                setActiveBillId(null);
+            }
+        }
+    }, [initialData]);
+
     const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
 
     const [selectedTemplate, setSelectedTemplate] = useState<BQTemplateDefinition | null>(null);
@@ -209,7 +227,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
         count?: number;
     } | null>(null);
 
-    const currentUser = supabaseService.getCurrentUser();
+    const currentUser = apiService.getCurrentUser();
     const isAdmin = currentUser?.role === Role.ADMIN;
 
     useEffect(() => {
@@ -227,8 +245,8 @@ const BQEditor: React.FC<BQEditorProps> = ({
         const fetchData = async () => {
             try {
                 const [library, templates] = await Promise.all([
-                    supabaseService.getLibraryGroups(),
-                    supabaseService.getTemplates()
+                    apiService.getLibraryGroups(),
+                    apiService.getTemplates()
                 ]);
                 setBqLibrary(library);
                 setBqTemplates(templates);
@@ -794,7 +812,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
         // Optimistic update
         const updatedTemplates = [...bqTemplates, newTemplate];
         setBqTemplates(updatedTemplates);
-        await supabaseService.saveTemplates(updatedTemplates);
+        await apiService.saveTemplates(updatedTemplates);
 
         setIsCaptureModalOpen(false);
         setNewTemplateName('');

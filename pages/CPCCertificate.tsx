@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, User, formatDateMalay } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { Download, Loader2, X } from 'lucide-react';
 
 interface CPCCertificateProps {
@@ -20,7 +20,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
             if (project.namaSyarikat) {
                 try {
                     const year = new Date(project.tarikhBuka).getFullYear();
-                    const details = await supabaseService.getCompanyDetails(year, project.namaSyarikat);
+                    const details = await apiService.getCompanyDetails(year, project.namaSyarikat);
                     setCompanyDetails(details);
                 } catch (err) {
                     console.error('Failed to load company details:', err);

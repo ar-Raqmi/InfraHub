@@ -26,3 +26,25 @@ dist-ssr
 *.sln
 *.sw?
 wrangler.toml*
+.env.bak
+.wrangler
+.dev.vars
+temp_migration
+temp_*
+
+# Migration & Temporary
+temp_live_ids.json
+*.sql
+!schema.sql
+*.csv
+scripts/
+
+# Build and IDE extras
+.vercel
+.turbo
+.contentlayer
+*.tsbuildinfo
+*.tmp
+*.bak
+.eslintcache
+vite.config.ts.timestamp-*

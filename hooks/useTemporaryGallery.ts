@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseService, supabase } from '../services/supabaseService';
+import { apiService, api } from '../services/apiService';
 import { TemporaryImage } from '../types';
 
 export const useTemporaryGallery = () => {
@@ -13,14 +13,14 @@ export const useTemporaryGallery = () => {
         isLoading,
         isFetching,
         error
-    } = useQuery({
+    } = useQuery<any[]>({
         queryKey: ['temporary_gallery'],
-        queryFn: () => supabaseService.getTemporaryGallery(),
+        queryFn: () => apiService.getTemporaryGallery(),
     });
 
     // Supabase Real-time Subscription
     useEffect(() => {
-        const channel = supabase
+        const channel = api
             .channel('gallery-changes')
             .on(
                 'postgres_changes',
@@ -32,7 +32,7 @@ export const useTemporaryGallery = () => {
             .subscribe();
 
         return () => {
-            supabase.removeChannel(channel);
+            api.removeChannel(channel);
         };
     }, [queryClient]);
 
@@ -43,31 +43,31 @@ export const useTemporaryGallery = () => {
             userFullName: string,
             projectId?: number,
             location?: string
-        }) => supabaseService.uploadTemporaryImage(file, userId, userFullName, projectId, location),
+        }) => apiService.uploadTemporaryImage(file, userId, userFullName, projectId, location),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] }),
     });
 
     const updateImageMutation = useMutation({
         mutationFn: ({ id, location }: { id: string, location: string }) =>
-            supabaseService.updateTemporaryImageLocation(id, location),
+            apiService.updateTemporaryImageLocation(id, location),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] }),
     });
 
     const deleteMutation = useMutation({
         mutationFn: ({ id, imageUrl }: { id: string, imageUrl: string }) =>
-            supabaseService.deleteTemporaryImage(id, imageUrl),
+            apiService.deleteTemporaryImage(id, imageUrl),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] }),
     });
 
     const batchUpdateMutation = useMutation({
         mutationFn: ({ ids, location }: { ids: string[], location: string }) =>
-            supabaseService.batchUpdateTemporaryImageLocation(ids, location),
+            apiService.batchUpdateTemporaryImageLocation(ids, location),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] }),
     });
 
     const batchDeleteMutation = useMutation({
         mutationFn: (items: { id: string, imageUrl: string }[]) =>
-            supabaseService.batchDeleteTemporaryImages(items),
+            apiService.batchDeleteTemporaryImages(items),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] }),
     });
 
@@ -90,7 +90,7 @@ export const useAutoCleanupGallery = () => {
     useEffect(() => {
         const runCleanup = async () => {
             console.log("Running gallery cleanup check...");
-            await supabaseService.cleanupExpiredGalleryImages();
+            await apiService.cleanupExpiredGalleryImages();
         };
         runCleanup();
     }, []);

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { Project, User, Role, ProjectStatus, TemporaryImage } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import {
   Trash2,
   FileText,

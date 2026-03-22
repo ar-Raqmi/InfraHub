@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Project, ProjectStatus, Role, User, getStatusLabel } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { useUsers } from '../hooks/useUsers';
 import { useProjects } from '../hooks/useProjects';
 import { 
@@ -47,7 +47,7 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
   const { users: allUsers } = useUsers();
   const { projects } = useProjects();
-  const user = supabaseService.getCurrentUser();
+  const user = apiService.getCurrentUser();
 
   const [selectedTask, setSelectedTask] = useState<TaskNotification | null>(null);
   const [searchTerm, setSearchTerm] = useState('');

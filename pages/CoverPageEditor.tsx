@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Project, User, formatDate, formatCurrency } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 
 interface CoverPageEditorProps {
     project: Project;
@@ -30,7 +30,7 @@ const CoverPageEditor: React.FC<CoverPageEditorProps> = ({ project, selectedYear
 
             if (yearToFetch) {
                 try {
-                    const settings = await supabaseService.getSettings(yearToFetch);
+                    const settings: any = await apiService.getSettings(yearToFetch);
                     setMeetingDate(settings.meeting_date || '');
                     setMeetingNumber(settings.meeting_number || 'XXXX');
                 } catch (err) {

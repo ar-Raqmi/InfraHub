@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseService, supabase } from '../services/supabaseService';
+import { apiService, api } from '../services/apiService';
 import { BulletinItem } from '../types';
 
 export const useBulletins = () => {
@@ -13,11 +13,11 @@ export const useBulletins = () => {
     error 
   } = useQuery({
     queryKey: ['bulletins'],
-    queryFn: () => supabaseService.getBulletins(),
+    queryFn: () => apiService.getBulletins(),
   });
 
   useEffect(() => {
-    const channel = supabase
+    const channel = api
       .channel('bulletins-changes')
       .on(
         'postgres_changes',
@@ -29,30 +29,30 @@ export const useBulletins = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [queryClient]);
 
   const addBulletinMutation = useMutation({
     mutationFn: ({ content, author }: { content: string; author: string }) => 
-      supabaseService.addBulletin(content, author),
+      apiService.addBulletin(content, author),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulletins'] }),
   });
 
   const deleteBulletinMutation = useMutation({
-    mutationFn: (id: string) => supabaseService.deleteBulletin(id),
+    mutationFn: (id: string) => apiService.deleteBulletin(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulletins'] }),
   });
 
   const markAsReadMutation = useMutation({
     mutationFn: ({ id, userId }: { id: string; userId: number }) => 
-      supabaseService.markBulletinAsRead(id, userId),
+      apiService.markBulletinAsRead(id, userId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulletins'] }),
   });
 
   const toggleReactionMutation = useMutation({
     mutationFn: ({ id, userId, emoji }: { id: string; userId: number; emoji: string }) => 
-      supabaseService.toggleReaction(id, userId, emoji),
+      apiService.toggleReaction(id, userId, emoji),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulletins'] }),
   });
 

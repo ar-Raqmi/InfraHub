@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Role } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { Camera, Lock, Save, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, X, Info, Trash2, AlertTriangle } from 'lucide-react';
 
 interface ProfileProps {
@@ -85,7 +85,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
     setIsUploading(true);
     try {
       const compressedBase64 = await compressImage(file);
-      const updatedUser = await supabaseService.updateUser(user.id, { avatarUrl: compressedBase64 });
+      const updatedUser = await apiService.updateUser(user.id, { avatarUrl: compressedBase64 });
       setUser(updatedUser);
       if (onUserUpdate) onUserUpdate(); 
       setSuccessMessage('Gambar profil berjaya dikemaskini.');
@@ -102,7 +102,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
     setIsUploading(true);
     setIsDeleteDialogOpen(false);
     try {
-        const updatedUser = await supabaseService.updateUser(user.id, { avatarUrl: '' });
+        const updatedUser = await apiService.updateUser(user.id, { avatarUrl: '' });
         setUser(updatedUser);
         if (onUserUpdate) onUserUpdate();
         setSuccessMessage('Gambar profil telah dipadam.');
@@ -134,7 +134,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
 
     setIsUploading(true);
     try {
-        const updatedUser = await supabaseService.updateUser(user.id, { password: passwordData.new });
+        const updatedUser = await apiService.updateUser(user.id, { password: passwordData.new });
         setUser(updatedUser);
         if (onUserUpdate) onUserUpdate(); 
         setIsChangingPassword(false);

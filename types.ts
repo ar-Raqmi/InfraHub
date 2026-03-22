@@ -232,6 +232,7 @@ export interface ProjectLocation {
 
 export interface Project {
   id: number;
+  apiVersion?: string;
   updatedAt?: string; // Tracking for "Recent Changes"
 
   // --- PHASE 1: BQ BUILDING (Yellow - PJA) ---

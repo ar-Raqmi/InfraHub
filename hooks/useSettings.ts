@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseService, supabase } from '../services/supabaseService';
+import { apiService, api } from '../services/apiService';
 
 export const useSettings = (year: number) => {
   const queryClient = useQueryClient();
@@ -10,13 +10,13 @@ export const useSettings = (year: number) => {
     isLoading, 
     isFetching,
     error 
-  } = useQuery({
+  } = useQuery<any>({
     queryKey: ['settings', year],
-    queryFn: () => supabaseService.getSettings(year),
+    queryFn: () => apiService.getSettings(year),
   });
 
   useEffect(() => {
-    const channel = supabase
+    const channel = api
       .channel(`settings-changes-${year}`)
       .on(
         'postgres_changes',
@@ -33,22 +33,22 @@ export const useSettings = (year: number) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [queryClient, year]);
 
   const updateSettingsMutation = useMutation({
-    mutationFn: (updates: any) => supabaseService.updateSettings(year, updates),
+    mutationFn: (updates: any) => apiService.updateSettings(year, updates),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['settings', year] }),
   });
 
   // Derived data helpers for convenience
-  const companies = settings.companies || [];
-  const companyOrder = settings.company_order || [];
-  const votes = settings.vote_numbers || [];
-  const sebuthargaNumbers = settings.sebutharga_numbers || [];
-  const companyDetails = settings.company_details || {};
-  const manualFinancials = settings.manual_financials || { outsource: 0, ydp: 0 };
+    const companies: string[] = settings.companies || [];
+    const companyOrder: string[] = settings.company_order || [];
+    const votes: any[] = settings.vote_numbers || [];
+    const sebuthargaNumbers: string[] = settings.sebutharga_numbers || [];
+    const companyDetails: any = settings.company_details || {};
+    const manualFinancials: any = settings.manual_financials || { outsource: 0, ydp: 0 };
 
   return {
     settings,

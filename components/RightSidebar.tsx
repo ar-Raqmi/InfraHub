@@ -115,7 +115,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ projects }) => {
       {/* Inspiration Image */}
       <div className="rounded-3xl overflow-hidden shadow-md h-40 relative group border border-zinc-100">
         <img 
-          src="https://hoirqrkdgbmvpwutwuwj-all.supabase.co/storage/v1/object/public/assets/assets/256139c9-e118-4ca1-b76d-9cb35137e5c0_800w.jpg" 
+          src="https://hoirqrkdgbmvpwutwuwj-all.api.co/storage/v1/object/public/assets/assets/256139c9-e118-4ca1-b76d-9cb35137e5c0_800w.jpg" 
           className="w-full h-full object-cover transition-transform duration-500 group-" 
           alt="Inspiration" 
         />

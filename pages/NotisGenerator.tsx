@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, User, Role, formatDateMalay, formatCurrency } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { Download, Loader2, X, FileText, Calendar, User as UserIcon, Settings } from 'lucide-react';
 import StrictDateInput from '../components/StrictDateInput';
 
@@ -32,7 +32,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const users = await supabaseService.getUsers();
+                const users = await apiService.getUsers();
                 const jrs = users.filter(u => u.role === Role.JURUTERA);
                 setJuruteraList(jrs);
                 if (jrs.length > 0) {
@@ -41,7 +41,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
 
                 if (project.namaSyarikat) {
                     const year = project.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : new Date().getFullYear();
-                    const details = await supabaseService.getCompanyDetails(year, project.namaSyarikat);
+                    const details = await apiService.getCompanyDetails(year, project.namaSyarikat);
                     setCompanyDetails(details);
                 }
             } catch (err) {

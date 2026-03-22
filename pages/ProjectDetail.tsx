@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, BQGroup, formatCurrency, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, GlobalDimensions, User, Role, getCurrentDate, formatDate, ProjectLocation, BQItem, CalculationPart } from '../types';
-import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star, Megaphone, User as UserIcon, ChevronDown, Check, ShieldCheck, CloudDownload, Search } from 'lucide-react';
+import { ArrowLeft, Save, Zap, Folder, CheckCircle, Edit, Info, Calculator, Calendar, Lock, Unlock, RefreshCw, AlertCircle, FileSignature, X, Plus, HelpCircle, FileText, Download, Loader2, FileWarning, Award, Star, Megaphone, User as UserIcon, ChevronDown, Check, ShieldCheck, CloudDownload, Search, Database } from 'lucide-react';
 import BQEditor from './BQEditor';
 import BQPelarasanEditor from './BQPelarasanEditor';
 import AkuJanjiEditor from './AkuJanjiEditor';
@@ -10,7 +10,7 @@ import LoCCertificate from './LoCCertificate';
 import CPCCertificate from './CPCCertificate';
 import PrestasiCertificate from './PrestasiCertificate';
 import NotisGenerator from './NotisGenerator';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import StrictDateInput from '../components/StrictDateInput';
 import { useProjects } from '../hooks/useProjects';
 import { useUsers } from '../hooks/useUsers';
@@ -158,11 +158,18 @@ interface CostHUDProps {
   isPelarasanActive: boolean;
   isReadOnly?: boolean;
   isVerifying?: boolean;
+  hasFullData?: boolean;
   showRemoteUpdateNotice?: boolean;
   onApplyRemoteUpdate?: () => void;
+  isLoading?: boolean;
 }
 
-const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatusChange, onProgressChange, saveAction, exportAction, isPelarasanActive, isReadOnly, isVerifying, showRemoteUpdateNotice, onApplyRemoteUpdate }: CostHUDProps) => {
+const CostHUD = ({
+  grandTotal, finalTotal, extraTotal, status, progress,
+  onStatusChange, onProgressChange, saveAction, exportAction,
+  isPelarasanActive, isReadOnly, isVerifying, hasFullData,
+  showRemoteUpdateNotice, onApplyRemoteUpdate, isLoading
+}: CostHUDProps) => {
   const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '0');
   const [isEditingProgress, setIsEditingProgress] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -196,7 +203,9 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-center">
             <span className="text-[8px] font-bold text-slate-400 uppercase leading-none">{isPelarasanActive ? 'Asal' : 'Kos'}</span>
-            <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-xl text-emerald-600'}`}>{formatCurrency(grandTotal)}</p>
+            <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-xl text-emerald-600'}`}>
+              {isLoading ? "---" : formatCurrency(grandTotal)}
+            </p>
           </div>
           {isPelarasanActive && finalTotal !== undefined && (
             <>
@@ -307,7 +316,9 @@ const CostHUD = ({ grandTotal, finalTotal, extraTotal, status, progress, onStatu
               {isPelarasanActive ? 'Harga Kontrak' : 'Jumlah Kos'}
             </p>
             <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-base' : 'text-xl text-emerald-600'}`}>
-              {formatCurrency(grandTotal)}
+              {(isVerifying || !hasFullData) ? (
+                <span className="animate-pulse opacity-50 px-2 bg-slate-100 rounded text-sm font-sans uppercase tracking-tight text-slate-400">Memuatkan...</span>
+              ) : formatCurrency(grandTotal)}
             </p>
           </div>
 
@@ -356,17 +367,17 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], o
 
   // Get the latest project data from the cache (which is updated by Realtime in useProjects)
   const { data: latestProject, isFetching: isVerifying } = useQuery({
-    queryKey: ['projects', project?.id],
+    queryKey: ['projects', project?.id, 'v126'],
     queryFn: async () => {
       if (!project?.id) return null;
-      return await supabaseService.getProjectById(project.id);
+      return await apiService.getProjectById(project.id);
     },
     enabled: !!project?.id,
-    staleTime: 5000, // 5s stale time to ensure quick verification on page open
-    initialData: project
+    staleTime: 0, // Force fresh check
   });
 
-  const currentUser = supabaseService.getCurrentUser();
+const CACHE_VERSION = 'v126';
+  const currentUser = apiService.getCurrentUser();
 
   // Track if local form has unsaved changes
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -375,19 +386,34 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], o
   // Detect remote changes
   useEffect(() => {
     if (latestProject && project && latestProject.id === project.id) {
-      // If the updatedAt or a deep compare shows it's newer than what we started with
-      if (latestProject.updatedAt !== project.updatedAt) {
-        if (!hasUnsavedChanges) {
-          // Auto-sync if user hasn't touched anything
-          setFormData(latestProject);
-          if (onShowToast) onShowToast("Data dikemaskini secara automatik dari awan.", "info");
-        } else {
-          // Show notice if user has edits
+      const hasFullDataLocally = formData?.bqData && formData.bqData.length > 0;
+      const hasFullDataRemotely = latestProject?.bqData && latestProject.bqData.length > 0;
+      
+      // Safety Mapper for any legacy properties
+      const mappedLatest = {
+        ...latestProject,
+        kosProjek: latestProject.kosProjek ?? (latestProject as any).kos_projek ?? 0,
+        namaProjek: latestProject.namaProjek ?? (latestProject as any).nama_projek ?? '',
+      } as Project;
+
+      // Force sync if we are moving from a stale (snake_case) or legacy object to the new v125 structure
+      const isVersionMismatch = (!formData?.apiVersion && mappedLatest?.apiVersion === CACHE_VERSION) || (formData?.apiVersion && formData.apiVersion !== CACHE_VERSION && mappedLatest?.apiVersion === CACHE_VERSION);
+      const needsInitialSync = (!hasFullDataLocally && hasFullDataRemotely) || isVersionMismatch;
+      const needsUpdateSync = latestProject.updatedAt !== project.updatedAt;
+
+      if (needsInitialSync || needsUpdateSync) {
+        if (!hasUnsavedChanges || needsInitialSync) {
+          console.log(`[ProjectDetail] Syncing data. InitialSync: ${needsInitialSync}, UpdateSync: ${needsUpdateSync}`);
+          setFormData(mappedLatest);
+          if (onShowToast && needsUpdateSync && !needsInitialSync) {
+            onShowToast("Data dikemaskini secara automatik dari awan.", "info");
+          }
+        } else if (needsUpdateSync) {
           setShowRemoteUpdateNotice(true);
         }
       }
     }
-  }, [latestProject]);
+  }, [latestProject, project?.id]);
 
   const handleApplyRemoteUpdate = () => {
     if (latestProject) {
@@ -405,9 +431,23 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], o
     setIsSwitcherOpen(false);
     setSwitcherSearchQuery('');
 
+    // Defensive mapping to handle stale snake_case data from old cached project list
+    const mappedProject = project ? {
+      ...project,
+      namaProjek: project.namaProjek || (project as any).nama_projek,
+      noAduan: project.noAduan || (project as any).no_aduan,
+      lokasi: project.lokasi || (project as any).lokasi,
+      bp: project.bp || (project as any).bp,
+      zon: project.zon || (project as any).zon,
+      mukim: project.mukim || (project as any).mukim,
+      pjaId: project.pjaId || (project as any).pja_id,
+      kosProjek: project.kosProjek !== undefined ? project.kosProjek : (project as any).kos_projek,
+      tarikhBuka: project.tarikhBuka || (project as any).tarikh_buka,
+    } : null;
+
     // Reset formData to the new project's data (or blank defaults for new project)
-    const initialPja = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (project?.pjaId || 0);
-    setFormData(project || {
+    const initialPja = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (mappedProject?.pjaId || 0);
+    setFormData((mappedProject as Project) || {
       namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(),
       pjaId: initialPja, bp: '', zon: '', mukim: '', lokasi: '',
       status: ProjectStatus.FASA_DRAF,
@@ -939,7 +979,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], o
     const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     const dateObj = formData.tarikhBuka ? new Date(formData.tarikhBuka) : new Date();
     const formattedDate = `${monthNames[dateObj.getMonth()]} ${year}`;
-    const settings = await supabaseService.getSettings(year);
+    const settings: any = await apiService.getSettings(year);
     const meetingDate = settings.meeting_date || '.........................';
     const meetingNumber = settings.meeting_number || 'XXXX';
 
@@ -1693,7 +1733,11 @@ Jabatan Kejuruteraan` }],
 
   const grandTotal = formData.bqData?.reduce((acc, group) => {
     const gSum = group.items.reduce((itemSum, item) => {
-      const val = Number(item.amount) || 0;
+      // Robust calculation: use amount if present, otherwise derive from qty * rate
+      let val = Number(item.amount);
+      if (!val || isNaN(val)) {
+        val = (Number(item.qty) || 0) * (Number(item.rate) || 0);
+      }
       return itemSum + (isNaN(val) ? 0 : val);
     }, 0);
     return acc + gSum;
@@ -1719,24 +1763,43 @@ Jabatan Kejuruteraan` }],
   const bluePhaseClass = "bg-white/80 border border-blue-500/30 p-8 rounded-3xl animate-fade-in shadow-xl relative overflow-hidden";
   const orangePhaseClass = "bg-white/80 border border-orange-500/30 p-8 rounded-3xl animate-fade-in shadow-xl relative overflow-hidden";
 
+  const isDataMissing = (!formData.bqData || formData.bqData.length === 0);
+  const isStillLoading = isVerifying || (formData.kosProjek > 0 && isDataMissing);
+
   return (
     <div className="relative min-h-screen text-slate-900 pb-20">
+      {/* Loading Overlay (Data-Driven for Slow Connections) */}
+      {isStillLoading && (
+        <div className="fixed inset-0 z-[100] bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-500">
+          <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-emerald-500/10 border border-slate-100 flex flex-col items-center gap-6 max-w-sm mx-auto">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-slate-100 border-t-emerald-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Database className="w-6 h-6 text-emerald-600 animate-pulse" />
+              </div>
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-jakarta font-bold text-slate-800">Menyalin Data...</h3>
+              <p className="text-sm text-slate-500 leading-relaxed px-4">
+                Sila tunggu sebentar sementara maklumat penuh projek sedang diproses. <br/> Ini mungkin mengambil masa pada sambungan perlahan.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <CostHUD
         grandTotal={grandTotal}
-        finalTotal={finalTotalDisplay}
-        extraTotal={formData.bqPelarasanExtra}
-        isPelarasanActive={activeTab === 'phase3'}
-        status={formData.status || ProjectStatus.MENUNGGU_LANTIKAN}
+        finalTotal={activeTab === 'phase3' ? finalTotalDisplay : undefined}
+        status={formData.status}
         progress={formData.peratusSiap || 0}
-        onStatusChange={handleInputChange}
-        onProgressChange={(val) => {
-          setFormData(prev => ({ ...prev, peratusSiap: val }));
-          setHasUnsavedChanges(true);
-        }}
+        onStatusChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
+        onProgressChange={(val) => setFormData({ ...formData, peratusSiap: val })}
         saveAction={actionButtons}
         exportAction={exportAction}
+        isPelarasanActive={activeTab === 'phase3'}
         isReadOnly={isGlobalReadOnly}
         isVerifying={isVerifying}
+        hasFullData={formData.bqData && formData.bqData.length > 0}
         showRemoteUpdateNotice={showRemoteUpdateNotice}
         onApplyRemoteUpdate={handleApplyRemoteUpdate}
       />

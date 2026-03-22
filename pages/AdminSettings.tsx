@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { useSettings } from '../hooks/useSettings';
 import { useBulletins } from '../hooks/useBulletins';
 import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2 } from 'lucide-react';
@@ -235,8 +235,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         const loadLibraryAndTemplates = async () => {
             try {
                 const [library, loadedTemplates] = await Promise.all([
-                    supabaseService.getLibraryGroups(),
-                    supabaseService.getTemplates()
+                    apiService.getLibraryGroups(),
+                    apiService.getTemplates()
                 ]);
                 setLibraryGroups(library);
                 const categories = Array.from(new Set(library.map(g => g.category)));
@@ -296,7 +296,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         newTemplates[targetIndex] = temp;
 
         setTemplates(newTemplates);
-        await supabaseService.saveTemplates(newTemplates);
+        await apiService.saveTemplates(newTemplates);
     };
 
     const initiateDelete = (type: 'COMPANY' | 'VOTE' | 'SEBUTHARGA' | 'PRESET_GROUP' | 'TEMPLATE', value: string) => {
@@ -320,9 +320,9 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         } else if (type === 'PRESET_GROUP') {
             const newGroups = libraryGroups.filter(g => g.id !== value);
             setLibraryGroups(newGroups);
-            await supabaseService.saveLibraryGroups(newGroups);
+            await apiService.saveLibraryGroups(newGroups);
         } else if (type === 'TEMPLATE') {
-            await supabaseService.deleteTemplate(value);
+            await apiService.deleteTemplate(value);
             const newTemplates = templates.filter(t => t.id !== value);
             setTemplates(newTemplates);
         }
@@ -394,7 +394,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         setIsSavingLibrary(true);
         setLibraryGroups(newGroups);
         try {
-            await supabaseService.saveLibraryGroups(newGroups);
+            await apiService.saveLibraryGroups(newGroups);
         } catch (err) {
             console.error('Failed to save library:', err);
         } finally {
@@ -589,7 +589,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         else newTemplates.push(template);
 
         setTemplates(newTemplates);
-        await supabaseService.saveTemplates(newTemplates);
+        await apiService.saveTemplates(newTemplates);
         setIsEditTemplateModalOpen(false);
         setEditingTemplate(null);
     };

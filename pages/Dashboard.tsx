@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, BulletinItem, getStatusColor, getStatusLabel } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { useBulletins } from '../hooks/useBulletins';
 import { useUsers } from '../hooks/useUsers';
 import { Bell, TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote, ClipboardCheck, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart, Loader2 } from 'lucide-react';
@@ -312,7 +312,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900  font-manrope font-extrabold mb-2">
-            Selamat Datang, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">{user.username.charAt(0).toUpperCase() + user.username.slice(1)}</span> ✨
+            Selamat Datang, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">{(user.username || 'Pengguna').charAt(0).toUpperCase() + (user.username || 'Pengguna').slice(1)}</span> ✨
           </h1>
           <div className="flex items-center gap-2 text-slate-500">
             <Activity className="w-4 h-4 text-emerald-500" />
@@ -364,7 +364,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
               {user.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
               ) : (
-                user.username.substring(0, 2).toUpperCase()
+                (user.username || '??').substring(0, 2).toUpperCase()
               )}
             </div>
             <div className="hidden sm:block text-left">
@@ -479,7 +479,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                           {user.avatarUrl ? (
                             <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover rounded-xl" />
                           ) : (
-                            user.fullName.charAt(0)
+                            (user.fullName || 'U').charAt(0)
                           )}
                         </div>
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">

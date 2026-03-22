@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseService, supabase } from '../services/supabaseService';
+import { apiService, api } from '../services/apiService';
 import { User } from '../types';
 
 export const useUsers = () => {
@@ -13,11 +13,11 @@ export const useUsers = () => {
     error 
   } = useQuery({
     queryKey: ['users'],
-    queryFn: () => supabaseService.getUsers(),
+    queryFn: () => apiService.getUsers(),
   });
 
   useEffect(() => {
-    const channel = supabase
+    const channel = api
       .channel('users-changes')
       .on(
         'postgres_changes',
@@ -29,23 +29,23 @@ export const useUsers = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [queryClient]);
 
   const addUserMutation = useMutation({
-    mutationFn: (user: Omit<User, 'id'>) => supabaseService.addUser(user),
+    mutationFn: (user: Omit<User, 'id'>) => apiService.addUser(user),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 
   const updateUserMutation = useMutation({
     mutationFn: ({ id, updates }: { id: number; updates: Partial<User> }) => 
-      supabaseService.updateUser(id, updates),
+      apiService.updateUser(id, updates),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (id: number) => supabaseService.deleteUser(id),
+    mutationFn: (id: number) => apiService.deleteUser(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 

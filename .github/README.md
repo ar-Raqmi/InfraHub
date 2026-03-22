@@ -114,7 +114,9 @@ Each project goes through **6 phases**:
 ```
 Frontend:    React 19 + TypeScript
 Styling:     Tailwind CSS
-Database:    PostgreSQL
+Database:    Cloudflare D1 (SQLite)
+Storage:     Cloudflare R2 (Object Storage)
+API:         Cloudflare Workers (Hono)
 Icons:       Lucide React
 PDF:         jsPDF + @react-pdf/renderer
 Build:       Vite
@@ -128,9 +130,9 @@ Photo Edit:  Konva (React-Konva) for image annotations
 ### Prerequisites
 
 - Node.js (version 18+)
-- PostgreSQL
+- Cloudflare Wrangler (`npx wrangler login`)
 
-### Installation Steps
+### Installation & Development
 
 ```bash
 # 1. Clone the repository
@@ -140,16 +142,14 @@ cd InfraHub
 # 2. Install dependencies
 npm install
 
-# 3. Set up environment variables (If you use Supabase)
-# Create a .env file with:
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+# 3. Initialize Database (D1 Local)
+npx wrangler d1 execute infrahub-db --file=schema.sql --local
 
 # 4. Run the development server
 npm run dev
 
 # 5. Open browser at
-http://localhost:5173 or http://localhost:3000 
+http://localhost:3000
 ```
 
 ### Build for Production
@@ -166,7 +166,7 @@ npm run preview
 
 ## 💾 Database Structure
 
-The system designed for **Supabase** with main tables:
+The system is powered by **Cloudflare D1** with main tables:
 
 | Table | Purpose |
 |-------|---------|
@@ -175,6 +175,7 @@ The system designed for **Supabase** with main tables:
 | `system_settings` | Yearly settings (companies, votes, templates) |
 | `library_groups` | BQ preset templates |
 | `bulletins` | Dashboard announcements |
+| `temporary_gallery` | Site images storage tracking |
 
 ---
 

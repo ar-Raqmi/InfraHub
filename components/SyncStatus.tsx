@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw, ShieldCheck, Zap, Globe } from 'lucide-react';
 import { useIsFetching } from '@tanstack/react-query';
-import { supabase } from '../services/supabaseService';
+import { api } from '../services/apiService';
 
 export const SyncStatus: React.FC = () => {
   // Real count of active network requests from React Query
@@ -23,13 +23,13 @@ export const SyncStatus: React.FC = () => {
 
   // Monitor Supabase Realtime Channel
   useEffect(() => {
-    const channel = supabase.channel('system-status')
+    const channel = api.channel('system-status')
       .subscribe((status) => {
         setRealtimeStatus(status as any);
       });
     
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, []);
 

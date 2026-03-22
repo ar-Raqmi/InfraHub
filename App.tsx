@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { User, Project } from './types';
-import { supabaseService } from './services/supabaseService';
+import { apiService } from './services/apiService';
 import Sidebar from './components/Sidebar';
 import { SyncStatus } from './components/SyncStatus';
 import { useProjects } from './hooks/useProjects';
@@ -92,7 +92,7 @@ function App() {
   };
 
   const refreshUser = () => {
-    const currentUser = supabaseService.getCurrentUser();
+    const currentUser = apiService.getCurrentUser();
     setUser(currentUser ? { ...currentUser } : null);
   };
 
@@ -115,7 +115,7 @@ function App() {
   };
 
   const handleLogout = async () => {
-    await supabaseService.logout();
+    await apiService.logout();
     setUser(null);
     showToast('Anda telah log keluar.', 'info');
   };

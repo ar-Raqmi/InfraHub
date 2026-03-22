@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, formatCurrency, getStatusColor, getStatusLabel, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay, Role } from '../types';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { useUsers } from '../hooks/useUsers';
 import { useProjects } from '../hooks/useProjects';
 import { useSettings } from '../hooks/useSettings';

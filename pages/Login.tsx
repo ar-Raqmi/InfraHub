@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabaseService } from '../services/supabaseService';
+import { apiService } from '../services/apiService';
 import { User as UserType } from '../types';
 import { HardHat, User, Lock, ArrowRight } from 'lucide-react';
 
@@ -18,7 +18,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setLoading(true);
     setError('');
     try {
-      const user = await supabaseService.login(username, password);
+      const user = await apiService.login(username, password);
       onLogin(user);
     } catch (err) {
       setError('Nama pengguna atau kata laluan salah.');
