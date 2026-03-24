@@ -10,6 +10,7 @@
     "dev:backend:remote": "wrangler pages dev --port 8788 --remote",
     "dev:remote": "concurrently \"npm run dev:frontend\" \"npm run dev:backend:remote\"",
     "deploy:testing": "npm run build && npx wrangler pages deploy dist --project-name infrahub --branch testing-d1",
+    "deploy:prod": "npm run build && npx wrangler pages deploy dist --project-name infrahub --branch main",
     "build": "vite build",
     "preview": "vite preview",
     "seed": "tsx scripts/seed.ts"
