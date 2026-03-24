@@ -1,7 +1,7 @@
 import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, Role, CompanyDetail, VoteDefinition, TemporaryImage } from '../types';
 
 class CloudflareService {
-    private apiVersion = 'v125';
+    private apiVersion = 'v126';
     private currentUser: User | null = null;
     private baseUrl = '/api';
 

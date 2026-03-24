@@ -14,6 +14,14 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api')
 
+// Global Middleware to disable caching for API calls
+app.use('*', async (c, next) => {
+  await next()
+  c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
+  c.header('Pragma', 'no-cache')
+  c.header('Expires', '0')
+})
+
 // Mount sub-routers
 app.route('/projects', projectApp)
 app.route('/users', userApp)

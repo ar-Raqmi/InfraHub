@@ -29,5 +29,5 @@ export const queryClient = new QueryClient({
 export const persister = createSyncStoragePersister({
   storage: window.localStorage,
   // We can add a key prefix to avoid collisions
-  key: 'INFRAHUB_OFFLINE_CACHE',
+  key: 'INFRAHUB_OFFLINE_CACHE_V2',
 });
