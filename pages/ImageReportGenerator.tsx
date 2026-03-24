@@ -1263,7 +1263,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   </div>
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (didLongPressRef.current) {
                           didLongPressRef.current = false;
                           return;
@@ -1272,9 +1272,25 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                         if (isSelectionMode) {
                           toggleSelection(img.id);
                         } else {
-                          if (currentStep === 2) { setMapImage(img.imageUrl); }
-                          else if (currentStep === 3) { processImageData(img.imageUrl, 'site'); }
-                          else { alert("Sila pilih langkah pertama/kedua dahulu."); }
+                          if (currentStep === 2 || currentStep === 3) {
+                            try {
+                              const res = await fetch(img.imageUrl, { cache: 'no-cache', mode: 'cors' });
+                              const blob = await res.blob();
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                const base64 = ev.target?.result as string;
+                                if (currentStep === 2) setMapImage(base64);
+                                else if (currentStep === 3) processImageData(base64, 'site');
+                              };
+                              reader.readAsDataURL(blob);
+                            } catch (err) {
+                              console.error("Gagal mendapatkan imej sebagai base64:", err);
+                              if (currentStep === 2) setMapImage(img.imageUrl);
+                              else if (currentStep === 3) processImageData(img.imageUrl, 'site');
+                            }
+                          } else {
+                            alert("Sila pilih langkah pertama/kedua dahulu.");
+                          }
                         }
                       }}
                       className="w-full h-full absolute inset-0 bg-transparent cursor-pointer z-10"
