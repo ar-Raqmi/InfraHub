@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 
 type Bindings = {
   DB: D1Database
@@ -6,6 +7,8 @@ type Bindings = {
 }
 
 export const storageApp = new Hono<{ Bindings: Bindings }>()
+
+storageApp.use('*', cors())
 
 const mapTemporaryImageFromRow = (row: any) => ({
   id: row.id,
@@ -26,7 +29,7 @@ storageApp.get('/gallery', async (c) => {
 // POST /api/storage/upload
 storageApp.post('/upload', async (c) => {
   const formData = await c.req.formData()
-  
+
   const file = formData.get('file') as File
   const userId = formData.get('userId') as string
   const userFullName = formData.get('userFullName') as string
@@ -40,7 +43,7 @@ storageApp.post('/upload', async (c) => {
   // Upload to R2 Bucket
   const fileExt = 'jpg'
   const fileName = `${userId}_${Date.now()}.${fileExt}`
-  
+
   await c.env.BUCKET.put(fileName, await file.arrayBuffer(), {
     httpMetadata: { contentType: file.type || 'image/jpeg' }
   })
@@ -48,8 +51,7 @@ storageApp.post('/upload', async (c) => {
   // We need the public URL of the uploaded image. 
   // R2 buckets require a custom domain. We assume one is set up based on the Worker's host.
   // Using the worker's own endpoint to serve images for simplicity during migration:
-  const origin = new URL(c.req.url).origin
-  const imageUrl = `${origin}/api/storage/file/${fileName}`
+  const imageUrl = `/api/storage/file/${fileName}`
 
   const newId = Date.now().toString()
   const dbItem = {
@@ -78,9 +80,9 @@ storageApp.post('/upload', async (c) => {
 storageApp.get('/file/:filename', async (c) => {
   const filename = c.req.param('filename')
   const object = await c.env.BUCKET.get(filename)
-  
+
   if (!object) return c.json({ error: 'Not found' }, 404)
-  
+
   c.header('Content-Type', object.httpMetadata?.contentType || 'image/jpeg')
   c.header('Cache-Control', 'public, max-age=31536000') // Cache for 1 year
   return c.body(object.body)
@@ -119,7 +121,7 @@ storageApp.delete('/gallery/:id', async (c) => {
 // DELETE /api/storage/gallery/cleanup
 storageApp.delete('/cleanup', async (c) => {
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  
+
   // Find expired
   const { results: expiredImages } = await c.env.DB.prepare(
     'SELECT id, image_url FROM temporary_gallery WHERE created_at < ?'

@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { handle } from 'hono/cloudflare-pages'
 
 import { projectApp } from './routes/projects'
@@ -13,6 +14,8 @@ type Bindings = {
 }
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api')
+
+app.use('*', cors())
 
 // Disable caching for DATA routes (Projects & System) - GET ONLY
 app.use('/projects/*', async (c, next) => {

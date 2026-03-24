@@ -1274,7 +1274,15 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                         } else {
                           if (currentStep === 2 || currentStep === 3) {
                             try {
-                              const res = await fetch(img.imageUrl, { cache: 'no-cache', mode: 'cors' });
+                              // Use a cache-buster to ensure we get the fresh CORS headers
+                              const cacheBuster = `?t=${Date.now()}`;
+                              const urlWithBuster = img.imageUrl.includes('?') 
+                                ? `${img.imageUrl}&t=${Date.now()}` 
+                                : `${img.imageUrl}${cacheBuster}`;
+                              
+                              const res = await fetch(urlWithBuster, { cache: 'no-cache', mode: 'cors' });
+                              if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+                              
                               const blob = await res.blob();
                               const reader = new FileReader();
                               reader.onload = (ev) => {
@@ -1284,7 +1292,8 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                               };
                               reader.readAsDataURL(blob);
                             } catch (err) {
-                              console.error("Gagal mendapatkan imej sebagai base64:", err);
+                              console.error("Gagal mendapatkan imej:", err);
+                              // Fallback to direct URL if fetch fails
                               if (currentStep === 2) setMapImage(img.imageUrl);
                               else if (currentStep === 3) processImageData(img.imageUrl, 'site');
                             }
