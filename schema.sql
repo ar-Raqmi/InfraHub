@@ -121,7 +121,9 @@ CREATE TABLE system_settings (
   company_details TEXT DEFAULT '{}',
   vote_numbers TEXT DEFAULT '[]',
   sebutharga_numbers TEXT DEFAULT '[]',
-  manual_financials TEXT DEFAULT '{"outsource":0,"ydp":0}'
+  manual_financials TEXT DEFAULT '{"outsource":0,"ydp":0}',
+  meeting_date TEXT,
+  meeting_number TEXT
 );
 
 DROP TABLE IF EXISTS temporary_gallery;

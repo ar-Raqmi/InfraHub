@@ -27,7 +27,9 @@ systemApp.get('/settings/:year', async (c) => {
     company_details: parseJsonObject(row.company_details as string),
     vote_numbers: parseJsonArray(row.vote_numbers as string),
     sebutharga_numbers: parseJsonArray(row.sebutharga_numbers as string),
-    manual_financials: parseJsonObject(row.manual_financials as string)
+    manual_financials: parseJsonObject(row.manual_financials as string),
+    meeting_date: row.meeting_date as string | null,
+    meeting_number: row.meeting_number as string | null
   })
 })
 
@@ -47,6 +49,8 @@ systemApp.put('/settings/:year', async (c) => {
   if (body.vote_numbers !== undefined) dbUpdates.vote_numbers = JSON.stringify(body.vote_numbers)
   if (body.sebutharga_numbers !== undefined) dbUpdates.sebutharga_numbers = JSON.stringify(body.sebutharga_numbers)
   if (body.manual_financials !== undefined) dbUpdates.manual_financials = JSON.stringify(body.manual_financials)
+  if (body.meeting_date !== undefined) dbUpdates.meeting_date = body.meeting_date
+  if (body.meeting_number !== undefined) dbUpdates.meeting_number = body.meeting_number
 
   const keys = Object.keys(dbUpdates)
   const values = Object.values(dbUpdates)
