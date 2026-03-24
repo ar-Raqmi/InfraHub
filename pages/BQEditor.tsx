@@ -170,6 +170,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
     readOnly = false
 }) => {
     const [activeBillId, setActiveBillId] = useState<string | null>(null);
+    const isFirstMount = useRef(true);
     const [bills, setBills] = useState<BQGroup[]>(initialData || []);
     const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
     const [bqTemplates, setBqTemplates] = useState<BQTemplateDefinition[]>([]);
@@ -180,6 +181,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
     // Sync initialData if it changes from outside (e.g., loaded from API after mount)
     useEffect(() => {
+        if (!initialData || initialData.length === 0) {
+            // Avoid wiping state if we already have bills and incoming data is empty (likely a query reload)
+            if (bills.length > 0) return;
+        }
+
         const nextBills = (initialData || []).map(bill => ({
             ...bill,
             items: (bill.items || []).map(item => ({
@@ -272,7 +278,20 @@ const BQEditor: React.FC<BQEditorProps> = ({
         fetchData();
     }, []);
 
-    useEffect(() => { onDataChange(bills); }, [bills]);
+    useEffect(() => {
+        // Guard against reporting empty data back to parent during initial mount or reload
+        if (isFirstMount.current) {
+            isFirstMount.current = false;
+            // If we have data on first mount, we can report it (e.g. recovered dims)
+            // But if it's empty, and the parent likely has data coming, we skip reporting.
+            if (bills.length === 0) return;
+        }
+
+        if (bills.length === 0 && (initialData && initialData.length > 0)) {
+            return;
+        }
+        onDataChange(bills);
+    }, [bills]);
 
     useEffect(() => {
         if (bills.length > 0 && !activeBillId) { setActiveBillId(bills[0].id); }

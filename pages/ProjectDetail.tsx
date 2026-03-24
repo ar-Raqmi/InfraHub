@@ -447,24 +447,41 @@ const CACHE_VERSION = 'v126';
 
     // Reset formData to the new project's data (or blank defaults for new project)
     const initialPja = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (mappedProject?.pjaId || 0);
-    setFormData((mappedProject as Project) || {
-      namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(),
-      pjaId: initialPja, bp: '', zon: '', mukim: '', lokasi: '',
-      status: ProjectStatus.FASA_DRAF,
-      bqData: [],
-      bqDataPelarasan: [],
-      globalDimensions: { length: 0, width: 0, depth: 0 },
-      locationDimensions: {},
-      locationDimensionsPelarasan: {},
-      coverJawatan: (currentUser?.role === Role.PJA && !project) ? currentUser.jawatan : '',
-      coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
-      coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
-      prestasiScores: [0, 0, 0, 0, 0, 0],
-      skop: undefined,
-      noInbois: '',
-      isManualMulaKontrak: false,
-      isManualMulaKerja: false,
-      isLocDeductionEnabled: false
+    
+    setFormData(prev => {
+      // Check if we are switching TO the same project ID (refresh) or a DIFFERENT one
+      const isSameProject = project?.id && prev?.id === project.id;
+      
+      const nextData: Partial<Project> = (mappedProject as Project) || {
+        namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(),
+        pjaId: initialPja, bp: '', zon: '', mukim: '', lokasi: '',
+        status: ProjectStatus.FASA_DRAF,
+        bqData: [],
+        bqDataPelarasan: [],
+        globalDimensions: { length: 0, width: 0, depth: 0 },
+        locationDimensions: {},
+        locationDimensionsPelarasan: {},
+        coverJawatan: (currentUser?.role === Role.PJA && !project) ? currentUser.jawatan : '',
+        coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
+        coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
+        prestasiScores: [0, 0, 0, 0, 0, 0],
+        skop: undefined,
+        noInbois: '',
+        isManualMulaKontrak: false,
+        isManualMulaKerja: false,
+        isLocDeductionEnabled: false
+      };
+
+      // CRITICAL: If the incoming project is "Partial" (from Dashboard list) but we already have 
+      // "Full" data in the local state for THIS project, PRESERVE the full data.
+      if (isSameProject) {
+        if (!nextData.bqData?.length && prev.bqData?.length) nextData.bqData = prev.bqData;
+        if (!nextData.bqDataPelarasan?.length && prev.bqDataPelarasan?.length) nextData.bqDataPelarasan = prev.bqDataPelarasan;
+        if (!nextData.locationDimensions && prev.locationDimensions) nextData.locationDimensions = prev.locationDimensions;
+        if (!nextData.globalCalculations && prev.globalCalculations) nextData.globalCalculations = prev.globalCalculations;
+      }
+
+      return nextData;
     });
 
     // Reset tempoh values
@@ -950,11 +967,18 @@ const CACHE_VERSION = 'v126';
     setHasUnsavedChanges(true);
   };
   const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[]) => {
+    if (bqDataPelarasan.length === 0 && (formData.bqDataPelarasan && formData.bqDataPelarasan.length > 0)) {
+       return;
+    }
     setFormData(prev => ({ ...prev, bqDataPelarasan }));
     setHasUnsavedChanges(true);
   };
 
   const handleBQChange = (bqData: BQGroup[]) => {
+    if (bqData.length === 0 && (formData.bqData && formData.bqData.length > 0)) {
+       // Ignore accidental wipes during initialization sync
+       return;
+    }
     setFormData(prev => ({ ...prev, bqData }));
     setHasUnsavedChanges(true);
   };
