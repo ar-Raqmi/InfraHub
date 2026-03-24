@@ -15,7 +15,20 @@ export const useTemporaryGallery = () => {
         error
     } = useQuery<any[]>({
         queryKey: ['temporary_gallery'],
-        queryFn: () => apiService.getTemporaryGallery(),
+        queryFn: async () => {
+            const data = await apiService.getTemporaryGallery();
+            return data.map((img: any) => {
+                if (typeof img.imageUrl === 'string' && img.imageUrl.startsWith('http') && img.imageUrl.includes('pages.dev')) {
+                    try {
+                        const url = new URL(img.imageUrl);
+                        return { ...img, imageUrl: url.pathname + url.search };
+                    } catch (e) {
+                        return img;
+                    }
+                }
+                return img;
+            });
+        },
     });
 
 
