@@ -25,13 +25,13 @@ storageApp.get('/gallery', async (c) => {
 
 // POST /api/storage/upload
 storageApp.post('/upload', async (c) => {
-  const formData = await c.req.parseBody()
+  const formData = await c.req.formData()
   
-  const file = formData['file'] as File
-  const userId = formData['userId'] as string
-  const userFullName = formData['userFullName'] as string
-  const projectId = formData['projectId'] as string | undefined
-  const location = formData['location'] as string | undefined
+  const file = formData.get('file') as File
+  const userId = formData.get('userId') as string
+  const userFullName = formData.get('userFullName') as string
+  const projectId = formData.get('projectId') as string | undefined
+  const location = formData.get('location') as string | undefined
 
   if (!file || !userId || !userFullName) {
     return c.json({ error: 'Missing required fields' }, 400)

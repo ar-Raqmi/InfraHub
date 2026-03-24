@@ -14,12 +14,34 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api')
 
-// Global Middleware to disable caching for API calls
-app.use('*', async (c, next) => {
+// Disable caching for DATA routes (Projects & System) - GET ONLY
+app.use('/projects/*', async (c, next) => {
   await next()
-  c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
-  c.header('Pragma', 'no-cache')
-  c.header('Expires', '0')
+  if (c.req.method === 'GET') {
+    c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
+  }
+})
+app.use('/system/*', async (c, next) => {
+  await next()
+  if (c.req.method === 'GET') {
+    c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
+  }
+})
+
+// Allow caching for STORAGE FILES (Images) - GET ONLY
+app.use('/storage/file/*', async (c, next) => {
+  await next()
+  if (c.req.method === 'GET') {
+    c.header('Cache-Control', 'public, max-age=3600') // Cache for 1 hour
+  }
+})
+
+// Gallery List must be fresh - GET ONLY
+app.use('/storage/gallery', async (c, next) => {
+  await next()
+  if (c.req.method === 'GET') {
+    c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
+  }
 })
 
 // Mount sub-routers

@@ -18,23 +18,6 @@ export const useTemporaryGallery = () => {
         queryFn: () => apiService.getTemporaryGallery(),
     });
 
-    // Supabase Real-time Subscription
-    useEffect(() => {
-        const channel = api
-            .channel('gallery-changes')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'temporary_gallery' },
-                () => {
-                    queryClient.invalidateQueries({ queryKey: ['temporary_gallery'] });
-                }
-            )
-            .subscribe();
-
-        return () => {
-            api.removeChannel(channel);
-        };
-    }, [queryClient]);
 
     const uploadMutation = useMutation({
         mutationFn: ({ file, userId, userFullName, projectId, location }: {
