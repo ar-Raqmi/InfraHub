@@ -837,29 +837,44 @@ const CACHE_VERSION = 'v126';
     const bqSum = formData.bqDataPelarasan?.reduce((acc, group) => {
       const gSum = group.items.reduce((itemSum, item) => {
         const val = Number(item.amount) || 0;
-        return itemSum + (isNaN(val) ? 0 : val);
+        return itemSum + val;
       }, 0);
       return acc + gSum;
     }, 0);
 
-    const rawAdjustedBqSum = (bqSum === 0 && (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0))
-      ? (formData.kosProjek ?? 0)
-      : (bqSum ?? (formData.kosProjek ?? 0));
+    const bqOriginalSum = formData.bqData?.reduce((acc, group) => {
+      const gSum = group.items.reduce((itemSum, item) => {
+        const val = Number(item.amount) || 0;
+        return itemSum + val;
+      }, 0);
+      return acc + gSum;
+    }, 0) || 0;
 
-    const contractPrice = formData.kosProjek || 0;
+    const bqSumVal = bqSum || 0;
+    const hasPelarasan = formData.bqDataPelarasan && formData.bqDataPelarasan.length > 0;
+    
+    const rawAdjustedBqSum = (bqSumVal === 0 && !hasPelarasan)
+      ? (Number(formData.kosProjek) || 0)
+      : bqSumVal;
+
+    const contractPrice = Number(formData.kosProjek) || 0;
     const cappedAdjustedBqSum = Math.min(rawAdjustedBqSum, contractPrice);
     const extraPrice = Math.max(0, rawAdjustedBqSum - contractPrice);
 
-    const finalCalculatedTotal = cappedAdjustedBqSum - (formData.ladAmount || 0) - (formData.locAmount || 0) - (formData.wangTahanan || 0);
+    const ladAmount = Number(formData.ladAmount) || 0;
+    const locAmount = Number(formData.locAmount) || 0;
+    const wangTahanan = Number(formData.wangTahanan) || 0;
 
-    if (formData.kosSebenar !== finalCalculatedTotal || formData.bqPelarasanExtra !== extraPrice) {
+    const finalCalculatedTotal = cappedAdjustedBqSum - ladAmount - locAmount - wangTahanan;
+
+    if (Number(formData.kosSebenar) !== finalCalculatedTotal || Number(formData.bqPelarasanExtra) !== extraPrice) {
       setFormData(prev => ({
         ...prev,
-        kosSebenar: Math.max(0, finalCalculatedTotal),
-        bqPelarasanExtra: extraPrice
+        kosSebenar: Math.max(0, parseFloat(finalCalculatedTotal.toFixed(2))),
+        bqPelarasanExtra: parseFloat(extraPrice.toFixed(2))
       }));
     }
-  }, [formData.bqDataPelarasan, formData.ladAmount, formData.locAmount, formData.wangTahanan, formData.kosProjek]);
+  }, [formData.bqDataPelarasan, formData.ladAmount, formData.locAmount, formData.wangTahanan, formData.kosProjek, formData.bqData]);
 
   useEffect(() => {
     if (!formData.isManualMulaKontrak && formData.tarikhCetakanBpp) { const newDate = addDaysSkippingWeekends(formData.tarikhCetakanBpp, 2); if (newDate && newDate !== formData.tarikhMulaKontrak) { setFormData(prev => ({ ...prev, tarikhMulaKontrak: newDate })); } }
@@ -946,10 +961,14 @@ const CACHE_VERSION = 'v126';
 
   useEffect(() => {
     const total = formData.bqData?.reduce((acc, group) => {
-      return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
+      const gSum = group.items.reduce((itemSum, item) => {
+        return itemSum + (Number(item.amount) || 0);
+      }, 0);
+      return acc + gSum;
     }, 0) || 0;
-    if (formData.kosProjek !== total) {
-      setFormData(prev => ({ ...prev, kosProjek: total }));
+    
+    if (Number(formData.kosProjek || 0) !== total) {
+      setFormData(prev => ({ ...prev, kosProjek: parseFloat(total.toFixed(2)) }));
     }
   }, [formData.bqData]);
 

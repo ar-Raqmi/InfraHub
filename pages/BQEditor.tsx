@@ -180,7 +180,22 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
     // Sync initialData if it changes from outside (e.g., loaded from API after mount)
     useEffect(() => {
-        const nextBills = initialData || [];
+        const nextBills = (initialData || []).map(bill => ({
+            ...bill,
+            items: (bill.items || []).map(item => ({
+                ...item,
+                qty: Number(item.qty) || 0,
+                rate: Number(item.rate) || 0,
+                amount: Number(item.amount) || 0,
+                calculationParts: (item.calculationParts || []).map(part => ({
+                    ...part,
+                    length: Number(part.length) || 0,
+                    width: Number(part.width) || 0,
+                    depth: Number(part.depth) || 0,
+                    multiplier: Number(part.multiplier) || 1
+                }))
+            }))
+        }));
         if (JSON.stringify(nextBills) !== JSON.stringify(bills)) {
             setBills(nextBills);
             
@@ -266,7 +281,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
     useEffect(() => {
         if (!activeBillId) return;
         const bill = bills.find(b => b.id === activeBillId);
-        if (bill && bill.calculationId && projectData.globalCalculations?.[bill.calculationId]) {
+        if (!bill) return;
+
+        if (bill.calculationId && projectData.globalCalculations?.[bill.calculationId]) {
             const rawDims = projectData.globalCalculations[bill.calculationId];
             if (Array.isArray(rawDims)) {
                 setLocalDimsArray(rawDims);
@@ -276,13 +293,47 @@ const BQEditor: React.FC<BQEditorProps> = ({
         } else if (bill && (bill.locationIds?.length || bill.locationId)) {
             const primaryLocId = bill.locationIds?.[0] || bill.locationId;
             if (primaryLocId && projectData.locationDimensions?.[primaryLocId]) {
-                // Fallback for old data or new multi-loc without specific calc: use primary location's dims
-                setLocalDimsArray([projectData.locationDimensions[primaryLocId]]);
+                const locDims = projectData.locationDimensions[primaryLocId];
+                setLocalDimsArray(Array.isArray(locDims) ? locDims : [locDims]);
             } else {
                 setLocalDimsArray([{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]);
             }
         } else {
-            setLocalDimsArray([{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]);
+            // Attempt to recover from items if calculationId exists but global data is missing
+            let recovered = false;
+            if (bill.calculationId) {
+                // Look for any item using this calculationId in any bill
+                for (const b of bills) {
+                    if (b.calculationId === bill.calculationId) {
+                        const itemWithParts = b.items.find(i => i.isGlobal && i.calculationParts && i.calculationParts.length > 0);
+                        if (itemWithParts) {
+                            const recoveredDims: GlobalDimensions[] = [];
+                            itemWithParts.calculationParts!.forEach(p => {
+                                if (p.isGlobal && p.globalIndex !== undefined) {
+                                    recoveredDims[p.globalIndex] = {
+                                        length: Number(p.length) || 0,
+                                        width: Number(p.width) || 0,
+                                        depth: Number(p.depth) || 0,
+                                        label: p.label || `Kiraan ${p.globalIndex + 1}`
+                                    };
+                                }
+                            });
+                            if (recoveredDims.length > 0) {
+                                // Fill gaps with zeros if any
+                                for (let i = 0; i < recoveredDims.length; i++) {
+                                    if (!recoveredDims[i]) recoveredDims[i] = { length: 0, width: 0, depth: 0, label: `Kiraan ${i + 1}` };
+                                }
+                                setLocalDimsArray(recoveredDims);
+                                recovered = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!recovered) {
+                setLocalDimsArray([{ length: 0, width: 0, depth: 0, label: 'Kiraan 1' }]);
+            }
         }
         setIsDimsDirty(false);
     }, [activeBillId, bills, projectData.globalCalculations, projectData.locationDimensions]);

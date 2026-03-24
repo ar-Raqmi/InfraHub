@@ -156,14 +156,14 @@ projectApp.post('/', async (c) => {
     tarikh_siap_sebenar: body.tarikhSiapSebenar,
     prestasi: body.prestasi,
     tarikh_tuntutan_bayaran: body.tarikhTuntutanBayaran,
-    kos_sebenar: body.kosSebenar,
-    bq_pelarasan_extra: body.bqPelarasanExtra,
-    lad_amount: body.ladAmount,
-    lad_days: body.ladDays,
-    loc_amount: body.locAmount,
-    loc_days: body.locDays,
+    kos_sebenar: Number(body.kosSebenar) || 0,
+    bq_pelarasan_extra: Number(body.bqPelarasanExtra) || 0,
+    lad_amount: Number(body.ladAmount) || 0,
+    lad_days: Number(body.ladDays) || 0,
+    loc_amount: Number(body.locAmount) || 0,
+    loc_days: Number(body.locDays) || 0,
     is_loc_deduction_enabled: body.isLocDeductionEnabled ? 1 : 0,
-    wang_tahanan: body.wangTahanan,
+    wang_tahanan: Number(body.wangTahanan) || 0,
     skop: body.skop,
     prestasi_scores: body.prestasiScores ? JSON.stringify(body.prestasiScores) : null,
     no_inbois: body.noInbois,
@@ -247,14 +247,14 @@ projectApp.put('/:id', async (c) => {
   if (body.tarikhSiapSebenar !== undefined) dbUpdates.tarikh_siap_sebenar = body.tarikhSiapSebenar
   if (body.prestasi !== undefined) dbUpdates.prestasi = body.prestasi
   if (body.tarikhTuntutanBayaran !== undefined) dbUpdates.tarikh_tuntutan_bayaran = body.tarikhTuntutanBayaran
-  if (body.kosSebenar !== undefined) dbUpdates.kos_sebenar = body.kosSebenar
-  if (body.bqPelarasanExtra !== undefined) dbUpdates.bq_pelarasan_extra = body.bqPelarasanExtra
-  if (body.ladAmount !== undefined) dbUpdates.lad_amount = body.ladAmount
-  if (body.ladDays !== undefined) dbUpdates.lad_days = body.ladDays
-  if (body.locAmount !== undefined) dbUpdates.loc_amount = body.locAmount
-  if (body.locDays !== undefined) dbUpdates.loc_days = body.locDays
+  if (body.kosSebenar !== undefined) dbUpdates.kos_sebenar = Number(body.kosSebenar) || 0
+  if (body.bqPelarasanExtra !== undefined) dbUpdates.bq_pelarasan_extra = Number(body.bqPelarasanExtra) || 0
+  if (body.ladAmount !== undefined) dbUpdates.lad_amount = Number(body.ladAmount) || 0
+  if (body.ladDays !== undefined) dbUpdates.lad_days = Number(body.ladDays) || 0
+  if (body.locAmount !== undefined) dbUpdates.loc_amount = Number(body.locAmount) || 0
+  if (body.locDays !== undefined) dbUpdates.loc_days = Number(body.locDays) || 0
   if (body.isLocDeductionEnabled !== undefined) dbUpdates.is_loc_deduction_enabled = body.isLocDeductionEnabled ? 1 : 0
-  if (body.wangTahanan !== undefined) dbUpdates.wang_tahanan = body.wangTahanan
+  if (body.wangTahanan !== undefined) dbUpdates.wang_tahanan = Number(body.wangTahanan) || 0
 
   if (body.skop !== undefined) dbUpdates.skop = body.skop
   if (body.prestasiScores !== undefined) dbUpdates.prestasi_scores = body.prestasiScores ? JSON.stringify(body.prestasiScores) : null
