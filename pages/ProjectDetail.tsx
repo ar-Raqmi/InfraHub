@@ -162,13 +162,16 @@ interface CostHUDProps {
   showRemoteUpdateNotice?: boolean;
   onApplyRemoteUpdate?: () => void;
   isLoading?: boolean;
+  hasUnsavedChanges?: boolean;
+  isNewProject?: boolean;
 }
 
 const CostHUD = ({
   grandTotal, finalTotal, extraTotal, status, progress,
   onStatusChange, onProgressChange, saveAction, exportAction,
   isPelarasanActive, isReadOnly, isVerifying, hasFullData,
-  showRemoteUpdateNotice, onApplyRemoteUpdate, isLoading
+  showRemoteUpdateNotice, onApplyRemoteUpdate, isLoading,
+  hasUnsavedChanges, isNewProject
 }: CostHUDProps) => {
   const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '0');
   const [isEditingProgress, setIsEditingProgress] = useState(false);
@@ -243,6 +246,10 @@ const CostHUD = ({
             </div>
             {!isReadOnly && <div className="scale-90 md:scale-95">{saveAction}</div>}
             <div className="scale-90 md:scale-95">{exportAction}</div>
+            
+            <div className={`hidden sm:flex px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider items-center ${isNewProject ? 'bg-blue-100 text-blue-700' : hasUnsavedChanges ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+              {isNewProject ? 'Baru' : hasUnsavedChanges ? 'Belum Disimpan' : 'Disimpan'}
+            </div>
           </div>
 
           <div className="md:hidden flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100" onClick={toggleEdit}>
@@ -1845,6 +1852,8 @@ Jabatan Kejuruteraan` }],
         hasFullData={formData.bqData && formData.bqData.length > 0}
         showRemoteUpdateNotice={showRemoteUpdateNotice}
         onApplyRemoteUpdate={handleApplyRemoteUpdate}
+        hasUnsavedChanges={hasUnsavedChanges}
+        isNewProject={!project}
       />
       <div className="pt-24">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 px-2 no-print gap-4">

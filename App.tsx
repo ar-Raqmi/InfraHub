@@ -141,8 +141,6 @@ function App() {
   };
 
   const handleProjectSaved = () => {
-    // No need to manually loadProjects(), the hook handles it!
-    setIsEditing(false);
     showToast('Projek berjaya disimpan!', 'success');
   };
 
@@ -276,7 +274,7 @@ function App() {
                     onNewProject={handleAddProject}
                     onNavigate={handleNavClick}
                     onProfileClick={() => setCurrentPage('profile')}
-                    onUpdateProject={updateProject}
+                    onUpdateProject={async (params) => updateProject(params)}
                   />
                 )}
                 {currentPage === 'projects' && (
