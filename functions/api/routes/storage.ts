@@ -16,13 +16,20 @@ const mapTemporaryImageFromRow = (row: any) => ({
   userId: row.user_id,
   userFullName: row.user_full_name,
   imageUrl: row.image_url,
+  thumbnailUrl: row.thumbnail_url || row.image_url,
   projectId: row.project_id,
   locationTag: row.location_tag
 })
 
 // GET /api/storage/gallery
 storageApp.get('/gallery', async (c) => {
-  const { results } = await c.env.DB.prepare('SELECT * FROM temporary_gallery ORDER BY created_at DESC').all()
+  const limit = Number(c.req.query('limit')) || 24;
+  const offset = Number(c.req.query('offset')) || 0;
+
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM temporary_gallery ORDER BY created_at DESC LIMIT ? OFFSET ?'
+  ).bind(limit, offset).all()
+
   return c.json(results.map(mapTemporaryImageFromRow))
 })
 
@@ -42,23 +49,23 @@ storageApp.post('/upload', async (c) => {
 
   // Upload to R2 Bucket
   const fileExt = 'jpg'
-  const fileName = `${userId}_${Date.now()}.${fileExt}`
+  const timestamp = Date.now()
+  const fileName = `${userId}_${timestamp}.${fileExt}`
 
   await c.env.BUCKET.put(fileName, await file.arrayBuffer(), {
     httpMetadata: { contentType: file.type || 'image/jpeg' }
   })
 
   // We need the public URL of the uploaded image. 
-  // R2 buckets require a custom domain. We assume one is set up based on the Worker's host.
-  // Using the worker's own endpoint to serve images for simplicity during migration:
   const imageUrl = `/api/storage/file/${fileName}`
 
-  const newId = Date.now().toString()
+  const newId = timestamp.toString()
   const dbItem = {
     id: newId,
     user_id: Number(userId),
     user_full_name: userFullName,
     image_url: imageUrl,
+    thumbnail_url: null, // New uploads don't have separate thumbnails
     project_id: projectId ? Number(projectId) : null,
     location_tag: location || null,
     created_at: new Date().toISOString()
@@ -103,14 +110,25 @@ storageApp.put('/gallery/:id/location', async (c) => {
 // DELETE /api/storage/gallery/:id
 storageApp.delete('/gallery/:id', async (c) => {
   const id = c.req.param('id')
-  const { imageUrl } = await c.req.json()
+  
+  // Get the row first to find both image and thumbnail URLs
+  const row: any = await c.env.DB.prepare('SELECT image_url, thumbnail_url FROM temporary_gallery WHERE id = ?')
+    .bind(id)
+    .first()
 
-  // Extract filename from URL (e.g., http://locahost/api/storage/file/123_456.jpg)
-  const parts = imageUrl.split('/')
-  const fileName = parts[parts.length - 1]
+  if (row) {
+    // Delete main image
+    const parts = row.image_url.split('/')
+    const fileName = parts[parts.length - 1]
+    await c.env.BUCKET.delete(fileName)
 
-  // Delete from R2
-  await c.env.BUCKET.delete(fileName)
+    // Delete thumbnail if it exists
+    if (row.thumbnail_url) {
+      const thumbParts = row.thumbnail_url.split('/')
+      const thumbFileName = thumbParts[thumbParts.length - 1]
+      await c.env.BUCKET.delete(thumbFileName)
+    }
+  }
 
   // Delete from DB 
   await c.env.DB.prepare('DELETE FROM temporary_gallery WHERE id = ?').bind(id).run()
@@ -124,16 +142,25 @@ storageApp.delete('/cleanup', async (c) => {
 
   // Find expired
   const { results: expiredImages } = await c.env.DB.prepare(
-    'SELECT id, image_url FROM temporary_gallery WHERE created_at < ?'
+    'SELECT id, image_url, thumbnail_url FROM temporary_gallery WHERE created_at < ?'
   ).bind(twentyFourHoursAgo).all()
 
   if (expiredImages && expiredImages.length > 0) {
     const ids = []
     for (const img of expiredImages) {
       ids.push(img.id)
+      
+      // Delete main image
       const parts = (img.image_url as string).split('/')
       const fileName = parts[parts.length - 1]
       await c.env.BUCKET.delete(fileName)
+      
+      // Delete thumbnail if it exists
+      if (img.thumbnail_url) {
+        const thumbParts = (img.thumbnail_url as string).split('/')
+        const thumbFileName = thumbParts[thumbParts.length - 1]
+        await c.env.BUCKET.delete(thumbFileName)
+      }
     }
 
     const pl = ids.map(() => '?').join(',')

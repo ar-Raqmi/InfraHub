@@ -110,6 +110,7 @@ export interface TemporaryImage {
   userId: number;
   userFullName: string;
   imageUrl: string;
+  thumbnailUrl?: string;
   projectId?: number;
   locationTag?: string;
 }

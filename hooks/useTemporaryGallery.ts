@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { apiService, api } from '../services/apiService';
 import { TemporaryImage } from '../types';
 
@@ -9,28 +9,48 @@ export const useTemporaryGallery = () => {
     useAutoCleanupGallery();
 
     const {
-        data: galleryImages = [],
+        data,
         isLoading,
         isFetching,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
         error
-    } = useQuery<any[]>({
+    } = useInfiniteQuery({
         queryKey: ['temporary_gallery'],
-        queryFn: async () => {
-            const data = await apiService.getTemporaryGallery();
+        queryFn: async ({ pageParam = 0 }) => {
+            const limit = 24;
+            const data = await apiService.getTemporaryGallery(limit, pageParam);
             return data.map((img: any) => {
-                if (typeof img.imageUrl === 'string' && img.imageUrl.startsWith('http') && img.imageUrl.includes('pages.dev')) {
+                let updatedImg = { ...img };
+                
+                // Handle imageUrl
+                if (typeof updatedImg.imageUrl === 'string' && updatedImg.imageUrl.startsWith('http') && updatedImg.imageUrl.includes('pages.dev')) {
                     try {
-                        const url = new URL(img.imageUrl);
-                        return { ...img, imageUrl: url.pathname + url.search };
-                    } catch (e) {
-                        return img;
-                    }
+                        const url = new URL(updatedImg.imageUrl);
+                        updatedImg.imageUrl = url.pathname + url.search;
+                    } catch (e) {}
                 }
-                return img;
+
+                // Handle thumbnailUrl
+                if (typeof updatedImg.thumbnailUrl === 'string' && updatedImg.thumbnailUrl.startsWith('http') && updatedImg.thumbnailUrl.includes('pages.dev')) {
+                    try {
+                        const url = new URL(updatedImg.thumbnailUrl);
+                        updatedImg.thumbnailUrl = url.pathname + url.search;
+                    } catch (e) {}
+                }
+
+                return updatedImg;
             });
         },
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) => {
+            if (lastPage.length < 24) return undefined;
+            return allPages.length * 24;
+        }
     });
 
+    const galleryImages = data?.pages.flat() || [];
 
     const uploadMutation = useMutation({
         mutationFn: ({ file, userId, userFullName, projectId, location }: {
@@ -71,6 +91,9 @@ export const useTemporaryGallery = () => {
         galleryImages,
         isLoading,
         isSyncing: isFetching,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
         error,
         uploadImage: uploadMutation.mutateAsync,
         isUploading: uploadMutation.isPending,

@@ -315,8 +315,8 @@ class CloudflareService {
     }
 
     // --- TEMPORARY GALLERY ---
-    async getTemporaryGallery(): Promise<TemporaryImage[]> {
-        const response = await fetch(`${this.baseUrl}/storage/gallery?v=${this.apiVersion}`);
+    async getTemporaryGallery(limit = 24, offset = 0): Promise<TemporaryImage[]> {
+        const response = await fetch(`${this.baseUrl}/storage/gallery?limit=${limit}&offset=${offset}&v=${this.apiVersion}`);
         if (!response.ok) throw new Error('Failed to fetch gallery');
         return response.json();
     }

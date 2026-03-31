@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { Project, User, Role, ProjectStatus, TemporaryImage } from '../types';
 import { apiService } from '../services/apiService';
 import {
@@ -66,6 +66,63 @@ interface Shape {
 
 type ToolType = 'select' | 'rect' | 'circle' | 'arrow' | 'line' | 'crop';
 type LayoutType = 'grid' | 'horizontal' | 'vertical' | 'big-left' | 'big-top';
+
+// --- HELPERS ---
+
+const compressToTarget = (canvas: HTMLCanvasElement, targetSizeKb: number, initialQuality = 0.8): Promise<Blob | null> => {
+  return new Promise((resolve) => {
+    const attemptCompression = (q: number) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          if (blob.size > targetSizeKb * 1024 && q > 0.05) {
+            attemptCompression(q - 0.05);
+          } else {
+            resolve(blob);
+          }
+        } else {
+          resolve(null);
+        }
+      }, 'image/jpeg', q);
+    };
+    attemptCompression(initialQuality);
+  });
+};
+
+const generateSingleCompressedBlob = async (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 1024;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = (maxDim / w) * h;
+            w = maxDim;
+          } else {
+            w = (maxDim / h) * w;
+            h = maxDim;
+          }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, w, h);
+        }
+        const compressedBlob = await compressToTarget(canvas, 25) || file;
+        resolve(compressedBlob);
+      };
+      img.onerror = () => reject(new Error("Image load error"));
+    };
+    reader.onerror = () => reject(new Error("File read error"));
+  });
+};
 
 const splitTextToLines = (doc: any, text: string, maxWidth: number): string[] => {
   const lines: string[] = [];
@@ -361,6 +418,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
   const [cropRect, setCropRect] = useState<Shape | null>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [rotation, setRotation] = useState<number | string>(0);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     if (initialImage) {
@@ -378,14 +436,13 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
     }
   }, [initialImage]);
 
-  const getImagePlacement = () => {
-    if (!canvasRef.current || !bgImage) return null;
-    const canvas = canvasRef.current;
-    const scale = Math.min(canvas.width / bgImage.width, canvas.height / bgImage.height);
-    const x = (canvas.width / 2) - (bgImage.width / 2) * scale;
-    const y = (canvas.height / 2) - (bgImage.height / 2) * scale;
+  const placement = useMemo(() => {
+    if (!canvasSize.width || !canvasSize.height || !bgImage) return null;
+    const scale = Math.min(canvasSize.width / bgImage.width, canvasSize.height / bgImage.height);
+    const x = (canvasSize.width / 2) - (bgImage.width / 2) * scale;
+    const y = (canvasSize.height / 2) - (bgImage.height / 2) * scale;
     return { x, y, scale, w: bgImage.width * scale, h: bgImage.height * scale };
-  };
+  }, [canvasSize, bgImage]);
 
   const draw = () => {
     const canvas = canvasRef.current;
@@ -399,11 +456,8 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
     ctx.rotate((Number(rotation) || 0) * Math.PI / 180);
     ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-    if (bgImage) {
-      const placement = getImagePlacement();
-      if (placement) {
-        ctx.drawImage(bgImage, placement.x, placement.y, placement.w, placement.h);
-      }
+    if (bgImage && placement) {
+      ctx.drawImage(bgImage, placement.x, placement.y, placement.w, placement.h);
     }
 
     const allShapes = currentShape && selectedTool !== 'crop' ? [...shapes, currentShape] : shapes;
@@ -449,7 +503,6 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 
       if (activeCrop) {
         ctx.clearRect(activeCrop.x, activeCrop.y, activeCrop.width || 0, activeCrop.height || 0);
-        const placement = getImagePlacement();
         if (placement && bgImage) {
           ctx.save();
           ctx.beginPath();
@@ -468,13 +521,14 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
     ctx.restore();
   };
 
-  useEffect(() => { draw(); }, [shapes, currentShape, bgImage, selectedTool, cropRect, rotation]);
+  useEffect(() => { draw(); }, [shapes, currentShape, bgImage, selectedTool, cropRect, rotation, placement]);
 
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current && canvasRef.current) {
         canvasRef.current.width = containerRef.current.clientWidth;
         canvasRef.current.height = containerRef.current.clientHeight;
+        setCanvasSize({ width: canvasRef.current.width, height: canvasRef.current.height });
         draw();
       }
     };
@@ -534,9 +588,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
   };
 
   const applyCrop = () => {
-    if (!cropRect || !bgImage || !canvasRef.current) return;
-    const placement = getImagePlacement();
-    if (!placement) return;
+    if (!cropRect || !bgImage || !canvasRef.current || !placement) return;
 
     const cX = cropRect.width! < 0 ? cropRect.x + cropRect.width! : cropRect.x;
     const cY = cropRect.height! < 0 ? cropRect.y + cropRect.height! : cropRect.y;
@@ -575,7 +627,6 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
       const canvas = canvasRef.current;
       if (!canvas || !bgImage) return canvas?.toDataURL('image/png') || null;
 
-      const placement = getImagePlacement();
       if (!placement) return canvas.toDataURL('image/png');
 
       const exportCanvas = document.createElement('canvas');
@@ -763,6 +814,159 @@ const ToolBtn = ({ active, onClick, icon, title }: { active: boolean; onClick: (
   </button>
 );
 
+// --- GALLERY ITEM ---
+
+interface GalleryItemProps {
+  img: TemporaryImage;
+  user: User;
+  allUsers: User[];
+  isSelectionMode: boolean;
+  isSelected: boolean;
+  editingGalleryId: string | null;
+  editingLocationTag: string;
+  onSelect: (img: TemporaryImage) => void;
+  onDelete: (img: TemporaryImage) => void;
+  onToggleSelection: (id: string) => void;
+  onStartEdit: (img: TemporaryImage) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onEditingLocationTagChange: (val: string) => void;
+  onTouchStart: (id: string) => void;
+  onTouchEnd: () => void;
+}
+
+const GalleryItem = React.memo(({
+  img,
+  user,
+  allUsers,
+  isSelectionMode,
+  isSelected,
+  editingGalleryId,
+  editingLocationTag,
+  onSelect,
+  onDelete,
+  onToggleSelection,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onEditingLocationTagChange,
+  onTouchStart,
+  onTouchEnd
+}: GalleryItemProps) => {
+  const timeRemaining = useMemo(() => {
+    const created = new Date(img.createdAt).getTime();
+    const expiry = created + (24 * 60 * 60 * 1000);
+    const now = new Date().getTime();
+    const diff = expiry - now;
+
+    if (diff <= 0) return "Tamat Tempoh";
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    return `${hours} Jam ${minutes} Minit`;
+  }, [img.createdAt]);
+
+  const handleItemClick = (e: React.MouseEvent) => {
+    if (isSelectionMode) {
+      onToggleSelection(img.id);
+    } else {
+      onSelect(img);
+    }
+  };
+
+  return (
+    <div
+      className={`group relative aspect-square bg-slate-100 rounded-2xl overflow-hidden border transition-all ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500 ring-offset-2' : 'border-slate-200 hover:shadow-lg'}`}
+      onPointerDown={() => onTouchStart(img.id)}
+      onPointerUp={onTouchEnd}
+      onPointerLeave={onTouchEnd}
+    >
+      <img
+        src={img.thumbnailUrl || img.imageUrl}
+        alt="Temp"
+        crossOrigin="anonymous"
+        decoding="async"
+        loading="lazy"
+        className={`w-full h-full object-cover transition-transform ${isSelected ? 'scale-90' : 'group-hover:scale-110'}`}
+      />
+
+      {isSelected && (
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-30 pointer-events-none">
+          <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in duration-200">
+            <Check size={24} strokeWidth={3} />
+          </div>
+        </div>
+      )}
+
+      <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] text-white flex items-center gap-1 font-medium">
+        <Clock size={10} />
+        {timeRemaining}
+      </div>
+
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+        <button
+          onClick={handleItemClick}
+          className="w-full h-full absolute inset-0 bg-transparent cursor-pointer z-10"
+        />
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(img); }}
+          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors z-20 shadow-sm"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+
+      <div
+        className={`absolute bottom-0 left-0 right-0 p-2.5 bg-slate-900/95 text-white border-t border-white/10 backdrop-blur-sm transition-colors z-20 ${editingGalleryId !== img.id ? 'cursor-pointer hover:bg-slate-800' : ''}`}
+        onClick={(e) => {
+          if (editingGalleryId !== img.id) {
+            e.stopPropagation();
+            onStartEdit(img);
+          }
+        }}
+      >
+        <div className="flex flex-col gap-0.5">
+          <div className="text-[11px] font-black uppercase tracking-tight truncate leading-tight text-white/90">
+            {user.role === Role.PJA
+              ? ''
+              : `PJA ${(allUsers.find(u => u.id === img.userId)?.username || img.userFullName || '').toUpperCase()}`}
+          </div>
+
+          {editingGalleryId === img.id ? (
+            <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+              <input
+                autoFocus
+                className="w-full text-[12px] text-slate-900 px-1.5 py-0.5 rounded bg-white outline-none ring-2 ring-emerald-500"
+                value={editingLocationTag}
+                onChange={e => onEditingLocationTagChange(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') onSaveEdit();
+                  if (e.key === 'Escape') onCancelEdit();
+                }}
+              />
+              <button onClick={onSaveEdit} className="p-0.5 bg-emerald-500 text-white rounded hover:bg-emerald-600"><Check size={20} /></button>
+              <button onClick={onCancelEdit} className="p-0.5 bg-red-500 text-white rounded hover:bg-red-600"><X size={20} /></button>
+            </div>
+          ) : (
+            img.locationTag ? (
+              <div className="flex items-start gap-1.5 text-emerald-400 pt-0.5 group/tag">
+                <MapPin size={14} strokeWidth={3} className="shrink-0 mt-[3px]" />
+                <span className="text-[13px] font-bold leading-tight break-words text-wrap flex-1">{img.locationTag}</span>
+                <Pencil size={14} className="opacity-0 group-hover/tag:opacity-100 text-slate-400" />
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-slate-500 pt-0.5 group-hover:text-emerald-400 transition-colors">
+                <Pencil size={14} /> <span className="text-[12px] italic">Tambah Label</span>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 // --- MAIN PAGE ---
 
 const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ projects, user }) => {
@@ -789,7 +993,10 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     updateImage,
     isUpdating,
     batchUpdateImages,
-    batchDeleteImages
+    batchDeleteImages,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage
   } = useTemporaryGallery();
 
   const [gallerySearch, setGallerySearch] = useState('');
@@ -797,6 +1004,22 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   const [tagLocation, setTagLocation] = useState('');
   const [editingGalleryId, setEditingGalleryId] = useState<string | null>(null);
   const [editingLocationTag, setEditingLocationTag] = useState('');
+
+  // Blob URL tracking for cleanup
+  const blobUrlsRef = useRef<Set<string>>(new Set());
+
+  const registerBlobUrl = (url: string) => {
+    blobUrlsRef.current.add(url);
+    return url;
+  };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup blob URLs on unmount
+      blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+      blobUrlsRef.current.clear();
+    };
+  }, []);
 
   // Selection & Batch Action State
   const [selectedGalleryIds, setSelectedGalleryIds] = useState<Set<string>>(new Set());
@@ -818,14 +1041,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleGalleryDelete = async (img: TemporaryImage) => {
+  const handleGalleryDelete = useCallback(async (img: TemporaryImage) => {
     if (!confirm("Padam gambar ini?")) return;
     try {
       await deleteImage({ id: img.id, imageUrl: img.imageUrl });
     } catch (e) {
       alert("Gagal memadam gambar.");
     }
-  };
+  }, [deleteImage]);
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -837,15 +1060,18 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     }
 
     try {
-      const uploadPromises = Array.from(files).map(file =>
-        uploadImage({
-          file,
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const compressedBlob = await generateSingleCompressedBlob(file);
+        const compressedFile = new File([compressedBlob], file.name, { type: 'image/jpeg' });
+        
+        return uploadImage({
+          file: compressedFile,
           userId: user.id,
           userFullName: user.fullName,
           projectId: selectedProjectId ? Number(selectedProjectId) : undefined,
           location: tagLocation
-        })
-      );
+        });
+      });
 
       await Promise.all(uploadPromises);
 
@@ -857,12 +1083,12 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     }
   };
 
-  const handleStartEdit = (img: TemporaryImage) => {
+  const handleStartEdit = useCallback((img: TemporaryImage) => {
     setEditingGalleryId(img.id);
     setEditingLocationTag(img.locationTag || '');
-  };
+  }, []);
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (!editingGalleryId) return;
     try {
       await updateImage({ id: editingGalleryId, location: editingLocationTag });
@@ -871,42 +1097,77 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     } catch (e) {
       alert("Gagal mengemaskini info gambar.");
     }
-  };
+  }, [editingGalleryId, editingLocationTag, updateImage]);
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setEditingGalleryId(null);
     setEditingLocationTag('');
-  };
+  }, []);
 
   // --- Selection Logic ---
-  const toggleSelection = (id: string) => {
-    const newSet = new Set(selectedGalleryIds);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setSelectedGalleryIds(newSet);
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedGalleryIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      
+      if (newSet.size === 0) setIsSelectionMode(false);
+      return newSet;
+    });
+  }, []);
 
-    // Auto-exit selection mode if empty? Optional.
-    if (newSet.size === 0) setIsSelectionMode(false);
-  };
-
-  const handleTouchStart = (id: string) => {
+  const handleTouchStart = useCallback((id: string) => {
     didLongPressRef.current = false;
     longPressTimerRef.current = setTimeout(() => {
       setIsSelectionMode(true);
       toggleSelection(id);
       didLongPressRef.current = true;
-    }, 500); // 500ms long press
-  };
+    }, 500); 
+  }, [toggleSelection]);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
-  };
+  }, []);
+
+  const handleSelectGalleryImage = useCallback(async (img: TemporaryImage) => {
+    if (didLongPressRef.current) {
+      didLongPressRef.current = false;
+      return;
+    }
+
+    if (currentStep === 2 || currentStep === 3) {
+      const url = img.imageUrl;
+      // 1. Async UI: Immediate call with the direct URL string to eliminate perceived "click lag"
+      if (currentStep === 2) setMapImage(url);
+      else if (currentStep === 3) processImageData(url, 'site');
+
+      // 2. Pre-fetching to blob for better cross-origin stability in canvas/editor
+      // We only replace the string URL in the state to avoid duplicate entries.
+      try {
+        const res = await fetch(url, { mode: 'cors' });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        
+        const blob = await res.blob();
+        const objectUrl = registerBlobUrl(URL.createObjectURL(blob));
+        
+        if (currentStep === 2) {
+          setMapImage(prev => prev === url ? objectUrl : prev);
+        } else if (currentStep === 3) {
+          setSiteImages(prev => prev.map(item => item === url ? objectUrl : item));
+        }
+      } catch (err) {
+        console.error("Gagal mendapatkan blob imej:", err);
+      }
+    } else {
+      alert("Sila pilih langkah pertama/kedua dahulu.");
+    }
+  }, [currentStep]);
 
   // --- Batch Actions ---
   const handleBatchDelete = async () => {
@@ -941,20 +1202,6 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   const handleCancelSelection = () => {
     setSelectedGalleryIds(new Set());
     setIsSelectionMode(false);
-  };
-
-  const getTimeRemaining = (createdAt: string) => {
-    const created = new Date(createdAt).getTime();
-    const expiry = created + (24 * 60 * 60 * 1000);
-    const now = new Date().getTime();
-    const diff = expiry - now;
-
-    if (diff <= 0) return "Tamat Tempoh";
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    return `${hours} Jam ${minutes} Minit`;
   };
 
   const filteredGallery = useMemo(() => {
@@ -995,7 +1242,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
   // Global Paste Listener
   useEffect(() => {
-    const globalPasteHandler = (e: ClipboardEvent) => {
+    const globalPasteHandler = async (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
       if (!items) return;
 
@@ -1003,13 +1250,17 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         if (item.type.indexOf('image') !== -1) {
           const blob = item.getAsFile();
           if (blob) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              const res = ev.target?.result as string;
-              if (currentStep === 2) processImageData(res, 'map');
-              else if (currentStep === 3) processImageData(res, 'site');
-            };
-            reader.readAsDataURL(blob);
+            try {
+              const compressedBlob = await generateSingleCompressedBlob(blob);
+              const objectUrl = registerBlobUrl(URL.createObjectURL(compressedBlob));
+              if (currentStep === 2) processImageData(objectUrl, 'map');
+              else if (currentStep === 3) processImageData(objectUrl, 'site');
+            } catch (err) {
+              console.error("Paste processing failed:", err);
+              const objectUrl = registerBlobUrl(URL.createObjectURL(blob));
+              if (currentStep === 2) processImageData(objectUrl, 'map');
+              else if (currentStep === 3) processImageData(objectUrl, 'site');
+            }
           }
         }
       }
@@ -1052,18 +1303,21 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'map' | 'site') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'map' | 'site') => {
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const res = ev.target?.result as string;
-        processImageData(res, type);
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of Array.from(files)) {
+      try {
+        const compressedBlob = await generateSingleCompressedBlob(file);
+        const objectUrl = registerBlobUrl(URL.createObjectURL(compressedBlob));
+        processImageData(objectUrl, type);
+      } catch (err) {
+        console.error("Compression/Processing failed:", err);
+        const objectUrl = registerBlobUrl(URL.createObjectURL(file));
+        processImageData(objectUrl, type);
+      }
+    }
     e.target.value = '';
   };
 
@@ -1239,130 +1493,45 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               </div>
             ) : (
               filteredGallery.map((img) => (
-                <div
+                <GalleryItem
                   key={img.id}
-                  className={`group relative aspect-square bg-slate-100 rounded-2xl overflow-hidden border transition-all ${selectedGalleryIds.has(img.id) ? 'border-emerald-500 ring-2 ring-emerald-500 ring-offset-2' : 'border-slate-200 hover:shadow-lg'}`}
-                  onPointerDown={() => handleTouchStart(img.id)}
-                  onPointerUp={handleTouchEnd}
-                  onPointerLeave={handleTouchEnd}
-                >
-                  <img src={img.imageUrl} alt="Temp" className={`w-full h-full object-cover transition-transform ${selectedGalleryIds.has(img.id) ? 'scale-90' : 'group-hover:scale-110'}`} />
-
-                  {/* Selection Checkmark Overlay */}
-                  {selectedGalleryIds.has(img.id) && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-30 pointer-events-none">
-                      <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in duration-200">
-                        <Check size={24} strokeWidth={3} />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] text-white flex items-center gap-1 font-medium">
-                    <Clock size={10} />
-                    {getTimeRemaining(img.createdAt)}
-                  </div>
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
-                    <button
-                      onClick={async () => {
-                        if (didLongPressRef.current) {
-                          didLongPressRef.current = false;
-                          return;
-                        }
-
-                        if (isSelectionMode) {
-                          toggleSelection(img.id);
-                        } else {
-                          if (currentStep === 2 || currentStep === 3) {
-                            try {
-                              // Use a cache-buster to ensure we get the fresh CORS headers
-                              const cacheBuster = `?t=${Date.now()}`;
-                              const urlWithBuster = img.imageUrl.includes('?') 
-                                ? `${img.imageUrl}&t=${Date.now()}` 
-                                : `${img.imageUrl}${cacheBuster}`;
-                              
-                              const res = await fetch(urlWithBuster, { cache: 'no-cache', mode: 'cors' });
-                              if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-                              
-                              const blob = await res.blob();
-                              const reader = new FileReader();
-                              reader.onload = (ev) => {
-                                const base64 = ev.target?.result as string;
-                                if (currentStep === 2) setMapImage(base64);
-                                else if (currentStep === 3) processImageData(base64, 'site');
-                              };
-                              reader.readAsDataURL(blob);
-                            } catch (err) {
-                              console.error("Gagal mendapatkan imej:", err);
-                              // Fallback to direct URL if fetch fails
-                              if (currentStep === 2) setMapImage(img.imageUrl);
-                              else if (currentStep === 3) processImageData(img.imageUrl, 'site');
-                            }
-                          } else {
-                            alert("Sila pilih langkah pertama/kedua dahulu.");
-                          }
-                        }
-                      }}
-                      className="w-full h-full absolute inset-0 bg-transparent cursor-pointer z-10"
-                    >
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleGalleryDelete(img); }}
-                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors z-20 shadow-sm"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                  {/* Info Bar - Solid Titlebar Style */}
-                  <div
-                    className={`absolute bottom-0 left-0 right-0 p-2.5 bg-slate-900/95 text-white border-t border-white/10 backdrop-blur-sm transition-colors z-20 ${editingGalleryId !== img.id ? 'cursor-pointer hover:bg-slate-800' : ''}`}
-                    onClick={(e) => {
-                      if (editingGalleryId !== img.id) {
-                        e.stopPropagation();
-                        handleStartEdit(img);
-                      }
-                    }}
-                  >
-                    <div className="flex flex-col gap-0.5">
-                      <div className="text-[11px] font-black uppercase tracking-tight truncate leading-tight text-white/90">
-                        {user.role === Role.PJA
-                          ? ''
-                          : `PJA ${(allUsers.find(u => u.id === img.userId)?.username || img.userFullName || '').toUpperCase()}`}
-                      </div>
-
-                      {editingGalleryId === img.id ? (
-                        <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
-                          <input
-                            autoFocus
-                            className="w-full text-[12px] text-slate-900 px-1.5 py-0.5 rounded bg-white outline-none ring-2 ring-emerald-500"
-                            value={editingLocationTag}
-                            onChange={e => setEditingLocationTag(e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') handleSaveEdit();
-                              if (e.key === 'Escape') handleCancelEdit();
-                            }}
-                          />
-                          <button onClick={handleSaveEdit} className="p-0.5 bg-emerald-500 text-white rounded hover:bg-emerald-600"><Check size={20} /></button>
-                          <button onClick={handleCancelEdit} className="p-0.5 bg-red-500 text-white rounded hover:bg-red-600"><X size={20} /></button>
-                        </div>
-                      ) : (
-                        img.locationTag ? (
-                          <div className="flex items-start gap-1.5 text-emerald-400 pt-0.5 group/tag">
-                            <MapPin size={14} strokeWidth={3} className="shrink-0 mt-[3px]" />
-                            <span className="text-[13px] font-bold leading-tight break-words text-wrap flex-1">{img.locationTag}</span>
-                            <Pencil size={14} className="opacity-0 group-hover/tag:opacity-100 text-slate-400" />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-slate-500 pt-0.5 group-hover:text-emerald-400 transition-colors">
-                            <Pencil size={14} /> <span className="text-[12px] italic">Tambah Label</span>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
+                  img={img}
+                  user={user}
+                  allUsers={allUsers}
+                  isSelectionMode={isSelectionMode}
+                  isSelected={selectedGalleryIds.has(img.id)}
+                  editingGalleryId={editingGalleryId}
+                  editingLocationTag={editingLocationTag}
+                  onSelect={handleSelectGalleryImage}
+                  onDelete={handleGalleryDelete}
+                  onToggleSelection={toggleSelection}
+                  onStartEdit={handleStartEdit}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={handleCancelEdit}
+                  onEditingLocationTagChange={setEditingLocationTag}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                />
               ))
             )}
           </div>
+
+          {hasNextPage && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="flex items-center gap-2 px-8 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-all disabled:opacity-50 shadow-sm"
+              >
+                {isFetchingNextPage ? (
+                  <RefreshCw className="animate-spin" size={18} />
+                ) : (
+                  <Plus size={18} />
+                )}
+                {isFetchingNextPage ? 'Memuatkan...' : 'Muat Lebih Banyak'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -1635,7 +1804,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {siteImages.map((img, idx) => (
                     <div key={idx} className="relative group aspect-square rounded-[2rem] overflow-hidden bg-white border-4 border-white shadow-md hover:shadow-xl transition-all">
-                      <img src={img} className="w-full h-full object-cover" />
+                      <img src={img} decoding="async" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-emerald-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
                         <button onClick={() => setEditingImageIndex(idx)} className="p-3 bg-white text-emerald-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Pencil size={20} /></button>
                         <button onClick={() => setSiteImages(siteImages.filter((_, i) => i !== idx))} className="p-3 bg-white text-red-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Trash2 size={20} /></button>

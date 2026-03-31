@@ -133,6 +133,7 @@ CREATE TABLE temporary_gallery (
   user_id INTEGER NOT NULL,
   user_full_name TEXT NOT NULL,
   image_url TEXT NOT NULL,
+  thumbnail_url TEXT,
   project_id INTEGER,
   location_tag TEXT
 );
