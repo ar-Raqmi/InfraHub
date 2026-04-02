@@ -7,6 +7,7 @@ import { userApp } from './routes/users'
 import { bulletinApp } from './routes/bulletins'
 import { systemApp } from './routes/system'
 import { storageApp } from './routes/storage'
+import { notificationApp } from './routes/notifications'
 
 type Bindings = {
   DB: D1Database
@@ -53,6 +54,7 @@ app.route('/users', userApp)
 app.route('/bulletins', bulletinApp)
 app.route('/system', systemApp)
 app.route('/storage', storageApp)
+app.route('/notifications', notificationApp)
 
 app.get('/health', (c) => {
   return c.json({ status: 'ok', message: 'InfraHub API is running on Cloudflare Pages!' })

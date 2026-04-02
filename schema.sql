@@ -113,6 +113,16 @@ CREATE TABLE projects (
   updated_at TEXT
 );
 
+DROP TABLE IF EXISTS user_notification_states;
+CREATE TABLE user_notification_states (
+  user_id INTEGER NOT NULL,
+  notification_id TEXT NOT NULL,
+  is_read INTEGER DEFAULT 0,
+  is_deleted INTEGER DEFAULT 0,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, notification_id)
+);
+
 DROP TABLE IF EXISTS system_settings;
 CREATE TABLE system_settings (
   year INTEGER PRIMARY KEY,

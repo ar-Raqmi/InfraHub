@@ -3,12 +3,13 @@ import { Project, ProjectStatus, Role, User, getStatusLabel } from '../types';
 import { apiService } from '../services/apiService';
 import { useUsers } from '../hooks/useUsers';
 import { useProjects } from '../hooks/useProjects';
-import { 
-  AlertCircle, 
-  Search, 
-  Trash, 
-  FileWarning, 
-  FileText, 
+import { useNotifications } from '../hooks/useNotifications';
+import {
+  AlertCircle,
+  Search,
+  Trash,
+  FileWarning,
+  FileText,
   AlertTriangle,
   Zap,
   CheckCircle2,
@@ -18,8 +19,11 @@ import {
   History,
   Mail,
   ShieldAlert,
-  User as UserIcon
+  User as UserIcon,
+  Download,
+  Building2
 } from 'lucide-react';
+import NotisGenerator from './NotisGenerator';
 
 interface InboxProps {
   onProjectClick: (p: Project) => void;
@@ -30,6 +34,7 @@ interface TaskNotification {
   projectId: number;
   projectNoFail: string;
   projectName: string;
+  namaSyarikat?: string;
   type: 'DEADLINE' | 'PERINGATAN_1' | 'PERINGATAN_2' | 'PERINGATAN_3';
   title: string;
   message: string;
@@ -52,51 +57,25 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
   const [selectedTask, setSelectedTask] = useState<TaskNotification | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentView, setCurrentView] = useState<FilterView>('AKTIF');
-  
-  const [readIds, setReadIds] = useState<string[]>(() => JSON.parse(localStorage.getItem('infrahub_read_notifications') || '[]'));
-  
-  const [trashMap, setTrashMap] = useState<Record<string, number>>(() => 
-    JSON.parse(localStorage.getItem('infrahub_trash_map_notifications') || '{}')
-  );
+  const [isNotisOpen, setIsNotisOpen] = useState(false);
 
-  const [permanentIds, setPermanentIds] = useState<string[]>(() => 
-    JSON.parse(localStorage.getItem('infrahub_permanent_notifications') || '[]')
-  );
+  const { states, isLoading: loadingStates, updateState, deletePermanently } = useNotifications(user?.id);
 
-  // Auto-delete logic: Remove items from trash that are older than 7 days
-  useEffect(() => {
-    const now = Date.now();
-    let hasChanged = false;
-    const newTrashMap = { ...trashMap };
-    const newPermanentIds = [...permanentIds];
-
-    Object.entries(trashMap).forEach(([id, deletedAt]) => {
-      if (now - (deletedAt as number) > SEVEN_DAYS_MS) {
-        delete newTrashMap[id];
-        if (!newPermanentIds.includes(id)) {
-          newPermanentIds.push(id);
-        }
-        hasChanged = true;
-      }
+  const cloudStates = useMemo(() => {
+    const map: Record<string, { isRead: boolean, isDeleted: boolean }> = {};
+    states.forEach((s: any) => {
+      map[s.id] = { isRead: !!s.isRead, isDeleted: !!s.isDeleted };
     });
+    return map;
+  }, [states]);
 
-    if (hasChanged) {
-      setTrashMap(newTrashMap);
-      setPermanentIds(newPermanentIds);
-      localStorage.setItem('infrahub_trash_map_notifications', JSON.stringify(newTrashMap));
-      localStorage.setItem('infrahub_permanent_notifications', JSON.stringify(newPermanentIds));
-    }
-  }, []);
-
-  useEffect(() => { localStorage.setItem('infrahub_read_notifications', JSON.stringify(readIds)); }, [readIds]);
-  useEffect(() => { localStorage.setItem('infrahub_trash_map_notifications', JSON.stringify(trashMap)); }, [trashMap]);
-  useEffect(() => { localStorage.setItem('infrahub_permanent_notifications', JSON.stringify(permanentIds)); }, [permanentIds]);
+  // We removed local auto-delete logic as the backend handles it during fetch
 
   const notifications = useMemo(() => {
     if (!user) return [];
-    
+
     const now = new Date();
-    
+
     const filteredProjects = (user.role === Role.ADMIN || user.role === Role.JURUTERA)
       ? projects
       : projects.filter(p => p.pjaId === user.id);
@@ -118,6 +97,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
           projectId: p.id,
           projectNoFail: p.noFail,
           projectName: p.namaProjek,
+          namaSyarikat: p.namaSyarikat,
           type: 'PERINGATAN_1',
           title: 'Notis Peringatan Pertama Diperlukan',
           message: `Projek akan tamat pada ${p.tarikhTamatKontrak.split('-').reverse().join('/')}. Sila jana dan hantar Notis Peringatan Pertama kepada kontraktor segera.`,
@@ -136,6 +116,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
           projectId: p.id,
           projectNoFail: p.noFail,
           projectName: p.namaProjek,
+          namaSyarikat: p.namaSyarikat,
           type: 'DEADLINE',
           title: 'PROJEK TAMAT KONTRAK (BELUM SIAP)',
           message: `Tarikh tamat kontrak telah dicapai (${p.tarikhTamatKontrak.split('-').reverse().join('/')}) tetapi status masih dalam proses. Sila ambil tindakan segera.`,
@@ -155,6 +136,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
           projectId: p.id,
           projectNoFail: p.noFail,
           projectName: p.namaProjek,
+          namaSyarikat: p.namaSyarikat,
           type: 'PERINGATAN_2',
           title: 'Notis Peringatan Kedua Diperlukan',
           message: `Projek telah lewat 1 minggu. Sila hantar Notis Peringatan Kedua dan kenakan denda LAD jika perlu.`,
@@ -174,6 +156,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
           projectId: p.id,
           projectNoFail: p.noFail,
           projectName: p.namaProjek,
+          namaSyarikat: p.namaSyarikat,
           type: 'PERINGATAN_3',
           title: 'Notis Peringatan Ketiga Diperlukan',
           message: `Projek telah lewat 2 minggu. Notis Peringatan Ketiga (Terakhir) perlu dikeluarkan serta-merta.`,
@@ -188,22 +171,21 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
 
     return generated
       .filter(n => {
-        // Exclude permanently deleted items
-        if (permanentIds.includes(n.id)) return false;
+        const state = cloudStates[n.id] || { isRead: false, isDeleted: false };
 
         const matchesSearch = (n.projectNoFail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (n.projectName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (n.title || '').toLowerCase().includes(searchTerm.toLowerCase());
-        
+          (n.projectName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (n.namaSyarikat || '').toLowerCase().includes(searchTerm.toLowerCase());
+
         if (!matchesSearch) return false;
 
-        if (currentView === 'SAMPAH') return trashMap.hasOwnProperty(n.id);
-        
-        // Default Aktif view: Items NOT in trash
-        return !trashMap.hasOwnProperty(n.id);
+        if (currentView === 'SAMPAH') return state.isDeleted;
+
+        return !state.isDeleted;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [projects, user, searchTerm, readIds, trashMap, permanentIds, currentView, allUsers]);
+  }, [projects, user, searchTerm, cloudStates, currentView, allUsers]);
 
   useEffect(() => {
     if (notifications.length > 0 && !selectedTask) {
@@ -213,46 +195,36 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
     }
   }, [notifications, currentView]);
 
-  const toggleRead = (id: string) => {
-    if (readIds.includes(id)) {
-      setReadIds(prev => prev.filter(item => item !== id));
-    } else {
-      setReadIds(prev => [...prev, id]);
-    }
+  const toggleRead = async (id: string) => {
+    if (!user?.id) return;
+    const currentState = cloudStates[id] || { isRead: false, isDeleted: false };
+    updateState({ id, updates: { isRead: !currentState.isRead } });
   };
 
-  const moveTaskToTrash = (id: string) => {
-    setTrashMap(prev => ({ ...prev, [id]: Date.now() }));
-    if (selectedTask?.id === id) {
-      setSelectedTask(null);
-    }
+  const moveTaskToTrash = async (id: string) => {
+    if (!user?.id) return;
+    updateState({ id, updates: { isDeleted: true } });
+    if (selectedTask?.id === id) setSelectedTask(null);
   };
 
-  const restoreTaskFromTrash = (id: string) => {
-    const newTrashMap = { ...trashMap };
-    delete newTrashMap[id];
-    setTrashMap(newTrashMap);
-    if (selectedTask?.id === id) {
-      setSelectedTask(null);
-    }
+  const restoreTaskFromTrash = async (id: string) => {
+    if (!user?.id) return;
+    updateState({ id, updates: { isDeleted: false } });
   };
 
-  const deletePermanently = (id: string) => {
-    const newTrashMap = { ...trashMap };
-    delete newTrashMap[id];
-    setTrashMap(newTrashMap);
-    setPermanentIds(prev => [...new Set([...prev, id])]);
-    if (selectedTask?.id === id) {
-      setSelectedTask(null);
-    }
+  const handleDeletePermanently = async (id: string) => {
+    if (!user?.id) return;
+    deletePermanently(id);
+    if (selectedTask?.id === id) setSelectedTask(null);
   };
 
   const handleOpenProject = () => {
     if (!selectedTask) return;
     const project = projects.find(p => p.id === selectedTask.projectId);
     if (project) {
-      if (!readIds.includes(selectedTask.id)) {
-          setReadIds(prev => [...prev, selectedTask.id]);
+      const state = cloudStates[selectedTask.id];
+      if (!state?.isRead) {
+        toggleRead(selectedTask.id);
       }
       onProjectClick(project);
     }
@@ -264,63 +236,63 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
       <div className="w-full md:w-[400px] bg-white/95  border border-white/10 shadow-xl rounded-[2.5rem] shadow-xl border border-white/20  overflow-hidden flex flex-col shrink-0">
         <div className="p-6 border-b border-slate-100">
           <div className="flex items-center justify-between mb-4">
-             <h2 className="text-xl font-bold text-slate-800">Inbox</h2>
-             <div className="flex bg-slate-100  p-1 rounded-xl">
-                 <button onClick={() => setCurrentView('AKTIF')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'AKTIF' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-400'}`} title="Aktif"><InboxIcon className="w-4 h-4"/></button>
-                 <button onClick={() => setCurrentView('SAMPAH')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'SAMPAH' ? 'bg-white  text-red-600 shadow-sm' : 'text-slate-400'}`} title="Tong Sampah"><Trash2 className="w-4 h-4"/></button>
-             </div>
+            <h2 className="text-xl font-bold text-slate-800">Inbox</h2>
+            <div className="flex bg-slate-100  p-1 rounded-xl">
+              <button onClick={() => setCurrentView('AKTIF')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'AKTIF' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-400'}`} title="Aktif"><InboxIcon className="w-4 h-4" /></button>
+              <button onClick={() => setCurrentView('SAMPAH')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'SAMPAH' ? 'bg-white  text-red-600 shadow-sm' : 'text-slate-400'}`} title="Tong Sampah"><Trash2 className="w-4 h-4" /></button>
+            </div>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Cari fail atau tajuk..." 
+            <input
+              type="text"
+              placeholder="Cari fail atau tajuk..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50  border-0 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900  font-medium" 
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50  border-0 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900  font-medium"
             />
           </div>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {notifications.length > 0 ? notifications.map(task => {
             const pja = allUsers.find(u => u.id === task.pjaId);
             return (
-              <div 
-                key={task.id} 
-                                  onClick={() => setSelectedTask(task)}
-                                  className={`p-5 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors relative ${selectedTask?.id === task.id ? 'bg-emerald-50/50 ring-1 ring-inset ring-emerald-500/20' : ''} ${!readIds.includes(task.id) ? 'bg-white' : 'opacity-70'}`}
-                                >
-                
+              <div
+                key={task.id}
+                onClick={() => setSelectedTask(task)}
+                className={`p-5 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors relative ${selectedTask?.id === task.id ? 'bg-emerald-50/50 ring-1 ring-inset ring-emerald-500/20' : ''} ${!(cloudStates[task.id]?.isRead) ? 'bg-white' : 'opacity-70'}`}
+              >
+
                 {selectedTask?.id === task.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>}
-                
+
                 <div className="flex justify-between items-start mb-2">
-                                      <div className="flex items-center gap-2">
-                                        {!readIds.includes(task.id) && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>}
-                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${task.severity === 'error' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
-                                          {task.type.replace(/_/g, ' ')}
-                                        </span>
-                                      </div>
-                  
+                  <div className="flex items-center gap-2">
+                    {!(cloudStates[task.id]?.isRead) && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>}
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${task.severity === 'error' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
+                      {task.type.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+
                   <span className="text-[10px] font-bold text-slate-400 font-mono">{task.date.split('-').reverse().join('/')}</span>
                 </div>
-                
-                                  <h4 className={`text-sm mb-1 line-clamp-1 ${!readIds.includes(task.id) ? 'font-black text-slate-900' : 'font-medium text-slate-600'}`}>
-                                    {task.title}
-                                  </h4>
-                                <p className="text-xs text-slate-500  font-medium mb-3 truncate">
+
+                <h4 className={`text-sm mb-1 line-clamp-1 ${!(cloudStates[task.id]?.isRead) ? 'font-black text-slate-900' : 'font-medium text-slate-600'}`}>
+                  {task.title}
+                </h4>
+                <p className="text-xs text-slate-500  font-medium mb-3 truncate">
                   {task.projectNoFail} - {task.projectName}
                 </p>
 
                 <div className="flex items-center gap-2">
-                   <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[8px] font-black text-white shrink-0 overflow-hidden shadow-sm">
-                      {pja?.avatarUrl ? (
-                          <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
-                      ) : (
-                          task.pjaName.charAt(0).toUpperCase()
-                      )}
-                   </div>
-                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">PJA: {task.pjaName}</span>
+                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[8px] font-black text-white shrink-0 overflow-hidden shadow-sm">
+                    {pja?.avatarUrl ? (
+                      <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
+                    ) : (
+                      task.pjaName.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">PJA: {task.pjaName}</span>
                 </div>
               </div>
             );
@@ -341,39 +313,39 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
               <div className="flex gap-2">
                 {currentView === 'SAMPAH' ? (
                   <>
-                    <button 
-                      onClick={() => restoreTaskFromTrash(selectedTask.id)} 
-                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-emerald-600 hover:bg-emerald-50" 
+                    <button
+                      onClick={() => restoreTaskFromTrash(selectedTask.id)}
+                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-emerald-600 hover:bg-emerald-50"
                       title="Pulihkan ke Inbox"
                     >
-                      <History className="w-5 h-5"/>
+                      <History className="w-5 h-5" />
                     </button>
-                    <button 
-                      onClick={() => deletePermanently(selectedTask.id)} 
-                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-red-600 hover:bg-red-50" 
+                    <button
+                      onClick={() => handleDeletePermanently(selectedTask.id)}
+                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-red-600 hover:bg-red-50"
                       title="Padam Selamanya"
                     >
-                      <Trash2 className="w-5 h-5"/>
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   </>
                 ) : (
-                  <button 
-                    onClick={() => moveTaskToTrash(selectedTask.id)} 
-                    className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-slate-400 hover:text-red-500 hover:bg-red-50" 
+                  <button
+                    onClick={() => moveTaskToTrash(selectedTask.id)}
+                    className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-slate-400 hover:text-red-500 hover:bg-red-50"
                     title="Pindah ke Tong Sampah"
                   >
-                    <Trash className="w-5 h-5"/>
+                    <Trash className="w-5 h-5" />
                   </button>
                 )}
               </div>
               <div className="flex items-center gap-4">
-                 <div className="text-right hidden sm:block">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem InfraHub</p>
-                   <p className="text-xs font-bold text-slate-600">Automated Alert</p>
-                 </div>
-                 <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-colors bg-white  border border-slate-100  ${readIds.includes(selectedTask.id) ? 'text-emerald-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">
-                    {readIds.includes(selectedTask.id) ? <CheckCircle2 className="w-5 h-5"/> : <Circle className="w-5 h-5"/>}
-                 </button>
+                <div className="text-right hidden sm:block">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem InfraHub</p>
+                  <p className="text-xs font-bold text-slate-600">Automated Alert</p>
+                </div>
+                <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-colors bg-white  border border-slate-100  ${cloudStates[selectedTask.id]?.isRead ? 'text-emerald-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">
+                  {cloudStates[selectedTask.id]?.isRead ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
@@ -405,7 +377,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Butiran Projek</span>
                   </div>
-                  
+
                   <h3 className="text-lg font-bold text-slate-800  mb-6 leading-relaxed uppercase">
                     {selectedTask.projectName}
                   </h3>
@@ -420,45 +392,66 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">PJA</p>
                       {(() => {
-                          const pja = allUsers.find(u => u.id === selectedTask.pjaId);
-                          return (
-                              <div className="flex items-center gap-2 mt-1">
-                                  <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
-                                      {pja?.avatarUrl ? (
-                                          <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
-                                      ) : (
-                                          selectedTask.pjaName.charAt(0).toUpperCase()
-                                      )}
-                                  </div>
-                                  <p className="text-sm font-bold text-slate-700">{selectedTask.pjaName}</p>
-                              </div>
-                          );
+                        const pja = allUsers.find(u => u.id === selectedTask.pjaId);
+                        return (
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
+                              {pja?.avatarUrl ? (
+                                <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
+                              ) : (
+                                selectedTask.pjaName.charAt(0).toUpperCase()
+                              )}
+                            </div>
+                            <p className="text-sm font-bold text-slate-700">{selectedTask.pjaName}</p>
+                          </div>
+                        );
                       })()}
                     </div>
                   </div>
 
                   <div className="prose  max-w-none text-slate-600  leading-loose">
                     <p className="font-medium">{selectedTask.message}</p>
+                    {selectedTask.namaSyarikat && (
+                      <div className="mt-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-3">
+                        <Building2 className="w-5 h-5 text-emerald-600" />
+                        <div>
+                          <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest">Nama Syarikat</p>
+                          <p className="text-sm font-bold text-emerald-800 uppercase">{selectedTask.namaSyarikat}</p>
+                        </div>
+                      </div>
+                    )}
                     <p className="mt-4 italic text-sm">Sila layari modul Projek untuk mengemaskini maklumat atau menjana notis PDF yang berkaitan untuk dihantar kepada pihak kontraktor melalui emel atau serahan tangan.</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <button 
+                  <button
                     onClick={() => toggleRead(selectedTask.id)}
                     className="flex-1 py-4 bg-slate-900  text-white  rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-colors hover:scale-[1.02]"
                   >
-                    {readIds.includes(selectedTask.id) ? (
-                        <><Circle className="w-5 h-5" /> Tandakan Belum Baca</>
+                    {cloudStates[selectedTask.id]?.isRead ? (
+                      <><Circle className="w-5 h-5" /> Tandakan Belum Baca</>
                     ) : (
-                        <><CheckCircle2 className="w-5 h-5" /> Tanda Telah Baca</>
+                      <><CheckCircle2 className="w-5 h-5" /> Tanda Telah Baca</>
                     )}
                   </button>
-                  <button 
-                    onClick={handleOpenProject}
+                  <button
+                    onClick={() => {
+                      const project = projects.find(p => p.id === selectedTask.projectId);
+                      if (project) {
+                        if (!cloudStates[selectedTask.id]?.isRead) toggleRead(selectedTask.id);
+                        setIsNotisOpen(true);
+                      }
+                    }}
                     className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-colors hover:scale-[1.02]"
                   >
-                    <FileText className="w-5 h-5" /> Buka Fail Projek
+                    <Download className="w-5 h-5" /> Jana Notis PDF
+                  </button>
+                  <button
+                    onClick={handleOpenProject}
+                    className="flex-1 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold text-sm shadow-sm border border-slate-200 flex items-center justify-center gap-3 transition-colors hover:bg-slate-200"
+                  >
+                    <FileText className="w-5 h-5" /> Buka Fail
                   </button>
                 </div>
               </div>
@@ -474,6 +467,20 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
           </div>
         )}
       </div>
+
+      {isNotisOpen && selectedTask && (
+        (() => {
+          const project = projects.find(p => p.id === selectedTask.projectId);
+          const pjaUser = allUsers.find(u => u.id === selectedTask.pjaId);
+          return project ? (
+            <NotisGenerator
+              project={project}
+              pjaUser={pjaUser}
+              onClose={() => setIsNotisOpen(false)}
+            />
+          ) : null;
+        })()
+      )}
     </div>
   );
 };

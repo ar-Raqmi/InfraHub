@@ -4,6 +4,7 @@ import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, Bulleti
 import { apiService } from '../services/apiService';
 import { useBulletins } from '../hooks/useBulletins';
 import { useUsers } from '../hooks/useUsers';
+import { useNotifications } from '../hooks/useNotifications';
 import { Bell, TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote, ClipboardCheck, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart, Loader2 } from 'lucide-react';
 
 interface DashboardProps {
@@ -30,6 +31,16 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL');
   const [tablePage, setTablePage] = useState(1);
   const itemsPerPage = 5;
+
+  const { states } = useNotifications(user?.id);
+
+  const cloudStates = useMemo(() => {
+    const map: Record<string, { isRead: boolean, isDeleted: boolean }> = {};
+    states.forEach((s: any) => {
+      map[s.id] = { isRead: !!s.isRead, isDeleted: !!s.isDeleted };
+    });
+    return map;
+  }, [states]);
 
   // Long press detection refs
   const longPressTimer = React.useRef<any>(null);
@@ -83,10 +94,6 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const notificationCount = useMemo(() => {
     const now = new Date();
 
-    const read = JSON.parse(localStorage.getItem('infrahub_read_notifications') || '[]');
-    const deleted = JSON.parse(localStorage.getItem('infrahub_deleted_notifications') || '[]');
-    const ignoredIds = [...read, ...deleted];
-
     const relevantProjects = (user.role === Role.ADMIN || user.role === Role.JURUTERA)
       ? projects
       : projects.filter(p => p.pjaId === user.id);
@@ -101,14 +108,20 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
       const p2Date = new Date(tamat); p2Date.setDate(tamat.getDate() + 7);
       const p3Date = new Date(tamat); p3Date.setDate(tamat.getDate() + 14);
 
-      if (now >= p1Date && !ignoredIds.includes(`p1-${p.id}`)) count++;
-      if (now >= tamat && !ignoredIds.includes(`deadline-${p.id}`)) count++;
-      if (now >= p2Date && !ignoredIds.includes(`p2-${p.id}`)) count++;
-      if (now >= p3Date && !ignoredIds.includes(`p3-${p.id}`)) count++;
+      const checkUnread = (id: string) => {
+        const state = cloudStates[id];
+        if (!state) return true; // If no state, it's unread and not deleted
+        return !state.isRead && !state.isDeleted;
+      };
+
+      if (now >= p1Date && checkUnread(`p1-${p.id}`)) count++;
+      if (now >= tamat && checkUnread(`deadline-${p.id}`)) count++;
+      if (now >= p2Date && checkUnread(`p2-${p.id}`)) count++;
+      if (now >= p3Date && checkUnread(`p3-${p.id}`)) count++;
     });
 
     return count;
-  }, [projects, user, projects.length]);
+  }, [projects, user, cloudStates]);
 
   const phase1 = displayProjects.filter(p => p.status === ProjectStatus.FASA_DRAF);
   const phase2 = displayProjects.filter(p => p.status === ProjectStatus.MENUNGGU_LANTIKAN);

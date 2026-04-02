@@ -369,6 +369,29 @@ class CloudflareService {
         if (!response.ok) throw new Error('Failed to cleanup images');
     }
 
+    // --- NOTIFICATIONS ---
+    async getNotificationStates(userId: number): Promise<any[]> {
+        const response = await fetch(`${this.baseUrl}/notifications?userId=${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch notification states');
+        return response.json();
+    }
+
+    async updateNotificationState(id: string, userId: number, updates: { isRead?: boolean, isDeleted?: boolean }) {
+        const response = await fetch(`${this.baseUrl}/notifications/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, ...updates })
+        });
+        if (!response.ok) throw new Error('Failed to update notification state');
+    }
+
+    async deleteNotificationPermanently(id: string, userId: number) {
+        const response = await fetch(`${this.baseUrl}/notifications/${id}?userId=${userId}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Failed to delete notification permanently');
+    }
+
     // Compatibility mappers for legacy real-time hooks
     mapProject(p: any) { return p; }
     mapBulletin(b: any) { return b; }
