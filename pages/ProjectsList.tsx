@@ -92,6 +92,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     const [costViewMode, setCostViewMode] = useState<'contract' | 'actual' | 'both'>('contract');
 
     const [showSiap, setShowSiap] = useState(true);
+    const [showTuntutan, setShowTuntutan] = useState(true);
 
     const [isSavingFinancials, setIsSavingFinancials] = useState(false);
 
@@ -422,6 +423,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         setFilterVote('ALL');
         setSearchTerm('');
         setShowSiap(true);
+        setShowTuntutan(true);
         setFilterLoC(false);
         setFilterDateType('tarikhBuka');
         setFilterDateStart(null);
@@ -601,6 +603,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 compProjects = compProjects.filter(p => p.status !== ProjectStatus.SIAP);
             }
 
+            if (!showTuntutan) {
+                compProjects = compProjects.filter(p => p.status !== ProjectStatus.TUNTUTAN_BAYARAN);
+            }
+
             if (filterLoC) {
                 compProjects = compProjects.filter(p => (p.locAmount || 0) > 0 || (p.locDays || 0) > 0);
             }
@@ -635,7 +641,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         });
 
         return grouped;
-    }, [filteredProjects, companyOrder, showSiap, filterLoC]);
+    }, [filteredProjects, companyOrder, showSiap, showTuntutan, filterLoC]);
 
     const exportToExcel = () => {
         const activeCols = columnDefs.filter(c => visibleColumns[c.id]);
@@ -1292,6 +1298,15 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                                         <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
                                     </label>
+
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                            <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showTuntutan ? 'translate-x-5' : ''}`}></div>
+                                        </div>
+                                        <input type="checkbox" className="hidden" checked={showTuntutan} onChange={() => setShowTuntutan(!showTuntutan)} />
+
+                                        <span className="text-xs font-bold text-slate-600">Tunjuk Tuntutan Bayaran</span>
+                                    </label>
                                 </div>
                             </div>
                         )}
@@ -1533,11 +1548,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                     return (
                                                                         <tr
                                                                             key={p.id}
-                                                                            className="hover:bg-white/60  cursor-pointer transition-colors group/row"
-                                                                            onMouseDown={handleMouseDown}
-                                                                            onMouseUp={handleMouseUp}
-                                                                            onMouseLeave={handleMouseLeave}
-                                                                            onClick={() => handleProjectClick(p)}
+                                                                            className="hover:bg-white/60 transition-colors group/row"
                                                                         >
                                                                             <td className="px-6 py-3 text-center align-top text-xs font-bold text-slate-400">{pIdx + 1}</td>
                                                                             <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600  mb-1">{p.noFail}</div><div className="font-medium text-slate-800  leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
