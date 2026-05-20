@@ -115,7 +115,7 @@ const generateSingleCompressedBlob = async (file: File): Promise<Blob> => {
         if (ctx) {
           ctx.drawImage(img, 0, 0, w, h);
         }
-        const compressedBlob = await compressToTarget(canvas, 25) || file;
+        const compressedBlob = await compressToTarget(canvas, 100) || file;
         resolve(compressedBlob);
       };
       img.onerror = () => reject(new Error("Image load error"));
