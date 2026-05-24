@@ -60,6 +60,23 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', message: 'ElectricHub API is running on Cloudflare Pages!' })
 })
 
+app.get('/health/r2', async (c) => {
+  try {
+    if (!c.env.BUCKET) {
+      return c.json({ status: 'error', message: 'R2 BUCKET binding is not configured' }, 500)
+    }
+    await c.env.BUCKET.list({ limit: 1 })
+    return c.json({ status: 'ok', message: 'R2 BUCKET is accessible' })
+  } catch (err: any) {
+    return c.json({ status: 'error', message: err.message || String(err) }, 500)
+  }
+})
+
+app.onError((err, c) => {
+  console.error('Unhandled error:', err?.message || err)
+  return c.json({ error: err?.message || 'Internal server error' }, 500)
+})
+
 // Authentication API
 app.post('/auth/login', async (c) => {
   const body = await c.req.json()

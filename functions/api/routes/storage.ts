@@ -35,51 +35,57 @@ storageApp.get('/gallery', async (c) => {
 
 // POST /api/storage/upload
 storageApp.post('/upload', async (c) => {
-  const formData = await c.req.formData()
+  try {
+    const formData = await c.req.formData()
 
-  const file = formData.get('file') as File
-  const userId = formData.get('userId') as string
-  const userFullName = formData.get('userFullName') as string
-  const projectId = formData.get('projectId') as string | undefined
-  const location = formData.get('location') as string | undefined
+    const file = formData.get('file') as File
+    const userId = formData.get('userId') as string
+    const userFullName = formData.get('userFullName') as string
+    const projectId = formData.get('projectId') as string | undefined
+    const location = formData.get('location') as string | undefined
 
-  if (!file || !userId || !userFullName) {
-    return c.json({ error: 'Missing required fields' }, 400)
+    if (!file || !userId || !userFullName) {
+      return c.json({ error: 'Missing required fields' }, 400)
+    }
+
+    // Upload to R2 Bucket
+    const fileExt = 'jpg'
+    const timestamp = Date.now()
+    const fileName = `${userId}_${timestamp}.${fileExt}`
+
+    const buffer = await new Response(file).arrayBuffer()
+    await c.env.BUCKET.put(fileName, buffer, {
+      httpMetadata: { contentType: 'image/jpeg' }
+    })
+
+    // We need the public URL of the uploaded image. 
+    const imageUrl = `/api/storage/file/${fileName}`
+
+    const newId = timestamp.toString()
+    const dbItem = {
+      id: newId,
+      user_id: Number(userId),
+      user_full_name: userFullName,
+      image_url: imageUrl,
+      thumbnail_url: null, // New uploads don't have separate thumbnails
+      project_id: projectId ? Number(projectId) : null,
+      location_tag: location || null,
+      created_at: new Date().toISOString()
+    }
+
+    const keys = Object.keys(dbItem)
+    const values = Object.values(dbItem)
+    const pl = keys.map(() => '?').join(', ')
+
+    await c.env.DB.prepare(`INSERT INTO temporary_gallery (${keys.join(', ')}) VALUES (${pl})`)
+      .bind(...values)
+      .run()
+
+    return c.json(mapTemporaryImageFromRow(dbItem))
+  } catch (err: any) {
+    console.error('Upload error:', err?.message || err)
+    return c.json({ error: err?.message || 'Internal server error' }, 500)
   }
-
-  // Upload to R2 Bucket
-  const fileExt = 'jpg'
-  const timestamp = Date.now()
-  const fileName = `${userId}_${timestamp}.${fileExt}`
-
-  await c.env.BUCKET.put(fileName, await file.arrayBuffer(), {
-    httpMetadata: { contentType: file.type || 'image/jpeg' }
-  })
-
-  // We need the public URL of the uploaded image. 
-  const imageUrl = `/api/storage/file/${fileName}`
-
-  const newId = timestamp.toString()
-  const dbItem = {
-    id: newId,
-    user_id: Number(userId),
-    user_full_name: userFullName,
-    image_url: imageUrl,
-    thumbnail_url: null, // New uploads don't have separate thumbnails
-    project_id: projectId ? Number(projectId) : null,
-    location_tag: location || null,
-    created_at: new Date().toISOString()
-  }
-
-  const keys = Object.keys(dbItem)
-  const values = Object.values(dbItem)
-  const pl = keys.map(() => '?').join(', ')
-
-  await c.env.DB.prepare(`INSERT INTO temporary_gallery (${keys.join(', ')}) VALUES (${pl})`)
-    .bind(...values)
-    .run()
-
-  return c.json(mapTemporaryImageFromRow(dbItem))
 })
 
 // GET /api/storage/file/:filename
