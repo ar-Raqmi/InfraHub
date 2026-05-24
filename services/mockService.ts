@@ -92,13 +92,13 @@ class MockService {
   }
 
   private loadData() {
-    const storedUsers = localStorage.getItem('infrahub_users');
-    const storedProjects = localStorage.getItem('infrahub_projects');
-    const storedLibrary = localStorage.getItem('infrahub_library');
-    const storedTemplates = localStorage.getItem('infrahub_templates');
-    const storedSession = localStorage.getItem('infrahub_session');
-    const storedSettings = localStorage.getItem('infrahub_settings');
-    const storedBulletins = localStorage.getItem('infrahub_bulletins');
+    const storedUsers = localStorage.getItem('electrichub_users');
+    const storedProjects = localStorage.getItem('electrichub_projects');
+    const storedLibrary = localStorage.getItem('electrichub_library');
+    const storedTemplates = localStorage.getItem('electrichub_templates');
+    const storedSession = localStorage.getItem('electrichub_session');
+    const storedSettings = localStorage.getItem('electrichub_settings');
+    const storedBulletins = localStorage.getItem('electrichub_bulletins');
 
     this.users = storedUsers ? JSON.parse(storedUsers) : INITIAL_USERS;
     this.projects = storedProjects ? JSON.parse(storedProjects) : [];
@@ -139,17 +139,17 @@ class MockService {
   }
 
   private saveData() {
-    localStorage.setItem('infrahub_users', JSON.stringify(this.users));
-    localStorage.setItem('infrahub_projects', JSON.stringify(this.projects));
-    localStorage.setItem('infrahub_library', JSON.stringify(this.libraryGroups));
-    localStorage.setItem('infrahub_templates', JSON.stringify(this.templates));
-    localStorage.setItem('infrahub_settings', JSON.stringify(this.systemSettings));
-    localStorage.setItem('infrahub_bulletins', JSON.stringify(this.bulletins));
+    localStorage.setItem('electrichub_users', JSON.stringify(this.users));
+    localStorage.setItem('electrichub_projects', JSON.stringify(this.projects));
+    localStorage.setItem('electrichub_library', JSON.stringify(this.libraryGroups));
+    localStorage.setItem('electrichub_templates', JSON.stringify(this.templates));
+    localStorage.setItem('electrichub_settings', JSON.stringify(this.systemSettings));
+    localStorage.setItem('electrichub_bulletins', JSON.stringify(this.bulletins));
 
     if (this.currentUser) {
-      localStorage.setItem('infrahub_session', JSON.stringify(this.currentUser));
+      localStorage.setItem('electrichub_session', JSON.stringify(this.currentUser));
     } else {
-      localStorage.removeItem('infrahub_session');
+      localStorage.removeItem('electrichub_session');
     }
   }
 

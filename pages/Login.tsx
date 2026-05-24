@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { apiService } from '../services/apiService';
 import { User as UserType } from '../types';
-import { HardHat, User, Lock, ArrowRight } from 'lucide-react';
+import { Zap, User, Lock, ArrowRight } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (user: UserType) => void;
@@ -39,9 +39,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         
         <div className="flex flex-col items-center mb-10">
           <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30">
-            <HardHat className="w-10 h-10 text-white" strokeWidth={2.5} />
+            <Zap className="w-10 h-10 text-white" strokeWidth={2.5} />
           </div>
-          <h2 className="text-4xl font-black text-slate-900  mb-2 tracking-tight font-jakarta">InfraHub</h2>
+          <h2 className="text-4xl font-black text-slate-900  mb-2 tracking-tight font-jakarta">ElectricHub</h2>
           <p className="text-slate-500  font-bold uppercase tracking-[0.2em] text-[10px]">by Syafiq Daniel</p>
         </div>
 

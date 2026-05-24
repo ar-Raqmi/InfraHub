@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, FolderKanban, Users, Image as ImageIcon, LogOut, Settings, Hexagon, LayoutDashboard, Briefcase, Plus, HardHat, User as UserIcon } from 'lucide-react';
+import { Home, FolderKanban, Users, Image as ImageIcon, LogOut, Settings, Hexagon, LayoutDashboard, Briefcase, Plus, Zap, User as UserIcon } from 'lucide-react';
 import { Role } from '../types';
 
 interface SidebarProps {
@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
         {/* Logo */}
         <div className="mb-10 cursor-pointer" onClick={() => onNavigate('dashboard')}>
           <div className="w-12 h-12 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-            <HardHat className="w-7 h-7" strokeWidth={2.5} />
+            <Zap className="w-7 h-7" strokeWidth={2.5} />
           </div>
         </div>
 
@@ -93,9 +93,9 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
       <div className="md:hidden fixed top-0 left-0 right-0 h-20 bg-slate-50/80 backdrop-blur-md z-[60] px-6 flex items-center justify-between border-b border-slate-200/50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-600/20">
-            <HardHat className="w-6 h-6" />
+            <Zap className="w-6 h-6" />
           </div>
-          <span className="font-bold text-slate-800 font-jakarta tracking-tight">InfraHub</span>
+          <span className="font-bold text-slate-800 font-jakarta tracking-tight">ElectricHub</span>
         </div>
         <button
           onClick={onLogout}

@@ -57,7 +57,7 @@ app.route('/storage', storageApp)
 app.route('/notifications', notificationApp)
 
 app.get('/health', (c) => {
-  return c.json({ status: 'ok', message: 'InfraHub API is running on Cloudflare Pages!' })
+  return c.json({ status: 'ok', message: 'ElectricHub API is running on Cloudflare Pages!' })
 })
 
 // Authentication API

@@ -340,7 +340,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right hidden sm:block">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem InfraHub</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem ElectricHub</p>
                   <p className="text-xs font-bold text-slate-600">Automated Alert</p>
                 </div>
                 <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-colors bg-white  border border-slate-100  ${cloudStates[selectedTask.id]?.isRead ? 'text-emerald-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">

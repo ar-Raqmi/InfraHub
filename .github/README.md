@@ -1,18 +1,18 @@
-# InfraHub
+# ElectricHub
 
-> Infrastructure Project Management System for Majlis Perbandaran Selayang
+> Electrical Project Management System for Majlis Perbandaran Selayang
 
 <p align="center">
   <img src="../images/dashboard.png"
-       alt="InfraHub Dashboard"
+       alt="ElectricHub Dashboard"
        style="height:400px; width:auto; border-radius:12px; border: 1px solid #e2e8f0;" />
 </p>
 
 ---
 
-## 📌 What is InfraHub?
+## 📌 What is ElectricHub?
 
-**InfraHub** is a project management system for Majlis Perbandaran Selayang that helps with:
+**ElectricHub** is a project management system for Majlis Perbandaran Selayang that helps with:
 
 - ✅ Managing construction projects from start to finish
 - ✅ Automatically generating official documents
@@ -137,13 +137,13 @@ Photo Edit:  Konva (React-Konva) for image annotations
 ```bash
 # 1. Clone the repository
 git clone <repository-url>
-cd InfraHub
+cd ElectricHub
 
 # 2. Install dependencies
 npm install
 
 # 3. Initialize Database (D1 Local)
-npx wrangler d1 execute infrahub-db --file=schema.sql --local
+npx wrangler d1 execute electrichub-db --file=schema.sql --local
 
 # 4. Run the development server
 npm run dev

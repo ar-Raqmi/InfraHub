@@ -1,6 +1,6 @@
-# Contributing to InfraHub
+# Contributing to ElectricHub
 
-Thank you for your interest in contributing to InfraHub!
+Thank you for your interest in contributing to ElectricHub!
 
 ## How to Contribute
 
@@ -18,4 +18,4 @@ If you'd like to make changes:
 4. Submit a pull request
 5. **Important**: Inform me about your PR so I can review it
 
-That's it! I appreciate any contributions to improve InfraHub.
+That's it! I appreciate any contributions to improve ElectricHub.
