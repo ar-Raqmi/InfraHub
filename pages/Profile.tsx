@@ -153,14 +153,14 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold gradient-text">Profil Pengguna</h1>
         {successMessage && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50  text-emerald-600  rounded-xl border border-emerald-100  text-xs font-bold animate-in fade-in slide-in-from-right-4">
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50  text-blue-600  rounded-xl border border-blue-100  text-xs font-bold animate-in fade-in slide-in-from-right-4">
                 <CheckCircle className="w-4 h-4" /> {successMessage}
             </div>
         )}
       </div>
 
       <div className="bg-white/95  border border-white/10 shadow-xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-white/20  relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full  -mr-32 -mt-32"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full  -mr-32 -mt-32"></div>
 
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
           <div className="relative group">
@@ -176,7 +176,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
 
             <div 
               onClick={handleAvatarClick}
-              className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-5xl font-bold shadow-2xl cursor-pointer overflow-hidden border-4 border-white  transition-transform"
+              className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white text-5xl font-bold shadow-2xl cursor-pointer overflow-hidden border-4 border-white  transition-transform"
             >
               {user.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
@@ -192,7 +192,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
             
             {isUploading && (
                 <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white  rounded-full flex items-center justify-center shadow-lg border border-slate-100">
-                    <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                 </div>
             )}
             
@@ -208,7 +208,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
           <div className="flex-1 text-center md:text-left pt-2">
                           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
                             <h2 className="text-3xl font-black text-slate-900 leading-tight break-words">{user.fullName}</h2>
-                            <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest self-center md:self-auto ${user.role === Role.ADMIN ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+                            <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest self-center md:self-auto ${user.role === Role.ADMIN ? 'bg-blue-100 text-blue-700' : 'bg-blue-100 text-blue-700'}`}>
                               {user.role}
                             </span>
             
@@ -240,7 +240,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
             
             <button 
                 onClick={() => setIsChangingPassword(!isChangingPassword)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-colors shadow-md  ${isChangingPassword ? 'bg-slate-200 text-slate-600   hover:bg-slate-300' : 'bg-white  text-emerald-600 border border-emerald-100  hover:bg-emerald-50'}`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-colors shadow-md  ${isChangingPassword ? 'bg-slate-200 text-slate-600   hover:bg-slate-300' : 'bg-white  text-blue-600 border border-blue-100  hover:bg-blue-50'}`}
             >
                 {isChangingPassword ? <X className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                 {isChangingPassword ? 'Batal Tukar Password' : 'Tukar Kata Laluan'}
@@ -248,9 +248,9 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
         </div>
 
         {isChangingPassword && (
-            <div className="mt-8 p-8 bg-slate-50  rounded-[2rem] border border-emerald-100  animate-slide-up">
+            <div className="mt-8 p-8 bg-slate-50  rounded-[2rem] border border-blue-100  animate-slide-up">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100  text-emerald-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100  text-blue-600 flex items-center justify-center">
                         <Lock className="w-5 h-5" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-800">Keselamatan Akaun</h3>
@@ -264,13 +264,13 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
                                 type={showCurrentPassword ?"text" :"password"}
                                 value={passwordData.current}
                                 onChange={e => setPasswordData({...passwordData, current: e.target.value})}
-                                className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-sm font-bold"
+                                className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-sm font-bold"
                                 required
                             />
                             <button 
                                 type="button" 
                                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500"
                             >
                                 {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
@@ -284,13 +284,13 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
                                 type={showNewPassword ?"text" :"password"}
                                 value={passwordData.new}
                                 onChange={e => setPasswordData({...passwordData, new: e.target.value})}
-                                className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-sm font-bold"
+                                className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-sm font-bold"
                                 required
                             />
                             <button 
                                 type="button" 
                                 onClick={() => setShowNewPassword(!showNewPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500"
                             >
                                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
@@ -303,7 +303,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
                             type="password"
                             value={passwordData.confirm}
                             onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
-                            className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-sm font-bold"
+                            className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-sm font-bold"
                             required
                         />
                     </div>
@@ -318,7 +318,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
                         <button 
                             type="submit" 
                             disabled={isUploading}
-                            className="px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-colors flex items-center gap-2  disabled:opacity-50"
+                            className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-colors flex items-center gap-2  disabled:opacity-50"
                         >
                             <Save className="w-4 h-4" />
                             {isUploading ? 'Menyimpan...' : 'Kemaskini Kata Laluan'}

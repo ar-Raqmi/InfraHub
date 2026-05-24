@@ -206,7 +206,7 @@ const CostHUD = ({
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-center">
             <span className="text-[8px] font-bold text-slate-400 uppercase leading-none">{isPelarasanActive ? 'Asal' : 'Kos'}</span>
-            <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-xl text-emerald-600'}`}>
+            <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-sm' : 'text-xl text-blue-600'}`}>
               {isLoading ? "---" : formatCurrency(grandTotal)}
             </p>
           </div>
@@ -214,8 +214,8 @@ const CostHUD = ({
             <>
               <div className="w-[1px] h-6 bg-slate-300 mx-1" />
               <div className="flex flex-col items-center">
-                <span className="text-[8px] font-black text-emerald-600 uppercase leading-none">Akhir</span>
-                <p className={`text-xl font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600'}`}>{formatCurrency(finalTotal)}</p>
+                <span className="text-[8px] font-black text-blue-600 uppercase leading-none">Akhir</span>
+                <p className={`text-xl font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-blue-600'}`}>{formatCurrency(finalTotal)}</p>
               </div>
             </>
           )}
@@ -233,7 +233,7 @@ const CostHUD = ({
                 value={status}
                 onChange={onStatusChange}
                 disabled={isReadOnly}
-                className="appearance-none bg-slate-100 border-2 border-slate-200 rounded-xl py-1 md:py-1.5 pl-3 md:pl-4 pr-8 md:pr-10 text-[10px] md:text-[11px] font-black text-slate-700 focus:ring-2 focus:ring-emerald-500 transition-all uppercase tracking-wider cursor-pointer hover:bg-white hover:border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="appearance-none bg-slate-100 border-2 border-slate-200 rounded-xl py-1 md:py-1.5 pl-3 md:pl-4 pr-8 md:pr-10 text-[10px] md:text-[11px] font-black text-slate-700 focus:ring-2 focus:ring-blue-500 transition-all uppercase tracking-wider cursor-pointer hover:bg-white hover:border-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
                 <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
@@ -242,17 +242,17 @@ const CostHUD = ({
                 <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
                 <option value={ProjectStatus.SIAP}>Siap</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400 pointer-events-none group-hover:text-emerald-500 transition-colors" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
             </div>
             {!isReadOnly && <div className="scale-90 md:scale-95">{saveAction}</div>}
             <div className="scale-90 md:scale-95">{exportAction}</div>
             
-            <div className={`hidden sm:flex px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider items-center ${isNewProject ? 'bg-blue-100 text-blue-700' : hasUnsavedChanges ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            <div className={`hidden sm:flex px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider items-center ${isNewProject ? 'bg-blue-100 text-blue-700' : hasUnsavedChanges ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
               {isNewProject ? 'Baru' : hasUnsavedChanges ? 'Belum Disimpan' : 'Disimpan'}
             </div>
           </div>
 
-          <div className="md:hidden flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100" onClick={toggleEdit}>
+          <div className="md:hidden flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100" onClick={toggleEdit}>
             {isEditingProgress ? (
               <div className="flex items-center">
                 <input
@@ -261,14 +261,14 @@ const CostHUD = ({
                   onChange={(e) => setLocalProgress(e.target.value)}
                   onBlur={handleBlur}
                   onKeyDown={handleKeyDown}
-                  className="w-8 bg-transparent text-[10px] font-black text-emerald-600 outline-none border-b border-emerald-500 p-0 text-center"
+                  className="w-8 bg-transparent text-[10px] font-black text-blue-600 outline-none border-b border-blue-500 p-0 text-center"
                   autoFocus
                   inputMode="decimal"
                 />
-                <span className="text-[10px] font-black text-emerald-600">%</span>
+                <span className="text-[10px] font-black text-blue-600">%</span>
               </div>
             ) : (
-              <span className="text-[10px] font-black text-emerald-600">{localProgress}%</span>
+              <span className="text-[10px] font-black text-blue-600">{localProgress}%</span>
             )}
           </div>
         </div>
@@ -277,7 +277,7 @@ const CostHUD = ({
           <div className="flex items-center justify-between w-full mb-1 px-1">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prestasi Projek</span>
             <div
-              className={`flex items-center gap-1 px-2 py-0 rounded-lg transition-all ${isReadOnly ? '' : 'hover:bg-emerald-50 cursor-pointer group'}`}
+              className={`flex items-center gap-1 px-2 py-0 rounded-lg transition-all ${isReadOnly ? '' : 'hover:bg-blue-50 cursor-pointer group'}`}
               onClick={toggleEdit}
             >
               <div className="flex items-baseline">
@@ -289,11 +289,11 @@ const CostHUD = ({
                   onBlur={handleBlur}
                   onKeyDown={handleKeyDown}
                   disabled={isReadOnly}
-                  className={`w-10 text-right bg-transparent border-b-2 border-transparent p-0 text-base font-black text-emerald-600 focus:ring-0 outline-none transition-all ${isEditingProgress ? 'border-emerald-500 bg-white shadow-inner rounded-t px-1' : ''}`}
+                  className={`w-10 text-right bg-transparent border-b-2 border-transparent p-0 text-base font-black text-blue-600 focus:ring-0 outline-none transition-all ${isEditingProgress ? 'border-blue-500 bg-white shadow-inner rounded-t px-1' : ''}`}
                 />
-                <span className="text-xs font-black text-emerald-500/50">%</span>
+                <span className="text-xs font-black text-blue-500/50">%</span>
               </div>
-              {!isReadOnly && <Edit className="w-3 h-3 text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity" />}
+              {!isReadOnly && <Edit className="w-3 h-3 text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity" />}
             </div>
           </div>
           <div className="flex gap-1 h-3.5 w-full">
@@ -322,7 +322,7 @@ const CostHUD = ({
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 leading-none text-right">
               {isPelarasanActive ? 'Harga Kontrak' : 'Jumlah Kos'}
             </p>
-            <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-base' : 'text-xl text-emerald-600'}`}>
+            <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-base' : 'text-xl text-blue-600'}`}>
               {(isVerifying || !hasFullData) ? (
                 <span className="animate-pulse opacity-50 px-2 bg-slate-100 rounded text-sm font-sans uppercase tracking-tight text-slate-400">Memuatkan...</span>
               ) : formatCurrency(grandTotal)}
@@ -332,8 +332,8 @@ const CostHUD = ({
           {isPelarasanActive && finalTotal !== undefined && (
             <div className="flex items-center gap-6 border-l-2 border-slate-100 pl-6 shrink-0">
               <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5 leading-none text-right">Harga Akhir</span>
-                <p className={`text-xl font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600'}`}>
+                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-0.5 leading-none text-right">Harga Akhir</span>
+                <p className={`text-xl font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-blue-600'}`}>
                   {formatCurrency(finalTotal)}
                 </p>
               </div>
@@ -1798,16 +1798,16 @@ Jabatan Kejuruteraan` }],
     <div className="flex items-center gap-2">
       <button onClick={handleBackClick} className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 p-2 rounded-lg font-bold text-xs shadow-sm transition-colors flex items-center justify-center" title="Kembali ke Senarai"> <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline ml-1">Kembali</span> </button>
       {!isGlobalReadOnly && (
-        <button onClick={handleSaveClick} disabled={isSaving} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white p-2 rounded-lg font-bold text-xs shadow-md shadow-emerald-500/30 transition-colors flex items-center justify-center" title="Simpan Projek"> <Save className="w-4 h-4" /> <span className="hidden sm:inline ml-1">{isSaving ? '...' : 'Simpan'}</span> </button>
+        <button onClick={handleSaveClick} disabled={isSaving} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-2 rounded-lg font-bold text-xs shadow-md shadow-blue-500/30 transition-colors flex items-center justify-center" title="Simpan Projek"> <Save className="w-4 h-4" /> <span className="hidden sm:inline ml-1">{isSaving ? '...' : 'Simpan'}</span> </button>
       )}
     </div>
   );
 
   const exportAction = (
-    <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg font-bold shadow-md transition-colors disabled:opacity-70 disabled:scale-100 text-xs" > {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} <span>PDF</span> </button>
+    <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg font-bold shadow-md transition-colors disabled:opacity-70 disabled:scale-100 text-xs" > {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} <span>PDF</span> </button>
   );
 
-  const inputClass = "w-full px-4 py-3 rounded-lg bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-colors text-slate-900 placeholder-slate-400 text-sm shadow-sm disabled:bg-slate-50 disabled:cursor-not-allowed";
+  const inputClass = "w-full px-4 py-3 rounded-lg bg-white border border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors text-slate-900 placeholder-slate-400 text-sm shadow-sm disabled:bg-slate-50 disabled:cursor-not-allowed";
   const labelClass = "block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-jakarta";
   const yellowPhaseClass = "bg-white/80 border border-yellow-500/30 p-8 rounded-3xl animate-fade-in shadow-xl relative overflow-hidden";
   const bluePhaseClass = "bg-white/80 border border-blue-500/30 p-8 rounded-3xl animate-fade-in shadow-xl relative overflow-hidden";
@@ -1821,11 +1821,11 @@ Jabatan Kejuruteraan` }],
       {/* Loading Overlay (Data-Driven for Slow Connections) */}
       {isStillLoading && (
         <div className="fixed inset-0 z-[100] bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-500">
-          <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-emerald-500/10 border border-slate-100 flex flex-col items-center gap-6 max-w-sm mx-auto">
+          <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-blue-500/10 border border-slate-100 flex flex-col items-center gap-6 max-w-sm mx-auto">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-slate-100 border-t-emerald-600 rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <Database className="w-6 h-6 text-emerald-600 animate-pulse" />
+                <Database className="w-6 h-6 text-blue-600 animate-pulse" />
               </div>
             </div>
             <div className="text-center space-y-2">
@@ -1861,7 +1861,7 @@ Jabatan Kejuruteraan` }],
             <div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-1.5 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"></div>
+                <div className="h-8 w-1.5 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
                 <div className="relative" ref={switcherRef}>
                   <button
                     onClick={() => project && setIsSwitcherOpen(!isSwitcherOpen)}
@@ -1871,7 +1871,7 @@ Jabatan Kejuruteraan` }],
                     <div className="flex items-center gap-2">
                       <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
                         {project ? 'Kemaskini Projek' : 'Daftar Projek Baru'}
-                        {project && <ChevronDown className={`w-4 h-4 text-slate-400 group-hover/title:text-emerald-500 transition-all ${isSwitcherOpen ? 'rotate-180' : ''}`} />}
+                        {project && <ChevronDown className={`w-4 h-4 text-slate-400 group-hover/title:text-blue-500 transition-all ${isSwitcherOpen ? 'rotate-180' : ''}`} />}
                       </h1>
                     </div>
                     <p className="text-xs text-slate-500 font-mono mt-0.5 uppercase tracking-wider">
@@ -1889,7 +1889,7 @@ Jabatan Kejuruteraan` }],
                             placeholder="Cari No. Fail atau Nama Projek..."
                             value={switcherSearchQuery}
                             onChange={(e) => setSwitcherSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
                             autoFocus
                           />
                         </div>
@@ -1899,7 +1899,7 @@ Jabatan Kejuruteraan` }],
                               type="checkbox"
                               checked={showSiapProjects}
                               onChange={(e) => setShowSiapProjects(e.target.checked)}
-                              className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300"
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-slate-300"
                             />
                             <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
                           </label>
@@ -1912,16 +1912,16 @@ Jabatan Kejuruteraan` }],
                             <button
                               key={p.id}
                               onClick={() => handleProjectSwitch(p)}
-                              className={`w-full text-left p-3 rounded-xl transition-all mb-1 group/item ${p.id === project?.id ? 'bg-emerald-50 ring-1 ring-emerald-500/20' : 'hover:bg-slate-50'}`}
+                              className={`w-full text-left p-3 rounded-xl transition-all mb-1 group/item ${p.id === project?.id ? 'bg-blue-50 ring-1 ring-blue-500/20' : 'hover:bg-slate-50'}`}
                             >
                               <div className="flex items-start gap-3">
-                                <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${p.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-amber-400'}`}></div>
+                                <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${p.status === ProjectStatus.SIAP ? 'bg-blue-500' : 'bg-amber-400'}`}></div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between gap-2 mb-0.5">
                                     <span className="text-[10px] font-black text-slate-400 font-mono uppercase tracking-tighter">{p.noFail}</span>
-                                    {p.id === project?.id && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Aktif</span>}
+                                    {p.id === project?.id && <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded uppercase">Aktif</span>}
                                   </div>
-                                  <h4 className="text-xs font-bold text-slate-800 leading-normal line-clamp-2 md:line-clamp-none group-hover/item:text-emerald-700 transition-colors">
+                                  <h4 className="text-xs font-bold text-slate-800 leading-normal line-clamp-2 md:line-clamp-none group-hover/item:text-blue-700 transition-colors">
                                     {p.namaProjek}
                                   </h4>
                                 </div>
@@ -1964,9 +1964,9 @@ Jabatan Kejuruteraan` }],
                 <div className="group w-full"> <label className={labelClass}>Cadangan Kerja (Nama Projek)</label> <textarea name="namaProjek" value={formData.namaProjek || ''} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isGlobalReadOnly} className={`${inputClass} min-h-[60px] text-sm font-bold resize-y uppercase`} placeholder="CADANGAN KERJA-KERJA..." /> </div>
                 <div className="group w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2"> <div className="w-1 h-3 bg-emerald-500 rounded-full"></div> <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lokasi & No. Aduan</label> </div>
+                    <div className="flex items-center gap-2"> <div className="w-1 h-3 bg-blue-500 rounded-full"></div> <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lokasi & No. Aduan</label> </div>
                     {!isGlobalReadOnly && (
-                      <button type="button" onClick={addLocationRow} className="text-[10px] flex items-center gap-1 bg-white border border-slate-200 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-50 font-bold transition-colors shadow-sm" > <Plus className="w-3 h-3" /> Tambah Lokasi </button>
+                      <button type="button" onClick={addLocationRow} className="text-[10px] flex items-center gap-1 bg-white border border-slate-200 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 font-bold transition-colors shadow-sm" > <Plus className="w-3 h-3" /> Tambah Lokasi </button>
                     )}
                   </div>
                   <div className="space-y-2 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
@@ -2024,10 +2024,10 @@ Jabatan Kejuruteraan` }],
                                   setFormData(prev => ({ ...prev, zon: nextZons.join(', ') }));
                                   setHasUnsavedChanges(true);
                                 }}
-                                className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${isChecked ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
+                                className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${isChecked ? 'bg-blue-50 text-blue-700' : 'hover:bg-slate-50 text-slate-600'}`}
                               >
                                 <span className="text-[11px] font-bold select-none">{z}</span>
-                                {isChecked && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                                {isChecked && <Check className="w-3.5 h-3.5 text-blue-600" />}
                               </div>
                             );
                           })}
@@ -2041,8 +2041,8 @@ Jabatan Kejuruteraan` }],
 
                   <div className="group">
                     <label className={labelClass}>Pegawai (PJA)</label>
-                    <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm transition-colors hover:border-emerald-300">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 overflow-hidden shadow-md text-white font-black">
+                    <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm transition-colors hover:border-blue-300">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center shrink-0 overflow-hidden shadow-md text-white font-black">
                         {users.find(u => u.id === formData.pjaId)?.avatarUrl ? (
                           <img src={users.find(u => u.id === formData.pjaId)?.avatarUrl} alt="PJA" className="w-full h-full object-cover" />
                         ) : (
@@ -2063,7 +2063,7 @@ Jabatan Kejuruteraan` }],
             </div>
             <div id="pdf-export-container" className="flex flex-col items-center gap-0 w-full">
               <div className="rounded-[2rem] border border-slate-200 shadow-2xl bg-white/50 flex flex-col h-auto overflow-visible w-full">
-                <div className="bg-white/80 p-4 border-b border-slate-200 flex items-center justify-between shrink-0 rounded-t-[2rem]"> <div className="flex items-center gap-4"> <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20"> <Calculator className="w-5 h-5" /> </div> <div> <h3 className="font-bold text-slate-900 text-lg tracking-tight">Penyediaan BQ</h3> <p className="text-xs text-slate-500 font-medium">Wizard Mode</p> </div> </div> </div>
+                <div className="bg-white/80 p-4 border-b border-slate-200 flex items-center justify-between shrink-0 rounded-t-[2rem]"> <div className="flex items-center gap-4"> <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20"> <Calculator className="w-5 h-5" /> </div> <div> <h3 className="font-bold text-slate-900 text-lg tracking-tight">Penyediaan BQ</h3> <p className="text-xs text-slate-500 font-medium">Wizard Mode</p> </div> </div> </div>
                 <div className="bg-slate-50/50 flex-1 relative rounded-b-[2rem]"> <BQEditor initialData={formData.bqData} onDataChange={handleBQChange} projectData={formData as Project} isPrintView={false} locationRows={locationRows} onLocationDimensionsChange={handleLocationDimensionsChange} onShowToast={onShowToast} readOnly={isGlobalReadOnly} /> </div>
               </div>
             </div>
@@ -2088,7 +2088,7 @@ Jabatan Kejuruteraan` }],
                   setTempohUnit(e.target.value as any);
                   setHasUnsavedChanges(true);
                 }} disabled={isPTSectionReadOnly} className={`${inputClass} flex-1`} > <option value="Minggu">Minggu</option> <option value="Bulan">Bulan</option> <option value="Tahun">Tahun</option> </select> </div> </div>
-                <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kontrak</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setFormData(prev => ({ ...prev, isManualMulaKontrak: !formData.isManualMulaKontrak }))} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKontrak ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKontrak ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKontrak ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKontrak" value={formData.tarikhMulaKontrak || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKontrak} className={`${inputClass} ${(!formData.isManualMulaKontrak || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKontrak} /> {!formData.isManualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari BPP (Business Days)</p>} </div>
+                <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kontrak</label> {!isPTSectionReadOnly && <button type="button" onClick={() => setFormData(prev => ({ ...prev, isManualMulaKontrak: !formData.isManualMulaKontrak }))} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-blue-500" title={formData.isManualMulaKontrak ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKontrak ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKontrak ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKontrak" value={formData.tarikhMulaKontrak || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKontrak} className={`${inputClass} ${(!formData.isManualMulaKontrak || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-blue-500/20'}`} readOnly={!formData.isManualMulaKontrak} /> {!formData.isManualMulaKontrak && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari BPP (Business Days)</p>} </div>
                 <div className="group"> <label className={labelClass}>Tarikh Tamat Kontrak (Auto)</label> <StrictDateInput name="tarikhTamatKontrak" value={formData.tarikhTamatKontrak || ''} onChange={() => { }} className={`${inputClass} bg-slate-50 cursor-not-allowed`} readOnly /> </div>
                 <div className="group"> <label className={labelClass}>No. BPP</label> <input type="text" name="noBpp" value={formData.noBpp || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
                 <div className="group"> <label className={labelClass}>Tarikh Serah Tapak</label> <StrictDateInput name="tarikhSerahTapak" value={formData.tarikhSerahTapak || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} /> </div>
@@ -2096,7 +2096,7 @@ Jabatan Kejuruteraan` }],
                 <div className="group"> <div className="flex justify-between items-center mb-1"> <label className={labelClass}>Tarikh Mula Kerja</label> {!isPTSectionReadOnly && <button type="button" onClick={() => {
                   setFormData(prev => ({ ...prev, isManualMulaKerja: !formData.isManualMulaKerja }));
                   setHasUnsavedChanges(true);
-                }} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-500" title={formData.isManualMulaKerja ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKerja ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKerja ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKerja" value={formData.tarikhMulaKerja || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKerja} className={`${inputClass} ${(!formData.isManualMulaKerja || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-emerald-500/20'}`} readOnly={!formData.isManualMulaKerja} /> {!formData.isManualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari Serah Tapak (Business Days)</p>} </div>
+                }} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-blue-500" title={formData.isManualMulaKerja ? "Reset to Auto" : "Manual Edit"} > {formData.isManualMulaKerja ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {formData.isManualMulaKerja ? "Manual" : "Auto"} </button>} </div> <StrictDateInput name="tarikhMulaKerja" value={formData.tarikhMulaKerja || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly || !formData.isManualMulaKerja} className={`${inputClass} ${(!formData.isManualMulaKerja || isPTSectionReadOnly) ? 'bg-slate-50' : 'ring-2 ring-blue-500/20'}`} readOnly={!formData.isManualMulaKerja} /> {!formData.isManualMulaKerja && <p className="text-[10px] text-slate-400 mt-1 italic flex items-center gap-1"><RefreshCw className="w-3 h-3" /> +2 hari dari Serah Tapak (Business Days)</p>} </div>
                 <div className="group"> <label className={labelClass}>No. Inden</label> <input type="text" name="noInden" value={formData.noInden || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} placeholder="cth: A00321423" /> </div>
                 <div className="group"> <label className={labelClass}>No. Sebutharga</label> <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih No. Sebutharga...</option> {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)} </select> </div>
               </div>
@@ -2192,7 +2192,7 @@ Jabatan Kejuruteraan` }],
                             setFormData(prev => ({ ...prev, isLocDeductionEnabled: e.target.checked }));
                             setHasUnsavedChanges(true);
                           }}
-                          className="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300 cursor-pointer"
+                          className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 cursor-pointer"
                         />
                         <span className="text-[12px] font-bold text-slate-400 uppercase tracking-tight cursor-pointer" onClick={() => {
                           setFormData(prev => ({ ...prev, isLocDeductionEnabled: !prev.isLocDeductionEnabled }));
@@ -2273,8 +2273,8 @@ Jabatan Kejuruteraan` }],
                   <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center"> <HelpCircle className="w-8 h-8 stroke-[1.5]" /> </div>
                 </div>
               ) : (
-                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500">
-                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center"> <CheckCircle className="w-8 h-8 stroke-[1.5]" /> </div>
+                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6 text-blue-500">
+                  <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center"> <CheckCircle className="w-8 h-8 stroke-[1.5]" /> </div>
                 </div>
               )}
               <h3 className="text-xl font-bold text-slate-900 mb-2 font-jakarta">
@@ -2294,7 +2294,7 @@ Jabatan Kejuruteraan` }],
                 <div className="flex flex-col gap-3 w-full">
                   <button
                     onClick={confirmAction}
-                    className="w-full py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30"
+                    className="w-full py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg bg-blue-600 hover:bg-blue-700 shadow-blue-600/30"
                   >
                     <Save className="w-4 h-4" /> Simpan & Tukar Projek
                   </button>
@@ -2308,7 +2308,7 @@ Jabatan Kejuruteraan` }],
               ) : (
                 <div className="flex gap-3 w-full">
                   <button onClick={cancelConfirmation} className="flex-1 py-3.5 px-4 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm hover:shadow-md" > Batal </button>
-                  <button onClick={confirmAction} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${confirmationState.type === 'back' ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' : confirmationState.type === 'reset_pelarasan' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'}`} >
+                  <button onClick={confirmAction} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${confirmationState.type === 'back' ? 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/30' : confirmationState.type === 'reset_pelarasan' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/30'}`} >
                     {confirmationState.type === 'back' ? 'Ya, Kembali' : confirmationState.type === 'reset_pelarasan' ? 'Ya, Set Semula' : 'Ya, Simpan'}
                   </button>
                 </div>

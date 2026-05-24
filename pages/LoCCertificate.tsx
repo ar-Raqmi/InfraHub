@@ -180,7 +180,7 @@ const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, pjaUser, onClo
                         <button 
                             onClick={handleDownload}
                             disabled={isGenerating}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
+                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors text-sm disabled:opacity-50"
                         >
                             {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
                             PDF

@@ -38,8 +38,8 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (value / 100) * circumference;
 
-    const colorClass = "text-emerald-500";
-    const strokeClass = "stroke-emerald-500";
+    const colorClass = "text-blue-500";
+    const strokeClass = "stroke-blue-500";
 
     return (
         <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
@@ -1027,12 +1027,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 <div>
                     <h1 className="text-3xl font-bold gradient-text">Senarai Projek</h1>
                     <p className="text-slate-500  mt-1">
-                        <span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai
+                        <span className="font-bold text-blue-600">{filteredProjects.length}</span> projek dijumpai
                     </p>
                 </div>
                 <button
                     onClick={onAddProject}
-                    className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40  transition-colors duration-300 w-full md:w-auto justify-center"
+                    className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40  transition-colors duration-300 w-full md:w-auto justify-center"
                 >
                     <Plus className="h-5 w-5" />
                     <span>Tambah Projek</span>
@@ -1050,7 +1050,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 placeholder="Cari No. Fail, Aduan, Projek, Syarikat..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50  border-transparent focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-colors text-slate-900  placeholder-slate-400 font-medium"
+                                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50  border-transparent focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-colors text-slate-900  placeholder-slate-400 font-medium"
                             />
                         </div>
                     )}
@@ -1060,14 +1060,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         <div className="flex bg-slate-100  p-1 rounded-xl shrink-0">
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white  text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                 title="Pandangan Senarai"
                             >
                                 <List className="w-4 h-4" /> <span className="hidden md:inline">Senarai</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('group')}
-                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'group' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'group' ? 'bg-white  text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                 title="Pandangan Kumpulan Syarikat"
                             >
                                 <Grid className="w-4 h-4" /> <span className="hidden md:inline">Syarikat</span>
@@ -1076,12 +1076,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                         <button
                             onClick={() => setShowFilterPanel(!showFilterPanel)}
-                            className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-colors relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-emerald-50  text-emerald-600 border-emerald-200 ring-2 ring-emerald-500/20' : 'bg-white  border-slate-200  text-slate-600 hover:bg-slate-50'}`}
+                            className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-colors relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-blue-50  text-blue-600 border-blue-200 ring-2 ring-blue-500/20' : 'bg-white  border-slate-200  text-slate-600 hover:bg-slate-50'}`}
                         >
                             <Filter className="w-4 h-4" />
                             <span>Filter</span>
                             {activeFilterCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-600 text-white text-[10px] flex items-center justify-center rounded-full shadow-sm">
+                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 text-white text-[10px] flex items-center justify-center rounded-full shadow-sm">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -1089,7 +1089,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                         <button
                             onClick={viewMode === 'group' ? () => setIsExportModalOpen(true) : exportToExcel}
-                            className="h-full px-4 rounded-xl bg-emerald-50  text-emerald-600  hover:bg-emerald-100  flex items-center gap-2 transition-colors font-bold text-sm"
+                            className="h-full px-4 rounded-xl bg-blue-50  text-blue-600  hover:bg-blue-100  flex items-center gap-2 transition-colors font-bold text-sm"
                             title={viewMode === 'group' ? "Jana Laporan Panel" : "Export CSV"}
                         >
                             {viewMode === 'group' ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
@@ -1111,7 +1111,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     <div className="pt-6 border-t border-slate-100  animate-slide-up">
                         <div className="flex items-center justify-between mb-6">
                             <h4 className="text-sm font-bold text-slate-800  flex items-center gap-2">
-                                <Settings2 className="w-4 h-4 text-emerald-500" />
+                                <Settings2 className="w-4 h-4 text-blue-500" />
                                 Tetapan Data & Paparan
                             </h4>
                             <button
@@ -1132,7 +1132,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <select
                                         value={filterStatus}
                                         onChange={(e) => setFilterStatus(e.target.value as any)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                                     >
                                         <option value="ALL">Semua Status</option>
                                         <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
@@ -1146,7 +1146,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 </div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
+                                    <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                         <option value="ALL">Semua PJA</option>
                                         {users.filter(u => u.role === 'PJA').map(u => <option key={u.id} value={u.id}>{u.username.toUpperCase()}</option>)}
                                     </select>
@@ -1154,7 +1154,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 </div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterZon} onChange={(e) => setFilterZon(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
+                                    <select value={filterZon} onChange={(e) => setFilterZon(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                         <option value="ALL">Semua Zon</option>
                                         {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
                                     </select>
@@ -1162,7 +1162,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 </div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
+                                    <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                         <option value="ALL">Semua BP</option>
                                         {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
                                     </select>
@@ -1170,7 +1170,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 </div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
+                                    <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                         <option value="ALL">Semua Mukim</option>
                                         {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
                                     </select>
@@ -1181,7 +1181,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <select
                                         value={filterVote}
                                         onChange={(e) => setFilterVote(e.target.value)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                                     >
                                         <option value="ALL">Semua Vot</option>
                                         {votesList.map(v => (
@@ -1203,7 +1203,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <select
                                         value={filterDateType}
                                         onChange={(e) => setFilterDateType(e.target.value)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                                     >
                                         <option value="tarikhBuka">Tarikh Buka</option>
                                         <option value="tarikhLantikan">Tarikh Lantikan</option>
@@ -1224,7 +1224,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             value={filterDateStart || ''}
                                             onChange={(e) => setFilterDateStart(e.target.value)}
                                             placeholder="Dari (DD/MM/YYYY)"
-                                            className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
+                                            className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
                                     {(filterDateStart || filterDateEnd) && (
@@ -1243,7 +1243,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                         value={filterDateEnd || ''}
                                         onChange={(e) => setFilterDateEnd(e.target.value)}
                                         placeholder="Hingga (DD/MM/YYYY)"
-                                        className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
+                                        className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
                             </div>
@@ -1265,7 +1265,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                                         {columnDefs.map(col => (
                                             <label key={col.id} className="flex items-center gap-2 cursor-pointer group p-1.5 rounded-lg hover:bg-white  transition-colors select-none">
-                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-emerald-500 border-emerald-500' : 'bg-white  border-slate-300  group-hover:border-emerald-400'}`}>
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-blue-500 border-blue-500' : 'bg-white  border-slate-300  group-hover:border-blue-400'}`}>
                                                     {visibleColumns[col.id] && <Check className="w-3 h-3 text-white stroke-[3]" />}
                                                 </div>
                                                 <input type="checkbox" className="hidden" checked={visibleColumns[col.id]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col.id]: !prev[col.id] }))} />
@@ -1283,15 +1283,15 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 <div className="flex gap-4 items-center">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kos:</span>
                                     <div className="flex bg-slate-100  rounded-lg p-1">
-                                        <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
-                                        <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
-                                        <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
+                                        <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Harga Kontrak</button>
+                                        <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Harga Akhir</button>
+                                        <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Semua</button>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 items-center">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tapis Projek:</span>
                                     <label className="flex items-center gap-2 cursor-pointer">
-                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-blue-500' : 'bg-slate-300'}`}>
                                             <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showSiap ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <input type="checkbox" className="hidden" checked={showSiap} onChange={() => setShowSiap(!showSiap)} />
@@ -1300,7 +1300,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     </label>
 
                                     <label className="flex items-center gap-2 cursor-pointer">
-                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-blue-500' : 'bg-slate-300'}`}>
                                             <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showTuntutan ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <input type="checkbox" className="hidden" checked={showTuntutan} onChange={() => setShowTuntutan(!showTuntutan)} />
@@ -1332,7 +1332,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             setSortKey('tarikhBuka');
                                             setSortDirection('desc');
                                         }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
                                     >
                                         <RotateCcw className="w-3 h-3" />
                                         Reset Susunan
@@ -1357,7 +1357,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                         onChange={handlePageInputChange}
                                         onBlur={handlePageInputBlur}
                                         onKeyDown={handlePageInputKeyDown}
-                                        className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 shadow-sm"
+                                        className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 shadow-sm"
                                     />
                                     <span className="text-xs text-slate-500">dari {totalPages}</span>
                                 </div>
@@ -1396,7 +1396,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     {col.label}
                                                     <div className={`transition-opacity ${isSorted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                                         {isSorted ? (
-                                                            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-emerald-600" /> : <ArrowDown className="w-3 h-3 text-emerald-600" />
+                                                            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-blue-600" /> : <ArrowDown className="w-3 h-3 text-blue-600" />
                                                         ) : (
                                                             <ArrowUpDown className="w-3 h-3 text-slate-300" />
                                                         )}
@@ -1426,7 +1426,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     const pja = getPjaUser(project.pjaId);
                                                     return (
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
+                                                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
                                                                 {pja?.avatarUrl ? (
                                                                     <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
                                                                 ) : (
@@ -1450,9 +1450,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             {visibleColumns.noInden && <td className="px-6 py-4 text-xs text-slate-500">{project.noInden}</td>}
                                             {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
                                             {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
-                                            {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{getStatusLabel(project.status)}</span></div></td>}
+                                            {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-blue-500' : 'bg-yellow-500'}`}></span>{getStatusLabel(project.status)}</span></div></td>}
                                             {visibleColumns.prestasi && <td className="px-6 py-4 text-center font-bold text-slate-700">{project.prestasi || '-'}</td>}
-                                            {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
+                                            {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-blue-600">{formatCurrency(project.kosProjek)}</td>}
                                             {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(getHargaAkhir(project))}</td>}
                                             {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
                                             {visibleColumns.ladAmount && <td className="px-6 py-4 text-right text-xs font-bold text-red-500">{formatCurrency(project.ladAmount)}</td>}
@@ -1472,7 +1472,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             {visibleColumns.iso && <td className="px-6 py-4 text-xs text-slate-500">{project.iso}</td>}
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white  rounded-lg text-emerald-600 hover:bg-emerald-50 shadow-sm border border-slate-100"><ArrowUpRight className="w-4 h-4" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white  rounded-lg text-blue-600 hover:bg-blue-50 shadow-sm border border-slate-100"><ArrowUpRight className="w-4 h-4" /></button>
                                                     {user.role !== 'PJA' && (
                                                         <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }} className="p-2 bg-white  rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 shadow-sm border border-slate-100"><Trash2 className="w-4 h-4" /></button>
                                                     )}
@@ -1507,7 +1507,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             <h3 className="text-lg font-bold text-slate-900  truncate flex items-center gap-3">{idx + 1}. {group.company} {group.count > 0 ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-600  font-bold uppercase tracking-wider">{group.count} Fail</span> : <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-400  font-bold uppercase tracking-wider italic">Tiada Projek</span>}</h3>
                                             <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-xs font-medium text-slate-500">
                                                 <div className="flex gap-4 border-l border-slate-200  pl-4 ml-2">
-                                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-emerald-700  font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
+                                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-blue-700  font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
                                                     {(costViewMode === 'actual' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div><span className="opacity-80">Harga Akhir:</span><strong className="text-blue-700  font-mono text-sm">{formatCurrency(group.totalHargaAkhir)}</strong></span>}
                                                 </div>
                                             </div>
@@ -1557,7 +1557,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                             <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600  whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
                                                                             <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br />-<br />{formatDate(p.tarikhTamatKontrak)}</td>
                                                                             <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
-                                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600'}>{formatCurrency(p.kosProjek)}</div>
+                                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-blue-600'}>{formatCurrency(p.kosProjek)}</div>
                                                                                 <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600'}>{formatCurrency(getHargaAkhir(p))}</div>
                                                                             </td>
                                                                             <td className="px-6 py-3 text-center align-top">
@@ -1575,9 +1575,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                                                         updateProject({ id: p.id, updates: { peratusSiap: parseInt(e.target.value) || 0 } });
                                                                                                     }}
                                                                                                     onClick={(e) => e.stopPropagation()}
-                                                                                                    className="w-12 text-center text-[10px] font-bold text-emerald-600 bg-white border border-emerald-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-emerald-500 transition-shadow"
+                                                                                                    className="w-12 text-center text-[10px] font-bold text-blue-600 bg-white border border-blue-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-blue-500 transition-shadow"
                                                                                                 />
-                                                                                                <span className="text-[10px] font-bold text-emerald-600">%</span>
+                                                                                                <span className="text-[10px] font-bold text-blue-600">%</span>
                                                                                             </div>
                                                                                             <select
                                                                                                 value={p.status}
@@ -1595,7 +1595,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                                         </>
                                                                                     ) : (
                                                                                         <>
-                                                                                            <span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span>
+                                                                                            <span className="text-[10px] font-bold text-blue-600">{p.peratusSiap}%</span>
                                                                                             <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{getStatusLabel(p.status)}</span>
                                                                                         </>
                                                                                     )}
@@ -1604,7 +1604,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                             <td className="px-6 py-3 text-right align-top">
                                                                                 <button
                                                                                     onClick={(e) => { e.stopPropagation(); onEditProject(p); }}
-                                                                                    className="p-2 rounded-lg bg-white  text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"
+                                                                                    className="p-2 rounded-lg bg-white  text-blue-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"
                                                                                 >
                                                                                     <ArrowUpRight className="w-4 h-4" />
                                                                                 </button>
@@ -1624,14 +1624,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     </div>
                                                 );
                                             })}
-                                            <div className="px-6 py-4 bg-emerald-50/50  flex justify-end items-center gap-6 border-t border-emerald-100">
+                                            <div className="px-6 py-4 bg-blue-50/50  flex justify-end items-center gap-6 border-t border-blue-100">
                                                 <div className="flex items-center gap-2 mr-auto">
                                                     <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                                                         :</span>
                                                     <span className="text-xs font-black text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm">{group.count}</span>
                                                 </div>
-                                                <span className="text-[11px] font-bold uppercase text-emerald-600  tracking-wider">Jumlah Keseluruhan ({group.company})</span>
-                                                <span className="text-sm font-black font-mono text-emerald-700">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
+                                                <span className="text-[11px] font-bold uppercase text-blue-600  tracking-wider">Jumlah Keseluruhan ({group.company})</span>
+                                                <span className="text-sm font-black font-mono text-blue-700">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1644,7 +1644,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     {/* Integrated Summary Card (Vertical) */}
                     {groupedProjects.length > 0 && (
                         <div className="relative overflow-hidden rounded-3xl bg-white  border border-slate-200  shadow-xl p-6 mt-8 w-full mx-auto">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100"><div className="p-3 bg-slate-100  rounded-xl shadow-sm text-emerald-600"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800  uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100"><div className="p-3 bg-slate-100  rounded-xl shadow-sm text-blue-600"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800  uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
                             <div className="overflow-hidden rounded-xl border border-slate-200">
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-50">
@@ -1653,22 +1653,22 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <tbody className="divide-y divide-slate-100">
                                         {Object.entries(financialSummary).map(([voteCode, data]) => (
                                             <tr key={voteCode} className="hover:bg-slate-50">
-                                                <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-center font-bold text-slate-600">{data.projectCount}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
+                                                <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-center font-bold text-slate-600">{data.projectCount}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-blue-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-center font-bold text-slate-800">{(Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0)}</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
-                                        <tr className="bg-emerald-50/30  font-bold border-t border-emerald-100">
-                                            <td colSpan={4} className="py-3 px-4 text-right uppercase text-[10px] text-emerald-600 tracking-wider">Jumlah Projek Keseluruhan</td>
-                                            <td colSpan={2} className="py-3 px-4 text-right font-mono text-emerald-700">{filteredProjects.length} Projek</td>
+                                        <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-center font-bold text-slate-800">{(Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0)}</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-blue-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
+                                        <tr className="bg-blue-50/30  font-bold border-t border-blue-100">
+                                            <td colSpan={4} className="py-3 px-4 text-right uppercase text-[10px] text-blue-600 tracking-wider">Jumlah Projek Keseluruhan</td>
+                                            <td colSpan={2} className="py-3 px-4 text-right font-mono text-blue-700">{filteredProjects.length} Projek</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>                            <div className="mt-6 flex flex-col gap-4 border-t border-slate-200  pt-4">
                                 <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
                                 <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-emerald-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
+                                <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-blue-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
                                     <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="px-4 py-2 bg-slate-800  text-white  rounded-lg text-[10px] font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
-                                    <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600  leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
+                                    <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-blue-600  leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
                                 </div>
                             </div>
                         </div>
@@ -1706,7 +1706,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-900  flex items-center gap-2">
-                                <FileText className="w-6 h-6 text-emerald-600" />
+                                <FileText className="w-6 h-6 text-blue-600" />
                                 Laporan Panel Kontraktor
                             </h3>
                             <button onClick={() => setIsExportModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors">
@@ -1717,10 +1717,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         <div className="space-y-4">
                             {isGeneratingPdf ? (
                                 <div className="flex flex-col items-center justify-center py-4">
-                                    <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-2" />
+                                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
                                     <p className="text-sm font-bold text-slate-700">Menjana PDF... {generationProgress}%</p>
                                     <div className="w-full bg-slate-100  h-2 rounded-full mt-2 overflow-hidden">
-                                        <div className="bg-emerald-500 h-full transition-colors duration-300" style={{ width: `${generationProgress}%` }}></div>
+                                        <div className="bg-blue-500 h-full transition-colors duration-300" style={{ width: `${generationProgress}%` }}></div>
                                     </div>
                                 </div>
                             ) : (
@@ -1733,7 +1733,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             type="text"
                                             value={exportBilMesyuarat}
                                             onChange={e => setExportBilMesyuarat(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                             placeholder="cth: 01/01/2025"
                                             autoFocus
                                         />
@@ -1743,7 +1743,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                         <button
                                             onClick={handleExportRealPDF}
                                             disabled={isGeneratingPdf}
-                                            className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 disabled:opacity-70 group"
+                                            className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-70 group"
                                         >
                                             <FileText className="w-4 h-4" />
                                             PDF

@@ -48,8 +48,8 @@ const getColorStyles = (color: string) => {
         yellow: "bg-yellow-100 text-yellow-600 border-yellow-200",
         lime: "bg-lime-100 text-lime-600 border-lime-200",
         green: "bg-green-100 text-green-600 border-green-200",
-        emerald: "bg-emerald-100 text-emerald-600 border-emerald-200",
-        teal: "bg-teal-100 text-teal-600 border-teal-200",
+        emerald: "bg-blue-100 text-blue-600 border-blue-200",
+        teal: "bg-cyan-100 text-cyan-600 border-cyan-200",
         cyan: "bg-cyan-100 text-cyan-600 border-cyan-200",
         sky: "bg-sky-100 text-sky-600 border-sky-200",
         blue: "bg-blue-100 text-blue-600 border-blue-200",
@@ -158,7 +158,7 @@ const DatePickerInput = ({ value, onChange, placeholder }: { value: string, onCh
     };
 
     return (
-        <div className="relative flex items-center w-full px-4 py-3 rounded-lg bg-white  border border-slate-300  focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 outline-none transition-colors text-slate-900  shadow-sm  h-14">
+        <div className="relative flex items-center w-full px-4 py-3 rounded-lg bg-white  border border-slate-300  focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 outline-none transition-colors text-slate-900  shadow-sm  h-14">
             <input
                 type="text"
                 value={text}
@@ -170,7 +170,7 @@ const DatePickerInput = ({ value, onChange, placeholder }: { value: string, onCh
                 className="relative ml-2 w-5 h-5 shrink-0 group cursor-pointer"
                 onClick={handleIconClick}
             >
-                <Calendar className="w-5 h-5 pointer-events-none text-slate-400 group-hover:text-emerald-500 transition-colors" />
+                <Calendar className="w-5 h-5 pointer-events-none text-slate-400 group-hover:text-blue-500 transition-colors" />
             </div>
             <input
                 type="date"
@@ -621,7 +621,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h1 className="text-3xl font-bold gradient-text">Tetapan Sistem</h1>
-                    <p className="text-slate-500  mt-1">Uruskan data utama bagi tahun <span className="font-bold text-emerald-600">{selectedYear}</span>.</p>
+                    <p className="text-slate-500  mt-1">Uruskan data utama bagi tahun <span className="font-bold text-blue-600">{selectedYear}</span>.</p>
                 </div>
             </div>
 
@@ -643,7 +643,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                     type="text"
                                     value={meetingNumber}
                                     onChange={(e) => setMeetingNumber(e.target.value)}
-                                    className="w-full h-14 px-4 py-3 rounded-lg bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-colors text-slate-900 font-bold"
+                                    className="w-full h-14 px-4 py-3 rounded-lg bg-white border border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors text-slate-900 font-bold"
                                     placeholder="Bil. Mesyuarat (e.g., 1/2025)"
                                 />
                             </div>
@@ -662,7 +662,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 {/* No. Sebutharga Manager */}
                 <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
                             <Award className="w-6 h-6" />
                         </div>
                         <div>
@@ -675,11 +675,11 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                             type="text"
                             value={newSebutharga}
                             onChange={(e) => setNewSebutharga(e.target.value)}
-                            className="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Tambah No. Sebutharga Baru..."
                             onKeyDown={(e) => e.key === 'Enter' && handleAddSebutharga()}
                         />
-                        <button onClick={handleAddSebutharga} className="px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors">
+                        <button onClick={handleAddSebutharga} className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
                             <Plus className="w-5 h-5" />
                         </button>
                     </div>
@@ -707,7 +707,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 <div className="xl:col-span-2 bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                                 <Grid2x2 className="w-7 h-7" />
                             </div>
                             <div>
@@ -717,7 +717,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                         </div>
                         <div className="flex gap-2">
                             <button onClick={generateEmptyTemplate} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors text-xs"><LayoutTemplate className="w-4 h-4" /> Jana Template Kosong</button>
-                            <button onClick={generateInsuransTemplate} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-200 transition-colors text-xs"><FileText className="w-4 h-4" /> Jana Template Insurans</button>
+                            <button onClick={generateInsuransTemplate} className="flex items-center gap-2 px-4 py-2.5 bg-blue-100 text-blue-700 rounded-xl font-bold hover:bg-blue-200 transition-colors text-xs"><FileText className="w-4 h-4" /> Jana Template Insurans</button>
                         </div>
                     </div>
 
@@ -729,7 +729,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                             const colorClasses = getColorStyles(colorVal);
 
                             return (
-                                <div key={tpl.id} className="group relative bg-white  rounded-[2rem] border-2 border-slate-100  p-6 transition-colors hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/10 cursor-default">
+                                <div key={tpl.id} className="group relative bg-white  rounded-[2rem] border-2 border-slate-100  p-6 transition-colors hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 cursor-default">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group- ${colorClasses}`}>
                                             <IconComp className="w-7 h-7" />
@@ -738,7 +738,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                             <button onClick={(e) => { e.stopPropagation(); moveTemplate(idx, 'prev'); }} disabled={idx === 0} className="p-1.5 hover:bg-slate-100  rounded disabled:opacity-30 text-slate-500"><ArrowLeft className="w-3.5 h-3.5" /></button>
                                             <button onClick={(e) => { e.stopPropagation(); moveTemplate(idx, 'next'); }} disabled={idx === templates.length - 1} className="p-1.5 hover:bg-slate-100  rounded disabled:opacity-30 text-slate-500"><ArrowRight className="w-3.5 h-3.5" /></button>
                                             <div className="w-px h-4 bg-slate-200  mx-1"></div>
-                                            <button onClick={() => openEditTemplateModal(tpl)} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50  rounded-xl transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                            <button onClick={() => openEditTemplateModal(tpl)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50  rounded-xl transition-colors"><Edit2 className="w-4 h-4" /></button>
                                             <button onClick={() => initiateDelete('TEMPLATE', tpl.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50  rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
                                         </div>
                                     </div>
@@ -778,7 +778,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                     </ul>
                                 </div>
                             </div>
-                            {isSavingLibrary && <div className="flex items-center gap-2 text-xs font-bold text-emerald-600"><Save className="w-4 h-4" /> Menyimpan...</div>}
+                            {isSavingLibrary && <div className="flex items-center gap-2 text-xs font-bold text-blue-600"><Save className="w-4 h-4" /> Menyimpan...</div>}
                         </div>
                     </div>
 
@@ -917,7 +917,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                                                         placeholder="cth: dengan kaki / dengan tangan..."
                                                                     />
                                                                     <div className="flex items-center gap-2 w-full md:w-auto">
-                                                                        <div className="flex-1 md:w-24"><input type="number" value={v.rate} onChange={(e) => handleUpdateVariant(activeGroup.id, item.id, v.id, { rate: parseFloat(e.target.value) })} className="w-full bg-slate-50  border border-slate-100 rounded px-2 py-1 text-[10px] text-right font-mono font-bold text-emerald-600" placeholder="Rate" /></div>
+                                                                        <div className="flex-1 md:w-24"><input type="number" value={v.rate} onChange={(e) => handleUpdateVariant(activeGroup.id, item.id, v.id, { rate: parseFloat(e.target.value) })} className="w-full bg-slate-50  border border-slate-100 rounded px-2 py-1 text-[10px] text-right font-mono font-bold text-blue-600" placeholder="Rate" /></div>
                                                                         <div className="flex-1 md:w-16"><input value={v.unit} onChange={(e) => handleUpdateVariant(activeGroup.id, item.id, v.id, { unit: e.target.value })} className="w-full bg-slate-50  border border-slate-100 rounded px-2 py-1 text-[10px] uppercase font-bold text-center" placeholder="Unit" /></div>
                                                                         <button onClick={() => handleDeleteVariant(activeGroup.id, item.id, v.id)} className="p-1.5 text-slate-300 hover:text-red-500 rounded transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                                                                     </div>
@@ -980,7 +980,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                         <table className="w-full text-sm"><thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200"><tr><th className="px-4 py-3 text-left">No. Vot</th><th className="px-4 py-3 text-left">Nama Vot</th><th className="px-4 py-3 text-right">Peruntukan (RM)</th><th className="px-4 py-3 w-20"></th></tr></thead>
                             <tbody className="divide-y divide-slate-100">
                                 {votes.map((vote) => (
-                                    <tr key={vote.code} className="group hover:bg-slate-50"><td className="px-4 py-3 font-mono font-bold text-slate-700">{vote.code}</td><td className="px-4 py-3 text-slate-600">{vote.name || '-'}</td><td className="px-4 py-3 text-right font-mono text-emerald-600">{new Intl.NumberFormat('en-MY', { style: 'currency', currency: 'MYR' }).format(vote.allocation || 0)}</td><td className="px-4 py-3 text-right"><div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-colors"><button onClick={() => openVoteModal(vote)} className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => initiateDelete('VOTE', vote.code)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button></div></td></tr>
+                                    <tr key={vote.code} className="group hover:bg-slate-50"><td className="px-4 py-3 font-mono font-bold text-slate-700">{vote.code}</td><td className="px-4 py-3 text-slate-600">{vote.name || '-'}</td><td className="px-4 py-3 text-right font-mono text-blue-600">{new Intl.NumberFormat('en-MY', { style: 'currency', currency: 'MYR' }).format(vote.allocation || 0)}</td><td className="px-4 py-3 text-right"><div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-colors"><button onClick={() => openVoteModal(vote)} className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => initiateDelete('VOTE', vote.code)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button></div></td></tr>
                                 ))}
                             </tbody>
                         </table>
@@ -992,8 +992,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             {isEditTemplateModalOpen && editingTemplate && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsEditTemplateModalOpen(false)}>
                     <div className="bg-white  rounded-3xl shadow-2xl max-w-2xl w-full p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-                        <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold text-slate-900  flex items-center gap-2"><Edit3 className="w-7 h-7 text-emerald-600" />Kemaskini Template</h3><button onClick={() => setIsEditTemplateModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors"><X className="w-6 h-6" /></button></div>
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold text-slate-900  flex items-center gap-2"><Edit3 className="w-7 h-7 text-blue-600" />Kemaskini Template</h3><button onClick={() => setIsEditTemplateModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors"><X className="w-6 h-6" /></button></div>
 
                         <div className="overflow-y-auto max-h-[70vh] pr-2 custom-scrollbar">
                             <form onSubmit={(e) => { e.preventDefault(); handleSaveTemplate(editingTemplate); }} className="space-y-8">
@@ -1013,7 +1013,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                                     key={iconKey}
                                                     type="button"
                                                     onClick={() => setEditingTemplate({ ...editingTemplate, icon: iconKey as any })}
-                                                    className={`p-3 rounded-xl transition-all flex items-center justify-center ${editingTemplate.icon === iconKey ? 'bg-emerald-600 text-white shadow-lg scale-110' : 'bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                                                    className={`p-3 rounded-xl transition-all flex items-center justify-center ${editingTemplate.icon === iconKey ? 'bg-blue-600 text-white shadow-lg scale-110' : 'bg-white text-slate-400 hover:bg-blue-50 hover:text-blue-600'}`}
                                                 >
                                                     <Icon className="w-5 h-5" />
                                                 </button>
@@ -1031,7 +1031,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                                 key={color}
                                                 type="button"
                                                 onClick={() => setEditingTemplate({ ...editingTemplate, color: color as any })}
-                                                className={`w-full aspect-square rounded-full transition-all border-4 flex items-center justify-center ${editingTemplate.color === color ? 'border-white ring-2 ring-emerald-500 scale-110 shadow-md' : 'border-transparent'}`}
+                                                className={`w-full aspect-square rounded-full transition-all border-4 flex items-center justify-center ${editingTemplate.color === color ? 'border-white ring-2 ring-blue-500 scale-110 shadow-md' : 'border-transparent'}`}
                                                 style={{ backgroundColor: `var(--${color}-500, ${color})` }}
                                                 title={color}
                                             >
@@ -1042,7 +1042,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                     </div>
                                 </div>
 
-                                <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsEditTemplateModalOpen(false)} className="flex-1 py-4 bg-slate-100  text-slate-600  font-bold rounded-2xl hover:bg-slate-200  transition-colors text-lg">Batal</button><button type="submit" className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 text-lg"><Save className="w-5 h-5" /> Simpan Perubahan</button></div>
+                                <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsEditTemplateModalOpen(false)} className="flex-1 py-4 bg-slate-100  text-slate-600  font-bold rounded-2xl hover:bg-slate-200  transition-colors text-lg">Batal</button><button type="submit" className="flex-[2] py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 text-lg"><Save className="w-5 h-5" /> Simpan Perubahan</button></div>
                             </form>
                         </div>
                     </div>

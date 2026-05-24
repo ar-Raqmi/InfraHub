@@ -17,7 +17,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
   }, [onClose]);
 
   const styles = {
-    success: 'bg-emerald-500 text-white',
+    success: 'bg-blue-500 text-white',
     error: 'bg-red-500 text-white',
     info: 'bg-blue-600 text-white',
   };

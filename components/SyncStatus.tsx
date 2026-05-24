@@ -58,16 +58,16 @@ export const SyncStatus: React.FC = () => {
        <div className={`
          relative overflow-hidden rounded-[2.5rem] p-6 shadow-2xl border-2 backdrop-blur-xl transition-all duration-300
          ${!isOnline || !isRealtimeConnected ? 'bg-red-600/95 border-red-400 shadow-red-500/20' : 
-           isFetchingCount > 0 ? 'bg-white/95 border-emerald-500 shadow-emerald-500/20' : 
-           'bg-emerald-600/95 border-emerald-400 shadow-emerald-500/20'}
+           isFetchingCount > 0 ? 'bg-white/95 border-blue-500 shadow-blue-500/20' : 
+           'bg-blue-600/95 border-blue-400 shadow-blue-500/20'}
        `}>
           
           <div className="relative z-10 flex items-center gap-6">
              <div className={`
                w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shrink-0
                ${!isOnline || !isRealtimeConnected ? 'bg-white text-red-600' : 
-                 isFetchingCount > 0 ? 'bg-emerald-50 text-emerald-600 animate-spin-slow border-2 border-emerald-500' : 
-                 'bg-white text-emerald-600'}
+                 isFetchingCount > 0 ? 'bg-blue-50 text-blue-600 animate-spin-slow border-2 border-blue-500' : 
+                 'bg-white text-blue-600'}
              `}>
                 {!isOnline ? (
                   <WifiOff className="w-8 h-8" />
@@ -86,7 +86,7 @@ export const SyncStatus: React.FC = () => {
                       {!isOnline ? 'Luar Talian' : !isRealtimeConnected ? 'Menyambung...' : isFetchingCount > 0 ? 'Menyelaraskan' : 'Terkini'}
                    </h4>
                    {isFetchingCount > 0 && (
-                      <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-200 uppercase">
+                      <span className="bg-blue-100 text-blue-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-blue-200 uppercase">
                          {isFetchingCount} Modul
                       </span>
                    )}
@@ -109,7 +109,7 @@ export const SyncStatus: React.FC = () => {
                   )}
                   {realSpeed !== undefined && (
                     <div className={`text-[11px] font-black tracking-tighter
-                      ${isFetchingCount > 0 ? 'text-emerald-600' : 'text-white'}`}>
+                      ${isFetchingCount > 0 ? 'text-blue-600' : 'text-white'}`}>
                        {realSpeed} <span className="text-[8px] opacity-70">Mbps</span>
                     </div>
                   )}

@@ -204,19 +204,19 @@ function App() {
   // A generic loading fallback for Suspense
   const PageLoader = () => (
     <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-      <Loader2 className="w-8 h-8 animate-spin mb-2 text-emerald-500" />
+      <Loader2 className="w-8 h-8 animate-spin mb-2 text-blue-500" />
       <p className="text-sm">Memuatkan modul...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-200 relative overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-900">
+    <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-200 relative overflow-x-hidden selection:bg-blue-500/30 selection:text-blue-900">
 
       <SyncStatus />
 
       {/* Static Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent"></div>
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-50/50 to-transparent"></div>
       </div>
 
       {toast && (
@@ -239,7 +239,7 @@ function App() {
                 <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
                 <button
                   onClick={handleRefresh}
-                  className="bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group"
+                  className="bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group"
                   title="Kemaskini Data"
                 >
                   <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />

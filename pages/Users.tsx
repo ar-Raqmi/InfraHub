@@ -110,7 +110,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
   if (isLoading && users.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin mb-2 text-emerald-500" />
+        <Loader2 className="w-8 h-8 animate-spin mb-2 text-blue-500" />
         <p>Memuatkan senarai pengguna...</p>
       </div>
     );
@@ -131,7 +131,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
         {isAdmin && (
           <button 
             onClick={() => { resetForm(); setIsFormOpen(!isFormOpen); }}
-            className="bg-emerald-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:bg-emerald-700 transition-colors"
+            className="bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:bg-blue-700 transition-colors"
           >
             {isFormOpen ? <X className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
             <span>{isFormOpen ? 'Tutup' : 'Tambah Pengguna'}</span>
@@ -140,9 +140,9 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
       </div>
 
       {isAdmin && isFormOpen && (
-        <div className="bg-white/95 border border-white/10 shadow-xl p-6 rounded-3xl shadow-xl border border-emerald-100 animate-slide-up relative">
+        <div className="bg-white/95 border border-white/10 shadow-xl p-6 rounded-3xl shadow-xl border border-blue-100 animate-slide-up relative">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-200">
-              <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
                   {editingId ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
               </div>
               <h3 className="font-bold text-lg text-slate-800">
@@ -157,7 +157,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 type="text" 
                 value={formData.fullName}
                 onChange={e => setFormData({...formData, fullName: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="cth: Mohamad Khairul..."
                 required
               />
@@ -168,7 +168,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 type="text" 
                 value={formData.username}
                 onChange={e => setFormData({...formData, username: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="cth: khairul"
                 required
               />
@@ -179,7 +179,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 type="password" 
                 value={formData.password}
                 onChange={e => setFormData({...formData, password: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder={editingId ? "Biarkan kosong jika sama" : "••••••"}
               />
             </div>
@@ -193,7 +193,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                   type="email" 
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="cth: user@mps.gov.my"
                 />
               </div>
@@ -206,7 +206,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                   type="text" 
                   value={formData.phone}
                   onChange={e => setFormData({...formData, phone: e.target.value})}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="cth: 012-3456789"
                 />
               </div>
@@ -219,7 +219,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 type="text" 
                 value={formData.jawatan}
                 onChange={e => setFormData({...formData, jawatan: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="cth: Penolong Jurutera JA29"
               />
             </div>
@@ -229,7 +229,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 type="text" 
                 value={formData.bahagian}
                 onChange={e => setFormData({...formData, bahagian: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="cth: Bahagian Infrastruktur"
               />
             </div>
@@ -239,7 +239,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 type="text" 
                 value={formData.unit}
                 onChange={e => setFormData({...formData, unit: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="cth: Unit Selenggara Infrastruktur"
               />
             </div>
@@ -248,7 +248,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
               <select 
                 value={formData.role}
                 onChange={e => setFormData({...formData, role: e.target.value as Role})}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value={Role.ADMIN}>Admin</option>
                 <option value={Role.JURUTERA}>Jurutera</option>
@@ -268,7 +268,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
               <button 
                   type="submit" 
                   disabled={isSaving}
-                  className="px-8 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="px-8 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   {isSaving ? 'Menyimpan...' : 'Simpan'}
@@ -283,7 +283,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
           <div key={u.id} className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-6 border border-white/20 shadow-lg relative group transition-colors hover:scale-[1.01]">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white shrink-0 overflow-hidden ${u.role === Role.ADMIN ? 'bg-gradient-to-br from-teal-500 to-emerald-600' : 'bg-gradient-to-br from-blue-400 to-cyan-500'}`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white shrink-0 overflow-hidden ${u.role === Role.ADMIN ? 'bg-gradient-to-br from-cyan-500 to-blue-600' : 'bg-gradient-to-br from-blue-400 to-cyan-500'}`}>
                   {u.avatarUrl ? (
                     <img src={u.avatarUrl} alt={u.fullName} className="w-full h-full object-cover" />
                   ) : (
@@ -300,7 +300,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-colors">
                     <button 
                       onClick={() => handleEditClick(u)}
-                      className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-colors"
+                      className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
                       title="Edit"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -334,7 +334,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.role === Role.ADMIN ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700'}`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.role === Role.ADMIN ? 'bg-cyan-100 text-cyan-700' : 'bg-blue-100 text-blue-700'}`}>
                   {u.role}
                 </span>
                 <span className="text-xs text-slate-400">ID: {u.id}</span>

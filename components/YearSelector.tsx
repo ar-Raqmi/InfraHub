@@ -59,13 +59,13 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 bg-white/50 rounded-2xl px-4 py-2 shadow-sm border transition-colors group ${
           isOpen 
-            ? 'ring-2 ring-emerald-500 border-emerald-500 bg-white' 
+            ? 'ring-2 ring-blue-500 border-blue-500 bg-white' 
             : 'border-white/20 hover:bg-white'
         }`}
       >
-        <Calendar className="w-4 h-4 text-emerald-500 group- transition-transform" />
+        <Calendar className="w-4 h-4 text-blue-500 group- transition-transform" />
         <span className="font-bold text-slate-700  font-manrope">{selectedYear}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-emerald-500' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-blue-500' : ''}`} />
       </button>
 
       {isOpen && (
@@ -100,7 +100,7 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
                   onClick={() => handleYearSelect(year)}
                   className={`py-2 rounded-xl text-sm font-bold transition-colors ${
                     isSelected
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
                       : 'text-slate-600  hover:bg-slate-100  '
                   } ${isOutsideDecade ? 'opacity-40' : ''}`}
                 >

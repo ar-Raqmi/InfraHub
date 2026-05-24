@@ -716,7 +716,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
                 <input
                   type="range" min="-180" max="180" step="1" value={Number(rotation) || 0}
                   onChange={(e) => setRotation(Number(e.target.value))}
-                  className="w-40 accent-emerald-500 cursor-pointer h-1"
+                  className="w-40 accent-blue-500 cursor-pointer h-1"
                 />
                 <div className="flex items-center gap-1">
                   <input
@@ -732,7 +732,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
                       if (rotation === '' || rotation === '-') setRotation(0);
                       else setRotation(Number(rotation));
                     }}
-                    className="text-[11px] font-black w-10 text-slate-700 text-center bg-slate-50 border border-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all py-0.5"
+                    className="text-[11px] font-black w-10 text-slate-700 text-center bg-slate-50 border border-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all py-0.5"
                   />
                   <span className="text-[11px] font-black text-slate-400">°</span>
                 </div>
@@ -749,7 +749,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
               {Number(rotation) !== 0 && (
                 <button
                   onClick={() => setRotation(0)}
-                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100"
+                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
                   title="Reset Orientation"
                 >
                   <RefreshCw size={16} />
@@ -770,14 +770,14 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
             <input
               type="range" min="1" max="15" value={strokeWidth}
               onChange={(e) => setStrokeWidth(Number(e.target.value))}
-              className="w-32 accent-emerald-500 cursor-pointer h-1.5"
+              className="w-32 accent-blue-500 cursor-pointer h-1.5"
               title="Saiz Garisan"
             />
             <div className="flex gap-1">
               {COLORS.map(c => (
                 <button
                   key={c}
-                  className={`w-5 h-5 rounded-full border border-white/20 transition-transform hover:scale-125 ${selectedColor === c ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+                  className={`w-5 h-5 rounded-full border border-white/20 transition-transform hover:scale-125 ${selectedColor === c ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
                   style={{ backgroundColor: c }}
                   onClick={() => setSelectedColor(c)}
                 />
@@ -792,7 +792,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 
       {!isMobile && selectedTool === 'crop' && cropRect && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-white  shadow-xl border border-slate-200  p-2 rounded-2xl animate-in fade-in slide-in-from-top-2">
-          <button onClick={applyCrop} className="bg-emerald-500 text-white p-1.5 rounded-xl hover:bg-emerald-600 transition-colors"><Check size={18} /></button>
+          <button onClick={applyCrop} className="bg-blue-500 text-white p-1.5 rounded-xl hover:bg-blue-600 transition-colors"><Check size={18} /></button>
           <button onClick={() => { setCropRect(null); setSelectedTool('select'); }} className="bg-red-500 text-white p-1.5 rounded-xl hover:bg-red-600 transition-colors"><X size={18} /></button>
         </div>
       )}
@@ -807,7 +807,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 const ToolBtn = ({ active, onClick, icon, title }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string }) => (
   <button
     onClick={onClick} title={title}
-    className={`p-3 rounded-2xl transition-all ${active ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shadow-sm'}`}
+    className={`p-3 rounded-2xl transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shadow-sm'}`}
   >
 
     {icon}
@@ -877,7 +877,7 @@ const GalleryItem = React.memo(({
 
   return (
     <div
-      className={`group relative aspect-square bg-slate-100 rounded-2xl overflow-hidden border transition-all ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500 ring-offset-2' : 'border-slate-200 hover:shadow-lg'}`}
+      className={`group relative aspect-square bg-slate-100 rounded-2xl overflow-hidden border transition-all ${isSelected ? 'border-blue-500 ring-2 ring-blue-500 ring-offset-2' : 'border-slate-200 hover:shadow-lg'}`}
       onPointerDown={() => onTouchStart(img.id)}
       onPointerUp={onTouchEnd}
       onPointerLeave={onTouchEnd}
@@ -893,7 +893,7 @@ const GalleryItem = React.memo(({
 
       {isSelected && (
         <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-30 pointer-events-none">
-          <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in duration-200">
+          <div className="bg-blue-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in duration-200">
             <Check size={24} strokeWidth={3} />
           </div>
         </div>
@@ -937,7 +937,7 @@ const GalleryItem = React.memo(({
             <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
               <input
                 autoFocus
-                className="w-full text-[12px] text-slate-900 px-1.5 py-0.5 rounded bg-white outline-none ring-2 ring-emerald-500"
+                className="w-full text-[12px] text-slate-900 px-1.5 py-0.5 rounded bg-white outline-none ring-2 ring-blue-500"
                 value={editingLocationTag}
                 onChange={e => onEditingLocationTagChange(e.target.value)}
                 onKeyDown={e => {
@@ -945,18 +945,18 @@ const GalleryItem = React.memo(({
                   if (e.key === 'Escape') onCancelEdit();
                 }}
               />
-              <button onClick={onSaveEdit} className="p-0.5 bg-emerald-500 text-white rounded hover:bg-emerald-600"><Check size={20} /></button>
+              <button onClick={onSaveEdit} className="p-0.5 bg-blue-500 text-white rounded hover:bg-blue-600"><Check size={20} /></button>
               <button onClick={onCancelEdit} className="p-0.5 bg-red-500 text-white rounded hover:bg-red-600"><X size={20} /></button>
             </div>
           ) : (
             img.locationTag ? (
-              <div className="flex items-start gap-1.5 text-emerald-400 pt-0.5 group/tag">
+              <div className="flex items-start gap-1.5 text-blue-400 pt-0.5 group/tag">
                 <MapPin size={14} strokeWidth={3} className="shrink-0 mt-[3px]" />
                 <span className="text-[13px] font-bold leading-tight break-words text-wrap flex-1">{img.locationTag}</span>
                 <Pencil size={14} className="opacity-0 group-hover/tag:opacity-100 text-slate-400" />
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-slate-500 pt-0.5 group-hover:text-emerald-400 transition-colors">
+              <div className="flex items-center gap-1.5 text-slate-500 pt-0.5 group-hover:text-blue-400 transition-colors">
                 <Pencil size={14} /> <span className="text-[12px] italic">Tambah Label</span>
               </div>
             )
@@ -1402,13 +1402,13 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
             onClick={() => setShowGallery(!showGallery)}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${showGallery
               ? 'bg-slate-900 text-white'
-              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
               }`}
           >
             <History size={20} />
             {showGallery ? 'Tutup Galeri' : 'Galeri Sementara'}
             {galleryImages.length > 0 && !showGallery && (
-              <span className="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1 animate-pulse">
+              <span className="bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1 animate-pulse">
                 {user.role === Role.PJA
                   ? galleryImages.filter(i => i.userId === user.id).length
                   : galleryImages.length}
@@ -1420,11 +1420,11 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
       {/* Temporary Gallery Section */}
       {showGallery && (
-        <div className="bg-white  p-6 rounded-3xl border border-emerald-100  shadow-xl animate-in zoom-in-95 duration-300">
+        <div className="bg-white  p-6 rounded-3xl border border-blue-100  shadow-xl animate-in zoom-in-95 duration-300">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-bold flex items-center gap-2 text-emerald-800 ">
-                <Clock className="text-emerald-500" />
+              <h2 className="text-xl font-bold flex items-center gap-2 text-blue-800 ">
+                <Clock className="text-blue-500" />
                 Galeri Sementara (24 Jam)
               </h2>
               <p className="text-sm text-slate-500">Imej akan dipadam secara automatik selepas 24 jam. Gunakan untuk pindah imej dari telefon ke PC.</p>
@@ -1434,7 +1434,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               <input
                 type="text"
                 placeholder="Carian pengirim/lokasi..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200  rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200  rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                 value={gallerySearch}
                 onChange={(e) => setGallerySearch(e.target.value)}
               />
@@ -1448,18 +1448,18 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               <input
                 type="text"
                 placeholder="Tag Lokasi (cth: Jalan 1/1, Taman Desa)"
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 value={tagLocation}
                 onChange={(e) => setTagLocation(e.target.value)}
               />
             </div>
             {isUploading ? (
-              <div className="flex items-center gap-2 px-6 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl font-bold text-sm shrink-0">
+              <div className="flex items-center gap-2 px-6 py-2.5 bg-blue-100 text-blue-700 rounded-xl font-bold text-sm shrink-0">
                 <RefreshCw className="animate-spin" size={16} />
                 Memuat naik...
               </div>
             ) : (
-              <label className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm cursor-pointer hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 shrink-0">
+              <label className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm cursor-pointer hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 shrink-0">
                 <Upload size={16} />
                 Muat Naik
                 <input type="file" className="hidden" accept="image/*" multiple onChange={handleGalleryUpload} />
@@ -1471,7 +1471,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               <div className="flex items-center gap-2 p-2 bg-slate-900 text-white rounded-xl text-sm animate-in slide-in-from-top-2 fade-in duration-200">
                 <span className="font-bold px-2">{selectedGalleryIds.size} Dipilih</span>
                 <div className="h-4 w-px bg-white/20 mx-1" />
-                <button onClick={handleBatchEdit} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded-lg transition-colors text-emerald-300">
+                <button onClick={handleBatchEdit} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded-lg transition-colors text-blue-300">
                   <Pencil size={14} /> Edit
                 </button>
                 <button onClick={handleBatchDelete} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded-lg transition-colors text-red-300">
@@ -1541,14 +1541,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
           {steps.map((s, idx) => (
             <React.Fragment key={s.id}>
               <div
-                className={`flex items-center gap-2 px-3 py-2 rounded-2xl transition-all shrink-0 ${currentStep === s.id ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : currentStep > s.id ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-2xl transition-all shrink-0 ${currentStep === s.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : currentStep > s.id ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}
               >
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${currentStep === s.id ? 'bg-white text-emerald-600' : currentStep > s.id ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${currentStep === s.id ? 'bg-white text-blue-600' : currentStep > s.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
                   {currentStep > s.id ? <Check size={14} strokeWidth={3} /> : s.id}
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">{s.label}</span>
               </div>
-              {idx < steps.length - 1 && <div className={`h-px w-4 md:w-8 ${currentStep > s.id ? 'bg-emerald-200' : 'bg-slate-100'}`} />}
+              {idx < steps.length - 1 && <div className={`h-px w-4 md:w-8 ${currentStep > s.id ? 'bg-blue-200' : 'bg-slate-100'}`} />}
             </React.Fragment>
           ))}
         </div>
@@ -1582,33 +1582,33 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               <div className="lg:col-span-4 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col min-h-[500px]">
                 <div className="p-5 border-b border-slate-100 bg-slate-50/50">
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-4 flex items-center gap-2">
-                    <Search size={16} className="text-emerald-500" /> Pilih Projek
+                    <Search size={16} className="text-blue-500" /> Pilih Projek
                   </h3>
                   <div className="flex flex-col gap-3">
                     <div className="relative">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                       <input
                         type="text" placeholder="Cari Projek / No Fail..."
-                        className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-200 focus:ring-2 focus:ring-emerald-500 transition-all text-xs font-bold"
+                        className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all text-xs font-bold"
                         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                       />
                     </div>
                     <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
                       <button
                         onClick={() => setStatusFilter('ALL')}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === 'ALL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === 'ALL' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         Semua
                       </button>
                       <button
                         onClick={() => setStatusFilter(ProjectStatus.FASA_DRAF)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.FASA_DRAF ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.FASA_DRAF ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         Draf
                       </button>
                       <button
                         onClick={() => setStatusFilter(ProjectStatus.MENUNGGU_LANTIKAN)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         Lantikan
                       </button>
@@ -1626,13 +1626,13 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                         <button
                           key={p.id}
                           onClick={() => selectProject(p)}
-                          className={`p-4 rounded-2xl text-left transition-all border ${selectedProjectId === p.id.toString() ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-50 border-transparent'}`}
+                          className={`p-4 rounded-2xl text-left transition-all border ${selectedProjectId === p.id.toString() ? 'bg-blue-50 border-blue-200 shadow-sm' : 'hover:bg-slate-50 border-transparent'}`}
                         >
                           <div className="flex justify-between items-start mb-2">
                             <span className="text-[13px] font-black px-3 py-1 rounded-md bg-white border border-slate-100 text-slate-500">{p.noFail || 'TIADA NO FAIL'}</span>
                             <div className={`w-3 h-3 rounded-full mt-1 ${p.status === ProjectStatus.FASA_DRAF ? 'bg-slate-300' : 'bg-yellow-400'}`} />
                           </div>
-                          <p className={`text-[15px] font-black uppercase leading-tight ${selectedProjectId === p.id.toString() ? 'text-emerald-900' : 'text-slate-800'}`}>
+                          <p className={`text-[15px] font-black uppercase leading-tight ${selectedProjectId === p.id.toString() ? 'text-blue-900' : 'text-slate-800'}`}>
                             {p.namaProjek}
                           </p>
                         </button>
@@ -1651,7 +1651,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   </div>
                   <button
                     onClick={() => setComplaints([...complaints, { id: Date.now().toString(), location: '', description: '' }])}
-                    className="p-2 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all"
+                    className="p-2 bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all"
                   >
                     <Plus size={18} />
                   </button>
@@ -1672,7 +1672,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                           <td className="px-4 py-3 text-center text-[10px] font-black text-slate-300">{idx + 1}</td>
                           <td className="px-2 py-3">
                             <input
-                              className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase focus:ring-2 focus:ring-emerald-500"
+                              className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase focus:ring-2 focus:ring-blue-500"
                               value={row.location}
                               onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, location: e.target.value } : c))}
                               placeholder="CONTOH: JALAN 1/1, TAMAN DESA"
@@ -1680,7 +1680,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                           </td>
                           <td className="px-2 py-3">
                             <input
-                              className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-medium uppercase text-slate-600 focus:ring-2 focus:ring-emerald-500"
+                              className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-medium uppercase text-slate-600 focus:ring-2 focus:ring-blue-500"
                               value={row.description}
                               onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, description: e.target.value } : c))}
                               placeholder="CONTOH: KERJA-KERJA MENURAP JALAN"
@@ -1705,7 +1705,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   <button
                     onClick={() => setCurrentStep(2)}
                     disabled={!selectedProjectId && complaints[0].location === ''}
-                    className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs disabled:opacity-50"
+                    className="px-10 py-3 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all uppercase tracking-widest text-xs disabled:opacity-50"
                   >
                     Seterusnya
                   </button>
@@ -1726,7 +1726,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               {!mapImage ? (
                 <button
                   onClick={() => fileInputMapRef.current?.click()}
-                  className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 uppercase tracking-widest"
+                  className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest"
                 >
                   Muat Naik Imej
                 </button>
@@ -1746,7 +1746,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
             </div>
             <div className="p-6 border-t border-slate-100 flex justify-between items-center">
               <button onClick={() => setCurrentStep(1)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
-              <button onClick={handleNextStep2} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
+              <button onClick={handleNextStep2} className="px-10 py-3 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
             </div>
             <input ref={fileInputMapRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'map')} />
           </div>
@@ -1766,14 +1766,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   <div className="flex bg-slate-200/50 p-1 rounded-xl gap-1">
                     {siteImages.length === 2 && (
                       <>
-                        <button onClick={() => setLayout('horizontal')} className={`p-2 rounded-lg ${layout === 'horizontal' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><Columns size={16} /></button>
-                        <button onClick={() => setLayout('vertical')} className={`p-2 rounded-lg ${layout === 'vertical' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><Rows size={16} /></button>
+                        <button onClick={() => setLayout('horizontal')} className={`p-2 rounded-lg ${layout === 'horizontal' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}><Columns size={16} /></button>
+                        <button onClick={() => setLayout('vertical')} className={`p-2 rounded-lg ${layout === 'vertical' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}><Rows size={16} /></button>
                       </>
                     )}
                     {siteImages.length === 3 && (
                       <>
-                        <button onClick={() => setLayout('big-left')} className={`p-2 rounded-lg ${layout === 'big-left' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><LayoutTemplate size={16} className="-rotate-90" /></button>
-                        <button onClick={() => setLayout('big-top')} className={`p-2 rounded-lg ${layout === 'big-top' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><LayoutTemplate size={16} /></button>
+                        <button onClick={() => setLayout('big-left')} className={`p-2 rounded-lg ${layout === 'big-left' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}><LayoutTemplate size={16} className="-rotate-90" /></button>
+                        <button onClick={() => setLayout('big-top')} className={`p-2 rounded-lg ${layout === 'big-top' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}><LayoutTemplate size={16} /></button>
                       </>
                     )}
                   </div>
@@ -1793,10 +1793,10 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               {siteImages.length === 0 ? (
                 <div
                   onClick={() => fileInputSiteRef.current?.click()}
-                  className="w-full h-96 border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-400 gap-4 hover:bg-white hover:border-emerald-300 transition-all cursor-pointer group"
+                  className="w-full h-96 border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-400 gap-4 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
                 >
-                  <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
-                    <ImageIcon size={40} className="opacity-20 group-hover:text-emerald-500 group-hover:opacity-100 transition-all" />
+                  <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                    <ImageIcon size={40} className="opacity-20 group-hover:text-blue-500 group-hover:opacity-100 transition-all" />
                   </div>
                   <p className="font-black uppercase tracking-widest text-xs">Klik untuk muat naik gambar tapak</p>
                 </div>
@@ -1805,11 +1805,11 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   {siteImages.map((img, idx) => (
                     <div key={idx} className="relative group aspect-square rounded-[2rem] overflow-hidden bg-white border-4 border-white shadow-md hover:shadow-xl transition-all">
                       <img src={img} decoding="async" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-emerald-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
-                        <button onClick={() => setEditingImageIndex(idx)} className="p-3 bg-white text-emerald-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Pencil size={20} /></button>
+                      <div className="absolute inset-0 bg-blue-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
+                        <button onClick={() => setEditingImageIndex(idx)} className="p-3 bg-white text-blue-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Pencil size={20} /></button>
                         <button onClick={() => setSiteImages(siteImages.filter((_, i) => i !== idx))} className="p-3 bg-white text-red-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Trash2 size={20} /></button>
                       </div>
-                      <div className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-lg shadow-lg">#{idx + 1}</div>
+                      <div className="absolute top-4 left-4 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-lg shadow-lg">#{idx + 1}</div>
                     </div>
                   ))}
                 </div>
@@ -1818,7 +1818,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
             <div className="p-6 border-t border-slate-100 flex justify-between items-center">
               <button onClick={() => setCurrentStep(2)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
-              <button onClick={() => setCurrentStep(4)} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
+              <button onClick={() => setCurrentStep(4)} className="px-10 py-3 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
             </div>
             <input ref={fileInputSiteRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'site')} />
           </div>
@@ -1828,14 +1828,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         {currentStep === 4 && (
           <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-500 py-8">
             <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden">
-              <div className="bg-emerald-600 p-12 text-center text-white relative">
+              <div className="bg-blue-600 p-12 text-center text-white relative">
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
                   <FileText className="absolute -top-10 -right-10 w-64 h-64 rotate-12" />
                 </div>
                 <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md">
                   <Check size={48} strokeWidth={3} />
                   <h3 className="text-3xl font-black uppercase tracking-tight mb-2">Laporan Sedia Dihasilkan</h3>
-                  <p className="text-emerald-100 font-bold uppercase tracking-widest text-xs opacity-80">Sila semak maklumat di bawah sebelum eksport</p>
+                  <p className="text-blue-100 font-bold uppercase tracking-widest text-xs opacity-80">Sila semak maklumat di bawah sebelum eksport</p>
                 </div>
                 <div className="p-10 flex flex-col gap-6">
                   <div className="grid grid-cols-2 gap-4">
@@ -1851,13 +1851,13 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 p-5 bg-emerald-50 rounded-[2rem] border border-emerald-100">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${mapImage ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                  <div className="flex items-center gap-4 p-5 bg-blue-50 rounded-[2rem] border border-blue-100">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${mapImage ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
                       <MapIcon size={24} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Pelan Lokasi</p>
-                      <p className="text-[10px] font-bold text-emerald-700/60 uppercase">{mapImage ? 'IMEJ SEDIA' : 'TIADA IMEJ'}</p>
+                      <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Pelan Lokasi</p>
+                      <p className="text-[10px] font-bold text-blue-700/60 uppercase">{mapImage ? 'IMEJ SEDIA' : 'TIADA IMEJ'}</p>
                     </div>
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${siteImages.length > 0 ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
                       <ImageIcon size={24} />
@@ -1872,7 +1872,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                     <button
                       onClick={handleExportPDF}
                       disabled={isExporting}
-                      className="w-full py-6 bg-emerald-600 text-white font-black rounded-[2rem] shadow-2xl shadow-emerald-600/40 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-4"
+                      className="w-full py-6 bg-blue-600 text-white font-black rounded-[2rem] shadow-2xl shadow-blue-600/40 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-4"
                     >
                       {isExporting ? <RefreshCw className="w-6 h-6 animate-spin" /> : <FileDown className="w-6 h-6" />}
                       Eksport PDF Laporan
@@ -1902,7 +1902,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               </div>
               <div className="flex gap-4">
                 <button onClick={() => setEditingImageIndex(null)} className="px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs">Batal</button>
-                <button onClick={saveEditedImage} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
+                <button onClick={saveEditedImage} className="px-10 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
               </div>
             </div>
             <div className="flex-1 bg-slate-100 p-8 overflow-hidden flex items-center justify-center">
@@ -1923,7 +1923,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               </div>
               <div className="flex gap-4">
                 <button onClick={() => setIsEditingMap(false)} className="px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs">Batal</button>
-                <button onClick={saveEditedMap} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
+                <button onClick={saveEditedMap} className="px-10 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
               </div>
             </div>
             <div className="flex-1 bg-slate-100 p-8 overflow-hidden">

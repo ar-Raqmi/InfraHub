@@ -499,7 +499,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                 </button>
                                 <button
                                     onClick={() => { handleSave(); onClose(); }}
-                                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-md"
+                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-md"
                                 >
                                     <Save className="w-4 h-4" />
                                     Simpan & Tutup
@@ -509,7 +509,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                             <button
                                 onClick={handleDownload}
                                 disabled={isGenerating}
-                                className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
+                                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors text-sm disabled:opacity-50"
                             >
                                 {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                                 PDF
@@ -537,7 +537,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                                 <div className="bg-white  p-5 rounded-2xl shadow-sm border border-slate-200">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Prestasi (%)</div>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-black text-emerald-600">{percentage}%</span>
+                                        <span className="text-3xl font-black text-blue-600">{percentage}%</span>
                                     </div>
                                 </div>
                             </div>

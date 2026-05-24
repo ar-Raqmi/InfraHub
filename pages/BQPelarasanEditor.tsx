@@ -52,8 +52,8 @@ const getColorStyles = (color: string) => {
         yellow: "bg-yellow-100 text-yellow-600 border-yellow-200",
         lime: "bg-lime-100 text-lime-600 border-lime-200",
         green: "bg-green-100 text-green-600 border-green-200",
-        emerald: "bg-emerald-100 text-emerald-600 border-emerald-200",
-        teal: "bg-teal-100 text-teal-600 border-teal-200",
+        emerald: "bg-blue-100 text-blue-600 border-blue-200",
+        teal: "bg-cyan-100 text-cyan-600 border-cyan-200",
         cyan: "bg-cyan-100 text-cyan-600 border-cyan-200",
         sky: "bg-sky-100 text-sky-600 border-sky-200",
         blue: "bg-blue-100 text-blue-600 border-blue-200",
@@ -1088,7 +1088,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                     <Calculator className="w-3 h-3" /> {item.isAdjustment ? 'Penambahan (New)' : 'Pelarasan (Adjusted)'}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1 rounded-md transition-colors border text-[10px] flex items-center gap-1 ${item.isGlobal ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white text-slate-400 border-slate-200'}`}>{item.isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}{item.isGlobal ? 'Linked' : 'Manual'}</button>
+                                    <button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1 rounded-md transition-colors border text-[10px] flex items-center gap-1 ${item.isGlobal ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-white text-slate-400 border-slate-200'}`}>{item.isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}{item.isGlobal ? 'Linked' : 'Manual'}</button>
                                     <button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-3.5 h-3.5" /> : <Type className="w-3.5 h-3.5" />}</button>
                                 </div>
                             </div>
@@ -1320,7 +1320,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                             <Ruler className="w-4 h-4 text-amber-500" />
                                             Global Calculation (Pelarasan)
                                             {activeBill.calculationId && !globalCalculationsPelarasan?.[activeBill.calculationId] && projectData.globalCalculations?.[activeBill.calculationId] && (
-                                                <span className="text-[9px] text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded ml-1 font-bold">
+                                                <span className="text-[9px] text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded ml-1 font-bold">
                                                     SYNCED FROM BQ
                                                 </span>
                                             )}

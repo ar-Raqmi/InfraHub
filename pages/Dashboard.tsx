@@ -284,7 +284,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                       e.stopPropagation();
                       onToggleReaction?.(emoji);
                     }}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition-all border ${hasReacted ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-100 hover:border-slate-200 text-slate-500'}`}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition-all border ${hasReacted ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-100 hover:border-slate-200 text-slate-500'}`}
                   >
                     <span className="text-sm">{emoji}</span>
                     {count > 0 && <span className="font-bold text-[10px]">{count}</span>}
@@ -308,7 +308,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             {onRead && (
               <button
                 onClick={onRead}
-                className={`text-[10px] font-bold transition-all px-3 py-1.5 rounded-xl border ${!isRead ? 'bg-slate-900 text-white border-slate-900 hover:bg-emerald-600 hover:border-emerald-600' : 'text-slate-500 bg-white border-slate-100 hover:bg-slate-50 hover:text-emerald-600'}`}
+                className={`text-[10px] font-bold transition-all px-3 py-1.5 rounded-xl border ${!isRead ? 'bg-slate-900 text-white border-slate-900 hover:bg-blue-600 hover:border-blue-600' : 'text-slate-500 bg-white border-slate-100 hover:bg-slate-50 hover:text-blue-600'}`}
               >
                 {isRead ? 'Lihat' : 'Baca Penuh'}
               </button>
@@ -325,10 +325,10 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900  font-manrope font-extrabold mb-2">
-            Selamat Datang, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">{(user.username || 'Pengguna').charAt(0).toUpperCase() + (user.username || 'Pengguna').slice(1)}</span> ✨
+            Selamat Datang, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">{(user.username || 'Pengguna').charAt(0).toUpperCase() + (user.username || 'Pengguna').slice(1)}</span> ✨
           </h1>
           <div className="flex items-center gap-2 text-slate-500">
-            <Activity className="w-4 h-4 text-emerald-500" />
+            <Activity className="w-4 h-4 text-blue-500" />
             <span className="text-sm font-medium">
               {user.role === Role.PJA
                 ? 'Paparan projek peribadi anda'
@@ -346,7 +346,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
               <select
                 value={pjaFilter}
                 onChange={(e) => setPjaFilter(e.target.value)}
-                className="pl-10 pr-10 py-3 rounded-2xl border border-slate-200  bg-white  shadow-lg shadow-slate-200/50  focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-slate-700  appearance-none cursor-pointer min-w-[200px] transition-shadow hover:shadow-xl"
+                className="pl-10 pr-10 py-3 rounded-2xl border border-slate-200  bg-white  shadow-lg shadow-slate-200/50  focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700  appearance-none cursor-pointer min-w-[200px] transition-shadow hover:shadow-xl"
               >
                 <option value="ALL">Semua Pegawai (PJA)</option>
                 {allPjas.map(p => (
@@ -354,7 +354,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                 ))}
               </select>
               <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
               </div>
             </div>
           )}
@@ -364,7 +364,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             className="p-3 rounded-2xl bg-white  border border-slate-200  shadow-lg shadow-slate-200/50  hover:shadow-xl transition-shadow relative group"
             title="Inbox / Notifikasi"
           >
-            <Bell className="w-5 h-5 text-slate-600  group-hover:text-emerald-600 transition-colors" />
+            <Bell className="w-5 h-5 text-slate-600  group-hover:text-blue-600 transition-colors" />
             {notificationCount > 0 && (
               <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full shadow-md border-2 border-white">
                 {notificationCount}
@@ -373,7 +373,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           </button>
 
           <div onClick={onProfileClick} className="flex items-center space-x-3 bg-white  border border-slate-200  px-4 py-2 rounded-2xl shadow-lg shadow-slate-200/50  hover:shadow-xl transition-shadow cursor-pointer">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0 overflow-hidden ring-2 ring-white">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0 overflow-hidden ring-2 ring-white">
               {user.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
               ) : (
@@ -394,11 +394,11 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <Megaphone className="w-5 h-5 text-orange-500" /> Buletin
           </h2>
           {isManagement && (
-            <button
-              onClick={() => setIsAddingBulletin(!isAddingBulletin)}
-              className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
-              title="Tambah Info"
-            >
+             <button
+               onClick={() => setIsAddingBulletin(!isAddingBulletin)}
+               className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+               title="Tambah Info"
+             >
               {isAddingBulletin ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             </button>
           )}
@@ -409,7 +409,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/40">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-600/20">
+                   <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
                     <PlusCircle className="w-7 h-7" />
                   </div>
                   <div>
@@ -450,15 +450,15 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                   <div className="flex gap-1.5 px-1.5">
                     <button onClick={() => handleFormat('foreColor', '#ef4444')} className="w-6 h-6 rounded-full bg-red-500 border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Merah"></button>
                     <button onClick={() => handleFormat('foreColor', '#3b82f6')} className="w-6 h-6 rounded-full bg-blue-500 border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Biru"></button>
-                    <button onClick={() => handleFormat('foreColor', '#10b981')} className="w-6 h-6 rounded-full bg-emerald-500 border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Hijau"></button>
+                    <button onClick={() => handleFormat('foreColor', '#3b82f6')} className="w-6 h-6 rounded-full bg-blue-500 border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Biru"></button>
                     <button onClick={() => handleFormat('foreColor', '#000000')} className="w-6 h-6 rounded-full bg-black border-2 border-white shadow-sm hover:scale-110 transition-transform" title="Hitam"></button>
                   </div>
                 </div>
               </div>
 
               <div className="relative group mb-8">
-                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-[2rem] blur-xl opacity-50 group-focus-within:opacity-100 transition-opacity"></div>
-                <div className="relative bg-white border-2 border-slate-100 rounded-[2rem] overflow-hidden group-focus-within:border-emerald-500/50 transition-colors">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-[2rem] blur-xl opacity-50 group-focus-within:opacity-100 transition-opacity"></div>
+                <div className="relative bg-white border-2 border-slate-100 rounded-[2rem] overflow-hidden group-focus-within:border-blue-500/50 transition-colors">
                   <div className="p-8 pb-12">
                     <div className="flex items-center gap-2.5 mb-6">
                       <div className="relative flex h-2 w-2">
@@ -517,7 +517,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                 <button
                   onClick={handleAddBulletin}
                   disabled={!newBulletinContent || newBulletinContent === '<br>'}
-                  className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                   className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <Megaphone className="w-4 h-4" />
                   Siarkan Maklumat Sekarang
@@ -552,12 +552,12 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
       <section className="animate-fade-in">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-800  flex items-center gap-2">
-            <PieChart className="w-5 h-5 text-emerald-500" /> Status Projek
+            <PieChart className="w-5 h-5 text-blue-500" /> Status Projek
           </h2>
           {statusFilter !== 'ALL' && (
             <button
               onClick={() => setStatusFilter('ALL')}
-              className="text-xs font-bold text-emerald-600 hover:underline"
+              className="text-xs font-bold text-blue-600 hover:underline"
             >
               Lihat Semua Projek Aktif
             </button>
@@ -637,12 +637,12 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
           <div
             onClick={() => setStatusFilter(statusFilter === ProjectStatus.SIAP ? 'ALL' : ProjectStatus.SIAP)}
-            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.SIAP ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-100'}`}
+            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.SIAP ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-100'}`}
           >
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <CheckCircle className="w-24 h-24 text-emerald-500" />
+              <CheckCircle className="w-24 h-24 text-blue-500" />
             </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-emerald-50  text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-200">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-blue-50  text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
               <CheckCircle className="w-7 h-7" />
             </div>
             <p className="text-3xl font-black text-slate-900  mb-1">{phase6.length}</p>
@@ -656,7 +656,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
         <div className="space-y-6 animate-fade-in">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 className="text-xl font-bold text-slate-800  flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-emerald-500" />
+              <BarChart3 className="w-5 h-5 text-blue-500" />
               {statusFilter === 'ALL' ? 'Projek Aktif' : `Projek: ${statusFilter.replace(/_/g, ' ')}`}
             </h2>
 
@@ -670,14 +670,14 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                   placeholder="Cari No. Fail / Aduan / Tajuk / Syarikat..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 text-sm outline-none"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 text-sm outline-none"
                 />
               </div>
 
               {filteredProjects.length > 0 && (
                 <div className="flex items-center gap-3">
                   <div className="hidden lg:block text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-                    <span className="text-emerald-600">{Math.min(filteredProjects.length, (tablePage - 1) * itemsPerPage + 1)}</span>-{Math.min(filteredProjects.length, tablePage * itemsPerPage)} <span className="text-slate-400 font-medium mx-1">/</span> {filteredProjects.length}
+                    <span className="text-blue-600">{Math.min(filteredProjects.length, (tablePage - 1) * itemsPerPage + 1)}</span>-{Math.min(filteredProjects.length, tablePage * itemsPerPage)} <span className="text-slate-400 font-medium mx-1">/</span> {filteredProjects.length}
                   </div>
 
                   {filteredProjects.length > itemsPerPage && (
@@ -685,7 +685,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                       <button
                         onClick={() => setTablePage(prev => Math.max(1, prev - 1))}
                         disabled={tablePage === 1}
-                        className={`p-1 rounded-lg transition-colors ${tablePage === 1 ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100 hover:text-emerald-600'}`}
+                        className={`p-1 rounded-lg transition-colors ${tablePage === 1 ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100 hover:text-blue-600'}`}
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
@@ -695,7 +695,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                       <button
                         onClick={() => setTablePage(prev => Math.min(totalPages, prev + 1))}
                         disabled={tablePage === totalPages}
-                        className={`p-1 rounded-lg transition-colors ${tablePage === totalPages ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100 hover:text-emerald-600'}`}
+                        className={`p-1 rounded-lg transition-colors ${tablePage === totalPages ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100 hover:text-blue-600'}`}
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
@@ -706,14 +706,14 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
               <button
                 onClick={() => onNavigate('projects')}
-                className="text-emerald-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-2 group bg-white  px-4 py-2 rounded-xl transition-shadow hover:shadow-lg border border-transparent hover:border-emerald-100"
+                 className="text-blue-600 hover:text-blue-700 font-bold text-sm flex items-center gap-2 group bg-white  px-4 py-2 rounded-xl transition-shadow hover:shadow-lg border border-transparent hover:border-blue-100"
               >
                 Lihat Semua <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
                 onClick={onNewProject}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 group"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-600/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 group"
               >
                 <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
                 <span className="text-xs font-bold tracking-tight whitespace-nowrap">Tambah Projek</span>
@@ -741,15 +741,15 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                       onMouseUp={handleMouseUp}
                       onMouseLeave={handleMouseLeave}
                       onClick={() => handleDashboardProjectClick(project)}
-                      className="hover:bg-emerald-50/30  transition-colors cursor-pointer group"
+                       className="hover:bg-blue-50/30  transition-colors cursor-pointer group"
                     >
                       <td className="px-8 py-5">
                         <div className="flex items-start gap-4">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white shrink-0 mt-1 transition-transform group- ${project.status === ProjectStatus.SIAP ? 'bg-gradient-to-br from-emerald-400 to-teal-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}>
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white shrink-0 mt-1 transition-transform group- ${project.status === ProjectStatus.SIAP ? 'bg-gradient-to-br from-blue-400 to-cyan-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}>
                             <Zap className="w-5 h-5" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="font-bold text-slate-900  break-words leading-tight whitespace-normal group-hover:text-emerald-600  transition-colors">{project.namaProjek}</p>
+                             <p className="font-bold text-slate-900  break-words leading-tight whitespace-normal group-hover:text-blue-600  transition-colors">{project.namaProjek}</p>
                             <div className="flex items-center gap-2 mt-1.5">
                               <span className="text-[20px] font-black bg-slate-100  px-2 py-0.5 rounded text-slate-500">{project.noFail}</span>
                               {isManagement && pjaFilter === 'ALL' && (
@@ -766,7 +766,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                       </td>
                       <td className="px-6 py-5">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-blue-500' : 'bg-yellow-500'}`}></span>
                           {getStatusLabel(project.status)}
                         </span>
                       </td>
@@ -784,7 +784,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full text-center bg-slate-50 border border-transparent hover:border-slate-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-200 rounded-lg py-1.5 text-sm font-bold text-slate-700 outline-none transition-all"
+                            className="w-full text-center bg-slate-50 border border-transparent hover:border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 rounded-lg py-1.5 text-sm font-bold text-slate-700 outline-none transition-all"
                           />
                           <span className="absolute right-2 top-1.5 text-xs font-medium text-slate-400 pointer-events-none group-focus-within/input:hidden">%</span>
                         </div>
@@ -801,7 +801,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                             <Activity className="w-8 h-8 text-slate-300" />
                           </div>
                           <p className="text-slate-400 font-medium">Tiada projek ditemui dengan kriteria carian.</p>
-                          <button onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }} className="text-emerald-600 font-bold text-sm hover:underline">Kosongkan Tapisan</button>
+                           <button onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }} className="text-blue-600 font-bold text-sm hover:underline">Kosongkan Tapisan</button>
                         </div>
                       </td>
                     </tr>
@@ -876,7 +876,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                         <button
                           key={emoji}
                           onClick={() => toggleReaction({ id: selectedBulletin.id, userId: user.id, emoji })}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-lg transition-all ${hasReacted ? 'bg-emerald-100 border-2 border-emerald-500 scale-110' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-lg transition-all ${hasReacted ? 'bg-blue-100 border-2 border-blue-500 scale-110' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
                         >
                           <span>{emoji}</span>
                           {count > 0 && <span className="font-bold text-sm">{count}</span>}
@@ -887,7 +887,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
                   <button
                     onClick={() => setSelectedBulletin(null)}
-                    className="w-full py-4 bg-slate-900  text-white  rounded-2xl font-bold transition-colors hover:bg-emerald-600  shadow-xl"
+                    className="w-full py-4 bg-slate-900  text-white  rounded-2xl font-bold transition-colors hover:bg-blue-600  shadow-xl"
                   >
                     Tutup Paparan
                   </button>

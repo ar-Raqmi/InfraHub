@@ -52,8 +52,8 @@ const getColorStyles = (color: string) => {
         yellow: "bg-yellow-100 text-yellow-600 border-yellow-200",
         lime: "bg-lime-100 text-lime-600 border-lime-200",
         green: "bg-green-100 text-green-600 border-green-200",
-        emerald: "bg-emerald-100 text-emerald-600 border-emerald-200",
-        teal: "bg-teal-100 text-teal-600 border-teal-200",
+        emerald: "bg-blue-100 text-blue-600 border-blue-200",
+        teal: "bg-cyan-100 text-cyan-600 border-cyan-200",
         cyan: "bg-cyan-100 text-cyan-600 border-cyan-200",
         sky: "bg-sky-100 text-sky-600 border-sky-200",
         blue: "bg-blue-100 text-blue-600 border-blue-200",
@@ -1161,33 +1161,33 @@ const BQEditor: React.FC<BQEditorProps> = ({
     const renderCalculationPartRow = (bill: BQGroup, item: BQItem, part: CalculationPart, index: number) => {
         const isGlobal = part.isGlobal;
         const inputClassBase = "w-12 outline-none text-right font-bold text-sm transition-colors";
-        const inputClass = isGlobal || readOnly ? `${inputClassBase} bg-transparent text-slate-400 cursor-not-allowed` : `${inputClassBase} bg-emerald-50/50  text-emerald-700  border-b border-emerald-300  rounded-sm`;
+        const inputClass = isGlobal || readOnly ? `${inputClassBase} bg-transparent text-slate-400 cursor-not-allowed` : `${inputClassBase} bg-blue-50/50  text-blue-700  border-b border-blue-300  rounded-sm`;
 
         const gDimLabel = isGlobal && part.globalIndex !== undefined ? (localDimsArray[part.globalIndex]?.label || `Kiraan ${part.globalIndex + 1}`) : '';
 
         return (
-            <div key={part.id} className={`flex flex-wrap items-center gap-2 text-xs p-1.5 rounded-lg border mb-1 last:mb-0 transition-colors ${isGlobal ? 'bg-emerald-50/30 border-emerald-100' : 'bg-white border-slate-200'}`}>
+            <div key={part.id} className={`flex flex-wrap items-center gap-2 text-xs p-1.5 rounded-lg border mb-1 last:mb-0 transition-colors ${isGlobal ? 'bg-blue-50/30 border-blue-100' : 'bg-white border-slate-200'}`}>
                 {!readOnly && (
                     <button
                         onClick={() => setIsGlobalLinkModalOpen({ itemId: item.id, partId: part.id })}
-                        className={`p-1 rounded transition-colors ${isGlobal ? 'text-emerald-600 bg-emerald-100' : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50'}`}
+                        className={`p-1 rounded transition-colors ${isGlobal ? 'text-blue-600 bg-blue-100' : 'text-slate-300 hover:text-blue-500 hover:bg-blue-50'}`}
                         title={isGlobal ? `Terhubung dengan: ${gDimLabel}` : "Hubungkan dengan Global Calculation"}
                     >
                         {isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}
                     </button>
                 )}
-                <input type="text" value={part.label || ''} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { label: e.target.value })} disabled={readOnly} className="w-16 bg-transparent border-b border-dashed border-slate-300  focus:border-emerald-500 outline-none text-slate-500 placeholder-slate-400 text-[10px]" placeholder="Label" />
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasLength ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasLength} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasLength: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">P</span>{part.hasLength && (<DimensionInput value={part.length || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { length: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
+                <input type="text" value={part.label || ''} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { label: e.target.value })} disabled={readOnly} className="w-16 bg-transparent border-b border-dashed border-slate-300  focus:border-blue-500 outline-none text-slate-500 placeholder-slate-400 text-[10px]" placeholder="Label" />
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasLength ? 'bg-blue-50 border-blue-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasLength} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasLength: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-blue-600" /><span className="text-[10px] font-bold text-slate-500">P</span>{part.hasLength && (<DimensionInput value={part.length || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { length: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
                 {part.hasLength && (part.hasWidth || part.hasDepth) && <span className="text-slate-300">×</span>}
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasWidth ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasWidth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasWidth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">L</span>{part.hasWidth && (<DimensionInput value={part.width || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { width: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasWidth ? 'bg-blue-50 border-blue-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasWidth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasWidth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-blue-600" /><span className="text-[10px] font-bold text-slate-500">L</span>{part.hasWidth && (<DimensionInput value={part.width || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { width: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
                 {part.hasWidth && part.hasDepth && <span className="text-slate-300">×</span>}
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<DimensionInput value={part.depth || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { depth: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-blue-50 border-blue-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-blue-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<DimensionInput value={part.depth || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { depth: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
                 <span className="text-slate-300">×</span>
                 <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" /></div>
 
                 {/* Individual Row Result with Full Breakdown */}
                 <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
-                    {isGlobal && <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter bg-emerald-50 px-1 rounded">{gDimLabel}</span>}
+                    {isGlobal && <span className="text-[8px] font-bold text-blue-500 uppercase tracking-tighter bg-blue-50 px-1 rounded">{gDimLabel}</span>}
                     <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
                     <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
                         {(() => {
@@ -1200,7 +1200,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                         })()}
                     </div>
                     <div className="hidden md:block text-[10px] text-slate-400">x {formatCurrency(item.rate)}</div>
-                    <div className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 min-w-[60px] text-right">
+                    <div className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 min-w-[60px] text-right">
                         {(() => {
                             let product = 1;
                             if (part.hasLength) product *= part.length;
@@ -1227,23 +1227,23 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     <span className="text-xs font-black text-slate-400 min-w-[30px]">{autoNumber}</span>
                     <button onClick={() => toggleCollapse(bill.id, item.id)} className="p-1 rounded hover:bg-slate-200  text-slate-400 transition-colors">{item.isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</button>
                     <AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className={`w-full bg-transparent outline-none text-slate-800  text-sm ${isLevel0 ? 'font-bold uppercase' : 'font-semibold pl-1'}`} placeholder="TAJUK..." minHeight={24} />
-                    {!readOnly && (<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="text-slate-400 hover:text-emerald-500 p-1 rounded hover:bg-emerald-50  disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button><button onClick={() => moveItem(bill.id, item.id, 'down')} className="text-slate-400 hover:text-emerald-500 p-1 rounded hover:bg-emerald-50  disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button><button onClick={() => requestDeleteItem(bill.id, item, index)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button></div>)}
+                    {!readOnly && (<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50  disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button><button onClick={() => moveItem(bill.id, item.id, 'down')} className="text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50  disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button><button onClick={() => requestDeleteItem(bill.id, item, index)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button></div>)}
                 </div>
             );
         }
         const paddingLeftClass = 'pl-10';
         const isRecentlyAdded = lastAddedItemId === item.id;
         return (
-            <div key={item.id} id={`bq-item-${item.id}`} className={`py-4 border-b border-slate-100  last:border-0 group hover:bg-slate-50  px-2 rounded-xl transition-colors duration-700 ${isRecentlyAdded ? 'bg-emerald-50/80  ring-2 ring-emerald-500' : ''}`}>
+            <div key={item.id} id={`bq-item-${item.id}`} className={`py-4 border-b border-slate-100  last:border-0 group hover:bg-slate-50  px-2 rounded-xl transition-colors duration-700 ${isRecentlyAdded ? 'bg-blue-50/80  ring-2 ring-blue-500' : ''}`}>
                 <div className="flex justify-between items-start gap-3 mb-2">
                     <div className="text-xs font-black text-slate-400 mt-1.5 min-w-[30px]">{autoNumber}</div>
                     <div className={`flex-1 ${paddingLeftClass}`}><AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className="w-full bg-transparent outline-none text-sm font-medium text-slate-800" minHeight={40} />{item.variant && <div className="text-xs text-slate-500 italic mt-1">{item.variant}</div>}</div>
-                    <div className="flex flex-col items-end gap-1"><div className="flex items-center gap-1 text-xs text-slate-400"><span>Kadar:</span><DimensionInput value={item.rate} onChange={(val) => updateItem(bill.id, item.id, { rate: val })} disabled={readOnly} className="w-20 text-right bg-transparent border-b border-slate-200 focus:border-emerald-500 outline-none text-slate-700  font-mono" /></div><span className="text-xs bg-slate-100  px-2 py-0.5 rounded text-slate-500">{item.unit}</span></div>
+                    <div className="flex flex-col items-end gap-1"><div className="flex items-center gap-1 text-xs text-slate-400"><span>Kadar:</span><DimensionInput value={item.rate} onChange={(val) => updateItem(bill.id, item.id, { rate: val })} disabled={readOnly} className="w-20 text-right bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-slate-700  font-mono" /></div><span className="text-xs bg-slate-100  px-2 py-0.5 rounded text-slate-500">{item.unit}</span></div>
                 </div>
                 <div className={`flex flex-col sm:flex-row items-start gap-3 bg-slate-50  p-2 rounded-lg ml-12`}>
-                    <div className="flex flex-col gap-1 mt-0.5"><button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isGlobal ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white  text-slate-400 border-slate-200  hover:border-slate-300'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}</button><button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}</button></div>
-                    {item.isCustomCalc ? (<div className="flex-1 w-full flex items-center gap-2"><input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white  border border-slate-200  rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" /><div className="flex items-center gap-1 bg-white  rounded px-2 py-1 border border-slate-200"><span className="text-[10px] font-bold text-slate-400">QTY</span><DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" /></div></div>) : (<div className="flex-1 w-full"><div className="space-y-1">{(item.calculationParts || []).map((part, pIdx) => renderCalculationPartRow(bill, item, part, pIdx))}</div>{!readOnly && (<div className="flex items-center justify-between mt-2"><button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-bold px-2 py-1 rounded hover:bg-emerald-50"><PlusCircle className="w-3 h-3" /> Tambah Kiraan</button><div className="font-mono font-bold text-emerald-600 text-sm border-l border-slate-200  pr-2 px-2">= {item.qty}</div></div>)}</div>)}
-                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-200  pt-2 sm:pt-0 pl-2 border-l-0 sm:border-l"><div className="text-right w-24"><div className="text-[10px] text-slate-400 uppercase tracking-wider">Jumlah</div><div className="font-bold text-slate-900">{formatCurrency(item.amount)}</div></div>{!readOnly && (<div className="mt-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1 text-slate-300 hover:text-emerald-500 hover:bg-emerald-50  rounded-lg transition-colors disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button><button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1 text-slate-300 hover:text-emerald-500 hover:bg-emerald-50  rounded-lg transition-colors disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button><button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50  rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button></div>)}</div>
+                    <div className="flex flex-col gap-1 mt-0.5"><button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isGlobal ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-white  text-slate-400 border-slate-200  hover:border-slate-300'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}</button><button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}</button></div>
+                    {item.isCustomCalc ? (<div className="flex-1 w-full flex items-center gap-2"><input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white  border border-slate-200  rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" /><div className="flex items-center gap-1 bg-white  rounded px-2 py-1 border border-slate-200"><span className="text-[10px] font-bold text-slate-400">QTY</span><DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" /></div></div>) : (<div className="flex-1 w-full"><div className="space-y-1">{(item.calculationParts || []).map((part, pIdx) => renderCalculationPartRow(bill, item, part, pIdx))}</div>{!readOnly && (<div className="flex items-center justify-between mt-2"><button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded hover:bg-blue-50"><PlusCircle className="w-3 h-3" /> Tambah Kiraan</button><div className="font-mono font-bold text-blue-600 text-sm border-l border-slate-200  pr-2 px-2">= {item.qty}</div></div>)}</div>)}
+                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-200  pt-2 sm:pt-0 pl-2 border-l-0 sm:border-l"><div className="text-right w-24"><div className="text-[10px] text-slate-400 uppercase tracking-wider">Jumlah</div><div className="font-bold text-slate-900">{formatCurrency(item.amount)}</div></div>{!readOnly && (<div className="mt-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button><button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button><button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50  rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button></div>)}</div>
                 </div>
             </div>
         );
@@ -1253,12 +1253,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
         const isActive = activeBillId === b.id;
         const { prefix, content } = parseTitle(b.title);
         return (
-            <div key={b.id} onClick={() => setActiveBillId(b.id)} className={`w-full text-left p-3 rounded-xl text-xs transition-colors relative group cursor-pointer border ${isActive ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 border-emerald-500 ring-1 ring-emerald-500' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 hover:border-emerald-300'}`}>
+            <div key={b.id} onClick={() => setActiveBillId(b.id)} className={`w-full text-left p-3 rounded-xl text-xs transition-colors relative group cursor-pointer border ${isActive ? 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/20 border-blue-500 ring-1 ring-blue-500' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 hover:border-blue-300'}`}>
                 <div className="flex justify-between items-start gap-2">
                     <div className="flex-1 min-w-0">
-                        {prefix && <div className={`text-[9px] font-black tracking-widest uppercase mb-1 ${isActive ? 'text-emerald-100' : 'text-slate-400 group-hover:text-emerald-600'}`}>{prefix}</div>}
+                        {prefix && <div className={`text-[9px] font-black tracking-widest uppercase mb-1 ${isActive ? 'text-blue-100' : 'text-slate-400 group-hover:text-blue-600'}`}>{prefix}</div>}
                         <div className={`font-bold leading-snug line-clamp-2 ${isActive ? 'text-white' : 'text-slate-700'}`}>{content || b.title}</div>
-                        <div className={`mt-2 text-[9px] font-mono flex items-center gap-2 ${isActive ? 'text-emerald-100' : 'text-slate-400'}`}>
+                        <div className={`mt-2 text-[9px] font-mono flex items-center gap-2 ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>
                             <span className="bg-white/20 px-1.5 py-0.5 rounded">{b.items.length} items</span>
                         </div>
                     </div>
@@ -1337,7 +1337,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
             <div className="w-full md:w-72 flex flex-col gap-2 shrink-0 sticky top-24 max-h-[calc(100vh-8rem)]">
                 <div className="bg-white/80  p-3 rounded-xl border border-slate-200  shadow-sm flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Navigasi BQ</span>
-                    {!readOnly && <button onClick={handleAddTemplate} className="p-1 bg-emerald-100 text-emerald-600 rounded hover:bg-emerald-200 transition-colors" title="Tambah Template"><Plus className="w-4 h-4" /></button>}
+                    {!readOnly && <button onClick={handleAddTemplate} className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors" title="Tambah Template"><Plus className="w-4 h-4" /></button>}
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 bg-white/40  rounded-xl p-2">
                     {permulaanBills.length > 0 && (
@@ -1383,7 +1383,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                             Template
                                         </button>
                                     )}
-                                    <div className="text-right text-xs text-slate-400 shrink-0">Total: <span className="text-emerald-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s, i) => s + (i.amount || 0), 0))}</span></div>
+                                    <div className="text-right text-xs text-slate-400 shrink-0">Total: <span className="text-blue-600 font-bold text-sm">{formatCurrency(activeBill.items.reduce((s, i) => s + (i.amount || 0), 0))}</span></div>
                                 </div>
                             </div>
                             {!isTopBill(activeBill) && (
@@ -1403,7 +1403,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                     }
                                                 }}
                                                 disabled={readOnly}
-                                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border shrink-0 ${isSelected ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white text-slate-400 border-slate-100 hover:border-emerald-500 hover:text-emerald-600'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}
+                                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border shrink-0 ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-400 border-slate-100 hover:border-blue-500 hover:text-blue-600'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}
                                             >
                                                 {r.lokasi}
                                             </button>
@@ -1436,10 +1436,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                     <button onClick={() => {
                                                         setLocalDimsArray([...localDimsArray, { length: 0, width: 0, depth: 0, label: `Kiraan ${localDimsArray.length + 1}` }]);
                                                         setIsDimsDirty(true);
-                                                    }} className="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Tambah Global Calculation">
+                                                    }} className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors" title="Tambah Global Calculation">
                                                         <PlusCircle className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <button onClick={() => setIsLinkModalOpen(true)} className="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
+                                                    <button onClick={() => setIsLinkModalOpen(true)} className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
                                                         <Link className="w-3.5 h-3.5" />
                                                     </button>
                                                     {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
@@ -1480,14 +1480,14 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                 </div>
                                             ))}
                                             {isDimsDirty && !readOnly && (
-                                                <button onClick={handleSaveGlobalDims} className="mt-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" >
+                                                <button onClick={handleSaveGlobalDims} className="mt-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" >
                                                     <Save className="w-3 h-3" /> Kemaskini Semua
                                                 </button>
                                             )}
                                         </div>
                                     </div>
                                     {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
-                                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-600 font-bold bg-white/50 px-2 py-1 rounded-lg">
+                                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-blue-600 font-bold bg-white/50 px-2 py-1 rounded-lg">
                                             <Info className="w-3 h-3" />
                                             Terhubung dengan: {bills.filter(b => b.calculationId === activeBill.calculationId && b.id !== activeBill.id).map(b => parseTitle(b.title).prefix).join(', ')}
                                         </div>
@@ -1578,11 +1578,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                     })()}
                                 </div>
                             )}
-                            {!readOnly && <button onClick={openAddItemModal} className="mt-4 w-full py-3 border-2 border-dashed border-slate-200  rounded-xl text-slate-400 font-bold text-sm hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50  transition-colors flex items-center justify-center gap-2" ><Plus className="w-4 h-4" /> Tambah Item</button>}
+                            {!readOnly && <button onClick={openAddItemModal} className="mt-4 w-full py-3 border-2 border-dashed border-slate-200  rounded-xl text-slate-400 font-bold text-sm hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50  transition-colors flex items-center justify-center gap-2" ><Plus className="w-4 h-4" /> Tambah Item</button>}
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8"><Layers className="w-16 h-16 mb-4 opacity-20" /><h3 className="text-lg font-bold text-slate-600">Tiada Senarai Dipilih</h3><p className="text-sm max-w-xs text-center mt-2">Pilih senarai dari navigasi sebelah kiri atau tambah template baru.</p>{!readOnly && <button onClick={handleAddTemplate} className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg">Tambah Template</button>}</div>
+                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8"><Layers className="w-16 h-16 mb-4 opacity-20" /><h3 className="text-lg font-bold text-slate-600">Tiada Senarai Dipilih</h3><p className="text-sm max-w-xs text-center mt-2">Pilih senarai dari navigasi sebelah kiri atau tambah template baru.</p>{!readOnly && <button onClick={handleAddTemplate} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">Tambah Template</button>}</div>
                 )}
             </div>
 
@@ -1591,17 +1591,17 @@ const BQEditor: React.FC<BQEditorProps> = ({
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
                     <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden border border-slate-200  transform scale-100 transition-colors animate-slide-up" onClick={e => e.stopPropagation()}>
                         <div className="p-6 border-b border-slate-100  flex justify-between items-center bg-white  shrink-0">
-                            <div className="flex items-center gap-3"><div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><Plus className="w-5 h-5" /></div><div><h3 className="font-bold text-slate-900">Pilih Item dari Pustaka</h3><p className="text-xs text-slate-500">Klik butang [+] untuk menambah item ke dalam {activeBill?.title}</p></div></div>
+                            <div className="flex items-center gap-3"><div className="p-2 bg-blue-100 text-blue-600 rounded-lg"><Plus className="w-5 h-5" /></div><div><h3 className="font-bold text-slate-900">Pilih Item dari Pustaka</h3><p className="text-xs text-slate-500">Klik butang [+] untuk menambah item ke dalam {activeBill?.title}</p></div></div>
                             <button onClick={() => setIsAddItemModalOpen(false)} className="p-2 hover:bg-slate-100  rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
                         </div>
                         <div className="flex-1 flex overflow-hidden">
                             <div className="w-64 bg-slate-50 border-r border-slate-100 p-4 space-y-1 overflow-y-auto custom-scrollbar shrink-0">
-                                <button onClick={() => setSelectedCategory('HISTORY')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors mb-2 flex items-center gap-2 ${selectedCategory === 'HISTORY' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50'}`}>
+                                <button onClick={() => setSelectedCategory('HISTORY')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors mb-2 flex items-center gap-2 ${selectedCategory === 'HISTORY' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-blue-50'}`}>
                                     <History className="w-3.5 h-3.5" />
                                     Sejarah
                                 </button>
                                 <div className="h-px bg-slate-200 my-2 mx-2"></div>
-                                {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50'}`}>{cat}</button>))}
+                                {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-blue-50'}`}>{cat}</button>))}
                             </div>
 
                             <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
@@ -1609,13 +1609,13 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                     {/* Search Bar */}
                                     <div className="sticky top-0 bg-white z-10 pb-4 mb-2 border-b border-slate-50 flex items-center justify-between gap-4">
                                         <div className="relative group flex-1">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                             <input
                                                 type="text"
                                                 placeholder="Cari kumpulan item (cth: Longkang, Cerucuk)..."
                                                 value={librarySearchTerm}
                                                 onChange={(e) => setLibrarySearchTerm(e.target.value)}
-                                                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                                                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-blue-500 focus:bg-white outline-none transition-all"
                                             />
                                             {librarySearchTerm && (
                                                 <button
@@ -1640,19 +1640,19 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                         libraryGroups.map(group => (
                                             <div key={group.id} className="space-y-3">
                                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                                                    {(selectedCategory === 'HISTORY' || (group as any).isHistoryMatch) && <Clock className="w-3 h-3 text-emerald-500" />}
+                                                    {(selectedCategory === 'HISTORY' || (group as any).isHistoryMatch) && <Clock className="w-3 h-3 text-blue-500" />}
                                                     {group.title}
                                                 </h4>
                                                 <div className="grid grid-cols-1 gap-2">
                                                     {group.items.map(item => (
-                                                        <div key={`${group.id}-${item.id}`} className="p-3 bg-slate-50  rounded-2xl border border-slate-100  transition-colors hover:border-emerald-300  group/item">
+                                                        <div key={`${group.id}-${item.id}`} className="p-3 bg-slate-50  rounded-2xl border border-slate-100  transition-colors hover:border-blue-300  group/item">
                                                             <div className="flex justify-between items-start gap-4">
                                                                 <div className="flex-1 min-w-0"><p className="text-sm font-bold text-slate-800  leading-tight">{item.description}</p>
                                                                     <div className="mt-2 flex gap-2 flex-wrap">
                                                                         {(!(item as any).variants || (item as any).variants.length === 0) ? (
                                                                             <button
                                                                                 onClick={() => handleLibraryAddItem((item as any).sourceGroupId || group.id, item.id)}
-                                                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
+                                                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-blue-600 text-[10px] font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors shadow-sm"
                                                                             >
                                                                                 <Plus className="w-3.5 h-3.5" /> Pilih Item
                                                                             </button>
@@ -1661,7 +1661,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                                                 <button
                                                                                     key={v.id}
                                                                                     onClick={() => handleLibraryAddItem((item as any).sourceGroupId || group.id, item.id, v.id)}
-                                                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
+                                                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-blue-600 text-[10px] font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors shadow-sm"
                                                                                 >
                                                                                     <Plus className="w-3.5 h-3.5" /> {v.label}
                                                                                 </button>
@@ -1670,7 +1670,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right shrink-0">
-                                                                    {(!item.variants || item.variants.length === 0) && (<><p className="text-[10px] font-bold text-slate-400 uppercase leading-none">Kadar</p><p className="font-mono font-bold text-emerald-600 text-sm mt-1">{formatCurrency(item.rate || 0)}</p></>)}
+                                                                    {(!item.variants || item.variants.length === 0) && (<><p className="text-[10px] font-bold text-slate-400 uppercase leading-none">Kadar</p><p className="font-mono font-bold text-blue-600 text-sm mt-1">{formatCurrency(item.rate || 0)}</p></>)}
                                                                     <span className="text-[10px] bg-slate-200  px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase mt-2 inline-block">{item.unit}</span>
                                                                 </div>
                                                             </div>
@@ -1683,7 +1683,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                         <div className="flex flex-col items-center justify-center py-12 text-slate-400">
                                             <Search className="w-12 h-12 mb-4 opacity-10" />
                                             <p className="text-sm font-medium">Tiada item dijumpai untuk "{librarySearchTerm}"</p>
-                                            <button onClick={() => setLibrarySearchTerm('')} className="mt-2 text-xs text-emerald-600 font-bold hover:underline">Kosongkan carian</button>
+                                            <button onClick={() => setLibrarySearchTerm('')} className="mt-2 text-xs text-blue-600 font-bold hover:underline">Kosongkan carian</button>
                                         </div>
                                     )}
                                 </div>
@@ -1697,11 +1697,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
             {isTemplateModalOpen && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsTemplateModalOpen(false)}>
                     <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-emerald-500 to-teal-500"></div>
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-blue-500 to-cyan-500"></div>
                         <div className="p-8 pb-4 shrink-0">
                             <div className="flex justify-between items-center">
                                 <div><h3 className="text-2xl font-bold text-slate-900">Template Wizard</h3><p className="text-sm text-slate-500">Pilih template permulaan atau bina secara manual.</p></div>
-                                <div className="flex items-center gap-2"><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 1 ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600'}`}>1</span><div className="w-8 h-0.5 bg-slate-100"></div><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 2 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>2</span></div>
+                                <div className="flex items-center gap-2"><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 1 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'}`}>1</span><div className="w-8 h-0.5 bg-slate-100"></div><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>2</span></div>
                             </div>
                         </div>
 
@@ -1710,13 +1710,13 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                 <div className="space-y-6 animate-fade-in">
                                     <div className="sticky top-0 bg-white z-10 pb-4 mb-2">
                                         <div className="relative group">
-                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                             <input
                                                 type="text"
                                                 placeholder="Cari template..."
                                                 value={templateSearchTerm}
                                                 onChange={(e) => setTemplateSearchTerm(e.target.value)}
-                                                className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] text-sm focus:border-emerald-500 focus:bg-white outline-none transition-all shadow-sm"
+                                                className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] text-sm focus:border-blue-500 focus:bg-white outline-none transition-all shadow-sm"
                                                 autoFocus
                                             />
                                             {templateSearchTerm && (
@@ -1743,7 +1743,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                         <Search className="w-16 h-16 mb-4 opacity-10" />
                                                         <p className="text-lg font-medium text-slate-500">Tiada template dijumpai</p>
                                                         <p className="text-sm">Cuba carian lain atau semak ejaan anda.</p>
-                                                        <button onClick={() => setTemplateSearchTerm('')} className="mt-4 text-emerald-600 font-bold hover:underline">Kosongkan carian</button>
+                                                        <button onClick={() => setTemplateSearchTerm('')} className="mt-4 text-blue-600 font-bold hover:underline">Kosongkan carian</button>
                                                     </div>
                                                 );
                                             }
@@ -1754,10 +1754,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                 const colorClass = getColorStyles(tpl.color);
 
                                                 return (
-                                                    <div key={tpl.id} onClick={() => { setSelectedTemplate(tpl); if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { handleFinishTemplate(tpl); } else { setStep(2); } }} className={`p-6 rounded-[2rem] border-2 cursor-pointer transition-colors hover:scale-[1.02] flex items-center gap-6 group ${isSelected ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-100 bg-slate-50/30 hover:border-emerald-200'}`}>
+                                                    <div key={tpl.id} onClick={() => { setSelectedTemplate(tpl); if (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') { handleFinishTemplate(tpl); } else { setStep(2); } }} className={`p-6 rounded-[2rem] border-2 cursor-pointer transition-colors hover:scale-[1.02] flex items-center gap-6 group ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-slate-100 bg-slate-50/30 hover:border-blue-200'}`}>
                                                         <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 ${colorClass}`}><IconComp className="w-8 h-8" /></div>
                                                         <div className="flex-1 min-w-0"><h4 className="font-bold text-slate-800  text-lg">{tpl.title}</h4><p className="text-xs text-slate-500  mt-1">{tpl.subtitle}</p></div>
-                                                        <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-emerald-500 translate-x-1' : 'text-slate-300'}`} />
+                                                        <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-blue-500 translate-x-1' : 'text-slate-300'}`} />
                                                     </div>
                                                 );
                                             });
@@ -1767,11 +1767,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
                             ) : (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="bg-slate-50  p-6 rounded-3xl border border-slate-100  shadow-inner">
-                                        <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi & Dimensi</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
+                                        <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi & Dimensi</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div>
                                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 pl-1">Pilih Lokasi-lokasi</label>
-                                                <div className={`grid grid-cols-2 gap-2 p-3 rounded-xl bg-white border-2 transition-colors ${templateError && templateLocations.length === 0 ? 'border-red-400 animate-shake' : 'border-slate-100 focus-within:border-emerald-500'}`}>
+                                                <div className={`grid grid-cols-2 gap-2 p-3 rounded-xl bg-white border-2 transition-colors ${templateError && templateLocations.length === 0 ? 'border-red-400 animate-shake' : 'border-slate-100 focus-within:border-blue-500'}`}>
                                                     {locationRows.filter(r => r.lokasi).map(row => {
                                                         const isSelected = templateLocations.includes(row.id);
                                                         return (
@@ -1784,10 +1784,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                                         setTemplateLocations(prev => [...prev, row.id]);
                                                                     }
                                                                 }}
-                                                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ${isSelected ? 'bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-emerald-200'}`}
+                                                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-100' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-blue-200'}`}
                                                             >
                                                                 <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border ${isSelected ? 'bg-white border-white' : 'bg-white border-slate-300'}`}>
-                                                                    {isSelected && <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[4]" />}
+                                                                    {isSelected && <Check className="w-2.5 h-2.5 text-blue-600 stroke-[4]" />}
                                                                 </div>
                                                                 <span className="truncate">{row.lokasi}</span>
                                                             </button>
@@ -1798,7 +1798,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                             </div>
                                             <div className="grid grid-cols-3 gap-3">
                                                 {['P', 'L', 'T'].map((label, idx) => (
-                                                    <div key={label} className="space-y-2"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{label}</label><div className="relative group"><DimensionInput value={idx === 0 ? templateDims.length : idx === 1 ? templateDims.width : templateDims.depth} onChange={val => setTemplateDims(prev => ({ ...prev, [idx === 0 ? 'length' : idx === 1 ? 'width' : 'depth']: val }))} className="w-full text-center px-2 py-3 rounded-xl bg-white  border-2 border-slate-100  focus:border-emerald-500 outline-none font-bold text-lg shadow-sm transition-colors" /><div className="absolute inset-0 rounded-xl ring-2 ring-emerald-500 opacity-0 group-focus-within:opacity-20 transition-opacity pointer-events-none"></div></div></div>
+                                                    <div key={label} className="space-y-2"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{label}</label><div className="relative group"><DimensionInput value={idx === 0 ? templateDims.length : idx === 1 ? templateDims.width : templateDims.depth} onChange={val => setTemplateDims(prev => ({ ...prev, [idx === 0 ? 'length' : idx === 1 ? 'width' : 'depth']: val }))} className="w-full text-center px-2 py-3 rounded-xl bg-white  border-2 border-slate-100  focus:border-blue-500 outline-none font-bold text-lg shadow-sm transition-colors" /><div className="absolute inset-0 rounded-xl ring-2 ring-blue-500 opacity-0 group-focus-within:opacity-20 transition-opacity pointer-events-none"></div></div></div>
                                                 ))}
                                             </div>
                                         </div>
@@ -1808,7 +1808,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                         <button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm">
                                             <RotateCcw className="w-5 h-5" /> Kembali
                                         </button>
-                                        <button onClick={() => handleFinishTemplate()} className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 hover:shadow-xl shadow-emerald-500/20 transition-colors flex items-center justify-center gap-2">
+                                        <button onClick={() => handleFinishTemplate()} className="flex-[2] py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 hover:shadow-xl shadow-blue-500/20 transition-colors flex items-center justify-center gap-2">
                                             <Play className="w-5 h-5" /> Jana Template
                                         </button>
                                     </div>
@@ -1822,10 +1822,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
             {isLinkModalOpen && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsLinkModalOpen(false)}>
                     <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
                         <div className="mb-6">
                             <h3 className="text-xl font-bold text-slate-900  flex items-center gap-2">
-                                <Link className="w-5 h-5 text-emerald-600" />
+                                <Link className="w-5 h-5 text-blue-600" />
                                 Hubungkan Pengiraan
                             </h3>
                             <p className="text-sm text-slate-500 mt-1">Pilih BIL NO. untuk berkongsi Global Calculation yang sama.</p>
@@ -1838,14 +1838,14 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                     <button
                                         key={b.id}
                                         onClick={() => handleLinkCalculation(b.calculationId!)}
-                                        className="w-full text-left p-4 rounded-2xl border border-slate-100  bg-slate-50/50  hover:border-emerald-500 hover:bg-emerald-50  transition-colors group"
+                                        className="w-full text-left p-4 rounded-2xl border border-slate-100  bg-slate-50/50  hover:border-blue-500 hover:bg-blue-50  transition-colors group"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">{parseTitle(b.title).prefix}</div>
+                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition-colors">{parseTitle(b.title).prefix}</div>
                                                 <div className="text-sm font-bold text-slate-700">{parseTitle(b.title).content || b.title}</div>
                                             </div>
-                                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
                                         </div>
                                     </button>
                                 ))}
@@ -1868,10 +1868,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
             {isGlobalLinkModalOpen && createPortal(
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 animate-fade-in" onClick={() => setIsGlobalLinkModalOpen(null)}>
                     <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-sm w-full p-8 border border-slate-200 animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
                         <div className="mb-6">
                             <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                                <Link className="w-5 h-5 text-emerald-600" />
+                                <Link className="w-5 h-5 text-blue-600" />
                                 Pilih Global Calculation
                             </h3>
                             <p className="text-sm text-slate-500 mt-1">Hubungkan baris kiraan ini dengan salah satu set Global Calculation.</p>
@@ -1897,14 +1897,14 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                         updateCalculationPart(activeBillId!, isGlobalLinkModalOpen.itemId, isGlobalLinkModalOpen.partId, { isGlobal: true, globalIndex: idx, length: dims.length, width: dims.width, depth: dims.depth });
                                         setIsGlobalLinkModalOpen(null);
                                     }}
-                                    className="w-full text-left p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-emerald-500 hover:bg-emerald-50 transition-all group flex items-center justify-between"
+                                    className="w-full text-left p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-blue-500 hover:bg-blue-50 transition-all group flex items-center justify-between"
                                 >
                                     <div>
-                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">Set Global {idx + 1}</div>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition-colors">Set Global {idx + 1}</div>
                                         <div className="font-bold text-slate-700">{dims.label || `Kiraan ${idx + 1}`}</div>
                                         <div className="text-[10px] text-slate-400 mt-1 font-mono">P:{dims.length} L:{dims.width} T:{dims.depth}</div>
                                     </div>
-                                    <Link className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                                    <Link className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
                                 </button>
                             ))}
                         </div>

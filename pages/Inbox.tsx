@@ -237,20 +237,20 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
         <div className="p-6 border-b border-slate-100">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-slate-800">Inbox</h2>
-            <div className="flex bg-slate-100  p-1 rounded-xl">
-              <button onClick={() => setCurrentView('AKTIF')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'AKTIF' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-400'}`} title="Aktif"><InboxIcon className="w-4 h-4" /></button>
-              <button onClick={() => setCurrentView('SAMPAH')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'SAMPAH' ? 'bg-white  text-red-600 shadow-sm' : 'text-slate-400'}`} title="Tong Sampah"><Trash2 className="w-4 h-4" /></button>
-            </div>
+             <div className="flex bg-slate-100  p-1 rounded-xl">
+               <button onClick={() => setCurrentView('AKTIF')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'AKTIF' ? 'bg-white  text-blue-600 shadow-sm' : 'text-slate-400'}`} title="Aktif"><InboxIcon className="w-4 h-4" /></button>
+               <button onClick={() => setCurrentView('SAMPAH')} className={`p-1.5 rounded-lg transition-colors ${currentView === 'SAMPAH' ? 'bg-white  text-red-600 shadow-sm' : 'text-slate-400'}`} title="Tong Sampah"><Trash2 className="w-4 h-4" /></button>
+             </div>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari fail atau tajuk..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50  border-0 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900  font-medium"
-            />
+             <input
+               type="text"
+               placeholder="Cari fail atau tajuk..."
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50  border-0 text-sm focus:ring-2 focus:ring-blue-500 text-slate-900  font-medium"
+             />
           </div>
         </div>
 
@@ -261,14 +261,14 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
               <div
                 key={task.id}
                 onClick={() => setSelectedTask(task)}
-                className={`p-5 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors relative ${selectedTask?.id === task.id ? 'bg-emerald-50/50 ring-1 ring-inset ring-emerald-500/20' : ''} ${!(cloudStates[task.id]?.isRead) ? 'bg-white' : 'opacity-70'}`}
+                className={`p-5 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors relative ${selectedTask?.id === task.id ? 'bg-blue-50/50 ring-1 ring-inset ring-blue-500/20' : ''} ${!(cloudStates[task.id]?.isRead) ? 'bg-white' : 'opacity-70'}`}
               >
 
-                {selectedTask?.id === task.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>}
+                {selectedTask?.id === task.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>}
 
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-2">
-                    {!(cloudStates[task.id]?.isRead) && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>}
+                    {!(cloudStates[task.id]?.isRead) && <div className="w-2 h-2 rounded-full bg-blue-500 shadow-sm"></div>}
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${task.severity === 'error' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
                       {task.type.replace(/_/g, ' ')}
                     </span>
@@ -285,7 +285,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                 </p>
 
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[8px] font-black text-white shrink-0 overflow-hidden shadow-sm">
+                  <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[8px] font-black text-white shrink-0 overflow-hidden shadow-sm">
                     {pja?.avatarUrl ? (
                       <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
                     ) : (
@@ -315,7 +315,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                   <>
                     <button
                       onClick={() => restoreTaskFromTrash(selectedTask.id)}
-                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-emerald-600 hover:bg-emerald-50"
+                      className="p-2.5 rounded-xl transition-colors shadow-sm bg-white  border border-slate-100  text-blue-600 hover:bg-blue-50"
                       title="Pulihkan ke Inbox"
                     >
                       <History className="w-5 h-5" />
@@ -343,7 +343,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistem ElectricHub</p>
                   <p className="text-xs font-bold text-slate-600">Automated Alert</p>
                 </div>
-                <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-colors bg-white  border border-slate-100  ${cloudStates[selectedTask.id]?.isRead ? 'text-emerald-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">
+                <button onClick={() => toggleRead(selectedTask.id)} className={`p-2.5 rounded-xl transition-colors bg-white  border border-slate-100  ${cloudStates[selectedTask.id]?.isRead ? 'text-blue-600' : 'text-slate-400'}`} title="Tanda Telah Baca/Belum Baca">
                   {cloudStates[selectedTask.id]?.isRead ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                 </button>
               </div>
@@ -366,7 +366,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                   <div>
                     <h1 className="text-2xl font-black text-slate-900  leading-tight mb-1">{selectedTask.title}</h1>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-emerald-600 bg-emerald-50  px-3 py-1 rounded-lg border border-emerald-100  uppercase">{selectedTask.projectNoFail}</span>
+                      <span className="text-sm font-bold text-blue-600 bg-blue-50  px-3 py-1 rounded-lg border border-blue-100  uppercase">{selectedTask.projectNoFail}</span>
                       <span className="text-xs text-slate-400 font-medium">Dijana secara automatik pada {selectedTask.date.split('-').reverse().join('/')}</span>
                     </div>
                   </div>
@@ -374,7 +374,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
 
                 <div className="bg-slate-50  p-8 rounded-[2rem] border border-slate-100  mb-10 shadow-inner">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Butiran Projek</span>
                   </div>
 
@@ -395,7 +395,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                         const pja = allUsers.find(u => u.id === selectedTask.pjaId);
                         return (
                           <div className="flex items-center gap-2 mt-1">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
+                            <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
                               {pja?.avatarUrl ? (
                                 <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
                               ) : (
@@ -412,11 +412,11 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                   <div className="prose  max-w-none text-slate-600  leading-loose">
                     <p className="font-medium">{selectedTask.message}</p>
                     {selectedTask.namaSyarikat && (
-                      <div className="mt-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-3">
-                        <Building2 className="w-5 h-5 text-emerald-600" />
+                      <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100 flex items-center gap-3">
+                        <Building2 className="w-5 h-5 text-blue-600" />
                         <div>
-                          <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest">Nama Syarikat</p>
-                          <p className="text-sm font-bold text-emerald-800 uppercase">{selectedTask.namaSyarikat}</p>
+                          <p className="text-[10px] font-black text-blue-600/50 uppercase tracking-widest">Nama Syarikat</p>
+                          <p className="text-sm font-bold text-blue-800 uppercase">{selectedTask.namaSyarikat}</p>
                         </div>
                       </div>
                     )}
@@ -443,7 +443,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                         setIsNotisOpen(true);
                       }
                     }}
-                    className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-colors hover:scale-[1.02]"
+                    className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-colors hover:scale-[1.02]"
                   >
                     <Download className="w-5 h-5" /> Jana Notis PDF
                   </button>
@@ -460,7 +460,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-slate-50/50">
             <div className="w-24 h-24 bg-white  rounded-[2rem] shadow-xl flex items-center justify-center mb-6">
-              <Zap className="w-10 h-10 text-emerald-500 opacity-20" />
+              <Zap className="w-10 h-10 text-blue-500 opacity-20" />
             </div>
             <h3 className="text-xl font-bold text-slate-600">Pilih Tugasan</h3>
             <p className="text-sm max-w-xs mt-2">Pilih tugasan dari senarai di sebelah kiri untuk melihat butiran dan tindakan yang perlu diambil.</p>

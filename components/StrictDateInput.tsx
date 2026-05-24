@@ -107,7 +107,7 @@ const StrictDateInput: React.FC<StrictDateInputProps> = ({ name, value, onChange
         />
 
         <div
-          className="relative ml-2 w-5 h-5 shrink-0 cursor-pointer hover:text-emerald-500 transition-colors"
+          className="relative ml-2 w-5 h-5 shrink-0 cursor-pointer hover:text-blue-500 transition-colors"
           onClick={handleIconClick}
         >
           <Calendar className={`w-5 h-5 pointer-events-none ${error ? 'text-red-400' : 'text-slate-400'}`} />
