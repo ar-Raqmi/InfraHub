@@ -1,8 +1,7 @@
 
 const CACHE_NAME = 'electrichub-v1';
 const ASSETS = [
-  './index.html',
-  'https://cdn.tailwindcss.com'
+  './index.html'
 ];
 
 self.addEventListener('install', (event) => {

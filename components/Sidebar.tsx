@@ -128,7 +128,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onNavigate, currentPage, onLogo
                 : 'bg-slate-800 shadow-slate-900/40'
               }`}
           >
-            <HardHat className="w-8 h-8" />
+            <Zap className="w-8 h-8" />
           </button>
         </div>
 
