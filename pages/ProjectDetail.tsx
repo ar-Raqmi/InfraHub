@@ -1224,9 +1224,9 @@ Jabatan Kejuruteraan` }],
 
             const partsStr = [];
             const hasDim = (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number');
-            if (p.hasLength) partsStr.push(`${p.length}m(P)`);
-            if (p.hasWidth) partsStr.push(`${p.width}m(L)`);
-            if (p.hasDepth) partsStr.push(`${p.depth}m(T)`);
+            if (p.hasLength) partsStr.push(`${p.length}(Qty/P)`);
+            if (p.hasWidth) partsStr.push(`${p.width}(L)`);
+            if (p.hasDepth) partsStr.push(`${p.depth}(T)`);
 
             let dimStr = partsStr.join(' x ');
             if (hasDim) {
@@ -1431,9 +1431,9 @@ Jabatan Kejuruteraan` }],
           const partsStr = [];
           const hasDimensions = (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number');
 
-          if (p.hasLength && typeof p.length === 'number') partsStr.push(`${p.length}m(P)`);
-          if (p.hasWidth && typeof p.width === 'number') partsStr.push(`${p.width}m(L)`);
-          if (p.hasDepth && typeof p.depth === 'number') partsStr.push(`${p.depth}m(T)`);
+          if (p.hasLength && typeof p.length === 'number') partsStr.push(`${p.length}(Qty/P)`);
+          if (p.hasWidth && typeof p.width === 'number') partsStr.push(`${p.width}(L)`);
+          if (p.hasDepth && typeof p.depth === 'number') partsStr.push(`${p.depth}(T)`);
 
           let str = partsStr.join(' x ');
 
