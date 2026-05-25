@@ -2322,40 +2322,7 @@ export const createItem = (
     let hasLength = false;
     let hasWidth = false;
     let hasDepth = false;
-    let isGlobal = false;
     let defaultQty = 1;
-
-    const isM = u === 'm' || u === 'meter';
-    const isM2 = u === 'm2' || u === 'm²' || u === 'sqm';
-    const isM3 = u === 'm3' || u === 'm³' || u === 'cum';
-    
-    if (isM) {
-        hasLength = true;
-        isGlobal = true;
-        defaultQty = 0;
-    } else if (isM2) {
-        hasLength = true;
-        hasWidth = true;
-        isGlobal = true;
-        defaultQty = 0;
-    } else if (isM3) {
-        hasLength = true;
-        hasWidth = true;
-        hasDepth = true;
-        isGlobal = true;
-        defaultQty = 0;
-    } else {
-        isGlobal = false;
-        defaultQty = 1;
-    }
-
-    const isOneByOne = variant && variant.label.includes("1.0m x 1.0m");
-    if (isOneByOne) {
-        isGlobal = false;
-        hasLength = true;
-        hasWidth = true;
-        hasDepth = false;
-    }
 
     if (customParts && customParts.length > 0) {
         calculationParts = customParts.map(p => ({
@@ -2374,15 +2341,15 @@ export const createItem = (
         calculationParts = [{
             id: Math.random().toString(36).substr(2, 9),
             label: "",
-            length: isOneByOne ? 1 : 0,
-            width: isOneByOne ? 1 : 0,
+            length: 0,
+            width: 0,
             depth: 0,
             multiplier: 1, 
             hasLength,
             hasWidth,
             hasDepth
         }];
-        calculatedQty = isOneByOne ? 1 : defaultQty;
+        calculatedQty = defaultQty;
     }
 
     const finalDesc = varId && variant ? variant.label : desc;
@@ -2396,7 +2363,6 @@ export const createItem = (
         rate,
         qty: parseFloat(calculatedQty.toFixed(2)),
         amount: parseFloat((calculatedQty * rate).toFixed(2)),
-        isGlobal: isGlobal, 
         calculationParts,
         isCustomCalc: false,
     };
