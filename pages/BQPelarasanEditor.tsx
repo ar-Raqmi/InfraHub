@@ -1680,22 +1680,14 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                             ) : (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner">
-                                        <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi & Dimensi (Laras)</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi (Laras)</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
+                                        <div className="grid grid-cols-1 gap-8">
                                             <div>
                                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 pl-1">Pilih Lokasi</label>
                                                 <select value={templateLocation} onChange={(e) => setTemplateLocation(e.target.value)} className={`w-full px-4 py-3 rounded-xl bg-white border-2 outline-none transition-colors font-bold text-sm ${templateError && !templateLocation ? 'border-red-400' : 'border-slate-100 focus:border-amber-500'}`}>
                                                     <option value="">-- Pilih Lokasi --</option>
                                                     {locationRows.map(row => <option key={row.id} value={row.id}>{row.lokasi || '(Tiada Nama Lokasi)'}</option>)}
                                                 </select>
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                {['P', 'L', 'T'].map((label, idx) => (
-                                                    <div key={label} className="space-y-2">
-                                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{label}</label>
-                                                        <DimensionInput value={idx === 0 ? templateDims.length : idx === 1 ? templateDims.width : templateDims.depth} onChange={val => setTemplateDims(prev => ({ ...prev, [idx === 0 ? 'length' : idx === 1 ? 'width' : 'depth']: val }))} className="w-full text-center px-2 py-3 rounded-xl bg-white border-2 border-slate-100 focus:border-amber-500 outline-none font-bold text-lg shadow-sm transition-colors" />
-                                                    </div>
-                                                ))}
                                             </div>
                                         </div>
                                     </div>

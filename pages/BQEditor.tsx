@@ -1707,8 +1707,8 @@ const BQEditor: React.FC<BQEditorProps> = ({
                             ) : (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="bg-slate-50  p-6 rounded-3xl border border-slate-100  shadow-inner">
-                                        <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi & Dimensi</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md"><MapPin className="w-5 h-5" /></div><div><h4 className="font-bold text-slate-900">Konfigurasi Lokasi</h4><p className="text-xs text-slate-500">Pilih lokasi projek untuk template ini.</p></div></div>
+                                        <div className="grid grid-cols-1 gap-8">
                                             <div>
                                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 pl-1">Pilih Lokasi-lokasi</label>
                                                 <div className={`grid grid-cols-2 gap-2 p-3 rounded-xl bg-white border-2 transition-colors ${templateError && templateLocations.length === 0 ? 'border-red-400 animate-shake' : 'border-slate-100 focus-within:border-blue-500'}`}>
@@ -1736,13 +1736,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                 </div>
                                                 {templateError && templateLocations.length === 0 && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Sekurang-kurangnya satu lokasi diperlukan.</p>}
                                             </div>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                {['P', 'L', 'T'].map((label, idx) => (
-                                                    <div key={label} className="space-y-2"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{label}</label><div className="relative group"><DimensionInput value={idx === 0 ? templateDims.length : idx === 1 ? templateDims.width : templateDims.depth} onChange={val => setTemplateDims(prev => ({ ...prev, [idx === 0 ? 'length' : idx === 1 ? 'width' : 'depth']: val }))} className="w-full text-center px-2 py-3 rounded-xl bg-white  border-2 border-slate-100  focus:border-blue-500 outline-none font-bold text-lg shadow-sm transition-colors" /><div className="absolute inset-0 rounded-xl ring-2 ring-blue-500 opacity-0 group-focus-within:opacity-20 transition-opacity pointer-events-none"></div></div></div>
-                                                ))}
-                                            </div>
                                         </div>
-                                        {isDimsModified && (<div className="mt-6 p-4 bg-orange-50  rounded-2xl border border-orange-200  flex items-center gap-3"><Info className="w-5 h-5 text-orange-500 shrink-0" /><p className="text-xs text-orange-700  font-medium">Dimensi telah berubah. Semua item berkaitan untuk lokasi ini akan dikemaskini secara automatik.</p></div>)}
                                     </div>
                                     <div className="flex gap-4 pt-4">
                                         <button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm">
