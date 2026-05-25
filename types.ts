@@ -142,12 +142,7 @@ export interface VoteDefinition {
   allocation: number; // Jumlah Vot (Budget)
 }
 
-export interface GlobalDimensions {
-  length: number; // P
-  width: number;  // L
-  depth: number;  // T
-  label?: string; // NEW: Label for this dimension group
-}
+
 
 export interface CalculationPart {
   id: string;
@@ -163,10 +158,6 @@ export interface CalculationPart {
   width: number;
   depth: number;
   multiplier: number; // Factor
-
-  // NEW: Global linking
-  isGlobal?: boolean;
-  globalIndex?: number; // Index in the globalCalculations array
 }
 
 export interface BQItem {
@@ -185,7 +176,6 @@ export interface BQItem {
   rate: number;
 
   // Dimensions for Calculation
-  isGlobal?: boolean; // NEW: If true, syncs with location global dims
 
   // --- NEW: Multiple Calculation Parts ---
   calculationParts?: CalculationPart[];
@@ -221,7 +211,6 @@ export interface BQGroup {
   title: string; // e.g., "KERJA-KERJA PERMULAAN"
   locationId?: string; // act as a fallback for old datas
   locationIds?: string[]; // NEW: Links to multiple locationRow IDs
-  calculationId?: string; // NEW: Links to a unique Global Calculation ID
   items: BQItem[];
 }
 
@@ -299,14 +288,7 @@ export interface Project {
   bqData?: BQGroup[]; // Original Contract BQ
   bqDataPelarasan?: BQGroup[]; // Adjusted BQ (Pelarasan)
 
-  // Dimensions
-  globalDimensions?: GlobalDimensions; // DEPRECATED: Keep for backward compat
-  locationDimensions?: Record<string, GlobalDimensions>; // Map location string to dims (Contract)
-  locationDimensionsPelarasan?: Record<string, GlobalDimensions>; // NEW: Map location string to dims (Pelarasan)
 
-  // NEW DIMENSIONS (BINDED BY BIL NO / CALCULATION ID)
-  globalCalculations?: Record<string, GlobalDimensions | GlobalDimensions[]>;
-  globalCalculationsPelarasan?: Record<string, GlobalDimensions | GlobalDimensions[]>;
 
   // AKU JANJI
   akuJanjiMonth?: string; // The selected month string e.g. "November"

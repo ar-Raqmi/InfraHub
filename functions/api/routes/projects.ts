@@ -73,11 +73,7 @@ const mapProjectFromRow = (row: any) => {
     updatedAt: row.updated_at,
     bqData: row.bq_data ? parseJsonArray(row.bq_data) : undefined,
     bqDataPelarasan: row.bq_data_pelarasan ? parseJsonArray(row.bq_data_pelarasan) : undefined,
-    globalDimensions: row.global_dimensions ? parseJsonObject(row.global_dimensions) : undefined,
-    locationDimensions: row.location_dimensions ? parseJsonObject(row.location_dimensions) : undefined,
-    locationDimensionsPelarasan: row.location_dimensions_pelarasan ? parseJsonObject(row.location_dimensions_pelarasan) : undefined,
-    globalCalculations: row.global_calculations ? parseJsonObject(row.global_calculations) : undefined,
-    globalCalculationsPelarasan: row.global_calculations_pelarasan ? parseJsonObject(row.global_calculations_pelarasan) : undefined,
+
   };
 };
 
@@ -173,11 +169,7 @@ projectApp.post('/', async (c) => {
     status: body.status,
     bq_data: body.bqData ? JSON.stringify(body.bqData) : null,
     bq_data_pelarasan: body.bqDataPelarasan ? JSON.stringify(body.bqDataPelarasan) : null,
-    global_dimensions: body.globalDimensions ? JSON.stringify(body.globalDimensions) : null,
-    location_dimensions: body.locationDimensions ? JSON.stringify(body.locationDimensions) : null,
-    location_dimensions_pelarasan: body.locationDimensionsPelarasan ? JSON.stringify(body.locationDimensionsPelarasan) : null,
-    global_calculations: body.globalCalculations ? JSON.stringify(body.globalCalculations) : null,
-    global_calculations_pelarasan: body.globalCalculationsPelarasan ? JSON.stringify(body.globalCalculationsPelarasan) : null,
+
     aku_janji_month: body.akuJanjiMonth,
     aku_janji_panel_title: body.akuJanjiPanelTitle,
     aku_janji_footer_text: body.akuJanjiFooterText,
@@ -267,11 +259,7 @@ projectApp.put('/:id', async (c) => {
 
   if (body.bqData !== undefined) dbUpdates.bq_data = body.bqData ? JSON.stringify(body.bqData) : null
   if (body.bqDataPelarasan !== undefined) dbUpdates.bq_data_pelarasan = body.bqDataPelarasan ? JSON.stringify(body.bqDataPelarasan) : null
-  if (body.globalDimensions !== undefined) dbUpdates.global_dimensions = body.globalDimensions ? JSON.stringify(body.globalDimensions) : null
-  if (body.locationDimensions !== undefined) dbUpdates.location_dimensions = body.locationDimensions ? JSON.stringify(body.locationDimensions) : null
-  if (body.locationDimensionsPelarasan !== undefined) dbUpdates.location_dimensions_pelarasan = body.locationDimensionsPelarasan ? JSON.stringify(body.locationDimensionsPelarasan) : null
-  if (body.globalCalculations !== undefined) dbUpdates.global_calculations = body.globalCalculations ? JSON.stringify(body.globalCalculations) : null
-  if (body.globalCalculationsPelarasan !== undefined) dbUpdates.global_calculations_pelarasan = body.globalCalculationsPelarasan ? JSON.stringify(body.globalCalculationsPelarasan) : null
+
 
   if (body.akuJanjiMonth !== undefined) dbUpdates.aku_janji_month = body.akuJanjiMonth
   if (body.akuJanjiPanelTitle !== undefined) dbUpdates.aku_janji_panel_title = body.akuJanjiPanelTitle

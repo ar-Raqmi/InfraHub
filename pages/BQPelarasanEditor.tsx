@@ -971,15 +971,6 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
         return (
             <div key={part.id} className={`flex flex-wrap items-center gap-2 text-xs p-1.5 rounded-lg border mb-1 last:mb-0 transition-colors ${isGlobal ? 'bg-amber-50/30 border-amber-100' : 'bg-white border-slate-200'}`}>
-                {!readOnly && (
-                    <button
-                        onClick={() => setIsGlobalLinkModalOpen({ itemId: item.id, partId: part.id })}
-                        className={`p-1 rounded transition-colors ${isGlobal ? 'text-amber-600 bg-amber-100' : 'text-slate-300 hover:text-amber-500 hover:bg-amber-50'}`}
-                        title={isGlobal ? `Terhubung dengan: ${gDimLabel}` : "Hubungkan dengan Global Calculation"}
-                    >
-                        {isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}
-                    </button>
-                )}
                 <input type="text" value={part.label || ''} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { label: e.target.value })} disabled={readOnly} className="w-16 bg-transparent border-b border-dashed border-slate-300  focus:border-amber-500 outline-none text-slate-500 placeholder-slate-400 text-[10px]" placeholder="Label" />
                 <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasLength ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasLength} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasLength: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">Qty/P</span>{part.hasLength && (<DimensionInput value={part.length || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { length: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
                 {part.hasLength && (part.hasWidth || part.hasDepth) && <span className="text-slate-300">×</span>}
@@ -990,7 +981,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" /></div>
 
                 <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
-                    {isGlobal && <span className="text-[8px] font-bold text-amber-500 uppercase tracking-tighter bg-amber-50 px-1 rounded">{gDimLabel}</span>}
+
                     <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
                     <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
                         {(() => {
@@ -1088,7 +1079,6 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                     <Calculator className="w-3 h-3" /> {item.isAdjustment ? 'Penambahan (New)' : 'Pelarasan (Adjusted)'}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1 rounded-md transition-colors border text-[10px] flex items-center gap-1 ${item.isGlobal ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-white text-slate-400 border-slate-200'}`}>{item.isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}{item.isGlobal ? 'Linked' : 'Manual'}</button>
                                     <button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-3.5 h-3.5" /> : <Type className="w-3.5 h-3.5" />}</button>
                                 </div>
                             </div>
@@ -1315,74 +1305,12 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                                                     <ChevronDown className="w-3.5 h-3.5" />
                                                 )}
                                             </button>
-                                        )}
-                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase">
-                                            <Ruler className="w-4 h-4 text-amber-500" />
-                                            Global Calculation (Pelarasan)
-                                            {activeBill.calculationId && !globalCalculationsPelarasan?.[activeBill.calculationId] && projectData.globalCalculations?.[activeBill.calculationId] && (
-                                                <span className="text-[9px] text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded ml-1 font-bold">
-                                                    SYNCED FROM BQ
-                                                </span>
                                             )}
                                         </div>
-                                        {!readOnly && (
-                                            <div className="flex items-center gap-1">
-                                                <button onClick={() => {
-                                                    setLocalDimsArray([...localDimsArray, { length: 0, width: 0, depth: 0, label: `Kiraan ${localDimsArray.length + 1}` }]);
-                                                    setIsDimsDirty(true);
-                                                }} className="p-1 text-amber-600 hover:bg-amber-100 rounded transition-colors" title="Tambah Global Calculation">
-                                                    <PlusCircle className="w-3.5 h-3.5" />
-                                                </button>
-                                                <button onClick={() => setIsLinkModalOpen(true)} className="p-1 text-amber-600 hover:bg-amber-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
-                                                    <Link className="w-3.5 h-3.5" />
-                                                </button>
-                                                {pelarasanData.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
-                                                    <button onClick={handleUnlinkCalculation} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Asingkan pengiraan ini">
-                                                        <Unlink className="w-3.5 h-3.5" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-2 w-full sm:w-auto">
-                                        {localDimsArray.map((dims, idx) => (
-                                            <div key={idx} className="flex flex-wrap items-center gap-2">
-                                                <input
-                                                    value={dims.label || ''}
-                                                    onChange={e => {
-                                                        const newArray = [...localDimsArray];
-                                                        newArray[idx] = { ...dims, label: e.target.value };
-                                                        setLocalDimsArray(newArray);
-                                                        setIsDimsDirty(true);
-                                                    }}
-                                                    placeholder="Label"
-                                                    disabled={readOnly}
-                                                    className="text-[10px] font-bold text-slate-400 bg-transparent border-b border-dashed border-slate-200 outline-none w-20"
-                                                />
-                                                <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">P</span><DimensionInput value={dims.length || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, length: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" /></div>
-                                                <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">L</span><DimensionInput value={dims.width || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, width: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" /></div>
-                                                <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">T</span><DimensionInput value={dims.depth || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, depth: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" /></div>
-                                                {!readOnly && localDimsArray.length > 1 && (
-                                                    <button onClick={() => {
-                                                        const newArray = localDimsArray.filter((_, i) => i !== idx);
-                                                        setLocalDimsArray(newArray);
-                                                        setIsDimsDirty(true);
-                                                    }} className="p-1 text-slate-300 hover:text-red-500">
-                                                        <MinusCircle className="w-3.5 h-3.5" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                        {isDimsDirty && !readOnly && (
-                                            <button onClick={handleSaveGlobalDims} className="mt-1 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" >
-                                                <Save className="w-3 h-3" /> Kemaskini Semua
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="flex-1 p-4">
+                            <div className="flex-1 p-4">
                             {activeBill.items.length === 0 ? (
                                 <div className="h-40 flex flex-col items-center justify-center text-slate-400">
                                     <FolderPlus className="w-10 h-10 mb-2 opacity-50" />

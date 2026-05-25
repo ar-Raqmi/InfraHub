@@ -1187,7 +1187,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
                 {/* Individual Row Result with Full Breakdown */}
                 <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
-                    {isGlobal && <span className="text-[8px] font-bold text-blue-500 uppercase tracking-tighter bg-blue-50 px-1 rounded">{gDimLabel}</span>}
+
                     <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
                     <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
                         {(() => {
@@ -1241,7 +1241,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     <div className="flex flex-col items-end gap-1"><div className="flex items-center gap-1 text-xs text-slate-400"><span>Kadar:</span><DimensionInput value={item.rate} onChange={(val) => updateItem(bill.id, item.id, { rate: val })} disabled={readOnly} className="w-20 text-right bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-slate-700  font-mono" /></div><span className="text-xs bg-slate-100  px-2 py-0.5 rounded text-slate-500">{item.unit}</span></div>
                 </div>
                 <div className={`flex flex-col sm:flex-row items-start gap-3 bg-slate-50  p-2 rounded-lg ml-12`}>
-                    <div className="flex flex-col gap-1 mt-0.5"><button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isGlobal ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-white  text-slate-400 border-slate-200  hover:border-slate-300'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}</button><button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}</button></div>
+                    <div className="flex flex-col gap-1 mt-0.5"><button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}</button></div>
                     {item.isCustomCalc ? (<div className="flex-1 w-full flex items-center gap-2"><input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white  border border-slate-200  rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" /><div className="flex items-center gap-1 bg-white  rounded px-2 py-1 border border-slate-200"><span className="text-[10px] font-bold text-slate-400">QTY</span><DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" /></div></div>) : (<div className="flex-1 w-full"><div className="space-y-1">{(item.calculationParts || []).map((part, pIdx) => renderCalculationPartRow(bill, item, part, pIdx))}</div>{!readOnly && (<div className="flex items-center justify-between mt-2"><button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded hover:bg-blue-50"><PlusCircle className="w-3 h-3" /> Tambah Kiraan</button><div className="font-mono font-bold text-blue-600 text-sm border-l border-slate-200  pr-2 px-2">= {item.qty}</div></div>)}</div>)}
                     <div className="flex flex-col items-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-200  pt-2 sm:pt-0 pl-2 border-l-0 sm:border-l"><div className="text-right w-24"><div className="text-[10px] text-slate-400 uppercase tracking-wider">Jumlah</div><div className="font-bold text-slate-900">{formatCurrency(item.amount)}</div></div>{!readOnly && (<div className="mt-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button><button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button><button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50  rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button></div>)}</div>
                 </div>
@@ -1430,68 +1430,8 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                     )}
                                                 </button>
                                             )}
-                                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase"><Ruler className="w-4 h-4" />Global Calculation</div>
-                                            {!readOnly && (
-                                                <div className="flex items-center gap-1">
-                                                    <button onClick={() => {
-                                                        setLocalDimsArray([...localDimsArray, { length: 0, width: 0, depth: 0, label: `Kiraan ${localDimsArray.length + 1}` }]);
-                                                        setIsDimsDirty(true);
-                                                    }} className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors" title="Tambah Global Calculation">
-                                                        <PlusCircle className="w-3.5 h-3.5" />
-                                                    </button>
-                                                    <button onClick={() => setIsLinkModalOpen(true)} className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
-                                                        <Link className="w-3.5 h-3.5" />
-                                                    </button>
-                                                    {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
-                                                        <button onClick={handleUnlinkCalculation} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Asingkan pengiraan ini">
-                                                            <Unlink className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col gap-2 w-full sm:w-auto">
-                                            {localDimsArray.map((dims, idx) => (
-                                                <div key={idx} className="flex flex-wrap items-center gap-2">
-                                                    <input
-                                                        value={dims.label || ''}
-                                                        onChange={e => {
-                                                            const newArray = [...localDimsArray];
-                                                            newArray[idx] = { ...dims, label: e.target.value };
-                                                            setLocalDimsArray(newArray);
-                                                            setIsDimsDirty(true);
-                                                        }}
-                                                        placeholder="Label"
-                                                        disabled={readOnly}
-                                                        className="text-[10px] font-bold text-slate-400 bg-transparent border-b border-dashed border-slate-200 outline-none w-20"
-                                                    />
-                                                    <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">P</span><DimensionInput value={dims.length || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, length: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                                    <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">L</span><DimensionInput value={dims.width || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, width: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                                    <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">T</span><DimensionInput value={dims.depth || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, depth: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                                    {!readOnly && localDimsArray.length > 1 && (
-                                                        <button onClick={() => {
-                                                            const newArray = localDimsArray.filter((_, i) => i !== idx);
-                                                            setLocalDimsArray(newArray);
-                                                            setIsDimsDirty(true);
-                                                        }} className="p-1 text-slate-300 hover:text-red-500">
-                                                            <MinusCircle className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
-                                            {isDimsDirty && !readOnly && (
-                                                <button onClick={handleSaveGlobalDims} className="mt-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" >
-                                                    <Save className="w-3 h-3" /> Kemaskini Semua
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
-                                    {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
-                                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-blue-600 font-bold bg-white/50 px-2 py-1 rounded-lg">
-                                            <Info className="w-3 h-3" />
-                                            Terhubung dengan: {bills.filter(b => b.calculationId === activeBill.calculationId && b.id !== activeBill.id).map(b => parseTitle(b.title).prefix).join(', ')}
-                                        </div>
-                                    )}
                                 </div>
                             )}
                         </div>

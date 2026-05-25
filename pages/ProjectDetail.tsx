@@ -619,9 +619,6 @@ const CACHE_VERSION = 'v126';
     status: ProjectStatus.FASA_DRAF,
     bqData: [],
     bqDataPelarasan: [],
-    globalDimensions: { length: 0, width: 0, depth: 0 },
-    locationDimensions: {},
-    locationDimensionsPelarasan: {},
     coverJawatan: (currentUser?.role === Role.PJA && !project) ? currentUser.jawatan : '',
     coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
     coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
@@ -663,14 +660,9 @@ const CACHE_VERSION = 'v126';
 
     const clonedBQData: BQGroup[] = JSON.parse(JSON.stringify(formData.bqData));
 
-    const clonedGlobalCalculations = formData.globalCalculations
-      ? JSON.parse(JSON.stringify(formData.globalCalculations))
-      : {};
-
     setFormData(prev => ({
       ...prev,
-      bqDataPelarasan: clonedBQData,
-      globalCalculationsPelarasan: clonedGlobalCalculations
+      bqDataPelarasan: clonedBQData
     }));
     setHasUnsavedChanges(true);
 
@@ -953,26 +945,7 @@ const CACHE_VERSION = 'v126';
     }
   };
 
-  const handleLocationDimensionsChange = (calculationId: string, dims: GlobalDimensions[]) => {
-    setFormData(prev => ({
-      ...prev,
-      globalCalculations: {
-        ...(prev.globalCalculations || {}),
-        [calculationId]: dims
-      }
-    }));
-    setHasUnsavedChanges(true);
-  };
-  const handleGlobalCalculationsPelarasanChange = (calculationId: string, dims: GlobalDimensions[]) => {
-    setFormData(prev => ({
-      ...prev,
-      globalCalculationsPelarasan: {
-        ...(prev.globalCalculationsPelarasan || {}),
-        [calculationId]: dims
-      }
-    }));
-    setHasUnsavedChanges(true);
-  };
+
   const handleBQPelarasanChange = (bqDataPelarasan: BQGroup[]) => {
     if (bqDataPelarasan.length === 0 && (formData.bqDataPelarasan && formData.bqDataPelarasan.length > 0)) {
        return;
@@ -2064,7 +2037,7 @@ Jabatan Kejuruteraan` }],
             <div id="pdf-export-container" className="flex flex-col items-center gap-0 w-full">
               <div className="rounded-[2rem] border border-slate-200 shadow-2xl bg-white/50 flex flex-col h-auto overflow-visible w-full">
                 <div className="bg-white/80 p-4 border-b border-slate-200 flex items-center justify-between shrink-0 rounded-t-[2rem]"> <div className="flex items-center gap-4"> <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20"> <Calculator className="w-5 h-5" /> </div> <div> <h3 className="font-bold text-slate-900 text-lg tracking-tight">Penyediaan BQ</h3> <p className="text-xs text-slate-500 font-medium">Wizard Mode</p> </div> </div> </div>
-                <div className="bg-slate-50/50 flex-1 relative rounded-b-[2rem]"> <BQEditor initialData={formData.bqData} onDataChange={handleBQChange} projectData={formData as Project} isPrintView={false} locationRows={locationRows} onLocationDimensionsChange={handleLocationDimensionsChange} onShowToast={onShowToast} readOnly={isGlobalReadOnly} /> </div>
+                <div className="bg-slate-50/50 flex-1 relative rounded-b-[2rem]"> <BQEditor initialData={formData.bqData} onDataChange={handleBQChange} projectData={formData as Project} isPrintView={false} locationRows={locationRows} onShowToast={onShowToast} readOnly={isGlobalReadOnly} /> </div>
               </div>
             </div>
           </div>
@@ -2238,7 +2211,7 @@ Jabatan Kejuruteraan` }],
                   </div>
                 )}
               </div>
-              <div className="bg-slate-50/50 flex-1 relative rounded-b-[2rem]"> <BQPelarasanEditor originalData={formData.bqData || []} pelarasanData={formData.bqDataPelarasan || []} onDataChange={handleBQPelarasanChange} projectData={formData as Project} isPrintView={false} locationRows={locationRows} globalCalculationsPelarasan={formData.globalCalculationsPelarasan || {}} onGlobalCalculationsPelarasanChange={handleGlobalCalculationsPelarasanChange} readOnly={isGlobalReadOnly} /> </div>
+              <div className="bg-slate-50/50 flex-1 relative rounded-b-[2rem]"> <BQPelarasanEditor originalData={formData.bqData || []} pelarasanData={formData.bqDataPelarasan || []} onDataChange={handleBQPelarasanChange} projectData={formData as Project} isPrintView={false} locationRows={locationRows} readOnly={isGlobalReadOnly} /> </div>
             </div>
           </div>
         )}
