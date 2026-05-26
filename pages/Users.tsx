@@ -22,17 +22,17 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
     password: '', 
     email: '',
     phone: '',
-    role: Role.PJA,
+    role: Role.PJE,
     jawatan: '',
-    bahagian: 'Bahagian Infrastruktur',
-    unit: 'Unit Selenggara Infrastruktur'
+    bahagian: 'Bahagian Elektrikal',
+    unit: 'Unit Elektrikal'
   };
   
   const [formData, setFormData] = useState(initialFormState);
 
-  // Sort by Hierarchy (ADMIN > JURUTERA > PJA) then Alphabetically by fullName
+  // Sort by Hierarchy (ADMIN > JURUTERA > PJE) then Alphabetically by fullName
   const sortedUsers = [...users].sort((a, b) => {
-    const roleOrder = { [Role.ADMIN]: 1, [Role.JURUTERA]: 2, [Role.PJA]: 3 };
+    const roleOrder = { [Role.ADMIN]: 1, [Role.JURUTERA]: 2, [Role.PJE]: 3 };
     const orderA = roleOrder[a.role as Role] || 99;
     const orderB = roleOrder[b.role as Role] || 99;
     
@@ -125,7 +125,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
             {isSyncing && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
           </h1>
           <p className="text-slate-500 mt-1">
-            {isAdmin ? 'Uruskan akaun Admin dan PJA serta butiran jabatan.' : 'Lihat maklumat akaun Admin dan PJA.'}
+            {isAdmin ? 'Uruskan akaun Admin dan PJE serta butiran jabatan.' : 'Lihat maklumat akaun Admin dan PJE.'}
           </p>
         </div>
         {isAdmin && (
@@ -152,7 +152,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-2">
-              <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Nama Penuh (PJA)</label>
+              <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Nama Penuh (PJE)</label>
               <input 
                 type="text" 
                 value={formData.fullName}
@@ -230,7 +230,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 value={formData.bahagian}
                 onChange={e => setFormData({...formData, bahagian: e.target.value})}
                 className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="cth: Bahagian Infrastruktur"
+                placeholder="cth: Bahagian Elektrikal"
               />
             </div>
             <div>
@@ -240,7 +240,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
                 value={formData.unit}
                 onChange={e => setFormData({...formData, unit: e.target.value})}
                 className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="cth: Unit Selenggara Infrastruktur"
+                placeholder="cth: Unit Elektrikal"
               />
             </div>
             <div>
@@ -252,7 +252,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
               >
                 <option value={Role.ADMIN}>Admin</option>
                 <option value={Role.JURUTERA}>Jurutera</option>
-                <option value={Role.PJA}>PJA</option>
+                <option value={Role.PJE}>PJE</option>
               </select>
             </div>
 

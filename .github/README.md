@@ -26,7 +26,7 @@
 | Role | Main Responsibilities |
 |------|----------------------|
 | **Admin (Pembantu Tadbir)** | Manage contractor companies, vote numbers, and system settings |
-| **PJA (Penolong Jurutera)** | Prepare BQ, monitor progress, and generate reports |
+| **PJE (Penolong Jurutera Elektrik)** | Prepare BQ, monitor progress, and generate reports |
 | **Jurutera** | Sign documents and approve projects |
 
 ---
@@ -55,7 +55,7 @@
 </p>
 
 - **List View**: See all projects with status and cost
-- **Filters**: Filter by status, PJA, zone, or BP
+- **Filters**: Filter by status, PJE, zone, or BP
 - **Group View**: View projects by company
 - **Export**: Download data for analysis
 
@@ -205,6 +205,6 @@ This project is developed by **ar-Raqmi**.
 
 <div align="center">
 
-**Built with ❤️ for Unit Infrastruktur, Jabatan Kejuruteraan MPS**
+**Built with ❤️ for Unit Elektrikal, Jabatan Kejuruteraan MPS**
 
 </div>

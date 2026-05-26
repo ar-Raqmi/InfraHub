@@ -453,7 +453,7 @@ const CACHE_VERSION = 'v126';
     } : null;
 
     // Reset formData to the new project's data (or blank defaults for new project)
-    const initialPja = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (mappedProject?.pjaId || 0);
+    const initialPja = (currentUser?.role === Role.PJE && !project) ? currentUser.id : (mappedProject?.pjaId || 0);
     
     setFormData(prev => {
       // Check if we are switching TO the same project ID (refresh) or a DIFFERENT one
@@ -468,9 +468,9 @@ const CACHE_VERSION = 'v126';
         globalDimensions: { length: 0, width: 0, depth: 0 },
         locationDimensions: {},
         locationDimensionsPelarasan: {},
-        coverJawatan: (currentUser?.role === Role.PJA && !project) ? currentUser.jawatan : '',
-        coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
-        coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
+        coverJawatan: (currentUser?.role === Role.PJE && !project) ? currentUser.jawatan : '',
+        coverBahagian: (currentUser?.role === Role.PJE && !project) ? currentUser.bahagian : '',
+        coverUnit: (currentUser?.role === Role.PJE && !project) ? currentUser.unit : '',
         prestasiScores: [0, 0, 0, 0, 0, 0],
         skop: undefined,
         noInbois: '',
@@ -520,9 +520,9 @@ const CACHE_VERSION = 'v126';
   }, [project?.id]);
 
   const TABS = [
-    { id: 'phase1', label: '1. BQ Building (PJA)', color: 'bg-yellow-100 text-yellow-700 border-yellow-200 shadow-sm', ringColor: 'ring-yellow-400' },
+    { id: 'phase1', label: '1. BQ Building (PJE)', color: 'bg-yellow-100 text-yellow-700 border-yellow-200 shadow-sm', ringColor: 'ring-yellow-400' },
     { id: 'phase2', label: '2. File Creation (PT)', color: 'bg-blue-100 text-blue-700 border-blue-200 shadow-sm', ringColor: 'ring-blue-500' },
-    { id: 'phase3', label: '3. Pelarasan (PJA)', color: 'bg-yellow-100 text-yellow-700 border-yellow-200 shadow-sm', ringColor: 'ring-yellow-400' },
+    { id: 'phase3', label: '3. Pelarasan (PJE)', color: 'bg-yellow-100 text-yellow-700 border-yellow-200 shadow-sm', ringColor: 'ring-yellow-400' },
     { id: 'phase4', label: '4. Penutup (PT)', color: 'bg-orange-100 text-orange-700 border-orange-200 shadow-sm', ringColor: 'ring-orange-500' },
   ];
 
@@ -564,7 +564,7 @@ const CACHE_VERSION = 'v126';
   const filteredSwitcherProjects = useMemo(() => {
     return projects.filter(p => {
       // Role-based filtering
-      if (currentUserRole === Role.PJA && p.pjaId !== currentUser?.id) return false;
+      if (currentUserRole === Role.PJE && p.pjaId !== currentUser?.id) return false;
       
       // Status filtering (Toggle "Siap")
       if (!showSiapProjects && p.status === ProjectStatus.SIAP) return false;
@@ -611,7 +611,7 @@ const CACHE_VERSION = 'v126';
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const initialPjaId = (currentUser?.role === Role.PJA && !project) ? currentUser.id : (project?.pjaId || 0);
+  const initialPjaId = (currentUser?.role === Role.PJE && !project) ? currentUser.id : (project?.pjaId || 0);
 
   const [formData, setFormData] = useState<Partial<Project>>(project || {
     namaProjek: '', noFail: '', noAduan: '', tarikhBuka: getCurrentDate(),
@@ -619,9 +619,9 @@ const CACHE_VERSION = 'v126';
     status: ProjectStatus.FASA_DRAF,
     bqData: [],
     bqDataPelarasan: [],
-    coverJawatan: (currentUser?.role === Role.PJA && !project) ? currentUser.jawatan : '',
-    coverBahagian: (currentUser?.role === Role.PJA && !project) ? currentUser.bahagian : '',
-    coverUnit: (currentUser?.role === Role.PJA && !project) ? currentUser.unit : '',
+    coverJawatan: (currentUser?.role === Role.PJE && !project) ? currentUser.jawatan : '',
+    coverBahagian: (currentUser?.role === Role.PJE && !project) ? currentUser.bahagian : '',
+    coverUnit: (currentUser?.role === Role.PJE && !project) ? currentUser.unit : '',
     prestasiScores: [0, 0, 0, 0, 0, 0],
     skop: undefined,
     noInbois: '',
@@ -630,20 +630,21 @@ const CACHE_VERSION = 'v126';
     isLocDeductionEnabled: project?.isLocDeductionEnabled ?? false
   });
 
-  const isPJA = currentUser?.role === Role.PJA;
-  const isDifferentPJA = isPJA && formData.pjaId !== 0 && formData.pjaId !== currentUser?.id;
-  const isGlobalReadOnly = isDifferentPJA || isVerifying; // LOCK during sync check
-  const isPTSectionReadOnly = isPJA || isGlobalReadOnly;
+  const isPJE = currentUser?.role === Role.PJE;
+  const isDifferentPJE = isPJE && formData.pjaId !== 0 && formData.pjaId !== currentUser?.id;
+  const isGlobalReadOnly = isDifferentPJE || isVerifying; // LOCK during sync check
+  const isPTSectionReadOnly = isPJE || isGlobalReadOnly;
 
-  const handlePjaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedPjaId = Number(e.target.value);
-    const selectedUser = users.find(u => u.id === selectedPjaId);
+  const handlePjeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedPjeId = Number(e.target.value);
+const selectedUser = users.find(u => u.id === selectedPjeId);
+
     setFormData(prev => ({
       ...prev,
-      pjaId: selectedPjaId,
+      pjaId: selectedPjeId,
       coverJawatan: selectedUser?.jawatan || prev.coverJawatan || '',
-      coverBahagian: selectedUser?.bahagian || prev.coverBahagian || 'Bahagian Infrastruktur',
-      coverUnit: selectedUser?.unit || prev.coverUnit || 'Unit Selenggara Infrastruktur'
+      coverBahagian: selectedUser?.bahagian || prev.coverBahagian || 'Bahagian Elektrikal',
+      coverUnit: selectedUser?.unit || prev.coverUnit || 'Unit Elektrikal'
     }));
     setHasUnsavedChanges(true);
   };
@@ -1027,7 +1028,7 @@ const CACHE_VERSION = 'v126';
     const coverBody = [
       [{ content: 'Tarikh', styles: { fontStyle: 'bold' } }, { content: `         ${formattedDate}`, styles: { fontStyle: 'bold' } }],
       [{ content: 'Daripada', styles: { fontStyle: 'bold' } }, {
-        content: `${pjaUser?.fullName.toUpperCase() || 'PJA'}
+        content: `${pjaUser?.fullName.toUpperCase() || 'PJE'}
 ${pjaUser?.jawatan || ''}
 ${pjaUser?.bahagian || ''}
 ${pjaUser?.unit || ''}`
@@ -1101,7 +1102,7 @@ Jabatan Kejuruteraan` }],
 
     y += 5;
     doc.setFont("helvetica", "bold");
-    doc.text(`(${pjaUser?.fullName.toUpperCase() || 'NAMA PJA'})`, 20, y);
+    doc.text(`(${pjaUser?.fullName.toUpperCase() || 'NAMA PJE'})`, 20, y);
 
     y += 5;
     doc.setFont("helvetica", "normal");
@@ -1932,7 +1933,7 @@ Jabatan Kejuruteraan` }],
           <div className="space-y-4">
             <div className={yellowPhaseClass}>
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
-              <h3 className="text-lg font-bold text-yellow-600 mb-6 flex items-center gap-3"> <Zap className="h-5 w-5" /> Maklumat Asas (PJA) </h3>
+              <h3 className="text-lg font-bold text-yellow-600 mb-6 flex items-center gap-3"> <Zap className="h-5 w-5" /> Maklumat Asas (PJE) </h3>
               <div className="flex flex-col gap-6">
                 <div className="group w-full"> <label className={labelClass}>Cadangan Kerja (Nama Projek)</label> <textarea name="namaProjek" value={formData.namaProjek || ''} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isGlobalReadOnly} className={`${inputClass} min-h-[60px] text-sm font-bold resize-y uppercase`} placeholder="CADANGAN KERJA-KERJA..." /> </div>
                 <div className="group w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -2013,18 +2014,18 @@ Jabatan Kejuruteraan` }],
                   <div className="group"> <label className={labelClass}>Tarikh Buka</label> <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold`} /> </div>
 
                   <div className="group">
-                    <label className={labelClass}>Pegawai (PJA)</label>
+                    <label className={labelClass}>Pegawai (PJE)</label>
                     <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm transition-colors hover:border-blue-300">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center shrink-0 overflow-hidden shadow-md text-white font-black">
                         {users.find(u => u.id === formData.pjaId)?.avatarUrl ? (
-                          <img src={users.find(u => u.id === formData.pjaId)?.avatarUrl} alt="PJA" className="w-full h-full object-cover" />
+                          <img src={users.find(u => u.id === formData.pjaId)?.avatarUrl} alt="PJE" className="w-full h-full object-cover" />
                         ) : (
-                          users.find(u => u.id === formData.pjaId)?.username?.substring(0, 2).toUpperCase() || 'PJA'
+                          users.find(u => u.id === formData.pjaId)?.username?.substring(0, 2).toUpperCase() || 'PJE'
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <select name="pjaId" value={formData.pjaId || ''} onChange={handlePjaChange} disabled={isPJA || isGlobalReadOnly} className="w-full bg-transparent border-none outline-none text-xs font-bold text-slate-800 cursor-pointer p-0 m-0" >
-                          <option value="">Pilih PJA...</option>
+                        <select name="pjaId" value={formData.pjaId || ''} onChange={handlePjeChange} disabled={isPJE || isGlobalReadOnly} className="w-full bg-transparent border-none outline-none text-xs font-bold text-slate-800 cursor-pointer p-0 m-0" >
+                          <option value="">Pilih PJE...</option>
                           {users.map(u => (<option key={u.id} value={u.id}> {u.username.toUpperCase()} </option>))}
                         </select>
                         {users.find(u => u.id === formData.pjaId) && <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{users.find(u => u.id === formData.pjaId)?.role.toLowerCase()}</p>}

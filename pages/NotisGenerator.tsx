@@ -230,9 +230,9 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y += 4;
         doc.setFontSize(6);
         doc.setFont("helvetica","italic");
-        const pjaName = pjaUser ? pjaUser.username.toUpperCase() :"PJA";
+        const pjeName = pjaUser ? pjaUser.username.toUpperCase() :"PJE";
         const footerYear = startDate ? new Date(startDate).getFullYear() : 2025;
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(`PANEL ${footerYear}-PJE ${pjeName}`, margin, y);
 
         doc.save(`Notis_Pemberitahuan_${project.noFail}.pdf`);
     };
@@ -399,9 +399,9 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y += 4;
         doc.setFontSize(6);
         doc.setFont("helvetica","italic"); 
-        const pjaName = pjaUser ? pjaUser.username.toUpperCase() :"PJA";
+        const pjeName = pjaUser ? pjaUser.username.toUpperCase() :"PJE";
         const footerYear = new Date().getFullYear(); 
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(`PANEL ${footerYear}-PJE ${pjeName}`, margin, y);
 
         doc.save(`Notis_Peringatan_1_${project.noFail}.pdf`);
     };
@@ -561,9 +561,9 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y += 4;
         doc.setFontSize(6);
         doc.setFont("helvetica","italic"); 
-        const pjaName = pjaUser ? pjaUser.username.toUpperCase() :"PJA";
+        const pjeName = pjaUser ? pjaUser.username.toUpperCase() :"PJE";
         const footerYear = new Date().getFullYear(); 
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(`PANEL ${footerYear}-PJE ${pjeName}`, margin, y);
 
         doc.save(`Notis_Peringatan_2_${project.noFail}.pdf`);
     };
@@ -699,9 +699,9 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         y += 4;
         doc.setFontSize(6);
         doc.setFont("helvetica","italic"); 
-        const pjaName = pjaUser ? pjaUser.username.toUpperCase() :"PJA";
+        const pjeName = pjaUser ? pjaUser.username.toUpperCase() :"PJE";
         const footerYear = new Date().getFullYear(); 
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(`PANEL ${footerYear}-PJE ${pjeName}`, margin, y);
 
         doc.save(`Notis_Peringatan_3_${project.noFail}.pdf`);
     };

@@ -928,9 +928,9 @@ const GalleryItem = React.memo(({
       >
         <div className="flex flex-col gap-0.5">
           <div className="text-[11px] font-black uppercase tracking-tight truncate leading-tight text-white/90">
-            {user.role === Role.PJA
+            {user.role === Role.PJE
               ? ''
-              : `PJA ${(allUsers.find(u => u.id === img.userId)?.username || img.userFullName || '').toUpperCase()}`}
+              : `PJE ${(allUsers.find(u => u.id === img.userId)?.username || img.userFullName || '').toUpperCase()}`}
           </div>
 
           {editingGalleryId === img.id ? (
@@ -1273,7 +1273,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   // Filtering Logic
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
-      if (user.role === Role.PJA && p.pjaId !== user.id) return false;
+      if (user.role === Role.PJE && p.pjaId !== user.id) return false;
 
       const allowedStatuses = [
         ProjectStatus.FASA_DRAF,
@@ -1409,7 +1409,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
             {showGallery ? 'Tutup Galeri' : 'Galeri Sementara'}
             {galleryImages.length > 0 && !showGallery && (
               <span className="bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1 animate-pulse">
-                {user.role === Role.PJA
+                {user.role === Role.PJE
                   ? galleryImages.filter(i => i.userId === user.id).length
                   : galleryImages.length}
               </span>

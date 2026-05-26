@@ -313,7 +313,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     const columnDefs = [
         { id: 'noFail', label: 'No. Fail', group: 'Asas', default: true },
         { id: 'namaProjek', label: 'Nama Projek', group: 'Asas', default: true },
-        { id: 'pjaId', label: 'PJA', group: 'Asas', default: true },
+        { id: 'pjaId', label: 'PJE', group: 'Asas', default: true },
         { id: 'noAduan', label: 'Aduan', group: 'Asas', default: true },
         { id: 'lokasi', label: 'Lokasi', group: 'Asas', default: false },
         { id: 'bp', label: 'BP', group: 'Asas', default: false },
@@ -849,7 +849,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 // @ts-ignore
                 doc.autoTable({
                     startY: currentY,
-                    head: [['BIL', 'NO. FAIL / LOKASI', 'TARIKH', 'PJA', 'ZON', 'STATUS', 'VOT', 'HARGA (RM)']],
+                    head: [['BIL', 'NO. FAIL / LOKASI', 'TARIKH', 'PJE', 'ZON', 'STATUS', 'VOT', 'HARGA (RM)']],
                     body: tableBody,
                     theme: 'grid',
                     styles: { fontSize: 6.5, cellPadding: 0.5, lineColor: [0, 0, 0], lineWidth: 0.1, textColor: 0, valign: 'middle' },
@@ -1147,8 +1147,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
                                     <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors">
-                                        <option value="ALL">Semua PJA</option>
-                                        {users.filter(u => u.role === 'PJA').map(u => <option key={u.id} value={u.id}>{u.username.toUpperCase()}</option>)}
+                                        <option value="ALL">Semua PJE</option>
+                                        {users.filter(u => u.role === 'PJE').map(u => <option key={u.id} value={u.id}>{u.username.toUpperCase()}</option>)}
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                 </div>
@@ -1473,7 +1473,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white  rounded-lg text-blue-600 hover:bg-blue-50 shadow-sm border border-slate-100"><ArrowUpRight className="w-4 h-4" /></button>
-                                                    {user.role !== 'PJA' && (
+                                                    {user.role !== 'PJE' && (
                                                         <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }} className="p-2 bg-white  rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 shadow-sm border border-slate-100"><Trash2 className="w-4 h-4" /></button>
                                                     )}
                                                 </div>
@@ -1532,7 +1532,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                     <th className="px-6 py-3 text-center font-extrabold w-[40px]">Bil</th>
                                                                     <th className="px-6 py-3 text-left font-extrabold w-[350px]">No. Fail / Tajuk Projek</th>
                                                                     <th className="px-6 py-3 text-center font-extrabold w-[100px]">Bulan</th>
-                                                                    <th className="px-6 py-3 text-center font-extrabold w-[80px]">PJA</th>
+                                                                    <th className="px-6 py-3 text-center font-extrabold w-[80px]">PJE</th>
                                                                     <th className="px-6 py-3 text-left font-extrabold">Lokasi</th>
                                                                     <th className="px-6 py-3 text-center font-extrabold">Tarikh (Mula - Tamat)</th>
                                                                     <th className="px-6 py-3 text-right font-extrabold">Kos</th>
@@ -1542,7 +1542,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                             </thead>
                                                             <tbody className="divide-y divide-slate-100">
                                                                 {voteData.projects.map((p, pIdx) => {
-                                                                    const pjaUser = getPjaUser(p.pjaId);
+const pjeUser = getPjaUser(p.pjaId);
                                                                     const hargaAkhir = getHargaAkhir(p);
 
                                                                     return (
@@ -1553,7 +1553,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                                             <td className="px-6 py-3 text-center align-top text-xs font-bold text-slate-400">{pIdx + 1}</td>
                                                                             <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600  mb-1">{p.noFail}</div><div className="font-medium text-slate-800  leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
                                                                             <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white  border border-slate-200  text-xs font-bold text-slate-600  shadow-sm">{p.bulan || '-'}</span></td>
-                                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
+                                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjeUser?.username.toUpperCase() || '-'}</span></td>
                                                                             <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600  whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
                                                                             <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br />-<br />{formatDate(p.tarikhTamatKontrak)}</td>
                                                                             <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">

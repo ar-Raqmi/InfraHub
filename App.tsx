@@ -151,7 +151,7 @@ function App() {
       return;
     }
 
-    // Security & Role check for PJA
+    // Security & Role check for PJE
     if (user?.role !== 'ADMIN' && page === 'settings') {
       showToast(`Hanya Admin dibenarkan akses ke modul ${page}.`, 'error');
       return;

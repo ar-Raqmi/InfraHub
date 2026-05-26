@@ -87,7 +87,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
 
       const tamat = new Date(p.tarikhTamatKontrak);
       const pja = allUsers.find(u => u.id === p.pjaId);
-      const pjaName = pja ? pja.username.toUpperCase() : 'PJA';
+      const pjaName = pja ? pja.username.toUpperCase() : 'PJE';
 
       // Peringatan 1: 7 days before
       const p1Date = new Date(tamat); p1Date.setDate(tamat.getDate() - 7);
@@ -292,7 +292,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                       task.pjaName.charAt(0).toUpperCase()
                     )}
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">PJA: {task.pjaName}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">PJE: {task.pjaName}</span>
                 </div>
               </div>
             );
@@ -390,7 +390,7 @@ const Inbox: React.FC<InboxProps> = ({ onProjectClick }) => {
                       </span>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">PJA</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">PJE</p>
                       {(() => {
                         const pja = allUsers.find(u => u.id === selectedTask.pjaId);
                         return (

@@ -74,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const isManagement = user.role === Role.ADMIN || user.role === Role.JURUTERA;
 
   const allPjas = useMemo(() => {
-    return allUsers.filter(u => u.role === Role.PJA);
+    return allUsers.filter(u => u.role === Role.PJE);
   }, [allUsers]);
 
   useEffect(() => {
@@ -82,7 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   }, [pjaFilter, searchQuery, statusFilter]);
 
   const displayProjects = useMemo(() => {
-    if (user.role === Role.PJA) {
+    if (user.role === Role.PJE) {
       return projects.filter(p => p.pjaId === user.id);
     }
     if (pjaFilter !== 'ALL') {
@@ -330,9 +330,9 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           <div className="flex items-center gap-2 text-slate-500">
             <Activity className="w-4 h-4 text-blue-500" />
             <span className="text-sm font-medium">
-              {user.role === Role.PJA
+              {user.role === Role.PJE
                 ? 'Paparan projek peribadi anda'
-                : pjaFilter === 'ALL' ? 'Paparan keseluruhan jabatan' : `Paparan projek seliaan PJA ${allPjas.find(p => p.id === Number(pjaFilter))?.username.toUpperCase()}`}
+                : pjaFilter === 'ALL' ? 'Paparan keseluruhan jabatan' : `Paparan projek seliaan PJE ${allPjas.find(p => p.id === Number(pjaFilter))?.username.toUpperCase()}`}
             </span>
           </div>
         </div>
@@ -348,9 +348,9 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                 onChange={(e) => setPjaFilter(e.target.value)}
                 className="pl-10 pr-10 py-3 rounded-2xl border border-slate-200  bg-white  shadow-lg shadow-slate-200/50  focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700  appearance-none cursor-pointer min-w-[200px] transition-shadow hover:shadow-xl"
               >
-                <option value="ALL">Semua Pegawai (PJA)</option>
+                <option value="ALL">Semua Pegawai (PJE)</option>
                 {allPjas.map(p => (
-                  <option key={p.id} value={p.id}>PJA: {p.username.toUpperCase()}</option>
+                  <option key={p.id} value={p.id}>PJE: {p.username.toUpperCase()}</option>
                 ))}
               </select>
               <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -753,7 +753,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                             <div className="flex items-center gap-2 mt-1.5">
                               <span className="text-[20px] font-black bg-slate-100  px-2 py-0.5 rounded text-slate-500">{project.noFail}</span>
                               {isManagement && pjaFilter === 'ALL' && (
-                                <span className="text-[15px] font-black text-slate-400 px-1.5 py-0.5 rounded border border-slate-200">PJA: {allUsers.find(u => u.id === project.pjaId)?.username.toUpperCase()}</span>
+                                <span className="text-[15px] font-black text-slate-400 px-1.5 py-0.5 rounded border border-slate-200">PJE: {allUsers.find(u => u.id === project.pjaId)?.username.toUpperCase()}</span>
                               )}
                             </div>
                           </div>

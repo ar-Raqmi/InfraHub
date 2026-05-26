@@ -1,7 +1,7 @@
 
 export enum Role {
   ADMIN = 'ADMIN', // "Blue"
-  PJA = 'PJA',     // "Yellow"
+  PJE = 'PJE',     // "Yellow"
   JURUTERA = 'JURUTERA', // New Role for Signers
 }
 
@@ -225,7 +225,7 @@ export interface Project {
   apiVersion?: string;
   updatedAt?: string; // Tracking for "Recent Changes"
 
-  // --- PHASE 1: BQ BUILDING (Yellow - PJA) ---
+  // --- PHASE 1: BQ BUILDING (Yellow - PJE) ---
   namaProjek: string;
   noAduan?: string;
   aduan?: string;
@@ -234,7 +234,7 @@ export interface Project {
   bp: string; // Blok Perancangan
   zon?: string;
   mukim?: string;
-  pjaId: number; // The PJA in charge
+  pjaId: number; // The PJE in charge
   kosProjek?: number; // Auto take from BQ
   tarikhBuka: string; // Today's date default
 
@@ -257,7 +257,7 @@ export interface Project {
   isManualMulaKontrak?: boolean; // Persisted manual toggle
   isManualMulaKerja?: boolean; // Persisted manual toggle
 
-  // --- PHASE 3: BQ PELARASAN BUILDING (Yellow - PJA) ---
+  // --- PHASE 3: BQ PELARASAN BUILDING (Yellow - PJE) ---
   tarikhPemeriksaan?: string; // Tarikh Pemeriksaan
   tarikhSiapSebenar?: string; // Tarikh Siap (Pemeriksa)
   prestasi?: string; // Changed to string for % input
@@ -293,12 +293,12 @@ export interface Project {
   // AKU JANJI
   akuJanjiMonth?: string; // The selected month string e.g. "November"
   akuJanjiPanelTitle?: string; // Title for "Kontraktor Panel"
-  akuJanjiFooterText?: string; // Text after year, e.g. "PJA NAME - COMPANY"
+  akuJanjiFooterText?: string; // Text after year, e.g. "PJE NAME - COMPANY"
 
   // COVER PAGE SETTINGS (NEW)
   coverJawatan?: string; // e.g. "Penolong Jurutera JA5"
-  coverBahagian?: string; // e.g. "Bahagian Infrastruktur"
-  coverUnit?: string; // e.g. "Unit Selenggara Infrastruktur"
+  coverBahagian?: string; // e.g. "Bahagian Elektrikal"
+  coverUnit?: string; // e.g. "Unit Elektrikal"
   coverSebutHargaText?: string; // Multiline text for Page 2
 }
 

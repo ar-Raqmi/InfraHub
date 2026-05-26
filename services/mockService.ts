@@ -65,16 +65,16 @@ const MOCK_COMPANIES: CompanyDetail[] = [
 ];
 
 const INITIAL_USERS: User[] = [
-  { id: 1, username: 'syafiq', fullName: 'Syafiq Daniel Bin Ahmad Firdaus', role: Role.ADMIN, password: 'password', email: 'syafiq@mps.gov.my', phone: '012-3456789', jawatan: 'Pembantu Tadbir N1', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
-  { id: 2, username: 'khairul', fullName: 'Mohamad Khairul Amirin Bin Zainal Abidin', role: Role.PJA, password: 'password', email: 'khairul@mps.gov.my', phone: '013-9876543', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
-  { id: 3, username: 'farhan', fullName: 'Muhammad Farhan', role: Role.PJA, password: 'password', email: 'farhan@mps.gov.my', phone: '014-1234567', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
-  { id: 4, username: 'nursilmi', fullName: 'Nursilmi Binti Ahmad', role: Role.PJA, password: 'password', email: 'nursilmi@mps.gov.my', phone: '015-9876543', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
-  { id: 5, username: 'salam', fullName: 'Muhammad Salam', role: Role.PJA, password: 'password', email: 'salam@mps.gov.my', phone: '016-1234567', jawatan: 'Penolong Jurutera JA5', bahagian: 'Bahagian Infrastruktur', unit: 'Unit Selenggara Infrastruktur' },
+  { id: 1, username: 'syafiq', fullName: 'Syafiq Daniel Bin Ahmad Firdaus', role: Role.ADMIN, password: 'password', email: 'syafiq@mps.gov.my', phone: '012-3456789', jawatan: 'Pembantu Tadbir N1', bahagian: 'Bahagian Elektrikal', unit: 'Unit Elektrikal' },
+  { id: 2, username: 'khairul', fullName: 'Mohamad Khairul Amirin Bin Zainal Abidin', role: Role.PJE, password: 'password', email: 'khairul@mps.gov.my', phone: '013-9876543', jawatan: 'Penolong Jurutera Elektrik', bahagian: 'Bahagian Elektrikal', unit: 'Unit Elektrikal' },
+  { id: 3, username: 'farhan', fullName: 'Muhammad Farhan', role: Role.PJE, password: 'password', email: 'farhan@mps.gov.my', phone: '014-1234567', jawatan: 'Penolong Jurutera Elektrik', bahagian: 'Bahagian Elektrikal', unit: 'Unit Elektrikal' },
+  { id: 4, username: 'nursilmi', fullName: 'Nursilmi Binti Ahmad', role: Role.PJE, password: 'password', email: 'nursilmi@mps.gov.my', phone: '015-9876543', jawatan: 'Penolong Jurutera Elektrik', bahagian: 'Bahagian Elektrikal', unit: 'Unit Elektrikal' },
+  { id: 5, username: 'salam', fullName: 'Muhammad Salam', role: Role.PJE, password: 'password', email: 'salam@mps.gov.my', phone: '016-1234567', jawatan: 'Penolong Jurutera Elektrik', bahagian: 'Bahagian Elektrikal', unit: 'Unit Elektrikal' },
   { id: 6, username: 'ain', fullName: "A'IN SYAHIRA BINTI RATIMIN", role: Role.JURUTERA, password: 'password', email: 'ain@mps.gov.my', phone: '017-1122334', jawatan: 'Jurutera Awam', bahagian: 'Jabatan Kejuruteraan', unit: 'Majlis Perbandaran Selayang' }
 ];
 
 const INITIAL_BULLETINS: BulletinItem[] = [
-  { id: 'b1', content: 'Semua PJA diingatkan untuk mengemaskini tarikh pemeriksaan tapak bagi fasa pelarasan.', date: '2025-05-15', author: 'Syafiq (Admin)' },
+  { id: 'b1', content: 'Semua PJE diingatkan untuk mengemaskini tarikh pemeriksaan tapak bagi fasa pelarasan.', date: '2025-05-15', author: 'Syafiq (Admin)' },
   { id: 'b2', content: 'Mesyuarat mingguan bahagian akan diadakan pada hari Selasa jam 9:00 pagi.', date: '2025-05-14', author: 'Ain (Jurutera)' }
 ];
 

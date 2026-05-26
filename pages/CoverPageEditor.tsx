@@ -42,8 +42,8 @@ const CoverPageEditor: React.FC<CoverPageEditorProps> = ({ project, selectedYear
     }, [selectedYear, project.tarikhBuka]);
 
     const jawatan = project.coverJawatan || pjaUser?.jawatan ||"Penolong Jurutera JA29";
-    const bahagian = project.coverBahagian || pjaUser?.bahagian ||"Bahagian Infrastruktur";
-    const unit = project.coverUnit || pjaUser?.unit ||"Unit Selenggara Infrastruktur";
+    const bahagian = project.coverBahagian || pjaUser?.bahagian ||"Bahagian Elektrikal";
+    const unit = project.coverUnit || pjaUser?.unit ||"Unit Elektrikal";
     const pjaName = pjaUser?.fullName ||"Nama Pegawai";
 
     const monthNames = ["Januari","Februari","Mac","April","Mei","Jun","Julai","Ogos","September","Oktober","November","Disember"];

@@ -34,7 +34,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
     const currentMonth = project.akuJanjiMonth || MONTHS[new Date().getMonth()];
     
     // Dynamic Footer Values
-    const pjaName = pjaUser ? `PJA ${pjaUser.username.toUpperCase()}` :"PJA";
+    const pjeName = pjaUser ? `PJE ${pjaUser.username.toUpperCase()}` :"PJE";
     const companyName = project.namaSyarikat ? project.namaSyarikat.toUpperCase() :"NAMA SYARIKAT";
 
     // Date formatting for body
@@ -149,7 +149,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
             doc.setFont("helvetica","bolditalic");
             doc.setFontSize(6);
             
-            const footerText = `${project.akuJanjiPanelTitle || 'KONTRAKTOR PANEL'} ${selectedYear} ${pjaName} - ${companyName}`;
+            const footerText = `${project.akuJanjiPanelTitle || 'KONTRAKTOR PANEL'} ${selectedYear} ${pjeName} - ${companyName}`;
             doc.text(footerText, margin, footerY);
             
             doc.setFont("helvetica","bold"); 
@@ -281,7 +281,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                     <div className="mt-32 pt-4 border-t border-transparent text-[10px] font-bold uppercase italic">
                          <div className="flex justify-between items-end">
                              <div>
-                                 {project.akuJanjiPanelTitle} {selectedYear} {pjaName} - {companyName}
+                                 {project.akuJanjiPanelTitle} {selectedYear} {pjeName} - {companyName}
                              </div>
                          </div>
                          <div className="mt-2">
