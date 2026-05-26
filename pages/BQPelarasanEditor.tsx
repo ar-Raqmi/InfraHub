@@ -13,7 +13,7 @@ interface BQPelarasanEditorProps {
     isPrintView?: boolean;
     locationRows: ProjectLocation[];
     globalCalculationsPelarasan?: Record<string, GlobalDimensions | GlobalDimensions[]>;
-    onGlobalCalculationsPelarasanChange: (calcId: string, dims: GlobalDimensions[]) => void;
+    onGlobalCalculationsPelarasanChange?: (calcId: string, dims: GlobalDimensions[]) => void;
     readOnly?: boolean;
 }
 
@@ -667,7 +667,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 const billCalcId = `calc-pelarasan-${Math.random().toString(36).substr(2, 9)}`;
 
                 // Save initial dimensions for this new bill
-                if (isMultistep && templateLocation) {
+                if (isMultistep && templateLocation && onGlobalCalculationsPelarasanChange) {
                     onGlobalCalculationsPelarasanChange(billCalcId, [templateDims]);
                 }
 
