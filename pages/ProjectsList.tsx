@@ -195,15 +195,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 compProjects.forEach(p => {
                     totalContract += (p.kosProjek || 0);
 
-                    let dateToUse = p.tarikhLantikan || p.tarikhBuka;
-                    if (p.bulan) {
-                        const mIdx = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"].indexOf(p.bulan.toUpperCase());
-                        if (mIdx !== -1) {
-                            monthCounts[mIdx]++;
-                            return;
-                        }
-                    }
-
+                    const dateToUse = p.tarikhLantikan || p.tarikhBuka;
                     if (dateToUse) {
                         const d = new Date(dateToUse);
                         if (!isNaN(d.getTime())) {
