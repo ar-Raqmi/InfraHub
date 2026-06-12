@@ -70,6 +70,11 @@ const mapProjectFromRow = (row: any) => {
     coverBahagian: row.cover_bahagian,
     coverUnit: row.cover_unit,
     coverSebutHargaText: row.cover_sebut_harga_text,
+    notisPeringatan1Status: row.notis_peringatan_1_status || 'PENDING',
+    perakuanKerjaTidakSiapStatus: row.perakuan_kerja_tidak_siap_status || 'PENDING',
+    notisPeringatan2Status: row.notis_peringatan_2_status || 'PENDING',
+    notisPeringatan3Status: row.notis_peringatan_3_status || 'PENDING',
+    isTiadaNotisDiperlukan: Boolean(row.is_tiada_notis_diperlukan),
     updatedAt: row.updated_at,
     bqData: row.bq_data ? parseJsonArray(row.bq_data) : undefined,
     bqDataPelarasan: row.bq_data_pelarasan ? parseJsonArray(row.bq_data_pelarasan) : undefined,
@@ -94,7 +99,8 @@ projectApp.get('/', async (c) => {
       lad_amount, lad_days, loc_amount, loc_days, is_loc_deduction_enabled, wang_tahanan, skop, 
       prestasi_scores, no_inbois, tarikh_hantar_kewangan, tarikh_padanan, peratus_siap, status, 
       aku_janji_month, aku_janji_panel_title, aku_janji_footer_text, cover_jawatan, cover_bahagian, 
-      cover_unit, cover_sebut_harga_text, created_at, updated_at 
+      cover_unit, cover_sebut_harga_text, notis_peringatan_1_status, perakuan_kerja_tidak_siap_status,
+      notis_peringatan_2_status, notis_peringatan_3_status, is_tiada_notis_diperlukan, created_at, updated_at 
     FROM projects 
     ORDER BY created_at DESC
   `).all()
@@ -185,6 +191,11 @@ projectApp.post('/', async (c) => {
     cover_bahagian: body.coverBahagian,
     cover_unit: body.coverUnit,
     cover_sebut_harga_text: body.coverSebutHargaText,
+    notis_peringatan_1_status: body.notisPeringatan1Status || 'PENDING',
+    perakuan_kerja_tidak_siap_status: body.perakuanKerjaTidakSiapStatus || 'PENDING',
+    notis_peringatan_2_status: body.notisPeringatan2Status || 'PENDING',
+    notis_peringatan_3_status: body.notisPeringatan3Status || 'PENDING',
+    is_tiada_notis_diperlukan: body.isTiadaNotisDiperlukan ? 1 : 0,
     updated_at: new Date().toISOString()
   }
 
@@ -281,6 +292,11 @@ projectApp.put('/:id', async (c) => {
   if (body.coverBahagian !== undefined) dbUpdates.cover_bahagian = body.coverBahagian
   if (body.coverUnit !== undefined) dbUpdates.cover_unit = body.coverUnit
   if (body.coverSebutHargaText !== undefined) dbUpdates.cover_sebut_harga_text = body.coverSebutHargaText
+  if (body.notisPeringatan1Status !== undefined) dbUpdates.notis_peringatan_1_status = body.notisPeringatan1Status
+  if (body.perakuanKerjaTidakSiapStatus !== undefined) dbUpdates.perakuan_kerja_tidak_siap_status = body.perakuanKerjaTidakSiapStatus
+  if (body.notisPeringatan2Status !== undefined) dbUpdates.notis_peringatan_2_status = body.notisPeringatan2Status
+  if (body.notisPeringatan3Status !== undefined) dbUpdates.notis_peringatan_3_status = body.notisPeringatan3Status
+  if (body.isTiadaNotisDiperlukan !== undefined) dbUpdates.is_tiada_notis_diperlukan = body.isTiadaNotisDiperlukan ? 1 : 0
 
   dbUpdates.updated_at = new Date().toISOString()
 
