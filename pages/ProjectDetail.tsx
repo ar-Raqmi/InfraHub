@@ -2077,9 +2077,7 @@ Jabatan Kejuruteraan` }],
           };
 
           return (
-            <div className="mb-6 bg-white/95 border border-slate-200 shadow-xl rounded-3xl p-5 relative overflow-hidden transition-all duration-300">
-              <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-red-500 to-rose-600"></div>
-              
+            <div className="mb-6 bg-white/95 border border-slate-200 shadow-xl rounded-3xl p-5 transition-all duration-300">
               {/* Clickable Header for Collapsing */}
               <div 
                 onClick={() => setIsNotisCardCollapsed(!isNotisCardCollapsed)}
@@ -2110,10 +2108,10 @@ Jabatan Kejuruteraan` }],
                 <div className="mt-5 pt-4 border-t border-slate-100 space-y-5 animate-fade-in">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Notice 1 */}
-                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP1Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
+                    <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/50 transition-all flex flex-col gap-2.5">
                       <div className="flex flex-col">
                         <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Pertama</span>
-                        <span className={`text-[14px] font-bold ${isP1Warning ? 'text-rose-600' : 'text-slate-500'}`}>{p1Str}</span>
+                        <span className="text-[14px] font-bold text-slate-700">{p1Str}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
@@ -2153,10 +2151,10 @@ Jabatan Kejuruteraan` }],
                     </div>
 
                     {/* Perakuan Kerja Tidak Siap */}
-                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isTamatWarning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
+                    <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/50 transition-all flex flex-col gap-2.5">
                       <div className="flex flex-col">
                         <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Perakuan Kerja Tidak Siap</span>
-                        <span className={`text-[14px] font-bold ${isTamatWarning ? 'text-rose-600' : 'text-slate-500'}`}>{tamatStr}</span>
+                        <span className="text-[14px] font-bold text-slate-700">{tamatStr}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
@@ -2196,10 +2194,10 @@ Jabatan Kejuruteraan` }],
                     </div>
 
                     {/* Notice 2 */}
-                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP2Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
+                    <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/50 transition-all flex flex-col gap-2.5">
                       <div className="flex flex-col">
                         <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Kedua</span>
-                        <span className={`text-[14px] font-bold ${isP2Warning ? 'text-rose-600' : 'text-slate-500'}`}>{p2Str}</span>
+                        <span className="text-[14px] font-bold text-slate-700">{p2Str}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
@@ -2239,10 +2237,10 @@ Jabatan Kejuruteraan` }],
                     </div>
 
                     {/* Notice 3 */}
-                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP3Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
+                    <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/50 transition-all flex flex-col gap-2.5">
                       <div className="flex flex-col">
                         <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Ketiga</span>
-                        <span className={`text-[14px] font-bold ${isP3Warning ? 'text-rose-600' : 'text-slate-500'}`}>{p3Str}</span>
+                        <span className="text-[14px] font-bold text-slate-700">{p3Str}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
