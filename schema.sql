@@ -109,6 +109,11 @@ CREATE TABLE projects (
   cover_bahagian TEXT,
   cover_unit TEXT,
   cover_sebut_harga_text TEXT,
+  notis_peringatan_1_status TEXT DEFAULT 'PENDING',
+  perakuan_kerja_tidak_siap_status TEXT DEFAULT 'PENDING',
+  notis_peringatan_2_status TEXT DEFAULT 'PENDING',
+  notis_peringatan_3_status TEXT DEFAULT 'PENDING',
+  is_tiada_notis_diperlukan INTEGER DEFAULT 0,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT
 );
