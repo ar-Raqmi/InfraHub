@@ -4,8 +4,49 @@ import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, Bulleti
 import { apiService } from '../services/apiService';
 import { useBulletins } from '../hooks/useBulletins';
 import { useUsers } from '../hooks/useUsers';
-import { useNotifications } from '../hooks/useNotifications';
-import { Bell, TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote, ClipboardCheck, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart, Loader2 } from 'lucide-react';
+import { TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote, ClipboardCheck, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart, Loader2 } from 'lucide-react';
+
+const getPendingNotice = (project: Project): string | null => {
+  if (project.status === ProjectStatus.SIAP || project.isTiadaNotisDiperlukan || !project.tarikhTamatKontrak) {
+    return null;
+  }
+
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+  const todayVal = new Date(todayStr).getTime();
+
+  const tamatVal = new Date(project.tarikhTamatKontrak).getTime();
+  if (isNaN(tamatVal)) return null;
+
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const p1Time = tamatVal - (7 * oneDayMs);
+  const p2Time = tamatVal + (7 * oneDayMs);
+  const p3Time = tamatVal + (14 * oneDayMs);
+
+  // Check from highest severity to lowest
+  if (todayVal >= p3Time) {
+    if (project.notisPeringatan3Status === 'PENDING' || !project.notisPeringatan3Status) {
+      return 'Notis Ketiga';
+    }
+  }
+  if (todayVal >= p2Time) {
+    if (project.notisPeringatan2Status === 'PENDING' || !project.notisPeringatan2Status) {
+      return 'Notis Kedua';
+    }
+  }
+  if (todayVal >= tamatVal) {
+    if (project.perakuanKerjaTidakSiapStatus === 'PENDING' || !project.perakuanKerjaTidakSiapStatus) {
+      return 'Kerja Tidak Siap';
+    }
+  }
+  if (todayVal >= p1Time) {
+    if (project.notisPeringatan1Status === 'PENDING' || !project.notisPeringatan1Status) {
+      return 'Notis Pertama';
+    }
+  }
+
+  return null;
+};
 
 interface DashboardProps {
   projects: Project[];
@@ -32,15 +73,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   const [tablePage, setTablePage] = useState(1);
   const itemsPerPage = 5;
 
-  const { states } = useNotifications(user?.id);
 
-  const cloudStates = useMemo(() => {
-    const map: Record<string, { isRead: boolean, isDeleted: boolean }> = {};
-    states.forEach((s: any) => {
-      map[s.id] = { isRead: !!s.isRead, isDeleted: !!s.isDeleted };
-    });
-    return map;
-  }, [states]);
 
   // Long press detection refs
   const longPressTimer = React.useRef<any>(null);
@@ -91,37 +124,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
     return projects;
   }, [projects, user, pjaFilter]);
 
-  const notificationCount = useMemo(() => {
-    const now = new Date();
 
-    const relevantProjects = (user.role === Role.ADMIN || user.role === Role.JURUTERA)
-      ? projects
-      : projects.filter(p => p.pjaId === user.id);
-
-    let count = 0;
-
-    relevantProjects.forEach(p => {
-      if (p.status !== ProjectStatus.DALAM_PROSES || !p.tarikhTamatKontrak) return;
-
-      const tamat = new Date(p.tarikhTamatKontrak);
-      const p1Date = new Date(tamat); p1Date.setDate(tamat.getDate() - 7);
-      const p2Date = new Date(tamat); p2Date.setDate(tamat.getDate() + 7);
-      const p3Date = new Date(tamat); p3Date.setDate(tamat.getDate() + 14);
-
-      const checkUnread = (id: string) => {
-        const state = cloudStates[id];
-        if (!state) return true; // If no state, it's unread and not deleted
-        return !state.isRead && !state.isDeleted;
-      };
-
-      if (now >= p1Date && checkUnread(`p1-${p.id}`)) count++;
-      if (now >= tamat && checkUnread(`deadline-${p.id}`)) count++;
-      if (now >= p2Date && checkUnread(`p2-${p.id}`)) count++;
-      if (now >= p3Date && checkUnread(`p3-${p.id}`)) count++;
-    });
-
-    return count;
-  }, [projects, user, cloudStates]);
 
   const phase1 = displayProjects.filter(p => p.status === ProjectStatus.FASA_DRAF);
   const phase2 = displayProjects.filter(p => p.status === ProjectStatus.MENUNGGU_LANTIKAN);
@@ -359,18 +362,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             </div>
           )}
 
-          <button
-            onClick={() => onNavigate('inbox')}
-            className="p-3 rounded-2xl bg-white  border border-slate-200  shadow-lg shadow-slate-200/50  hover:shadow-xl transition-shadow relative group"
-            title="Inbox / Notifikasi"
-          >
-            <Bell className="w-5 h-5 text-slate-600  group-hover:text-emerald-600 transition-colors" />
-            {notificationCount > 0 && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full shadow-md border-2 border-white">
-                {notificationCount}
-              </div>
-            )}
-          </button>
+
 
           <div onClick={onProfileClick} className="flex items-center space-x-3 bg-white  border border-slate-200  px-4 py-2 rounded-2xl shadow-lg shadow-slate-200/50  hover:shadow-xl transition-shadow cursor-pointer">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0 overflow-hidden ring-2 ring-white">
@@ -765,10 +757,23 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                         </p>
                       </td>
                       <td className="px-6 py-5">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>
-                          {getStatusLabel(project.status)}
-                        </span>
+                        <div className="flex flex-col gap-1.5 items-start">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>
+                            {getStatusLabel(project.status)}
+                          </span>
+                          {(() => {
+                            const pendingNotice = getPendingNotice(project);
+                            if (pendingNotice) {
+                              return (
+                                <span className="text-[10px] font-black text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-lg whitespace-nowrap animate-pulse">
+                                  {pendingNotice}
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
                       </td>
                       <td className="px-4 py-5 text-center">
                         <div className="relative inline-block w-20 group/input">
