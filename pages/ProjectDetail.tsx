@@ -450,6 +450,11 @@ const CACHE_VERSION = 'v126';
       pjaId: project.pjaId || (project as any).pja_id,
       kosProjek: project.kosProjek !== undefined ? project.kosProjek : (project as any).kos_projek,
       tarikhBuka: project.tarikhBuka || (project as any).tarikh_buka,
+      notisPeringatan1Status: project.notisPeringatan1Status || (project as any).notis_peringatan_1_status || 'PENDING',
+      perakuanKerjaTidakSiapStatus: project.perakuanKerjaTidakSiapStatus || (project as any).perakuan_kerja_tidak_siap_status || 'PENDING',
+      notisPeringatan2Status: project.notisPeringatan2Status || (project as any).notis_peringatan_2_status || 'PENDING',
+      notisPeringatan3Status: project.notisPeringatan3Status || (project as any).notis_peringatan_3_status || 'PENDING',
+      isTiadaNotisDiperlukan: project.isTiadaNotisDiperlukan !== undefined ? project.isTiadaNotisDiperlukan : Boolean((project as any).is_tiada_notis_diperlukan),
     } : null;
 
     // Reset formData to the new project's data (or blank defaults for new project)
@@ -476,7 +481,12 @@ const CACHE_VERSION = 'v126';
         noInbois: '',
         isManualMulaKontrak: false,
         isManualMulaKerja: false,
-        isLocDeductionEnabled: false
+        isLocDeductionEnabled: false,
+        notisPeringatan1Status: 'PENDING',
+        perakuanKerjaTidakSiapStatus: 'PENDING',
+        notisPeringatan2Status: 'PENDING',
+        notisPeringatan3Status: 'PENDING',
+        isTiadaNotisDiperlukan: false
       };
 
       // CRITICAL: If the incoming project is "Partial" (from Dashboard list) but we already have 
@@ -543,6 +553,38 @@ const CACHE_VERSION = 'v126';
   const zonPortalRef = useRef<HTMLDivElement>(null);
   const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | 'switch' | null; }>({ isOpen: false, type: null });
   const [showPelarasanWarning, setShowPelarasanWarning] = useState(false);
+
+  const isCPCBlocked = useMemo(() => {
+    if (formData.isTiadaNotisDiperlukan || !formData.tarikhTamatKontrak) {
+      return false;
+    }
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+    const todayVal = new Date(todayStr).getTime();
+    
+    const tamatVal = new Date(formData.tarikhTamatKontrak).getTime();
+    if (isNaN(tamatVal)) return false;
+    
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const p1Time = tamatVal - (7 * oneDayMs);
+    const p2Time = tamatVal + (7 * oneDayMs);
+    const p3Time = tamatVal + (14 * oneDayMs);
+    
+    if (todayVal >= p3Time) {
+      if (!formData.notisPeringatan3Status || formData.notisPeringatan3Status === 'PENDING') return true;
+    }
+    if (todayVal >= p2Time) {
+      if (!formData.notisPeringatan2Status || formData.notisPeringatan2Status === 'PENDING') return true;
+    }
+    if (todayVal >= tamatVal) {
+      if (!formData.perakuanKerjaTidakSiapStatus || formData.perakuanKerjaTidakSiapStatus === 'PENDING') return true;
+    }
+    if (todayVal >= p1Time) {
+      if (!formData.notisPeringatan1Status || formData.notisPeringatan1Status === 'PENDING') return true;
+    }
+    
+    return false;
+  }, [formData.tarikhTamatKontrak, formData.notisPeringatan1Status, formData.perakuanKerjaTidakSiapStatus, formData.notisPeringatan2Status, formData.notisPeringatan3Status, formData.isTiadaNotisDiperlukan]);
 
   // Project Switcher State
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -630,7 +672,12 @@ const CACHE_VERSION = 'v126';
     noInbois: '',
     isManualMulaKontrak: project?.isManualMulaKontrak || false,
     isManualMulaKerja: project?.isManualMulaKerja || false,
-    isLocDeductionEnabled: project?.isLocDeductionEnabled ?? false
+    isLocDeductionEnabled: project?.isLocDeductionEnabled ?? false,
+    notisPeringatan1Status: project?.notisPeringatan1Status || 'PENDING',
+    perakuanKerjaTidakSiapStatus: project?.perakuanKerjaTidakSiapStatus || 'PENDING',
+    notisPeringatan2Status: project?.notisPeringatan2Status || 'PENDING',
+    notisPeringatan3Status: project?.notisPeringatan3Status || 'PENDING',
+    isTiadaNotisDiperlukan: project?.isTiadaNotisDiperlukan || false
   });
 
   const isPJA = currentUser?.role === Role.PJA;
@@ -1950,6 +1997,175 @@ Jabatan Kejuruteraan` }],
             </div>
           )}
         </div>
+        
+        {/* Warning Notice & Certificate Status Card */}
+        {(() => {
+          const hasTamatDate = !!formData.tarikhTamatKontrak;
+          
+          // Calculate triggered dates if tamat date is filled
+          let p1Str = '-';
+          let tamatStr = '-';
+          let p2Str = '-';
+          let p3Str = '-';
+          
+          if (hasTamatDate) {
+            const tamatVal = new Date(formData.tarikhTamatKontrak!).getTime();
+            if (!isNaN(tamatVal)) {
+              const oneDayMs = 24 * 60 * 60 * 1000;
+              const formatDateForUI = (time: number) => {
+                const d = new Date(time);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+              };
+              p1Str = formatDateForUI(tamatVal - (7 * oneDayMs));
+              tamatStr = formatDateForUI(tamatVal);
+              p2Str = formatDateForUI(tamatVal + (7 * oneDayMs));
+              p3Str = formatDateForUI(tamatVal + (14 * oneDayMs));
+            }
+          }
+          
+          const isAdminOrJurutera = currentUser?.role === Role.ADMIN || currentUser?.role === Role.JURUTERA;
+          const isNoticeReadOnly = isGlobalReadOnly || !isAdminOrJurutera || formData.status === ProjectStatus.SIAP;
+          
+          const handleNoticeStatusChange = (field: string, val: string) => {
+            setFormData(prev => ({
+              ...prev,
+              [field]: val
+            }));
+            setHasUnsavedChanges(true);
+          };
+          
+          const selectClass = "px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 outline-none text-xs font-bold text-slate-700 cursor-pointer focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all";
+          
+          return (
+            <div className="mb-6 bg-white/95 border border-slate-200 shadow-xl rounded-3xl p-6 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-red-500 to-rose-600"></div>
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-rose-50 to-red-50 text-red-600 rounded-xl flex items-center justify-center shadow-sm">
+                    <FileWarning className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm tracking-tight font-jakarta">Status Notis Peringatan & Perakuan Kontrak</h3>
+                    <p className="text-[10px] text-slate-500 font-medium">Urus kelulusan dan rekod notis peringatan rasmi</p>
+                  </div>
+                </div>
+                {!hasTamatDate && (
+                  <div className="text-[10px] text-amber-700 font-black bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl uppercase tracking-wider">
+                    Tarikh tamat kontrak belum diisi
+                  </div>
+                )}
+              </div>
+              
+              {hasTamatDate ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Notice 1 */}
+                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Pertama</span>
+                        <span className="text-[10px] font-bold text-slate-600">Automatik: {p1Str}</span>
+                      </div>
+                      <select
+                        value={formData.notisPeringatan1Status || 'PENDING'}
+                        onChange={(e) => handleNoticeStatusChange('notisPeringatan1Status', e.target.value)}
+                        disabled={isNoticeReadOnly}
+                        className={selectClass}
+                      >
+                        <option value="PENDING">Belum Diambil Tindakan</option>
+                        <option value="SENT">Selesai Dikeluarkan</option>
+                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
+                      </select>
+                    </div>
+                    
+                    {/* Perakuan Kerja Tidak Siap */}
+                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Perakuan Kerja Tidak Siap</span>
+                        <span className="text-[10px] font-bold text-slate-600">Automatik: {tamatStr}</span>
+                      </div>
+                      <select
+                        value={formData.perakuanKerjaTidakSiapStatus || 'PENDING'}
+                        onChange={(e) => handleNoticeStatusChange('perakuanKerjaTidakSiapStatus', e.target.value)}
+                        disabled={isNoticeReadOnly}
+                        className={selectClass}
+                      >
+                        <option value="PENDING">Belum Diambil Tindakan</option>
+                        <option value="SENT">Selesai Dikeluarkan</option>
+                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
+                      </select>
+                    </div>
+                    
+                    {/* Notice 2 */}
+                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Kedua</span>
+                        <span className="text-[10px] font-bold text-slate-600">Automatik: {p2Str}</span>
+                      </div>
+                      <select
+                        value={formData.notisPeringatan2Status || 'PENDING'}
+                        onChange={(e) => handleNoticeStatusChange('notisPeringatan2Status', e.target.value)}
+                        disabled={isNoticeReadOnly}
+                        className={selectClass}
+                      >
+                        <option value="PENDING">Belum Diambil Tindakan</option>
+                        <option value="SENT">Selesai Dikeluarkan</option>
+                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
+                      </select>
+                    </div>
+                    
+                    {/* Notice 3 */}
+                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Ketiga</span>
+                        <span className="text-[10px] font-bold text-slate-600">Automatik: {p3Str}</span>
+                      </div>
+                      <select
+                        value={formData.notisPeringatan3Status || 'PENDING'}
+                        onChange={(e) => handleNoticeStatusChange('notisPeringatan3Status', e.target.value)}
+                        disabled={isNoticeReadOnly}
+                        className={selectClass}
+                      >
+                        <option value="PENDING">Belum Diambil Tindakan</option>
+                        <option value="SENT">Selesai Dikeluarkan</option>
+                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2.5 pt-2">
+                    <input
+                      type="checkbox"
+                      id="isTiadaNotisDiperlukan"
+                      checked={formData.isTiadaNotisDiperlukan || false}
+                      onChange={(e) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          isTiadaNotisDiperlukan: e.target.checked
+                        }));
+                        setHasUnsavedChanges(true);
+                      }}
+                      disabled={isNoticeReadOnly}
+                      className="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                    <label htmlFor="isTiadaNotisDiperlukan" className="text-xs font-bold text-slate-600 select-none cursor-pointer">
+                      Tiada Sebarang Notis Diperlukan (Bypass Semua)
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  Sila isikan **Tarikh Tamat Kontrak** dalam Tab **File Creation (Fasa 2)** terlebih dahulu.
+                  Status notis amaran kontrak akan dipaparkan dan dijana secara automatik selepas tarikh tamat diisi.
+                </p>
+              )}
+            </div>
+          );
+        })()}
+        
         <div className="mb-6">
           <div className="grid grid-cols-4 bg-slate-100 p-1 rounded-2xl gap-2 border border-slate-200">
             {TABS.map((tab) => (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-2 py-3 md:px-4 md:py-3 rounded-xl text-[10px] md:text-xs font-bold transition-colors flex flex-col md:flex-row items-center justify-center gap-2 border border-transparent ${activeTab === tab.id ? `${tab.color}` : 'text-slate-500 hover:bg-slate-200 hover:text-slate-900'}`} > {tab.label} </button>))}
@@ -2111,18 +2327,34 @@ Jabatan Kejuruteraan` }],
           <div className="space-y-6">
             <div className={yellowPhaseClass}>
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
+              {isCPCBlocked && (
+                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-2xl mb-6 shadow-sm animate-pulse">
+                  <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
+                  <div>
+                    <p className="font-extrabold">Penjanaan Sijil CPC (Siap Kerja) Disekat</p>
+                    <p className="text-[10px] text-red-600 font-medium">Sila pastikan Admin atau Jurutera (JR) menetapkan status Notis Peringatan/Perakuan kepada 'Selesai Dikeluarkan' atau 'Tidak Diperlukan' untuk melepaskan sekatan ini.</p>
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4">
                 <h3 className="text-lg font-bold text-yellow-600 flex items-center gap-3"> <Info className="h-5 w-5" /> BQ Pelarasan Building </h3>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => {
+                      if (isCPCBlocked) return;
                       if (!formData.bqDataPelarasan || formData.bqDataPelarasan.length === 0) {
                         setShowPelarasanWarning(true);
                         return;
                       }
                       setIsCPCOpen(true);
                     }}
-                    className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors"
+                    disabled={isCPCBlocked}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all ${
+                      isCPCBlocked 
+                        ? 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none' 
+                        : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+                    }`}
+                    title={isCPCBlocked ? "Penjanaan CPC disekat oleh Notis Peringatan" : "Jana CPC (Siap Kerja)"}
                   >
                     <Award className="w-4 h-4" /> CPC (Siap Kerja)
                   </button>
