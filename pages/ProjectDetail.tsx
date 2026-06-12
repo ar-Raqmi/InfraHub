@@ -2009,20 +2009,21 @@ Jabatan Kejuruteraan` }],
           let p3Str = '-';
           
           if (hasTamatDate) {
-            const tamatVal = new Date(formData.tarikhTamatKontrak!).getTime();
-            if (!isNaN(tamatVal)) {
-              const oneDayMs = 24 * 60 * 60 * 1000;
-              const formatDateForUI = (time: number) => {
-                const d = new Date(time);
-                const day = String(d.getDate()).padStart(2, '0');
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const year = d.getFullYear();
-                return `${day}/${month}/${year}`;
-              };
-              p1Str = formatDateForUI(tamatVal - (7 * oneDayMs));
-              tamatStr = formatDateForUI(tamatVal);
-              p2Str = formatDateForUI(tamatVal + (7 * oneDayMs));
-              p3Str = formatDateForUI(tamatVal + (14 * oneDayMs));
+            const tamatDateObj = new Date(formData.tarikhTamatKontrak!);
+            if (!isNaN(tamatDateObj.getTime())) {
+              tamatStr = formatDate(formData.tarikhTamatKontrak!);
+              
+              const p1Date = new Date(tamatDateObj);
+              p1Date.setDate(tamatDateObj.getDate() - 7);
+              p1Str = formatDate(p1Date.toISOString().split('T')[0]);
+              
+              const p2Date = new Date(tamatDateObj);
+              p2Date.setDate(tamatDateObj.getDate() + 7);
+              p2Str = formatDate(p2Date.toISOString().split('T')[0]);
+              
+              const p3Date = new Date(tamatDateObj);
+              p3Date.setDate(tamatDateObj.getDate() + 14);
+              p3Str = formatDate(p3Date.toISOString().split('T')[0]);
             }
           }
           
