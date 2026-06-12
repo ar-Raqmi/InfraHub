@@ -553,6 +553,7 @@ const CACHE_VERSION = 'v126';
   const zonPortalRef = useRef<HTMLDivElement>(null);
   const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | 'switch' | null; }>({ isOpen: false, type: null });
   const [showPelarasanWarning, setShowPelarasanWarning] = useState(false);
+  const [isNotisCardCollapsed, setIsNotisCardCollapsed] = useState(true);
 
 
 
@@ -2003,35 +2004,52 @@ Jabatan Kejuruteraan` }],
         {/* Warning Notice & Certificate Status Card */}
         {(() => {
           const hasTamatDate = !!formData.tarikhTamatKontrak;
+          if (!hasTamatDate) return null; // Hide completely if no date
           
-          // Calculate triggered dates if tamat date is filled
-          let p1Str = '-';
-          let tamatStr = '-';
-          let p2Str = '-';
-          let p3Str = '-';
-          
-          if (hasTamatDate) {
-            const tamatDateObj = new Date(formData.tarikhTamatKontrak!);
-            if (!isNaN(tamatDateObj.getTime())) {
-              tamatStr = formatDate(formData.tarikhTamatKontrak!);
-              
-              const p1Date = new Date(tamatDateObj);
-              p1Date.setDate(tamatDateObj.getDate() - 7);
-              p1Str = formatDate(p1Date.toISOString().split('T')[0]);
-              
-              const p2Date = new Date(tamatDateObj);
-              p2Date.setDate(tamatDateObj.getDate() + 7);
-              p2Str = formatDate(p2Date.toISOString().split('T')[0]);
-              
-              const p3Date = new Date(tamatDateObj);
-              p3Date.setDate(tamatDateObj.getDate() + 14);
-              p3Str = formatDate(p3Date.toISOString().split('T')[0]);
-            }
-          }
-          
+          const tamatVal = new Date(formData.tarikhTamatKontrak!).getTime();
+          if (isNaN(tamatVal)) return null;
+
+          const now = new Date();
+          const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+          const todayVal = new Date(todayStr).getTime();
+
+          const oneDayMs = 24 * 60 * 60 * 1000;
+          const p1Time = tamatVal - (7 * oneDayMs);
+          const p2Time = tamatVal + (7 * oneDayMs);
+          const p3Time = tamatVal + (14 * oneDayMs);
+
+          const formatDateForUI = (time: number) => {
+            const d = new Date(time);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+          };
+
+          const p1Str = formatDateForUI(p1Time);
+          const tamatStr = formatDateForUI(tamatVal);
+          const p2Str = formatDateForUI(p2Time);
+          const p3Str = formatDateForUI(p3Time);
+
+          const isP1Passed = todayVal >= p1Time;
+          const isTamatPassed = todayVal >= tamatVal;
+          const isP2Passed = todayVal >= p2Time;
+          const isP3Passed = todayVal >= p3Time;
+
+          const isP1Warning = isP1Passed && (formData.notisPeringatan1Status === 'PENDING' || !formData.notisPeringatan1Status) && !formData.isTiadaNotisDiperlukan;
+          const isTamatWarning = isTamatPassed && (formData.perakuanKerjaTidakSiapStatus === 'PENDING' || !formData.perakuanKerjaTidakSiapStatus) && !formData.isTiadaNotisDiperlukan;
+          const isP2Warning = isP2Passed && (formData.notisPeringatan2Status === 'PENDING' || !formData.notisPeringatan2Status) && !formData.isTiadaNotisDiperlukan;
+          const isP3Warning = isP3Passed && (formData.notisPeringatan3Status === 'PENDING' || !formData.notisPeringatan3Status) && !formData.isTiadaNotisDiperlukan;
+
+          let warningCount = 0;
+          if (isP1Warning) warningCount++;
+          if (isTamatWarning) warningCount++;
+          if (isP2Warning) warningCount++;
+          if (isP3Warning) warningCount++;
+
           const isAdminOrJurutera = currentUser?.role === Role.ADMIN || currentUser?.role === Role.JURUTERA;
           const isNoticeReadOnly = isGlobalReadOnly || !isAdminOrJurutera || formData.status === ProjectStatus.SIAP;
-          
+
           const handleNoticeStatusChange = (field: string, val: string) => {
             setFormData(prev => ({
               ...prev,
@@ -2039,107 +2057,214 @@ Jabatan Kejuruteraan` }],
             }));
             setHasUnsavedChanges(true);
           };
-          
-          const selectClass = "px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 outline-none text-xs font-bold text-slate-700 cursor-pointer focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all";
-          
+
           return (
-            <div className="mb-6 bg-white/95 border border-slate-200 shadow-xl rounded-3xl p-6 relative overflow-hidden">
+            <div className="mb-6 bg-white/95 border border-slate-200 shadow-xl rounded-3xl p-5 relative overflow-hidden transition-all duration-300">
               <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-red-500 to-rose-600"></div>
               
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
+              {/* Clickable Header for Collapsing */}
+              <div 
+                onClick={() => setIsNotisCardCollapsed(!isNotisCardCollapsed)}
+                className="flex items-center justify-between gap-4 cursor-pointer select-none"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-rose-50 to-red-50 text-red-600 rounded-xl flex items-center justify-center shadow-sm">
+                  <div className="w-10 h-10 bg-gradient-to-br from-rose-50 to-red-50 text-red-600 rounded-xl flex items-center justify-center shadow-sm shrink-0">
                     <FileWarning className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm tracking-tight font-jakarta">Status Notis Peringatan & Perakuan Kontrak</h3>
-                    <p className="text-[10px] text-slate-500 font-medium">Urus kelulusan dan rekod notis peringatan rasmi</p>
+                    <p className={`text-[10px] font-bold ${warningCount > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                      {warningCount > 0 ? `⚠️ ${warningCount} Notis Perlu Tindakan Segera` : '✓ Semua notis selesai / dikecualikan'}
+                    </p>
                   </div>
                 </div>
-                {!hasTamatDate && (
-                  <div className="text-[10px] text-amber-700 font-black bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl uppercase tracking-wider">
-                    Tarikh tamat kontrak belum diisi
-                  </div>
-                )}
+                
+                <button 
+                  type="button"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isNotisCardCollapsed ? '' : 'rotate-180'}`} />
+                </button>
               </div>
-              
-              {hasTamatDate ? (
-                <div className="space-y-4">
+
+              {/* Collapsible Content */}
+              {!isNotisCardCollapsed && (
+                <div className="mt-5 pt-4 border-t border-slate-100 space-y-5 animate-fade-in">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Notice 1 */}
-                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP1Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Pertama</span>
-                        <span className="text-[10px] font-bold text-slate-600">Automatik: {p1Str}</span>
+                        <span className={`text-[10px] font-bold ${isP1Warning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {p1Str}</span>
                       </div>
-                      <select
-                        value={formData.notisPeringatan1Status || 'PENDING'}
-                        onChange={(e) => handleNoticeStatusChange('notisPeringatan1Status', e.target.value)}
-                        disabled={isNoticeReadOnly}
-                        className={selectClass}
-                      >
-                        <option value="PENDING">Belum Diambil Tindakan</option>
-                        <option value="SENT">Selesai Dikeluarkan</option>
-                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
-                      </select>
+                      
+                      <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
+                        {[
+                          { value: 'PENDING', label: 'Belum' },
+                          { value: 'SENT', label: 'Dihantar' },
+                          { value: 'NOT_REQUIRED', label: 'Tidak Perlu' }
+                        ].map((opt) => {
+                          const isSelected = (formData.notisPeringatan1Status || 'PENDING') === opt.value;
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all select-none ${
+                                isSelected
+                                  ? opt.value === 'PENDING'
+                                    ? 'bg-rose-500 text-white shadow-sm'
+                                    : opt.value === 'SENT'
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'bg-slate-600 text-white shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-800'
+                              } ${isNoticeReadOnly ? 'pointer-events-none opacity-60' : ''}`}
+                            >
+                              <input
+                                type="radio"
+                                name="notisPeringatan1Status"
+                                value={opt.value}
+                                checked={isSelected}
+                                onChange={() => handleNoticeStatusChange('notisPeringatan1Status', opt.value)}
+                                disabled={isNoticeReadOnly}
+                                className="sr-only"
+                              />
+                              {opt.label}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
-                    
+
                     {/* Perakuan Kerja Tidak Siap */}
-                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isTamatWarning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Perakuan Kerja Tidak Siap</span>
-                        <span className="text-[10px] font-bold text-slate-600">Automatik: {tamatStr}</span>
+                        <span className={`text-[10px] font-bold ${isTamatWarning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {tamatStr}</span>
                       </div>
-                      <select
-                        value={formData.perakuanKerjaTidakSiapStatus || 'PENDING'}
-                        onChange={(e) => handleNoticeStatusChange('perakuanKerjaTidakSiapStatus', e.target.value)}
-                        disabled={isNoticeReadOnly}
-                        className={selectClass}
-                      >
-                        <option value="PENDING">Belum Diambil Tindakan</option>
-                        <option value="SENT">Selesai Dikeluarkan</option>
-                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
-                      </select>
+                      
+                      <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
+                        {[
+                          { value: 'PENDING', label: 'Belum' },
+                          { value: 'SENT', label: 'Dihantar' },
+                          { value: 'NOT_REQUIRED', label: 'Tidak Perlu' }
+                        ].map((opt) => {
+                          const isSelected = (formData.perakuanKerjaTidakSiapStatus || 'PENDING') === opt.value;
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all select-none ${
+                                isSelected
+                                  ? opt.value === 'PENDING'
+                                    ? 'bg-rose-500 text-white shadow-sm'
+                                    : opt.value === 'SENT'
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'bg-slate-600 text-white shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-800'
+                              } ${isNoticeReadOnly ? 'pointer-events-none opacity-60' : ''}`}
+                            >
+                              <input
+                                type="radio"
+                                name="perakuanKerjaTidakSiapStatus"
+                                value={opt.value}
+                                checked={isSelected}
+                                onChange={() => handleNoticeStatusChange('perakuanKerjaTidakSiapStatus', opt.value)}
+                                disabled={isNoticeReadOnly}
+                                className="sr-only"
+                              />
+                              {opt.label}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
-                    
+
                     {/* Notice 2 */}
-                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP2Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Kedua</span>
-                        <span className="text-[10px] font-bold text-slate-600">Automatik: {p2Str}</span>
+                        <span className={`text-[10px] font-bold ${isP2Warning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {p2Str}</span>
                       </div>
-                      <select
-                        value={formData.notisPeringatan2Status || 'PENDING'}
-                        onChange={(e) => handleNoticeStatusChange('notisPeringatan2Status', e.target.value)}
-                        disabled={isNoticeReadOnly}
-                        className={selectClass}
-                      >
-                        <option value="PENDING">Belum Diambil Tindakan</option>
-                        <option value="SENT">Selesai Dikeluarkan</option>
-                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
-                      </select>
+                      
+                      <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
+                        {[
+                          { value: 'PENDING', label: 'Belum' },
+                          { value: 'SENT', label: 'Dihantar' },
+                          { value: 'NOT_REQUIRED', label: 'Tidak Perlu' }
+                        ].map((opt) => {
+                          const isSelected = (formData.notisPeringatan2Status || 'PENDING') === opt.value;
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all select-none ${
+                                isSelected
+                                  ? opt.value === 'PENDING'
+                                    ? 'bg-rose-500 text-white shadow-sm'
+                                    : opt.value === 'SENT'
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'bg-slate-600 text-white shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-800'
+                              } ${isNoticeReadOnly ? 'pointer-events-none opacity-60' : ''}`}
+                            >
+                              <input
+                                type="radio"
+                                name="notisPeringatan2Status"
+                                value={opt.value}
+                                checked={isSelected}
+                                onChange={() => handleNoticeStatusChange('notisPeringatan2Status', opt.value)}
+                                disabled={isNoticeReadOnly}
+                                className="sr-only"
+                              />
+                              {opt.label}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
-                    
+
                     {/* Notice 3 */}
-                    <div className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                    <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP3Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Ketiga</span>
-                        <span className="text-[10px] font-bold text-slate-600">Automatik: {p3Str}</span>
+                        <span className={`text-[10px] font-bold ${isP3Warning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {p3Str}</span>
                       </div>
-                      <select
-                        value={formData.notisPeringatan3Status || 'PENDING'}
-                        onChange={(e) => handleNoticeStatusChange('notisPeringatan3Status', e.target.value)}
-                        disabled={isNoticeReadOnly}
-                        className={selectClass}
-                      >
-                        <option value="PENDING">Belum Diambil Tindakan</option>
-                        <option value="SENT">Selesai Dikeluarkan</option>
-                        <option value="NOT_REQUIRED">Tidak Diperlukan</option>
-                      </select>
+                      
+                      <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
+                        {[
+                          { value: 'PENDING', label: 'Belum' },
+                          { value: 'SENT', label: 'Dihantar' },
+                          { value: 'NOT_REQUIRED', label: 'Tidak Perlu' }
+                        ].map((opt) => {
+                          const isSelected = (formData.notisPeringatan3Status || 'PENDING') === opt.value;
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all select-none ${
+                                isSelected
+                                  ? opt.value === 'PENDING'
+                                    ? 'bg-rose-500 text-white shadow-sm'
+                                    : opt.value === 'SENT'
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'bg-slate-600 text-white shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-800'
+                              } ${isNoticeReadOnly ? 'pointer-events-none opacity-60' : ''}`}
+                            >
+                              <input
+                                type="radio"
+                                name="notisPeringatan3Status"
+                                value={opt.value}
+                                checked={isSelected}
+                                onChange={() => handleNoticeStatusChange('notisPeringatan3Status', opt.value)}
+                                disabled={isNoticeReadOnly}
+                                className="sr-only"
+                              />
+                              {opt.label}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2.5 pt-2">
+                  <div className="flex items-center gap-2.5 pt-2 border-t border-slate-100">
                     <input
                       type="checkbox"
                       id="isTiadaNotisDiperlukan"
@@ -2159,11 +2284,6 @@ Jabatan Kejuruteraan` }],
                     </label>
                   </div>
                 </div>
-              ) : (
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Sila isikan **Tarikh Tamat Kontrak** dalam Tab **File Creation (Fasa 2)** terlebih dahulu.
-                  Status notis amaran kontrak akan dipaparkan dan dijana secara automatik selepas tarikh tamat diisi.
-                </p>
               )}
             </div>
           );
