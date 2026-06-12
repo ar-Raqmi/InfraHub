@@ -2090,9 +2090,9 @@ Jabatan Kejuruteraan` }],
                     <FileWarning className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm tracking-tight font-jakarta">Status Notis Peringatan & Perakuan Kontrak</h3>
-                    <p className={`text-[10px] font-bold ${warningCount > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                      {warningCount > 0 ? `⚠️ ${warningCount} Notis Perlu Tindakan Segera` : '✓ Semua notis selesai / dikecualikan'}
+                    <h3 className="font-bold text-slate-900 text-[14px] tracking-tight font-jakarta">Status Notis Peringatan & Perakuan Kontrak</h3>
+                    <p className={`text-[12px] font-bold ${warningCount > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                      {warningCount > 0 ? `${warningCount} Notis Perlu Tindakan Segera` : '✓ Semua notis selesai / dikecualikan'}
                     </p>
                   </div>
                 </div>
@@ -2112,8 +2112,8 @@ Jabatan Kejuruteraan` }],
                     {/* Notice 1 */}
                     <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP1Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Pertama</span>
-                        <span className={`text-[10px] font-bold ${isP1Warning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {p1Str}</span>
+                        <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Pertama</span>
+                        <span className={`text-[14px] font-bold ${isP1Warning ? 'text-rose-600' : 'text-slate-500'}`}>{p1Str}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
@@ -2155,8 +2155,8 @@ Jabatan Kejuruteraan` }],
                     {/* Perakuan Kerja Tidak Siap */}
                     <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isTamatWarning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Perakuan Kerja Tidak Siap</span>
-                        <span className={`text-[10px] font-bold ${isTamatWarning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {tamatStr}</span>
+                        <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Perakuan Kerja Tidak Siap</span>
+                        <span className={`text-[14px] font-bold ${isTamatWarning ? 'text-rose-600' : 'text-slate-500'}`}>{tamatStr}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
@@ -2198,8 +2198,8 @@ Jabatan Kejuruteraan` }],
                     {/* Notice 2 */}
                     <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP2Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Kedua</span>
-                        <span className={`text-[10px] font-bold ${isP2Warning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {p2Str}</span>
+                        <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Kedua</span>
+                        <span className={`text-[14px] font-bold ${isP2Warning ? 'text-rose-600' : 'text-slate-500'}`}>{p2Str}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
@@ -2241,8 +2241,8 @@ Jabatan Kejuruteraan` }],
                     {/* Notice 3 */}
                     <div className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isP3Warning ? 'border-rose-300 bg-rose-50/10 ring-2 ring-rose-500/20' : 'bg-slate-50/50 border-slate-100'}`}>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Ketiga</span>
-                        <span className={`text-[10px] font-bold ${isP3Warning ? 'text-rose-600' : 'text-slate-500'}`}>Automatik: {p3Str}</span>
+                        <span className="text-[12px] font-black text-slate-400 uppercase tracking-wider">Notis Peringatan Ketiga</span>
+                        <span className={`text-[14px] font-bold ${isP3Warning ? 'text-rose-600' : 'text-slate-500'}`}>{p3Str}</span>
                       </div>
                       
                       <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl w-fit">
@@ -2298,7 +2298,7 @@ Jabatan Kejuruteraan` }],
                       className="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer disabled:cursor-not-allowed"
                     />
                     <label htmlFor="isTiadaNotisDiperlukan" className="text-xs font-bold text-slate-600 select-none cursor-pointer">
-                      Tiada Sebarang Notis Diperlukan (Bypass Semua)
+                      Tiada Notis Diperlukan
                     </label>
                   </div>
                 </div>
@@ -2472,8 +2472,8 @@ Jabatan Kejuruteraan` }],
                 <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-2xl mb-6 shadow-sm animate-pulse">
                   <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
                   <div>
-                    <p className="font-extrabold">Penjanaan Sijil CPC (Siap Kerja) Disekat</p>
-                    <p className="text-[10px] text-red-600 font-medium">Sila pastikan Admin atau Jurutera (JR) menetapkan status Notis Peringatan/Perakuan kepada 'Selesai Dikeluarkan' atau 'Tidak Diperlukan' untuk melepaskan sekatan ini.</p>
+                    <p className="text-[14px] font-extrabold">CPC (Siap Kerja) Disekat</p>
+                    <p className="text-[12px] text-red-600 font-medium">Sila pastikan PT atau Jurutera menetapkan status Notis Peringatan/Perakuan kepada 'Selesai Dikeluarkan' atau 'Tidak Diperlukan' untuk melepaskan sekatan ini.</p>
                   </div>
                 </div>
               )}
