@@ -332,7 +332,7 @@
   </script>
 
   <!-- Essential Libraries -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/tailwind.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -371,14 +371,17 @@
   </script>
   <script type="module" src="./index.tsx"></script>
   <script>
-    // Service Worker Registration with safe error handling for development environments
+    // Unregister any active service worker to prevent upload request body corruption and force a single reload to apply
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // Register using a standard relative path to avoid"not a valid URL" constructor errors
-        navigator.serviceWorker.register('./sw.js').catch(err => {
-          // Log as info since this is often environment-specific and non-critical during build
-          console.info('Service Worker registration skipped or failed in this preview environment.');
-        });
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        if (registrations && registrations.length > 0) {
+          Promise.all(registrations.map(r => r.unregister())).then(() => {
+            console.info('Service Worker unregistered. Reloading page to apply changes...');
+            window.location.reload();
+          });
+        }
+      }).catch(err => {
+        console.error('Failed to unregister service worker:', err);
       });
     }
   </script>

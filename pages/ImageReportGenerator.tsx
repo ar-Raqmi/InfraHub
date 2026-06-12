@@ -1061,11 +1061,16 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
-        const compressedBlob = await generateSingleCompressedBlob(file);
-        const compressedFile = new File([compressedBlob], file.name, { type: 'image/jpeg' });
+        let fileToUpload = file;
+        try {
+          const compressedBlob = await generateSingleCompressedBlob(file);
+          fileToUpload = new File([compressedBlob], file.name, { type: 'image/jpeg' });
+        } catch (err) {
+          console.error('Image compression failed, using original file:', err);
+        }
         
         return uploadImage({
-          file: compressedFile,
+          file: fileToUpload,
           userId: user.id,
           userFullName: user.fullName,
           projectId: selectedProjectId ? Number(selectedProjectId) : undefined,

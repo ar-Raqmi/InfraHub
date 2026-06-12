@@ -18,6 +18,15 @@ const app = new Hono<{ Bindings: Bindings }>().basePath('/api')
 
 app.use('*', cors())
 
+app.onError((err, c) => {
+  console.error(err)
+  return c.json({
+    error: err.name || 'Error',
+    message: err.message,
+    stack: err.stack
+  }, 500)
+})
+
 // Disable caching for DATA routes (Projects & System) - GET ONLY
 app.use('/projects/*', async (c, next) => {
   await next()

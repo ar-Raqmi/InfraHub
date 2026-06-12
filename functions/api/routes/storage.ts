@@ -10,6 +10,16 @@ export const storageApp = new Hono<{ Bindings: Bindings }>()
 
 storageApp.use('*', cors())
 
+storageApp.use('*', async (c, next) => {
+  if (!c.env.DB) {
+    return c.json({ error: 'D1 DB binding is missing. Please bind your D1 database to the DB variable in the Cloudflare Pages settings (Settings -> Functions).' }, 500)
+  }
+  if (!c.env.BUCKET) {
+    return c.json({ error: 'R2 BUCKET binding is missing. Please bind your R2 bucket to the BUCKET variable in the Cloudflare Pages settings (Settings -> Functions).' }, 500)
+  }
+  await next()
+})
+
 const mapTemporaryImageFromRow = (row: any) => ({
   id: row.id,
   createdAt: row.created_at,
@@ -47,13 +57,25 @@ storageApp.post('/upload', async (c) => {
     return c.json({ error: 'Missing required fields' }, 400)
   }
 
+  // Safely extract the ArrayBuffer
+  let arrayBuffer: ArrayBuffer
+  if (file && typeof file === 'object' && typeof file.arrayBuffer === 'function') {
+    arrayBuffer = await file.arrayBuffer()
+  } else if (file) {
+    arrayBuffer = await new Response(file as any).arrayBuffer()
+  } else {
+    return c.json({ error: 'Invalid file upload' }, 400)
+  }
+
   // Upload to R2 Bucket
   const fileExt = 'jpg'
   const timestamp = Date.now()
   const fileName = `${userId}_${timestamp}.${fileExt}`
 
-  await c.env.BUCKET.put(fileName, await file.arrayBuffer(), {
-    httpMetadata: { contentType: file.type || 'image/jpeg' }
+  const contentType = (typeof file === 'object' && file.type) || 'image/jpeg'
+
+  await c.env.BUCKET.put(fileName, arrayBuffer, {
+    httpMetadata: { contentType }
   })
 
   // We need the public URL of the uploaded image. 
