@@ -318,6 +318,13 @@ export interface Project {
   coverBahagian?: string; // e.g. "Bahagian Infrastruktur"
   coverUnit?: string; // e.g. "Unit Selenggara Infrastruktur"
   coverSebutHargaText?: string; // Multiline text for Page 2
+
+  // NOTICE STATUS SETTINGS (NEW)
+  notisPeringatan1Status?: 'PENDING' | 'SENT' | 'NOT_REQUIRED';
+  perakuanKerjaTidakSiapStatus?: 'PENDING' | 'SENT' | 'NOT_REQUIRED';
+  notisPeringatan2Status?: 'PENDING' | 'SENT' | 'NOT_REQUIRED';
+  notisPeringatan3Status?: 'PENDING' | 'SENT' | 'NOT_REQUIRED';
+  isTiadaNotisDiperlukan?: boolean;
 }
 
 export const formatCurrency = (amount: number | undefined | null) => {
