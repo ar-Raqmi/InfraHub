@@ -554,37 +554,7 @@ const CACHE_VERSION = 'v126';
   const [confirmationState, setConfirmationState] = useState<{ isOpen: boolean; type: 'back' | 'save' | 'reset_pelarasan' | 'switch' | null; }>({ isOpen: false, type: null });
   const [showPelarasanWarning, setShowPelarasanWarning] = useState(false);
 
-  const isCPCBlocked = useMemo(() => {
-    if (formData.isTiadaNotisDiperlukan || !formData.tarikhTamatKontrak) {
-      return false;
-    }
-    const now = new Date();
-    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-    const todayVal = new Date(todayStr).getTime();
-    
-    const tamatVal = new Date(formData.tarikhTamatKontrak).getTime();
-    if (isNaN(tamatVal)) return false;
-    
-    const oneDayMs = 24 * 60 * 60 * 1000;
-    const p1Time = tamatVal - (7 * oneDayMs);
-    const p2Time = tamatVal + (7 * oneDayMs);
-    const p3Time = tamatVal + (14 * oneDayMs);
-    
-    if (todayVal >= p3Time) {
-      if (!formData.notisPeringatan3Status || formData.notisPeringatan3Status === 'PENDING') return true;
-    }
-    if (todayVal >= p2Time) {
-      if (!formData.notisPeringatan2Status || formData.notisPeringatan2Status === 'PENDING') return true;
-    }
-    if (todayVal >= tamatVal) {
-      if (!formData.perakuanKerjaTidakSiapStatus || formData.perakuanKerjaTidakSiapStatus === 'PENDING') return true;
-    }
-    if (todayVal >= p1Time) {
-      if (!formData.notisPeringatan1Status || formData.notisPeringatan1Status === 'PENDING') return true;
-    }
-    
-    return false;
-  }, [formData.tarikhTamatKontrak, formData.notisPeringatan1Status, formData.perakuanKerjaTidakSiapStatus, formData.notisPeringatan2Status, formData.notisPeringatan3Status, formData.isTiadaNotisDiperlukan]);
+
 
   // Project Switcher State
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -684,6 +654,38 @@ const CACHE_VERSION = 'v126';
   const isDifferentPJA = isPJA && formData.pjaId !== 0 && formData.pjaId !== currentUser?.id;
   const isGlobalReadOnly = isDifferentPJA || isVerifying; // LOCK during sync check
   const isPTSectionReadOnly = isPJA || isGlobalReadOnly;
+
+  const isCPCBlocked = useMemo(() => {
+    if (formData.isTiadaNotisDiperlukan || !formData.tarikhTamatKontrak) {
+      return false;
+    }
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+    const todayVal = new Date(todayStr).getTime();
+    
+    const tamatVal = new Date(formData.tarikhTamatKontrak).getTime();
+    if (isNaN(tamatVal)) return false;
+    
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const p1Time = tamatVal - (7 * oneDayMs);
+    const p2Time = tamatVal + (7 * oneDayMs);
+    const p3Time = tamatVal + (14 * oneDayMs);
+    
+    if (todayVal >= p3Time) {
+      if (!formData.notisPeringatan3Status || formData.notisPeringatan3Status === 'PENDING') return true;
+    }
+    if (todayVal >= p2Time) {
+      if (!formData.notisPeringatan2Status || formData.notisPeringatan2Status === 'PENDING') return true;
+    }
+    if (todayVal >= tamatVal) {
+      if (!formData.perakuanKerjaTidakSiapStatus || formData.perakuanKerjaTidakSiapStatus === 'PENDING') return true;
+    }
+    if (todayVal >= p1Time) {
+      if (!formData.notisPeringatan1Status || formData.notisPeringatan1Status === 'PENDING') return true;
+    }
+    
+    return false;
+  }, [formData.tarikhTamatKontrak, formData.notisPeringatan1Status, formData.perakuanKerjaTidakSiapStatus, formData.notisPeringatan2Status, formData.notisPeringatan3Status, formData.isTiadaNotisDiperlukan]);
 
   const handlePjaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedPjaId = Number(e.target.value);
