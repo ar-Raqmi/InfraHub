@@ -100,6 +100,36 @@ function App() {
     setAuthLoading(false);
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+
+    // Push initial history state to prevent immediate back navigation
+    window.history.pushState(null, '', window.location.href);
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'Adakah anda pasti mahu menyegarkan halaman?';
+      return e.returnValue;
+    };
+
+    const handlePopState = () => {
+      const confirmLeave = window.confirm('Adakah anda pasti mahu kembali ke halaman sebelumnya? Tindakan ini boleh menyebabkan anda keluar dari aplikasi.');
+      if (!confirmLeave) {
+        window.history.pushState(null, '', window.location.href);
+      } else {
+        window.history.go(-1);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [user]);
+
   // Filter Projects by Year
   const filteredProjects = projects.filter(p => {
     if (!p.tarikhBuka) return false;

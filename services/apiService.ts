@@ -5,10 +5,41 @@ class CloudflareService {
     private currentUser: User | null = null;
     private baseUrl = '/api';
 
-    constructor() { }
+    constructor() {
+        this.loadSession();
+    }
+
+    private loadSession() {
+        try {
+            const storedUser = localStorage.getItem('infrahub_user');
+            const loginTimeStr = localStorage.getItem('infrahub_login_time');
+            if (storedUser && loginTimeStr) {
+                const loginTime = parseInt(loginTimeStr, 10);
+                const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+                if (Date.now() - loginTime < sevenDaysMs) {
+                    this.currentUser = JSON.parse(storedUser);
+                } else {
+                    this.clearSession();
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load session', e);
+        }
+    }
+
+    private clearSession() {
+        this.currentUser = null;
+        localStorage.removeItem('infrahub_user');
+        localStorage.removeItem('infrahub_login_time');
+    }
 
     setCurrentUser(user: User | null) {
         this.currentUser = user;
+        if (user) {
+            localStorage.setItem('infrahub_user', JSON.stringify(user));
+        } else {
+            this.clearSession();
+        }
     }
 
     async login(username: string, password: string): Promise<User> {
@@ -20,6 +51,7 @@ class CloudflareService {
 
         if (!response.ok) throw new Error('Invalid credentials');
         const data: any = await response.json();
+        localStorage.setItem('infrahub_login_time', Date.now().toString());
         this.setCurrentUser(data.user);
         return data.user;
     }
