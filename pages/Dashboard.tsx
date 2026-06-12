@@ -11,9 +11,18 @@ const getPendingNotice = (project: Project): string | null => {
     return null;
   }
 
-  const now = new Date();
-  const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-  const todayVal = new Date(todayStr).getTime();
+  let todayVal = 0;
+  if (project.tarikhPemeriksaan) {
+    const checkVal = new Date(project.tarikhPemeriksaan).getTime();
+    if (!isNaN(checkVal)) {
+      todayVal = checkVal;
+    }
+  }
+  if (!todayVal) {
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+    todayVal = new Date(todayStr).getTime();
+  }
 
   const tamatVal = new Date(project.tarikhTamatKontrak).getTime();
   if (isNaN(tamatVal)) return null;

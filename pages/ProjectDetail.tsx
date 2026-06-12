@@ -660,9 +660,18 @@ const CACHE_VERSION = 'v126';
     if (formData.isTiadaNotisDiperlukan || !formData.tarikhTamatKontrak) {
       return false;
     }
-    const now = new Date();
-    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-    const todayVal = new Date(todayStr).getTime();
+    let todayVal = 0;
+    if (formData.tarikhPemeriksaan) {
+      const checkVal = new Date(formData.tarikhPemeriksaan).getTime();
+      if (!isNaN(checkVal)) {
+        todayVal = checkVal;
+      }
+    }
+    if (!todayVal) {
+      const now = new Date();
+      const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+      todayVal = new Date(todayStr).getTime();
+    }
     
     const tamatVal = new Date(formData.tarikhTamatKontrak).getTime();
     if (isNaN(tamatVal)) return false;
@@ -686,7 +695,7 @@ const CACHE_VERSION = 'v126';
     }
     
     return false;
-  }, [formData.tarikhTamatKontrak, formData.notisPeringatan1Status, formData.perakuanKerjaTidakSiapStatus, formData.notisPeringatan2Status, formData.notisPeringatan3Status, formData.isTiadaNotisDiperlukan]);
+  }, [formData.tarikhTamatKontrak, formData.tarikhPemeriksaan, formData.notisPeringatan1Status, formData.perakuanKerjaTidakSiapStatus, formData.notisPeringatan2Status, formData.notisPeringatan3Status, formData.isTiadaNotisDiperlukan]);
 
   const handlePjaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedPjaId = Number(e.target.value);
@@ -2009,9 +2018,18 @@ Jabatan Kejuruteraan` }],
           const tamatVal = new Date(formData.tarikhTamatKontrak!).getTime();
           if (isNaN(tamatVal)) return null;
 
-          const now = new Date();
-          const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-          const todayVal = new Date(todayStr).getTime();
+          let todayVal = 0;
+          if (formData.tarikhPemeriksaan) {
+            const checkVal = new Date(formData.tarikhPemeriksaan).getTime();
+            if (!isNaN(checkVal)) {
+              todayVal = checkVal;
+            }
+          }
+          if (!todayVal) {
+            const now = new Date();
+            const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+            todayVal = new Date(todayStr).getTime();
+          }
 
           const oneDayMs = 24 * 60 * 60 * 1000;
           const p1Time = tamatVal - (7 * oneDayMs);
