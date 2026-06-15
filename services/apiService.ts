@@ -353,9 +353,10 @@ class CloudflareService {
         return response.json();
     }
 
-    async uploadTemporaryImage(file: File, userId: number, userFullName: string, projectId?: number, location?: string): Promise<TemporaryImage> {
+    async uploadTemporaryImage(file: File | Blob, userId: number, userFullName: string, projectId?: number, location?: string): Promise<TemporaryImage> {
         const formData = new FormData();
-        formData.append('file', file);
+        const fileName = (file as any).name || 'image.jpg';
+        formData.append('file', file, fileName);
         formData.append('userId', userId.toString());
         formData.append('userFullName', userFullName);
         if (projectId) formData.append('projectId', projectId.toString());
