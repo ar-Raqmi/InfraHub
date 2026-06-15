@@ -79,38 +79,9 @@ export class ProjectRepository extends BaseRepository {
     };
   }
 
-  public async getAll(): Promise<any[]> {
-    const { results } = await this.db.prepare(`
-      SELECT 
-        id, nama_projek, no_aduan, aduan, lokasi, project_locations, bp, zon, mukim, pja_id, kos_projek, 
-        tarikh_buka, no_fail, no_sebutharga, no_inden, no_bpp, nama_syarikat, bulan, no_vote, 
-        tarikh_lantikan, tarikh_cetakan_bpp, tempoh_kontrak, tarikh_mula_kontrak, tarikh_tamat_kontrak, 
-        tarikh_serah_tapak, iso, tarikh_mula_kerja, is_manual_mula_kontrak, is_manual_mula_kerja, 
-        tarikh_pemeriksaan, tarikh_siap_sebenar, prestasi, tarikh_tuntutan_bayaran, kos_sebenar, bq_pelarasan_extra,
-        lad_amount, lad_days, loc_amount, loc_days, is_loc_deduction_enabled, wang_tahanan, skop, 
-        prestasi_scores, no_inbois, tarikh_hantar_kewangan, tarikh_padanan, peratus_siap, status, 
-        aku_janji_month, aku_janji_panel_title, aku_janji_footer_text, cover_jawatan, cover_bahagian, 
-        cover_unit, cover_sebut_harga_text, notis_peringatan_1_status, perakuan_kerja_tidak_siap_status,
-        notis_peringatan_2_status, notis_peringatan_3_status, is_tiada_notis_diperlukan, created_at, updated_at 
-      FROM projects 
-      ORDER BY created_at DESC
-    `).all();
-    return results.map(row => this.mapProjectFromRow(row));
-  }
-
-  public async getById(id: string): Promise<any | null> {
-    const { results } = await this.db.prepare('SELECT * FROM projects WHERE id = ?').bind(id).all();
-    if (!results || results.length === 0) {
-      return null;
-    }
-    const mapped = this.mapProjectFromRow(results[0]);
-    return { ...mapped, debug_sig: 'v_detail_fix_103' };
-  }
-
-  public async create(body: any): Promise<any> {
-    const newId = Date.now();
-    const dbRecord = {
-      id: newId,
+  private mapProjectBodyToDbRecord(body: any, id: number): Record<string, any> {
+    return {
+      id,
       nama_projek: body.namaProjek,
       no_aduan: body.noAduan,
       aduan: body.aduan,
@@ -179,17 +150,9 @@ export class ProjectRepository extends BaseRepository {
       is_tiada_notis_diperlukan: body.isTiadaNotisDiperlukan ? 1 : 0,
       updated_at: new Date().toISOString()
     };
-
-    const { keys, values, placeholders } = this.buildInsert(dbRecord);
-
-    await this.db.prepare(`INSERT INTO projects (${keys.join(', ')}) VALUES (${placeholders})`)
-      .bind(...values)
-      .run();
-
-    return this.mapProjectFromRow(dbRecord);
   }
 
-  public async update(id: string, body: any): Promise<any | null> {
+  private mapUpdatesToSnakeCase(body: any): Record<string, any> {
     const dbUpdates: Record<string, any> = {};
 
     if (body.namaProjek !== undefined) dbUpdates.nama_projek = body.namaProjek;
@@ -223,7 +186,7 @@ export class ProjectRepository extends BaseRepository {
     if (body.isManualMulaKerja !== undefined) dbUpdates.is_manual_mula_kerja = body.isManualMulaKerja ? 1 : 0;
 
     if (body.tarikhPemeriksaan !== undefined) dbUpdates.tarikh_pemeriksaan = body.tarikhPemeriksaan;
-    if (body.tarikhSiapSebedar !== undefined) dbUpdates.tarikh_siap_sebenar = body.tarikhSiapSebenar;
+    if (body.tarikhSiapSebenar !== undefined) dbUpdates.tarikh_siap_sebenar = body.tarikhSiapSebenar;
     if (body.prestasi !== undefined) dbUpdates.prestasi = body.prestasi;
     if (body.tarikhTuntutanBayaran !== undefined) dbUpdates.tarikh_tuntutan_bayaran = body.tarikhTuntutanBayaran;
     if (body.kosSebenar !== undefined) dbUpdates.kos_sebenar = Number(body.kosSebenar) || 0;
@@ -266,6 +229,51 @@ export class ProjectRepository extends BaseRepository {
     if (body.notisPeringatan3Status !== undefined) dbUpdates.notis_peringatan_3_status = body.notisPeringatan3Status;
     if (body.isTiadaNotisDiperlukan !== undefined) dbUpdates.is_tiada_notis_diperlukan = body.isTiadaNotisDiperlukan ? 1 : 0;
 
+    return dbUpdates;
+  }
+
+  public async getAll(): Promise<any[]> {
+    const { results } = await this.db.prepare(`
+      SELECT 
+        id, nama_projek, no_aduan, aduan, lokasi, project_locations, bp, zon, mukim, pja_id, kos_projek, 
+        tarikh_buka, no_fail, no_sebutharga, no_inden, no_bpp, nama_syarikat, bulan, no_vote, 
+        tarikh_lantikan, tarikh_cetakan_bpp, tempoh_kontrak, tarikh_mula_kontrak, tarikh_tamat_kontrak, 
+        tarikh_serah_tapak, iso, tarikh_mula_kerja, is_manual_mula_kontrak, is_manual_mula_kerja, 
+        tarikh_pemeriksaan, tarikh_siap_sebenar, prestasi, tarikh_tuntutan_bayaran, kos_sebenar, bq_pelarasan_extra,
+        lad_amount, lad_days, loc_amount, loc_days, is_loc_deduction_enabled, wang_tahanan, skop, 
+        prestasi_scores, no_inbois, tarikh_hantar_kewangan, tarikh_padanan, peratus_siap, status, 
+        aku_janji_month, aku_janji_panel_title, aku_janji_footer_text, cover_jawatan, cover_bahagian, 
+        cover_unit, cover_sebut_harga_text, notis_peringatan_1_status, perakuan_kerja_tidak_siap_status,
+        notis_peringatan_2_status, notis_peringatan_3_status, is_tiada_notis_diperlukan, created_at, updated_at 
+      FROM projects 
+      ORDER BY created_at DESC
+    `).all();
+    return results.map(row => this.mapProjectFromRow(row));
+  }
+
+  public async getById(id: string): Promise<any | null> {
+    const { results } = await this.db.prepare('SELECT * FROM projects WHERE id = ?').bind(id).all();
+    if (!results || results.length === 0) {
+      return null;
+    }
+    const mapped = this.mapProjectFromRow(results[0]);
+    return { ...mapped, debug_sig: 'v_detail_fix_103' };
+  }
+
+  public async create(body: any): Promise<any> {
+    const newId = Date.now();
+    const dbRecord = this.mapProjectBodyToDbRecord(body, newId);
+    const { keys, values, placeholders } = this.buildInsert(dbRecord);
+
+    await this.db.prepare(`INSERT INTO projects (${keys.join(', ')}) VALUES (${placeholders})`)
+      .bind(...values)
+      .run();
+
+    return this.mapProjectFromRow(dbRecord);
+  }
+
+  public async update(id: string, body: any): Promise<any | null> {
+    const dbUpdates = this.mapUpdatesToSnakeCase(body);
     dbUpdates.updated_at = new Date().toISOString();
 
     const { keys, setClauses, values } = this.buildUpdate(dbUpdates);
