@@ -1,16 +1,8 @@
-export class SystemRepository {
-  private db: D1Database;
+import { BaseRepository } from './BaseRepository'
 
+export class SystemRepository extends BaseRepository {
   constructor(db: D1Database) {
-    this.db = db;
-  }
-
-  private parseJsonArray(val: string | null): any[] {
-    return val ? JSON.parse(val) : [];
-  }
-
-  private parseJsonObject(val: string | null): Record<string, any> {
-    return val ? JSON.parse(val) : {};
+    super(db);
   }
 
   public async getSettings(year: string): Promise<any> {
@@ -46,17 +38,14 @@ export class SystemRepository {
     if (body.meeting_date !== undefined) dbUpdates.meeting_date = body.meeting_date;
     if (body.meeting_number !== undefined) dbUpdates.meeting_number = body.meeting_number;
 
-    const keys = Object.keys(dbUpdates);
-    const values = Object.values(dbUpdates);
-
     if (exists) {
-      const setClauses = keys.map(k => `${k} = ?`).join(', ');
+      const { setClauses, values } = this.buildUpdate(dbUpdates);
       await this.db.prepare(`UPDATE system_settings SET ${setClauses} WHERE year = ?`)
         .bind(...values, year)
         .run();
     } else {
-      const pl = keys.map(() => '?').join(', ');
-      await this.db.prepare(`INSERT INTO system_settings (${keys.join(', ')}) VALUES (${pl})`)
+      const { keys, values, placeholders } = this.buildInsert(dbUpdates);
+      await this.db.prepare(`INSERT INTO system_settings (${keys.join(', ')}) VALUES (${placeholders})`)
         .bind(...values)
         .run();
     }

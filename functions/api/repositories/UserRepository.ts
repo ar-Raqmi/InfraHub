@@ -1,8 +1,8 @@
-export class UserRepository {
-  private db: D1Database;
+import { BaseRepository } from './BaseRepository'
 
+export class UserRepository extends BaseRepository {
   constructor(db: D1Database) {
-    this.db = db;
+    super(db);
   }
 
   public mapUserFromRow(row: any): any {
@@ -44,19 +44,13 @@ export class UserRepository {
       avatar_url: body.avatarUrl
     };
 
-    const sanitizedRecord = Object.fromEntries(
-      Object.entries(dbUser).map(([k, v]) => [k, v === undefined ? null : v])
-    );
-
-    const keys = Object.keys(sanitizedRecord);
-    const values = Object.values(sanitizedRecord);
-    const placeholders = keys.map(() => '?').join(', ');
+    const { keys, values, placeholders } = this.buildInsert(dbUser);
 
     await this.db.prepare(`INSERT INTO app_users (${keys.join(', ')}) VALUES (${placeholders})`)
       .bind(...values)
       .run();
 
-    return this.mapUserFromRow(sanitizedRecord);
+    return this.mapUserFromRow(dbUser);
   }
 
   public async update(id: string, body: any): Promise<any | null> {
@@ -74,11 +68,8 @@ export class UserRepository {
     if (body.department !== undefined) dbUpdates.department = body.department;
     if (body.avatarUrl !== undefined) dbUpdates.avatar_url = body.avatarUrl;
 
-    const keys = Object.keys(dbUpdates);
+    const { keys, setClauses, values } = this.buildUpdate(dbUpdates);
     if (keys.length === 0) return null;
-
-    const setClauses = keys.map((k) => `${k} = ?`).join(', ');
-    const values = Object.values(dbUpdates);
 
     await this.db.prepare(`UPDATE app_users SET ${setClauses} WHERE id = ?`)
       .bind(...values, id)

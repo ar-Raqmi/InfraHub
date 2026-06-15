@@ -1,8 +1,8 @@
-export class NotificationRepository {
-  private db: D1Database;
+import { BaseRepository } from './BaseRepository'
 
+export class NotificationRepository extends BaseRepository {
   constructor(db: D1Database) {
-    this.db = db;
+    super(db);
   }
 
   public async getStates(userId: string): Promise<any[]> {
@@ -38,33 +38,37 @@ export class NotificationRepository {
       .first();
 
     if (existing) {
-      const updates: string[] = [];
-      const values: any[] = [];
+      const updates: Record<string, any> = {};
 
       if (isRead !== undefined) {
-        updates.push('is_read = ?');
-        values.push(isRead ? 1 : 0);
+        updates.is_read = isRead ? 1 : 0;
       }
       if (isDeleted !== undefined) {
-        updates.push('is_deleted = ?');
-        values.push(isDeleted ? 1 : 0);
+        updates.is_deleted = isDeleted ? 1 : 0;
       }
 
-      if (updates.length > 0) {
-        values.push(new Date().toISOString());
-        values.push(userId);
-        values.push(notificationId);
+      const { keys, setClauses, values } = this.buildUpdate(updates);
+      if (keys.length > 0) {
+        const updatedAt = new Date().toISOString();
         await this.db.prepare(
-          `UPDATE user_notification_states SET ${updates.join(', ')}, updated_at = ? WHERE user_id = ? AND notification_id = ?`
+          `UPDATE user_notification_states SET ${setClauses}, updated_at = ? WHERE user_id = ? AND notification_id = ?`
         )
-          .bind(...values)
+          .bind(...values, updatedAt, userId, notificationId)
           .run();
       }
     } else {
+      const dbRecord = {
+        user_id: userId,
+        notification_id: notificationId,
+        is_read: isRead ? 1 : 0,
+        is_deleted: isDeleted ? 1 : 0,
+        updated_at: new Date().toISOString()
+      };
+      const { keys, values, placeholders } = this.buildInsert(dbRecord);
       await this.db.prepare(
-        'INSERT INTO user_notification_states (user_id, notification_id, is_read, is_deleted, updated_at) VALUES (?, ?, ?, ?, ?)'
+        `INSERT INTO user_notification_states (${keys.join(', ')}) VALUES (${placeholders})`
       )
-        .bind(userId, notificationId, isRead ? 1 : 0, isDeleted ? 1 : 0, new Date().toISOString())
+        .bind(...values)
         .run();
     }
     return true;

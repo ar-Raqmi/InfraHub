@@ -1,9 +1,10 @@
-export class StorageRepository {
-  private db: D1Database;
+import { BaseRepository } from './BaseRepository'
+
+export class StorageRepository extends BaseRepository {
   private bucket: R2Bucket;
 
   constructor(db: D1Database, bucket: R2Bucket) {
-    this.db = db;
+    super(db);
     this.bucket = bucket;
   }
 
@@ -65,11 +66,9 @@ export class StorageRepository {
       created_at: new Date().toISOString()
     };
 
-    const keys = Object.keys(dbItem);
-    const values = Object.values(dbItem);
-    const pl = keys.map(() => '?').join(', ');
+    const { keys, values, placeholders } = this.buildInsert(dbItem);
 
-    await this.db.prepare(`INSERT INTO temporary_gallery (${keys.join(', ')}) VALUES (${pl})`)
+    await this.db.prepare(`INSERT INTO temporary_gallery (${keys.join(', ')}) VALUES (${placeholders})`)
       .bind(...values)
       .run();
 

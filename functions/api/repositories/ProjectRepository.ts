@@ -1,16 +1,8 @@
-export class ProjectRepository {
-  private db: D1Database;
+import { BaseRepository } from './BaseRepository'
 
+export class ProjectRepository extends BaseRepository {
   constructor(db: D1Database) {
-    this.db = db;
-  }
-
-  private parseJsonArray(val: string | null): any[] {
-    return val ? JSON.parse(val) : [];
-  }
-
-  private parseJsonObject(val: string | null): Record<string, any> {
-    return val ? JSON.parse(val) : {};
+    super(db);
   }
 
   public mapProjectFromRow(row: any): any {
@@ -188,19 +180,13 @@ export class ProjectRepository {
       updated_at: new Date().toISOString()
     };
 
-    const sanitizedRecord = Object.fromEntries(
-      Object.entries(dbRecord).map(([k, v]) => [k, v === undefined ? null : v])
-    );
-
-    const keys = Object.keys(sanitizedRecord);
-    const values = Object.values(sanitizedRecord);
-    const placeholders = keys.map(() => '?').join(', ');
+    const { keys, values, placeholders } = this.buildInsert(dbRecord);
 
     await this.db.prepare(`INSERT INTO projects (${keys.join(', ')}) VALUES (${placeholders})`)
       .bind(...values)
       .run();
 
-    return this.mapProjectFromRow(sanitizedRecord);
+    return this.mapProjectFromRow(dbRecord);
   }
 
   public async update(id: string, body: any): Promise<any | null> {
@@ -237,7 +223,7 @@ export class ProjectRepository {
     if (body.isManualMulaKerja !== undefined) dbUpdates.is_manual_mula_kerja = body.isManualMulaKerja ? 1 : 0;
 
     if (body.tarikhPemeriksaan !== undefined) dbUpdates.tarikh_pemeriksaan = body.tarikhPemeriksaan;
-    if (body.tarikhSiapSebenar !== undefined) dbUpdates.tarikh_siap_sebenar = body.tarikhSiapSebenar;
+    if (body.tarikhSiapSebedar !== undefined) dbUpdates.tarikh_siap_sebenar = body.tarikhSiapSebenar;
     if (body.prestasi !== undefined) dbUpdates.prestasi = body.prestasi;
     if (body.tarikhTuntutanBayaran !== undefined) dbUpdates.tarikh_tuntutan_bayaran = body.tarikhTuntutanBayaran;
     if (body.kosSebenar !== undefined) dbUpdates.kos_sebenar = Number(body.kosSebenar) || 0;
@@ -282,11 +268,8 @@ export class ProjectRepository {
 
     dbUpdates.updated_at = new Date().toISOString();
 
-    const keys = Object.keys(dbUpdates);
+    const { keys, setClauses, values } = this.buildUpdate(dbUpdates);
     if (keys.length === 0) return null;
-
-    const setClauses = keys.map((k) => `${k} = ?`).join(', ');
-    const values = Object.values(dbUpdates).map(v => v === undefined ? null : v);
 
     await this.db.prepare(`UPDATE projects SET ${setClauses} WHERE id = ?`)
       .bind(...values, id)

@@ -1,16 +1,8 @@
-export class BulletinRepository {
-  private db: D1Database;
+import { BaseRepository } from './BaseRepository'
 
+export class BulletinRepository extends BaseRepository {
   constructor(db: D1Database) {
-    this.db = db;
-  }
-
-  private parseJsonArray(val: string | null): any[] {
-    return val ? JSON.parse(val) : [];
-  }
-
-  private parseJsonObject(val: string | null): Record<string, any> {
-    return val ? JSON.parse(val) : {};
+    super(db);
   }
 
   public mapBulletinFromRow(row: any): any {
@@ -33,7 +25,6 @@ export class BulletinRepository {
     const id = Date.now().toString();
     const date = new Date().toISOString().split('T')[0];
 
-    // Clean up old bulletins (keep only max 3)
     const { results: existing } = await this.db.prepare('SELECT id FROM bulletins ORDER BY date DESC, id DESC').all();
     if (existing && existing.length >= 3) {
       const idsToDelete = existing.slice(2).map(r => r.id as string);
@@ -42,11 +33,9 @@ export class BulletinRepository {
     }
 
     const dbItem = { id, content, date, author, read_by: '[]', reactions: '{}' };
-    const keys = Object.keys(dbItem);
-    const values = Object.values(dbItem);
-    const pl = keys.map(() => '?').join(',');
+    const { keys, values, placeholders } = this.buildInsert(dbItem);
 
-    await this.db.prepare(`INSERT INTO bulletins (${keys.join(',')}) VALUES (${pl})`).bind(...values).run();
+    await this.db.prepare(`INSERT INTO bulletins (${keys.join(',')}) VALUES (${placeholders})`).bind(...values).run();
 
     return this.mapBulletinFromRow(dbItem);
   }
