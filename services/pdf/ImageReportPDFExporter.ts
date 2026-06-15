@@ -1,4 +1,4 @@
-import { jsPDF } from 'jspdf';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
 type LayoutType = 'vertical' | 'horizontal' | 'big-top' | 'big-left';
 
@@ -103,6 +103,7 @@ export class ImageReportPDFExporter {
     }): Promise<void> {
         const { complaints, mapImageBase64, siteImagesBase64, layout } = options;
 
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF({
             orientation: 'landscape',
             unit: 'mm',

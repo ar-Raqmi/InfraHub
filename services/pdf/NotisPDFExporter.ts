@@ -1,4 +1,5 @@
 import { Project, User } from '../../types';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
 type NoticeType = 'PEMBERITAHUAN' | 'PERINGATAN_1' | 'KERJA_TIDAK_SIAP' | 'PERINGATAN_2' | 'PERINGATAN_3';
 
@@ -15,8 +16,7 @@ export class NotisPDFExporter {
     }): Promise<void> {
         const { noticeType, startDate, endDate, letterMonthYear, selectedJuruteraId, juruteraList } = options;
 
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
 
         const formatMalayDateLong = (isoDate: string) => {

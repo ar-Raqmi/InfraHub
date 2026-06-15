@@ -1,5 +1,6 @@
 import { Project, User, ProjectLocation, BQItem, formatCurrency } from '../../types';
 import { apiService } from '../apiService';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
 const toRoman = (num: number): string => {
   const lookup: { [key: string]: number } = { m: 1000, cm: 900, d: 500, cd: 400, c: 100, xc: 90, l: 50, xl: 40, x: 10, ix: 9, v: 5, iv: 4, i: 1 };
@@ -62,42 +63,16 @@ const getAutoNumber = (items: BQItem[], currentIndex: number) => {
   }
 };
 
-const getBase64ImageFromURL = (url: string): Promise<string | null> => {
-  return new Promise((resolve) => {
-    if (typeof window === 'undefined') {
-      resolve(null);
-      return;
-    }
-    const img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL("image/png"));
-      } else {
-        resolve(null);
-      }
-    };
-    img.onerror = () => {
-      resolve(null);
-    };
-    img.src = url;
-  });
-};
+
 
 export class BQPDFExporter {
   static async exportBQ(formData: any, users: User[], locationRows: ProjectLocation[]): Promise<void> {
-    // @ts-ignore
-    const { jsPDF } = window.jspdf;
+    const jsPDF = PDFBaseHelper.getJsPDF();
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const sealsLogo = await getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
-    const mpsLogo = await getBase64ImageFromURL("https://i.imgur.com/ZB7DFaV.png");
+    const sealsLogo = await PDFBaseHelper.getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
+    const mpsLogo = await PDFBaseHelper.getBase64ImageFromURL("https://i.imgur.com/ZB7DFaV.png");
     const pjaUser = users.find(u => u.id === formData.pjaId);
     const year = formData.tarikhBuka ? new Date(formData.tarikhBuka).getFullYear() : new Date().getFullYear();
     const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
@@ -446,8 +421,7 @@ Jabatan Kejuruteraan` }],
   }
 
   static async exportPelarasan(formData: any, locationRows: ProjectLocation[]): Promise<void> {
-    // @ts-ignore
-    const { jsPDF } = window.jspdf;
+    const jsPDF = PDFBaseHelper.getJsPDF();
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();

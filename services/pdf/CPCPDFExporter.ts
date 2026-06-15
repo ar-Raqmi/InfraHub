@@ -1,4 +1,5 @@
 import { Project, User, formatDateMalay } from '../../types';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
 export class CPCPDFExporter {
     static async export(project: Project, pjaUser?: User, companyDetails?: any): Promise<void> {
@@ -20,8 +21,7 @@ export class CPCPDFExporter {
         };
         const dlpEnd = getDLPEnd(dlpStart);
 
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
         
         const pageWidth = doc.internal.pageSize.getWidth(); 

@@ -1,4 +1,5 @@
 import { Project, User, formatCurrency, formatDate } from '../../types';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
 export class ProjectsListPDFExporter {
     static async exportRotasi(
@@ -8,8 +9,7 @@ export class ProjectsListPDFExporter {
         companyDetails: any,
         setGenerationProgress: (progress: number) => void
     ): Promise<void> {
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('l', 'mm', 'a4'); // Landscape for more columns
 
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -150,8 +150,7 @@ export class ProjectsListPDFExporter {
         getVoteName: (vote: string) => string,
         setGenerationProgress: (progress: number) => void
     ): Promise<void> {
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
 
         const pageWidth = doc.internal.pageSize.getWidth();

@@ -1,4 +1,5 @@
 import { Project, formatDate, formatCurrency } from '../../types';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
 export class LADPDFExporter {
     static async export(project: Project): Promise<void> {
@@ -26,8 +27,7 @@ export class LADPDFExporter {
         // Helper to format number to 2 decimals
         const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
         
         const margin = 20;

@@ -1,47 +1,21 @@
 import { Project, formatCurrency, formatDate } from '../../types';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
-const getBase64ImageFromURL = (url: string): Promise<string | null> => {
-    return new Promise((resolve) => {
-        // @ts-ignore
-        if (typeof window === 'undefined') {
-            resolve(null);
-            return;
-        }
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = () => {
-            const canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext("2d");
-            if (ctx) {
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL("image/png"));
-            } else {
-                resolve(null);
-            }
-        };
-        img.onerror = () => {
-            resolve(null);
-        };
-        img.src = url;
-    });
-};
+
 
 export class PrestasiPDFExporter {
     static async export(project: Project, localScores: number[], localSkop: string | null, companyDetails?: any): Promise<void> {
         const totalScore = localScores.reduce((a, b) => a + b, 0);
         const percentage = Math.ceil((totalScore / 60) * 100);
 
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
 
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 15;
         let currentY = 15;
 
-        const sealLogo = await getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
+        const sealLogo = await PDFBaseHelper.getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
 
         if (sealLogo) {
             doc.addImage(sealLogo, 'PNG', pageWidth / 2 - 12, currentY, 24, 20);

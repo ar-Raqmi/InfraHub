@@ -1,4 +1,5 @@
 import { Project } from '../../types';
+import { PDFBaseHelper } from './PDFBaseHelper';
 
 export class AkuJanjiPDFExporter {
     static async export(project: Project, options: {
@@ -11,8 +12,7 @@ export class AkuJanjiPDFExporter {
     }): Promise<void> {
         const { currentMonth, selectedYear, pjaName, companyName, formattedSerahTapak, formattedAduan } = options;
 
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
+        const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
         
         const pageWidth = doc.internal.pageSize.getWidth(); // 210
