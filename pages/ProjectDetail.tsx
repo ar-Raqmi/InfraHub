@@ -881,7 +881,7 @@ const CACHE_VERSION = 'v126';
       const endDate = new Date(formData.tarikhTamatKontrak); const actualDate = new Date(formData.tarikhSiapSebenar);
       const timeDiff = actualDate.getTime() - endDate.getTime(); const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
       const ladDays = dayDiff > 0 ? dayDiff : 0; const contractSum = formData.kosProjek || 0;
-      let dailyRate = contractSum < 20000 ? 20.00 : (contractSum * 0.064) / 365;
+      let dailyRate = contractSum < 20000 ? 20.00 : Math.round(((contractSum * 0.064) / 365 + Number.EPSILON) * 100) / 100;
       const totalLad = parseFloat((dailyRate * ladDays).toFixed(2));
       if (formData.ladDays !== ladDays || formData.ladAmount !== totalLad) { setFormData(prev => ({ ...prev, ladDays: ladDays, ladAmount: totalLad })); }
     } else { if (formData.ladDays !== 0 && formData.ladDays !== undefined) { setFormData(prev => ({ ...prev, ladDays: 0, ladAmount: 0 })); } }

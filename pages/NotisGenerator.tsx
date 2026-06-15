@@ -114,7 +114,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
             // BLR 6.65 - 0.25 = 6.4 (Standard treasury rate logic)
             dailyRate = (contractSum * 0.064) / 365;
         }
-        return dailyRate;
+        return Math.round((dailyRate + Number.EPSILON) * 100) / 100;
     };
 
     const handleDownload = async () => {
@@ -869,7 +869,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         const para2Width = contentWidth - indent; // FIX: Calculate width minus the indent
 
         const ladRate = calculateLAD();
-        const ladStr = `RM${ladRate.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        const ladStr = `RM${ladRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
         doc.setFont("helvetica","normal");
         doc.text("2.", margin, y);

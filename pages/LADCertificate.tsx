@@ -27,12 +27,12 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
     if (isSmallProject) {
         dailyRate = 20.00;
     } else {
-        dailyRate = (contractSum * (effectiveRate / 100)) / 365;
+        dailyRate = Math.round(((contractSum * (effectiveRate / 100)) / 365 + Number.EPSILON) * 100) / 100;
     }
 
     // Days
     const daysLate = project.ladDays || 0;
-    const totalLAD = dailyRate * daysLate;
+    const totalLAD = Math.round((dailyRate * daysLate + Number.EPSILON) * 100) / 100;
 
     // Helper to format number to 2 decimals
     const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
