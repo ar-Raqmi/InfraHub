@@ -327,65 +327,12 @@ export interface Project {
   isTiadaNotisDiperlukan?: boolean;
 }
 
-export const formatCurrency = (amount: number | undefined | null) => {
-  if (amount === undefined || amount === null || isNaN(Number(amount))) return '-';
-  return new Intl.NumberFormat('ms-MY', {
-    style: 'currency',
-    currency: 'MYR',
-  }).format(amount);
-};
+import { Formatter } from './services/Formatter';
+import { StatusHelper } from './services/StatusHelper';
 
-export const formatDate = (dateString?: string) => {
-  if (!dateString) return '-';
-
-  const cleanDate = dateString.split('T')[0];
-  const parts = cleanDate.split('-');
-
-  if (parts.length === 3) {
-    const [year, month, day] = parts;
-    return `${day}/${month}/${year}`;
-  }
-
-  return dateString;
-};
-
-export const formatDateMalay = (dateString?: string) => {
-  if (!dateString) return '-';
-  const months = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"];
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return '-';
-
-  const day = date.getDate();
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
-
-  return `${day} ${month} ${year}`;
-};
-
-export const getCurrentDate = () => {
-  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-};
-
-export const getStatusColor = (status: ProjectStatus) => {
-  switch (status) {
-    case ProjectStatus.FASA_DRAF: return 'bg-slate-100 text-slate-700 border-slate-200';
-    case ProjectStatus.MENUNGGU_LANTIKAN: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    case ProjectStatus.DALAM_PROSES: return 'bg-blue-100 text-blue-700 border-blue-200';
-    case ProjectStatus.PEMERIKSAAN_TAPAK: return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-    case ProjectStatus.TUNTUTAN_BAYARAN: return 'bg-orange-100 text-orange-700 border-orange-200';
-    case ProjectStatus.SIAP: return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-    default: return 'bg-gray-100 text-gray-700';
-  }
-};
-
-export const getStatusLabel = (status: ProjectStatus) => {
-  switch (status) {
-    case ProjectStatus.FASA_DRAF: return 'Draf';
-    case ProjectStatus.MENUNGGU_LANTIKAN: return 'Menunggu Lantikan';
-    case ProjectStatus.DALAM_PROSES: return 'Dalam Proses';
-    case ProjectStatus.PEMERIKSAAN_TAPAK: return 'Pemeriksaan Tapak';
-    case ProjectStatus.TUNTUTAN_BAYARAN: return 'Tuntutan Bayaran';
-    case ProjectStatus.SIAP: return 'Siap';
-    default: return status;
-  }
-};
+export const formatCurrency = Formatter.formatCurrency;
+export const formatDate = Formatter.formatDate;
+export const formatDateMalay = Formatter.formatDateMalay;
+export const getCurrentDate = Formatter.getCurrentDate;
+export const getStatusColor = StatusHelper.getStatusColor;
+export const getStatusLabel = StatusHelper.getStatusLabel;
