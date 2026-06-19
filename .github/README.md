@@ -96,6 +96,6 @@ graph TD
 
 For system inquiries, feature requests or technical support:
 
-* **In-Charge**: PT Syafiq (Unit Elektrikal)
+* **In-Charge**: PT Syafiq (Unit Infrastruktur)
 * **Department**: Jabatan Kejuruteraan, Majlis Perbandaran Selayang (MPS)
-* **Developer**: by **ar-Raqmi**.
+* **Developer**: ar-Raqmi
