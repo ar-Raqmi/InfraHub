@@ -1308,16 +1308,33 @@ const BQEditor: React.FC<BQEditorProps> = ({
         const recentGroupsData = recentGroupIds.map(id => bqLibrary.find(g => g.id === id)).filter(Boolean) as PresetGroup[];
 
         if (librarySearchTerm) {
-            // Global Search: Matches Group Title only
-            const matchedRecent = recentGroupsData.filter(g => g.title.toLowerCase().includes(searchLower));
+            // Global Search: Matches Group Title OR Item Description
+            const matchesSearch = (g: PresetGroup) => 
+                g.title.toLowerCase().includes(searchLower) ||
+                g.items.some(item => item.description.toLowerCase().includes(searchLower));
+
+            const matchedRecent = recentGroupsData.filter(matchesSearch);
             const matchedLibrary = bqLibrary.filter(g =>
-                g.title.toLowerCase().includes(searchLower) &&
+                matchesSearch(g) &&
                 !matchedRecent.some(rg => rg.id === g.id)
             );
 
+            // Filter items within each group to show only matching items,
+            // unless the group title itself matches the search query.
+            const filterGroupItems = (g: PresetGroup) => {
+                const titleMatches = g.title.toLowerCase().includes(searchLower);
+                if (titleMatches) {
+                    return g;
+                }
+                return {
+                    ...g,
+                    items: g.items.filter(item => item.description.toLowerCase().includes(searchLower))
+                };
+            };
+
             return [
-                ...matchedRecent.map(g => ({ ...g, isHistoryMatch: true })),
-                ...matchedLibrary
+                ...matchedRecent.map(g => ({ ...filterGroupItems(g), isHistoryMatch: true })),
+                ...matchedLibrary.map(g => filterGroupItems(g))
             ];
         }
 
