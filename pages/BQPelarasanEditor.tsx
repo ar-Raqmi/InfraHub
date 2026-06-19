@@ -1158,7 +1158,12 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const contractPrice = projectData.kosProjek || 0;
     const extraPrice = Math.max(0, totalPelarasanRaw - contractPrice);
 
-    const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
+    const isTopBill = (b: BQGroup) => 
+        b.title.toUpperCase().includes('INSURANS') || 
+        b.title.toUpperCase().includes('PERMULAAN') || 
+        b.title.toUpperCase().includes('AWALAN') || 
+        b.id.toLowerCase().includes('permulaan') || 
+        b.id.toLowerCase().includes('awalan');
 
     const billsByLocation: Record<string, BQGroup[]> = {};
     const permulaanBills: BQGroup[] = [];

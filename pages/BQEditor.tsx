@@ -1102,7 +1102,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
     const moveLocation = (locId: string, direction: 'up' | 'down') => {
         if (readOnly) return;
-        const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
+        const isTopBill = (b: BQGroup) => 
+            b.title.toUpperCase().includes('INSURANS') || 
+            b.title.toUpperCase().includes('PERMULAAN') || 
+            b.title.toUpperCase().includes('AWALAN') || 
+            b.id.toLowerCase().includes('permulaan') || 
+            b.id.toLowerCase().includes('awalan');
 
         const permulaan = bills.filter(isTopBill);
         const locationBills = bills.filter(b => (b.locationIds?.length || b.locationId) && !isTopBill(b));
@@ -1277,7 +1282,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
     const activeBillIndex = bills.findIndex(b => b.id === activeBillId);
     const activeBill = bills[activeBillIndex];
 
-    const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
+    const isTopBill = (b: BQGroup) => 
+        b.title.toUpperCase().includes('INSURANS') || 
+        b.title.toUpperCase().includes('PERMULAAN') || 
+        b.title.toUpperCase().includes('AWALAN') || 
+        b.id.toLowerCase().includes('permulaan') || 
+        b.id.toLowerCase().includes('awalan');
 
     const billsByLocation: Record<string, BQGroup[]> = {};
     const permulaanBills: BQGroup[] = [];
