@@ -10,7 +10,7 @@ interface MoveItemModalProps {
     bills: BQGroup[];
     currentBillId: string;
     onMove: (targetBillId: string) => void;
-    themeColor: 'emerald' | 'amber';
+    themeColor: 'emerald' | 'amber' | 'blue';
 }
 
 const MoveItemModal: React.FC<MoveItemModalProps> = ({
@@ -24,13 +24,14 @@ const MoveItemModal: React.FC<MoveItemModalProps> = ({
 }) => {
     if (!isOpen) return null;
     const isEmerald = themeColor === 'emerald';
+    const isBlue = themeColor === 'blue';
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 animate-fade-in" onClick={onClose}>
             <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 transform scale-100 transition-all animate-slide-up" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
                     <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                        <FolderOpen className={`w-5 h-5 ${isEmerald ? 'text-emerald-600' : 'text-amber-600'}`} />
+                        <FolderOpen className={`w-5 h-5 ${isEmerald ? 'text-emerald-600' : isBlue ? 'text-blue-600' : 'text-amber-600'}`} />
                         Pindah Bahagian BQ
                     </h3>
                     <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
@@ -55,13 +56,13 @@ const MoveItemModal: React.FC<MoveItemModalProps> = ({
                                 <button
                                     key={b.id}
                                     onClick={() => { onMove(b.id); onClose(); }}
-                                    className={`w-full text-left p-3 rounded-xl border border-slate-100 hover:border-${isEmerald ? 'emerald-500' : 'amber-500'} hover:bg-${isEmerald ? 'emerald' : 'amber'}-50/30 transition-all group flex justify-between items-center`}
+                                    className={`w-full text-left p-3 rounded-xl border border-slate-100 hover:border-${isEmerald ? 'emerald-500' : isBlue ? 'blue-500' : 'amber-500'} hover:bg-${isEmerald ? 'emerald' : isBlue ? 'blue' : 'amber'}-50/30 transition-all group flex justify-between items-center`}
                                 >
                                     <div className="min-w-0 flex-1">
-                                        {prefix && <div className={`text-[9px] font-black uppercase tracking-wider ${isEmerald ? 'text-emerald-600' : 'text-amber-600'} mb-0.5`}>{prefix}</div>}
+                                        {prefix && <div className={`text-[9px] font-black uppercase tracking-wider ${isEmerald ? 'text-emerald-600' : isBlue ? 'text-blue-600' : 'text-amber-600'} mb-0.5`}>{prefix}</div>}
                                         <div className="text-xs font-bold text-slate-700 truncate">{content}</div>
                                     </div>
-                                    <ChevronRight className={`w-4 h-4 text-slate-300 group-hover:text-${isEmerald ? 'emerald' : 'amber'}-500 transition-colors shrink-0 ml-2`} />
+                                    <ChevronRight className={`w-4 h-4 text-slate-300 group-hover:text-${isEmerald ? 'emerald' : isBlue ? 'blue' : 'amber'}-500 transition-colors shrink-0 ml-2`} />
                                 </button>
                             );
                         })}
