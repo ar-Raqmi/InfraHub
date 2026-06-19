@@ -3,8 +3,8 @@ import { Project } from '../types';
 import { apiService } from '../services/apiService';
 
 // Cache Version signature to ensure freshness across updates
-// We use v125 to move past any previous build failures or corrupted cache states
-const CACHE_VERSION = 'v125';
+// We use v126 to move past any previous build failures or corrupted cache states
+const CACHE_VERSION = 'v126';
 
 export const useProjects = () => {
   const queryClient = useQueryClient();
