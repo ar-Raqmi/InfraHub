@@ -1308,10 +1308,13 @@ const BQEditor: React.FC<BQEditorProps> = ({
         const recentGroupsData = recentGroupIds.map(id => bqLibrary.find(g => g.id === id)).filter(Boolean) as PresetGroup[];
 
         if (librarySearchTerm) {
-            // Global Search: Matches Group Title OR Item Description
+            // Global Search: Matches Group Title OR Item Description OR Variant Label (Item Selection)
             const matchesSearch = (g: PresetGroup) => 
                 g.title.toLowerCase().includes(searchLower) ||
-                g.items.some(item => item.description.toLowerCase().includes(searchLower));
+                g.items.some(item => 
+                    item.description.toLowerCase().includes(searchLower) ||
+                    (item.variants && item.variants.some(v => v.label.toLowerCase().includes(searchLower)))
+                );
 
             const matchedRecent = recentGroupsData.filter(matchesSearch);
             const matchedLibrary = bqLibrary.filter(g =>
@@ -1328,7 +1331,19 @@ const BQEditor: React.FC<BQEditorProps> = ({
                 }
                 return {
                     ...g,
-                    items: g.items.filter(item => item.description.toLowerCase().includes(searchLower))
+                    items: g.items
+                        .map(item => {
+                            const descMatches = item.description.toLowerCase().includes(searchLower);
+                            if (descMatches || !item.variants) {
+                                return item;
+                            }
+                            const matchingVariants = item.variants.filter(v => v.label.toLowerCase().includes(searchLower));
+                            if (matchingVariants.length > 0) {
+                                return { ...item, variants: matchingVariants };
+                            }
+                            return null;
+                        })
+                        .filter(Boolean) as PresetItem[]
                 };
             };
 
