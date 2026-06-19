@@ -209,8 +209,9 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         return {
           ...b,
           items: b.items.map(item => {
-            if (item.id !== itemId) return item;
-            const updatedItem = { ...item, ...updates } as BQItem;
+            const bqItem = item as BQItem;
+            if (bqItem.id !== itemId) return item;
+            const updatedItem = { ...bqItem, ...updates } as BQItem;
             return recalculateItemQtyAndAmount(updatedItem);
           })
         };
@@ -225,7 +226,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         if (b.id !== billId) return b;
         return {
           ...b,
-          items: b.items.filter(item => item.id !== itemId)
+          items: b.items.filter(item => (item as BQItem).id !== itemId)
         };
       })
     });
@@ -258,7 +259,9 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
       type: 'HEADER',
       description: title.toUpperCase(),
       unit: '',
-      rate: 0
+      rate: 0,
+      qty: 0,
+      amount: 0
     };
     
     setEditedTemplate({
@@ -278,7 +281,9 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
       type: 'NOTE',
       description: note,
       unit: '',
-      rate: 0
+      rate: 0,
+      qty: 0,
+      amount: 0
     };
     
     setEditedTemplate({
@@ -324,12 +329,13 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         return {
           ...b,
           items: b.items.map(item => {
-            if (item.id !== itemId) return item;
+            const bqItem = item as BQItem;
+            if (bqItem.id !== itemId) return item;
             const updated = {
-              ...item,
-              isCustomCalc: !item.isCustomCalc,
-              qty: item.qty || 0,
-              customCalc: item.customCalc || ''
+              ...bqItem,
+              isCustomCalc: !bqItem.isCustomCalc,
+              qty: bqItem.qty || 0,
+              customCalc: bqItem.customCalc || ''
             };
             return recalculateItemQtyAndAmount(updated);
           })
@@ -358,10 +364,11 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         return {
           ...b,
           items: b.items.map(item => {
-            if (item.id !== itemId) return item;
+            const bqItem = item as BQItem;
+            if (bqItem.id !== itemId) return item;
             const updated = {
-              ...item,
-              calculationParts: [...(item.calculationParts || []), newPart]
+              ...bqItem,
+              calculationParts: [...(bqItem.calculationParts || []), newPart]
             };
             return recalculateItemQtyAndAmount(updated);
           })
@@ -378,10 +385,11 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         return {
           ...b,
           items: b.items.map(item => {
-            if (item.id !== itemId) return item;
+            const bqItem = item as BQItem;
+            if (bqItem.id !== itemId) return item;
             const updated = {
-              ...item,
-              calculationParts: (item.calculationParts || []).filter(p => p.id !== partId)
+              ...bqItem,
+              calculationParts: (bqItem.calculationParts || []).filter(p => p.id !== partId)
             };
             return recalculateItemQtyAndAmount(updated);
           })
@@ -398,10 +406,11 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         return {
           ...b,
           items: b.items.map(item => {
-            if (item.id !== itemId) return item;
+            const bqItem = item as BQItem;
+            if (bqItem.id !== itemId) return item;
             const updated = {
-              ...item,
-              calculationParts: (item.calculationParts || []).map(p => 
+              ...bqItem,
+              calculationParts: (bqItem.calculationParts || []).map(p => 
                 p.id === partId ? { ...p, ...updates } : p
               )
             };
@@ -420,7 +429,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
     
     // Check if we need to add the Group Header first
     const itemsToAdd: BQItem[] = [];
-    const hasGroupHeader = activeBill.items.some(
+    const hasGroupHeader = (activeBill.items as BQItem[]).some(
       it => it.type === 'HEADER' && it.description === group.title.toUpperCase()
     );
     
@@ -430,13 +439,15 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         type: 'HEADER',
         description: group.title.toUpperCase(),
         unit: '',
-        rate: 0
+        rate: 0,
+        qty: 0,
+        amount: 0
       });
     }
     
     // Add parent description header if variant is chosen and it's not present
     if (variant) {
-      const hasParentHeader = activeBill.items.some(
+      const hasParentHeader = (activeBill.items as BQItem[]).some(
         it => it.type === 'HEADER' && it.description === item.description
       );
       if (!hasParentHeader) {
@@ -445,7 +456,9 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
           type: 'HEADER',
           description: item.description,
           unit: '',
-          rate: 0
+          rate: 0,
+          qty: 0,
+          amount: 0
         });
       }
     }
@@ -795,7 +808,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
               </div>
               
               <div className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
-                {activeBill.items.map((item, idx) => {
+                {(activeBill.items as BQItem[]).map((item, idx) => {
                   if (item.type === 'HEADER') {
                     return (
                       <div key={item.id} className="flex items-center gap-3 py-3 px-4 bg-slate-100 border border-slate-200 rounded-2xl group">

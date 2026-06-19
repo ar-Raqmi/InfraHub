@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
+import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, PresetItem, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
 import { apiService } from '../services/apiService';
 import { createItem, createHeader } from '../data/bqPresets';
 import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, Search, History, Clock } from 'lucide-react';
@@ -158,6 +158,9 @@ const DimensionInput = ({
         />
     );
 };
+import MoveItemModal from '../components/MoveItemModal';
+
+
 
 const BQEditor: React.FC<BQEditorProps> = ({
     initialData,
@@ -247,6 +250,8 @@ const BQEditor: React.FC<BQEditorProps> = ({
         title: string;
         count?: number;
     } | null>(null);
+
+    const [moveTarget, setMoveTarget] = useState<{ billId: string, itemId: string, description: string } | null>(null);
 
     const currentUser = apiService.getCurrentUser();
     const isAdmin = currentUser?.role === Role.ADMIN;
@@ -1136,6 +1141,78 @@ const BQEditor: React.FC<BQEditorProps> = ({
         setBills(resequenceTitles(finalBills));
     };
 
+    const handleSplitBill = (billId: string, splitItemIndex: number) => {
+        if (readOnly) return;
+        setBills(prevBills => {
+            const billIndex = prevBills.findIndex(b => b.id === billId);
+            if (billIndex === -1) return prevBills;
+
+            const sourceBill = prevBills[billIndex];
+            const itemsToMove = sourceBill.items.slice(splitItemIndex);
+            const remainingItems = sourceBill.items.slice(0, splitItemIndex);
+
+            const { prefix, content } = parseTitle(sourceBill.title);
+            const match = prefix.match(/BIL NO\.\s*(\d+)/i);
+            const currentNo = match ? parseInt(match[1]) : 0;
+
+            const cleanContent = content.replace(/\s+SAMBUNGAN$/i, "");
+            const newTitle = `BIL NO. ${currentNo + 1} - ${cleanContent} SAMBUNGAN`;
+
+            const newBill: BQGroup = {
+                ...sourceBill,
+                id: `bill-split-${Math.random().toString(36).substr(2, 9)}`,
+                title: newTitle,
+                items: itemsToMove,
+            };
+
+            let newData = [...prevBills];
+            newData[billIndex] = { ...sourceBill, items: remainingItems };
+            newData.splice(billIndex + 1, 0, newBill);
+
+            const renumbered = resequenceTitles(newData);
+            setTimeout(() => setActiveBillId(newBill.id), 0);
+            return renumbered;
+        });
+    };
+
+    const moveItemToDifferentBill = (sourceBillId: string, targetBillId: string, itemId: string) => {
+        if (readOnly) return;
+        setBills(prevBills => {
+            const sourceBillIndex = prevBills.findIndex(b => b.id === sourceBillId);
+            const targetBillIndex = prevBills.findIndex(b => b.id === targetBillId);
+            if (sourceBillIndex === -1 || targetBillIndex === -1) return prevBills;
+
+            const sourceBill = prevBills[sourceBillIndex];
+            const targetBill = prevBills[targetBillIndex];
+
+            const items = [...sourceBill.items];
+            const index = items.findIndex(i => i.id === itemId);
+            if (index === -1) return prevBills;
+
+            const itemToMove = items[index];
+            const currentLevel = getItemLevel(itemToMove);
+
+            // Find all children/sub-items if this is a header
+            let blockEnd = index + 1;
+            while (blockEnd < items.length && getItemLevel(items[blockEnd]) > currentLevel) blockEnd++;
+
+            const block = items.slice(index, blockEnd);
+
+            // Remove block from source bill
+            const nextSourceItems = [...items.slice(0, index), ...items.slice(blockEnd)];
+
+            // Add block to target bill
+            const nextTargetItems = [...targetBill.items, ...block];
+
+            const nextBills = [...prevBills];
+            nextBills[sourceBillIndex] = { ...sourceBill, items: nextSourceItems };
+            nextBills[targetBillIndex] = { ...targetBill, items: nextTargetItems };
+
+            if (onShowToast) onShowToast("Item berjaya dipindahkan.", "success");
+            return nextBills;
+        });
+    };
+
     const moveItem = (billId: string, itemId: string, direction: 'up' | 'down') => {
         if (readOnly) return;
         setBills(prevBills => prevBills.map(bill => {
@@ -1236,7 +1313,22 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     <span className="text-xs font-black text-slate-400 min-w-[30px]">{autoNumber}</span>
                     <button onClick={() => toggleCollapse(bill.id, item.id)} className="p-1 rounded hover:bg-slate-200  text-slate-400 transition-colors">{item.isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</button>
                     <AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className={`w-full bg-transparent outline-none text-slate-800  text-sm ${isLevel0 ? 'font-bold uppercase' : 'font-semibold pl-1'}`} placeholder="TAJUK..." minHeight={24} />
-                    {!readOnly && (<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50  disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button><button onClick={() => moveItem(bill.id, item.id, 'down')} className="text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50  disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button><button onClick={() => requestDeleteItem(bill.id, item, index)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button></div>)}
+                    {!readOnly && (
+                        <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                            {isLevel0 && (
+                                <button
+                                    onClick={() => setMoveTarget({ billId: bill.id, itemId: item.id, description: item.description })}
+                                    className="text-[10px] bg-white border border-slate-200 hover:border-blue-500 rounded px-2 py-1 text-slate-500 hover:text-blue-600 font-bold transition-colors mr-1 flex items-center gap-1 shrink-0"
+                                    title="Pindah ke Bil No. lain"
+                                >
+                                    <FolderOpen className="w-3.5 h-3.5" /> Pindah
+                                </button>
+                            )}
+                            <button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50  disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
+                            <button onClick={() => moveItem(bill.id, item.id, 'down')} className="text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50  disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
+                            <button onClick={() => requestDeleteItem(bill.id, item, index)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -1250,9 +1342,56 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     <div className="flex flex-col items-end gap-1"><div className="flex items-center gap-1 text-xs text-slate-400"><span>Kadar:</span><DimensionInput value={item.rate} onChange={(val) => updateItem(bill.id, item.id, { rate: val })} disabled={readOnly} className="w-20 text-right bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-slate-700  font-mono" /></div><span className="text-xs bg-slate-100  px-2 py-0.5 rounded text-slate-500">{item.unit}</span></div>
                 </div>
                 <div className={`flex flex-col sm:flex-row items-start gap-3 bg-slate-50  p-2 rounded-lg ml-12`}>
-                    <div className="flex flex-col gap-1 mt-0.5"><button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}</button></div>
-                    {item.isCustomCalc ? (<div className="flex-1 w-full flex items-center gap-2"><input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white  border border-slate-200  rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" /><div className="flex items-center gap-1 bg-white  rounded px-2 py-1 border border-slate-200"><span className="text-[10px] font-bold text-slate-400">QTY</span><DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" /></div></div>) : (<div className="flex-1 w-full"><div className="space-y-1">{(item.calculationParts || []).map((part, pIdx) => renderCalculationPartRow(bill, item, part, pIdx))}</div>{!readOnly && (<div className="flex items-center justify-between mt-2"><button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded hover:bg-blue-50"><PlusCircle className="w-3 h-3" /> Tambah Kiraan</button><div className="font-mono font-bold text-blue-600 text-sm border-l border-slate-200  pr-2 px-2">= {item.qty}</div></div>)}</div>)}
-                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-200  pt-2 sm:pt-0 pl-2 border-l-0 sm:border-l"><div className="text-right w-24"><div className="text-[10px] text-slate-400 uppercase tracking-wider">Jumlah</div><div className="font-bold text-slate-900">{formatCurrency(item.amount)}</div></div>{!readOnly && (<div className="mt-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button><button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button><button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50  rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button></div>)}</div>
+                    <div className="flex flex-col gap-1 mt-0.5">
+                        <button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isGlobal ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-white  text-slate-400 border-slate-200  hover:border-slate-300'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>
+                            {item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}
+                        </button>
+                        <button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>
+                            {item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}
+                        </button>
+                    </div>
+                    {item.isCustomCalc ? (
+                        <div className="flex-1 w-full flex items-center gap-2">
+                            <input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white  border border-slate-200  rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" />
+                            <div className="flex items-center gap-1 bg-white  rounded px-2 py-1 border border-slate-200">
+                                <span className="text-[10px] font-bold text-slate-400">QTY</span>
+                                <DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex-1 w-full">
+                            <div className="space-y-1">
+                                {(item.calculationParts || []).map((part, pIdx) => renderCalculationPartRow(bill, item, part, pIdx))}
+                            </div>
+                            {!readOnly && (
+                                <div className="flex items-center justify-between mt-2">
+                                    <button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded hover:bg-blue-50">
+                                        <PlusCircle className="w-3 h-3" /> Tambah Kiraan
+                                    </button>
+                                    <div className="font-mono font-bold text-blue-600 text-sm border-l border-slate-200  pr-2 px-2">= {item.qty}</div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-200  pt-2 sm:pt-0 pl-2 border-l-0 sm:border-l">
+                        <div className="text-right w-24">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Jumlah</div>
+                            <div className="font-bold text-slate-900">{formatCurrency(item.amount)}</div>
+                        </div>
+                        {!readOnly && (
+                            <div className="mt-auto flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => moveItem(bill.id, item.id, 'up')} disabled={index === 0} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30">
+                                    <ChevronUp className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => moveItem(bill.id, item.id, 'down')} className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50  rounded-lg transition-colors disabled:opacity-30">
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => requestDeleteItem(bill.id, item, index)} className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50  rounded-lg transition-colors">
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         );
@@ -1488,37 +1627,53 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                         let currentLevel0Collapsed = false;
                                         let currentLevel1Collapsed = false;
                                         let totalWorkItemCount = 0;
-                                        let pendingWarnings: number[] = [];
+                                        let pendingWarnings: { count: number, splitIdx: number }[] = [];
                                         const items: React.ReactNode[] = [];
 
-                                        const renderWarning = (num: number) => {
-                                            if (num === 8) {
-                                                return (
-                                                    <div key="page-break-warning-8" className="py-6 flex items-center gap-4 animate-pulse">
-                                                        <div className="flex-1 h-px bg-amber-200"></div>
-                                                        <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[10px] font-bold text-amber-600 uppercase tracking-widest shadow-sm">
+                                        const renderWarning = (num: number, splitIdx: number) => {
+                                            const isAmber = num === 8;
+                                            const bgColor = isAmber ? 'bg-amber-50' : 'bg-red-50';
+                                            const borderColor = isAmber ? 'border-amber-200' : 'border-red-200';
+                                            const textColor = isAmber ? 'text-amber-600' : 'text-red-600';
+                                            const dotColor = isAmber ? 'bg-amber-200' : 'bg-red-200';
+                                            const text = isAmber
+                                                ? 'Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru'
+                                                : 'Pecahan halaman disahkan berlaku di sini';
+
+                                            return (
+                                                <div key={`page-break-warning-${num}`} className="py-6 flex flex-col items-center gap-4">
+                                                    <div className={`w-full flex items-center gap-4 ${isAmber ? 'animate-pulse' : ''}`}>
+                                                        <div className={`flex-1 h-px ${dotColor}`}></div>
+                                                        <div className={`flex items-center gap-2 px-4 py-1.5 ${bgColor} border ${borderColor} rounded-full text-[10px] font-bold ${textColor} uppercase tracking-widest shadow-sm`}>
                                                             <AlertTriangle className="w-3.5 h-3.5" />
-                                                            Pecahan halaman mungkin berlaku di sini, disarankan untuk memulakan BIL NO baru
+                                                            {text}
                                                         </div>
-                                                        <div className="flex-1 h-px bg-amber-200"></div>
+                                                        <div className={`flex-1 h-px ${dotColor}`}></div>
                                                     </div>
-                                                );
-                                            } else {
-                                                return (
-                                                    <div key="page-break-warning-9" className="py-6 flex items-center gap-4">
-                                                        <div className="flex-1 h-px bg-red-200"></div>
-                                                        <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-widest shadow-sm">
-                                                            <AlertTriangle className="w-3.5 h-3.5" />
-                                                            Pecahan halaman disahkan berlaku di sini
-                                                        </div>
-                                                        <div className="flex-1 h-px bg-red-200"></div>
-                                                    </div>
-                                                );
-                                            }
+                                                    {!readOnly && splitIdx !== -1 && (
+                                                        <button
+                                                            onClick={() => handleSplitBill(activeBill.id, splitIdx)}
+                                                            className={`px-4 py-2 ${isAmber ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'} text-white text-[10px] font-bold rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105`}
+                                                        >
+                                                            <PlusCircle className="w-4 h-4" />
+                                                            Mula BIL NO baru dari "{activeBill.items[splitIdx].description}"
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            );
                                         };
 
+                                        let lastLevel0Index = -1;
+                                        let lastLevel1Index = -1;
                                         activeBill.items.forEach((item, idx) => {
                                             const level = getItemLevel(item);
+                                            if (level === 0) {
+                                                lastLevel0Index = idx;
+                                                lastLevel1Index = -1;
+                                            } else if (level === 1) {
+                                                lastLevel1Index = idx;
+                                            }
+
                                             let isHidden = false;
                                             if (level === 0) {
                                                 currentLevel1Collapsed = false;
@@ -1530,10 +1685,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                 if (currentLevel0Collapsed || currentLevel1Collapsed) isHidden = true;
                                             }
 
+                                            const currentSplitIdx = lastLevel0Index !== -1 ? lastLevel0Index : lastLevel1Index;
+
                                             // If this item is visible AND we have pending warnings from previously collapsed items,
                                             // render them before this item if it's a header.
                                             if (!isHidden && level < 2 && pendingWarnings.length > 0) {
-                                                pendingWarnings.forEach(num => items.push(renderWarning(num)));
+                                                pendingWarnings.forEach(w => items.push(renderWarning(w.count, w.splitIdx)));
                                                 pendingWarnings = [];
                                             }
 
@@ -1549,16 +1706,16 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                 // Page break indicators
                                                 if (totalWorkItemCount === 8 || totalWorkItemCount === 9) {
                                                     if (isHidden) {
-                                                        pendingWarnings.push(totalWorkItemCount);
+                                                        pendingWarnings.push({ count: totalWorkItemCount, splitIdx: currentSplitIdx });
                                                     } else {
-                                                        items.push(renderWarning(totalWorkItemCount));
+                                                        items.push(renderWarning(totalWorkItemCount, currentSplitIdx));
                                                     }
                                                 }
                                             }
                                         });
 
                                         // Render any remaining pending warnings at the end
-                                        pendingWarnings.forEach(num => items.push(renderWarning(num)));
+                                        pendingWarnings.forEach(w => items.push(renderWarning(w.count, w.splitIdx)));
 
                                         return items;
                                     })()}
@@ -1950,6 +2107,18 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     </div>
                 </div>,
                 document.body
+            )}
+
+            {moveTarget && (
+                <MoveItemModal
+                    isOpen={!!moveTarget}
+                    onClose={() => setMoveTarget(null)}
+                    description={moveTarget.description}
+                    bills={bills}
+                    currentBillId={moveTarget.billId}
+                    onMove={(targetBillId) => moveItemToDifferentBill(moveTarget.billId, targetBillId, moveTarget.itemId)}
+                    themeColor="blue"
+                />
             )}
         </div>
     );
