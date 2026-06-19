@@ -387,7 +387,11 @@ const BQEditor: React.FC<BQEditorProps> = ({
 
     const resequenceTitles = (currentBills: BQGroup[]): BQGroup[] => {
         const isInsurans = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS');
-        const isPermulaan = (b: BQGroup) => b.title.toUpperCase().includes('PERMULAAN') || b.id.includes('permulaan');
+        const isPermulaan = (b: BQGroup) => 
+            b.title.toUpperCase().includes('PERMULAAN') || 
+            b.title.toUpperCase().includes('AWALAN') || 
+            b.id.toLowerCase().includes('permulaan') || 
+            b.id.toLowerCase().includes('awalan');
 
         const insuransBills = currentBills.filter(isInsurans);
         const permulaanBills = currentBills.filter(b => isPermulaan(b) && !isInsurans(b));
