@@ -9,6 +9,8 @@ import { systemApp } from './routes/system'
 import { storageApp } from './routes/storage'
 import { notificationApp } from './routes/notifications'
 
+import { UserRepository } from './repositories/UserRepository'
+
 type Bindings = {
   DB: D1Database
   BUCKET: R2Bucket
@@ -17,6 +19,15 @@ type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api')
 
 app.use('*', cors())
+
+app.onError((err, c) => {
+  console.error(err)
+  return c.json({
+    error: err.name || 'Error',
+    message: err.message,
+    stack: err.stack
+  }, 500)
+})
 
 // Disable caching for DATA routes (Projects & System) - GET ONLY
 app.use('/projects/*', async (c, next) => {
@@ -82,17 +93,10 @@ app.post('/auth/login', async (c) => {
   const body = await c.req.json()
   const { username, password } = body
 
-  const { results } = await c.env.DB.prepare('SELECT * FROM app_users WHERE username = ? AND password = ?')
-    .bind(username, password)
-    .all()
+  const repo = new UserRepository(c.env.DB)
+  const user = await repo.getByUsernameAndPassword(username, password)
 
-  if (results && results.length > 0) {
-    const rawUser: any = results[0]
-    const user = {
-      ...rawUser,
-      fullName: rawUser.full_name,
-      avatarUrl: rawUser.avatar_url
-    }
+  if (user) {
     // Generate simple token for local testing
     const token = btoa(`${user.id}:${user.username}:${Date.now()}`)
     return c.json({ token, user })

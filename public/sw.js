@@ -1,21 +1,18 @@
-
-const CACHE_NAME = 'electrichub-v1';
-const ASSETS = [
-  './index.html'
-];
-
+// Self-destructive Service Worker to clear any active registrations and reload pages
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
-  );
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    self.registration.unregister()
+      .then(() => self.clients.matchAll())
+      .then((clients) => {
+        clients.forEach((client) => {
+          if (client.url && 'navigate' in client) {
+            client.navigate(client.url);
+          }
+        });
+      })
   );
 });

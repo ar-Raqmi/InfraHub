@@ -20,7 +20,6 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ProjectsList = lazy(() => import('./pages/ProjectsList'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 const Users = lazy(() => import('./pages/Users'));
-const Inbox = lazy(() => import('./pages/Inbox'));
 const ImageReportGenerator = lazy(() => import('./pages/ImageReportGenerator'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminSettings = lazy(() => import('./pages/AdminSettings'));
@@ -55,7 +54,7 @@ function App() {
 
   // Sync data whenever page changes (ensures "sync on open")
   useEffect(() => {
-    const projectPages = ['dashboard', 'projects', 'inbox', 'report'];
+    const projectPages = ['dashboard', 'projects', 'report'];
     if (projectPages.includes(currentPage)) {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['settings'] });
@@ -100,6 +99,36 @@ function App() {
     refreshUser();
     setAuthLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Push initial history state to prevent immediate back navigation
+    window.history.pushState(null, '', window.location.href);
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'Adakah anda pasti mahu menyegarkan halaman?';
+      return e.returnValue;
+    };
+
+    const handlePopState = () => {
+      const confirmLeave = window.confirm('Adakah anda pasti mahu kembali ke halaman sebelumnya? Tindakan ini boleh menyebabkan anda keluar dari aplikasi.');
+      if (!confirmLeave) {
+        window.history.pushState(null, '', window.location.href);
+      } else {
+        window.history.go(-1);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [user]);
 
   // Filter Projects by Year
   const filteredProjects = projects.filter(p => {
@@ -161,7 +190,7 @@ function App() {
       refreshUser();
     }
 
-    if (['dashboard', 'projects', 'users', 'inbox', 'report', 'settings', 'profile'].includes(page)) {
+    if (['dashboard', 'projects', 'users', 'report', 'settings', 'profile'].includes(page)) {
       setCurrentPage(page);
     } else {
       showToast(`Modul ${page} sedang dibangunkan.`, 'info');
@@ -171,7 +200,7 @@ function App() {
   const confirmNavigation = () => {
     if (pendingPage) {
       setIsEditing(false);
-      if (['dashboard', 'projects', 'users', 'inbox', 'report', 'settings', 'profile'].includes(pendingPage)) {
+      if (['dashboard', 'projects', 'users', 'report', 'settings', 'profile'].includes(pendingPage)) {
         setCurrentPage(pendingPage);
       } else if (pendingPage === 'logout') {
         handleLogout();
@@ -289,9 +318,6 @@ function App() {
                 )}
                 {currentPage === 'users' && (
                   <Users currentUser={user} onUserUpdate={refreshUser} />
-                )}
-                {currentPage === 'inbox' && (
-                  <Inbox onProjectClick={handleEditProject} />
                 )}
                 {currentPage === 'report' && (
                   <ImageReportGenerator projects={filteredProjects} user={user} />

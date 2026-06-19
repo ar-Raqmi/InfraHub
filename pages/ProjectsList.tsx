@@ -8,6 +8,7 @@ import { useProjects } from '../hooks/useProjects';
 import { useSettings } from '../hooks/useSettings';
 import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown, CalendarX } from 'lucide-react';
 import StrictDateInput from '../components/StrictDateInput';
+import { ProjectsListPDFExporter } from '../services/pdf';
 
 interface ProjectsListProps {
     projects: Project[];
@@ -38,8 +39,8 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (value / 100) * circumference;
 
-    const colorClass = "text-blue-500";
-    const strokeClass = "stroke-blue-500";
+    const colorClass = "text-emerald-500";
+    const strokeClass = "stroke-emerald-500";
 
     return (
         <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
@@ -158,148 +159,13 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         setGenerationProgress(10);
 
         try {
-            // @ts-ignore
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4'); // Landscape for more columns
-
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const marginX = 10;
-            let currentY = 15;
-
-            // Header
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(8);
-            doc.text(`JADUAL PENGILIRAN KONTRAKTOR PANEL INFRASTRUKTUR JABATAN KEJURUTERAAN TAHUN ${selectedYear}`, pageWidth / 2, currentY, { align: "center" });
-            doc.setFontSize(8);
-            currentY += 7;
-
-            const months = ["JAN", "FEB", "MAC", "APR", "MEI", "JUN", "JUL", "OGO", "SEP", "OKT", "NOV", "DIS"];
-
-            const companies = companyOrder.length > 0 ? companyOrder : Array.from(new Set(projects.map(p => p.namaSyarikat).filter(Boolean))) as string[];
-
-            let grandTotalCount = 0;
-            let grandTotalContract = 0;
-            let grandTotalLimit = 0;
-            let grandTotalBalance = 0;
-            const grandTotalMonths = Array(12).fill(0);
-
-            const tableBody = companies.map((compName, idx) => {
-                const compProjects = projects.filter(p => p.namaSyarikat === compName);
-                const compDetail = companyDetails[compName] || {};
-                const limit = compDetail.limit || 0; // Threshold
-
-                const monthCounts = Array(12).fill(0);
-                let totalContract = 0;
-
-                compProjects.forEach(p => {
-                    totalContract += (p.kosProjek || 0);
-
-                    let dateToUse = p.tarikhLantikan || p.tarikhBuka;
-                    if (p.bulan) {
-                        const mIdx = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"].indexOf(p.bulan.toUpperCase());
-                        if (mIdx !== -1) {
-                            monthCounts[mIdx]++;
-                            return;
-                        }
-                    }
-
-                    if (dateToUse) {
-                        const d = new Date(dateToUse);
-                        if (!isNaN(d.getTime())) {
-                            monthCounts[d.getMonth()]++;
-                        }
-                    }
-                });
-
-                monthCounts.forEach((count, mIdx) => {
-                    grandTotalMonths[mIdx] += count;
-                });
-
-                const balance = limit - totalContract;
-                const totalCount = monthCounts.reduce((a, b) => a + b, 0);
-
-                grandTotalCount += totalCount;
-                grandTotalContract += totalContract;
-                grandTotalLimit += limit;
-                grandTotalBalance += balance;
-
-                return [
-                    idx + 1,
-                    compName,
-                    ...monthCounts.map(c => c > 0 ? c.toString() : ''),
-                    totalCount,
-                    formatCurrency(totalContract).replace('RM', '').trim(),
-                    formatCurrency(balance).replace('RM', '').trim()
-                ];
-            });
-
-            const summaryRow = [
-                '',
-                'JUMLAH KESELURUHAN',
-                ...grandTotalMonths.map(c => c > 0 ? c.toString() : ''),
-                grandTotalCount,
-                formatCurrency(grandTotalContract).replace('RM', '').trim(),
-                formatCurrency(grandTotalBalance).replace('RM', '').trim()
-            ];
-
-            tableBody.push(summaryRow);
-
-            const head = [
-                [
-                    { content: 'BIL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-                    { content: 'NAMA KONTRAKTOR', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-                    { content: 'BULAN', colSpan: 12, styles: { halign: 'center' } },
-                    { content: 'JUMLAH FAIL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }, // Total Count
-                    { content: 'JUMLAH KONTRAK', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-                    { content: 'BAKI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }
-                ],
-                [
-                    ...months
-                ]
-            ];
-
-            // @ts-ignore
-            doc.autoTable({
-                startY: currentY,
-                head: head,
-                body: tableBody,
-                theme: 'grid',
-                styles: { fontSize: 7, cellPadding: 1, lineColor: [0, 0, 0], lineWidth: 0.1, textColor: 0 },
-                headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center', lineWidth: 0.1, lineColor: [0, 0, 0] },
-                columnStyles: {
-                    0: { cellWidth: 10, halign: 'center' }, // BIL
-                    1: { cellWidth: 'auto' }, // NAMA
-                    // Months 2-13 (indices 2 to 13)
-                    2: { cellWidth: 8, halign: 'center' },
-                    3: { cellWidth: 8, halign: 'center' },
-                    4: { cellWidth: 8, halign: 'center' },
-                    5: { cellWidth: 8, halign: 'center' },
-                    6: { cellWidth: 8, halign: 'center' },
-                    7: { cellWidth: 8, halign: 'center' },
-                    8: { cellWidth: 8, halign: 'center' },
-                    9: { cellWidth: 8, halign: 'center' },
-                    10: { cellWidth: 8, halign: 'center' },
-                    11: { cellWidth: 8, halign: 'center' },
-                    12: { cellWidth: 8, halign: 'center' },
-                    13: { cellWidth: 8, halign: 'center' },
-                    // Stats
-                    14: { cellWidth: 12, halign: 'center', fontStyle: 'bold' }, // Total Count
-                    15: { cellWidth: 25, halign: 'right' }, // Total Contract
-                    16: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }  // Balance
-                },
-                margin: { left: marginX, right: marginX },
-                didParseCell: (data: any) => {
-                    if (data.row.index === tableBody.length - 1) {
-                        data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.fillColor = [240, 240, 240];
-                    }
-                }
-            });
-
-            setGenerationProgress(100);
-            doc.save(`Rotasi_Kontraktor_${selectedYear}.pdf`);
-
+            await ProjectsListPDFExporter.exportRotasi(
+                selectedYear,
+                companyOrder,
+                projects,
+                companyDetails,
+                setGenerationProgress
+            );
         } catch (e) {
             console.error("Rotasi PDF Error", e);
             alert("Gagal menjana PDF Rotasi.");
@@ -745,271 +611,18 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         setGenerationProgress(10);
 
         try {
-            // @ts-ignore
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const marginX = 10;
-            let currentY = 10;
-
-            const printHeader = (pageNum: number) => {
-                if (pageNum === 1) {
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(8);
-                    doc.text(`SENARAI KONTRAKTOR PANEL YANG TELAH DILANTIK`, pageWidth / 2, 20, { align: "center" });
-                    doc.text(`UNTUK KERJA INFRASTRUKTUR BAGI TAHUN ${selectedYear}`, pageWidth / 2, 25, { align: "center" });
-
-                    doc.setFont("helvetica", "normal");
-                    doc.setFontSize(8);
-                    doc.text(`Tarikh Kemaskini: ${new Date().toLocaleDateString('en-GB')}`, marginX, 35);
-                    doc.text(`Kertas Mesyuarat. Bil. ${exportBilMesyuarat}`, pageWidth - marginX, 35, { align: "right" });
-
-                    doc.setLineWidth(0.5);
-                    doc.line(marginX, 38, pageWidth - marginX, 38);
-                    return 45;
-                }
-                return 15;
-            };
-
-            currentY = printHeader(1);
-
-            let totalItemsProcessed = 0;
-            const totalItems = groupedProjects.reduce((acc, g) => acc + g.projects.length, 0);
-
-            let companyCounter = 1;
-            for (const group of groupedProjects) {
-                if (group.projects.length === 0) continue;
-
-                // Check if company header needs a new page
-                if (currentY > pageHeight - 50) {
-                    doc.addPage();
-                    currentY = printHeader(doc.getNumberOfPages());
-                }
-
-                // Company Header
-                doc.setFillColor(230, 230, 230);
-                doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'F');
-                doc.rect(marginX, currentY, pageWidth - (marginX * 2), 7, 'S');
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(8);
-                doc.setTextColor(0, 0, 0);
-                doc.text(`${companyCounter++}. ${group.company.toUpperCase()}`, marginX + 2, currentY + 5);
-                currentY += 10;
-
-                // Prepare consolidated table body for the company
-                let billCounter = 1;
-                const companyProjects = [...group.projects].sort((a, b) => {
-                    const dateA = new Date(a.tarikhMulaKontrak || a.tarikhLantikan || '9999-12-31').getTime();
-                    const dateB = new Date(b.tarikhMulaKontrak || b.tarikhLantikan || '9999-12-31').getTime();
-                    return dateA - dateB;
-                });
-
-                const tableBody = companyProjects.map((p) => {
-                    const pjaUser = getPjaUser(p.pjaId);
-                    const pjaName = pjaUser ? pjaUser.username.toUpperCase() : '-';
-
-                    // Title Case Helper
-                    const toTitleCase = (str: string) => {
-                        if (!str) return '';
-                        return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
-                    };
-
-                    // Format Status: First letter caps (e.g. Dalam Proses)
-                    const formattedStatus = getStatusLabel(p.status);
-
-                    const progress = p.peratusSiap !== undefined && p.peratusSiap !== null ? p.peratusSiap : 0;
-
-                    // Format Lokasi: Title case and join with comma
-                    const formattedLokasi = (p.lokasi || '-')
-                        .split(/,|\n/) // Split by comma OR newline
-                        .map(part => part.trim())
-                        .filter(part => part.length > 0)
-                        .map(part => toTitleCase(part))
-                        .join(', ');
-
-                    const failDanLokasi = `${p.noFail}\n${formattedLokasi}`;
-                    const tarikhGabung = `${formatDate(p.tarikhMulaKontrak)} ${formatDate(p.tarikhTamatKontrak)}`;
-                    const votGabung = `${p.noVote || 'TIADA VOT'}\n${getVoteName(p.noVote || '')}`;
-                    const formattedZon = (p.zon || '-').replace(/Zon /g, '');
-
-                    return [
-                        billCounter++,
-                        failDanLokasi,
-                        tarikhGabung,
-                        pjaName,
-                        formattedZon,
-                        `${formattedStatus}\n(${progress}%)`,
-                        votGabung,
-                        formatCurrency(p.kosProjek || 0).replace('RM', '').trim()
-                    ];
-                });
-
-                // @ts-ignore
-                doc.autoTable({
-                    startY: currentY,
-                    head: [['BIL', 'NO. FAIL / LOKASI', 'TARIKH', 'PJE', 'ZON', 'STATUS', 'VOT', 'HARGA (RM)']],
-                    body: tableBody,
-                    theme: 'grid',
-                    styles: { fontSize: 6.5, cellPadding: 0.5, lineColor: [0, 0, 0], lineWidth: 0.1, textColor: 0, valign: 'middle' },
-                    headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center', valign: 'middle' },
-                    columnStyles: {
-                        0: { cellWidth: 6, halign: 'center' },
-                        1: { cellWidth: 70 },
-                        2: { cellWidth: 15, halign: 'center' },
-                        3: { cellWidth: 14, halign: 'center' },
-                        4: { cellWidth: 12, halign: 'center' },
-                        5: { cellWidth: 23, halign: 'center' },
-                        6: { cellWidth: 27 },
-                        7: { cellWidth: 23, halign: 'right', fontStyle: 'bold' }
-                    },
-                    margin: { left: marginX, right: marginX },
-                    rowPageBreak: 'avoid',
-                    didParseCell: (data: any) => {
-                        if (data.section === 'body' && data.column.index === 1) {
-                            data.cell.styles.fontSize = 6;
-                        }
-                    }
-                });
-
-                // @ts-ignore
-                currentY = doc.lastAutoTable.finalY + 3;
-
-                // Budget Summary for this company
-                const votesInGroup = Object.keys(group.projectsByVote).sort();
-                const summaryTableBody = votesInGroup.map(voteCode => {
-                    const voteData = group.projectsByVote[voteCode];
-                    return [
-                        voteCode,
-                        getVoteName(voteCode),
-                        voteData.projects.length,
-                        formatCurrency(voteData.subtotalContract).replace('RM', '').trim()
-                    ];
-                });
-
-                // Add Grand Total for company
-                summaryTableBody.push([
-                    { content: 'JUMLAH', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any,
-                    { content: '', styles: { fillColor: [240, 240, 240] } } as any,
-                    { content: formatCurrency(group.totalCost).replace('RM', '').trim(), styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } } as any
-                ]);
-
-                // Check space for summary table
-                if (currentY > pageHeight - 30) {
-                    doc.addPage();
-                    currentY = printHeader(doc.getNumberOfPages());
-                }
-
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(7);
-                // doc.text(`RINGKASAN BAJET: ${group.company}`, marginX, currentY + 4);
-                currentY += 0;
-
-                // @ts-ignore
-                doc.autoTable({
-                    startY: currentY,
-                    head: [['VOT', 'PERUNTUKAN', 'BIL. PROJEK', 'JUMLAH (RM)']],
-                    body: summaryTableBody,
-                    theme: 'grid',
-                    styles: { fontSize: 6.5, cellPadding: 0.5, lineColor: [0, 0, 0], lineWidth: 0.1, textColor: 0 },
-                    headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold', halign: 'center' },
-                    columnStyles: {
-                        0: { cellWidth: 20, halign: 'center' },
-                        1: { cellWidth: 'auto' },
-                        2: { cellWidth: 20, halign: 'center' },
-                        3: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
-                    },
-                    margin: { left: marginX, right: marginX },
-                    tableWidth: 140 // Slightly wider to accommodate new column
-                });
-
-                // @ts-ignore
-                currentY = doc.lastAutoTable.finalY + 10;
-
-                totalItemsProcessed += group.projects.length;
-                setGenerationProgress(10 + Math.round((totalItemsProcessed / totalItems) * 80));
-            }
-
-            // FINAL GLOBAL SUMMARY PAGE
-            doc.addPage();
-            currentY = 20;
-            doc.setFontSize(8);
-            doc.setFont("helvetica", "bold");
-            doc.text(`RUMUSAN (${selectedYear})`, marginX, currentY);
-            currentY += 5;
-
-            const globalSummaryBody = Object.entries(financialSummary).map(([voteCode, data]) => {
-                return [
-                    voteCode,
-                    getVoteName(voteCode),
-                    (data as any).projectCount,
-                    formatCurrency((data as any).allocated).replace('RM', ''),
-                    formatCurrency((data as any).used).replace('RM', ''),
-                    formatCurrency((data as any).allocated - (data as any).used).replace('RM', '')
-                ];
-            });
-
-            const totalAlloc = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0);
-            const totalUsed = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0);
-            const totalProjectCount = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0);
-            const totalBal = totalAlloc - totalUsed;
-
-            // @ts-ignore
-            doc.autoTable({
-                startY: currentY,
-                head: [['VOT', 'PERUNTUKAN', 'PROJEK', 'JUMLAH', 'PERBELANJAAN', 'BAKI']],
-                body: [
-                    ...globalSummaryBody,
-                    [
-                        { content: 'JUMLAH', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
-                        { content: `${totalProjectCount}`, styles: { halign: 'center', fontStyle: 'bold' } },
-                        { content: formatCurrency(totalAlloc).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } },
-                        { content: formatCurrency(totalUsed).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 0, 0] } },
-                        { content: formatCurrency(totalBal).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } }
-                    ]
-                ],
-                theme: 'grid',
-                styles: { fontSize: 7.5, cellPadding: 1.4, lineColor: [0, 0, 0], lineWidth: 0.1, textColor: 0 },
-                headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center' },
-                columnStyles: {
-                    0: { cellWidth: 20, halign: 'center' },
-                    1: { cellWidth: 'auto' },
-                    2: { cellWidth: 15, halign: 'center' },
-                    3: { cellWidth: 35, halign: 'right' },
-                    4: { cellWidth: 35, halign: 'right' },
-                    5: { cellWidth: 35, halign: 'right' }
-                },
-                margin: { left: marginX, right: marginX }
-            });
-
-            // @ts-ignore
-            currentY = doc.lastAutoTable.finalY + 10;
-
-            const netBalance = totalBal - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0);
-            const deductionData = [
-                ['TOLAK LAIN-LAIN (SEBUTHARGA)', formatCurrency(manualFinancials.outsource || 0)],
-                ['TOLAK LANTIKAN YDP/TYDP', formatCurrency(manualFinancials.ydp || 0)],
-                ['BAKI BERSIH', formatCurrency(netBalance)]
-            ];
-
-            // @ts-ignore
-            doc.autoTable({
-                startY: currentY,
-                body: deductionData,
-                theme: 'plain',
-                styles: { fontSize: 8, cellPadding: 1, textColor: 0 },
-                columnStyles: {
-                    0: { cellWidth: 100, halign: 'right', fontStyle: 'bold' },
-                    1: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
-                },
-                margin: { left: pageWidth - 150 }
-            });
-
-            setGenerationProgress(100);
-            doc.save(`Senarai_Kontraktor_Panel_${selectedYear}.pdf`);
+            await ProjectsListPDFExporter.exportSenarai(
+                selectedYear,
+                groupedProjects,
+                exportBilMesyuarat,
+                financialSummary,
+                manualFinancials,
+                getPjaUser,
+                getStatusLabel,
+                getVoteName,
+                setGenerationProgress
+            );
             setIsExportModalOpen(false);
-
         } catch (e) {
             console.error("Real PDF Generation Error", e);
             alert("Gagal menjana PDF. Sila guna 'Backup (Imej)'.");
@@ -1027,12 +640,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 <div>
                     <h1 className="text-3xl font-bold gradient-text">Senarai Projek</h1>
                     <p className="text-slate-500  mt-1">
-                        <span className="font-bold text-blue-600">{filteredProjects.length}</span> projek dijumpai
+                        <span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai
                     </p>
                 </div>
                 <button
                     onClick={onAddProject}
-                    className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40  transition-colors duration-300 w-full md:w-auto justify-center"
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40  transition-colors duration-300 w-full md:w-auto justify-center"
                 >
                     <Plus className="h-5 w-5" />
                     <span>Tambah Projek</span>
@@ -1050,7 +663,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 placeholder="Cari No. Fail, Aduan, Projek, Syarikat..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50  border-transparent focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-colors text-slate-900  placeholder-slate-400 font-medium"
+                                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50  border-transparent focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-colors text-slate-900  placeholder-slate-400 font-medium"
                             />
                         </div>
                     )}
@@ -1060,14 +673,14 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                         <div className="flex bg-slate-100  p-1 rounded-xl shrink-0">
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white  text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                 title="Pandangan Senarai"
                             >
                                 <List className="w-4 h-4" /> <span className="hidden md:inline">Senarai</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('group')}
-                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'group' ? 'bg-white  text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'group' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                 title="Pandangan Kumpulan Syarikat"
                             >
                                 <Grid className="w-4 h-4" /> <span className="hidden md:inline">Syarikat</span>
@@ -1076,12 +689,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                         <button
                             onClick={() => setShowFilterPanel(!showFilterPanel)}
-                            className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-colors relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-blue-50  text-blue-600 border-blue-200 ring-2 ring-blue-500/20' : 'bg-white  border-slate-200  text-slate-600 hover:bg-slate-50'}`}
+                            className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-colors relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-emerald-50  text-emerald-600 border-emerald-200 ring-2 ring-emerald-500/20' : 'bg-white  border-slate-200  text-slate-600 hover:bg-slate-50'}`}
                         >
                             <Filter className="w-4 h-4" />
                             <span>Filter</span>
                             {activeFilterCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 text-white text-[10px] flex items-center justify-center rounded-full shadow-sm">
+                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-600 text-white text-[10px] flex items-center justify-center rounded-full shadow-sm">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -1089,7 +702,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                         <button
                             onClick={viewMode === 'group' ? () => setIsExportModalOpen(true) : exportToExcel}
-                            className="h-full px-4 rounded-xl bg-blue-50  text-blue-600  hover:bg-blue-100  flex items-center gap-2 transition-colors font-bold text-sm"
+                            className="h-full px-4 rounded-xl bg-emerald-50  text-emerald-600  hover:bg-emerald-100  flex items-center gap-2 transition-colors font-bold text-sm"
                             title={viewMode === 'group' ? "Jana Laporan Panel" : "Export CSV"}
                         >
                             {viewMode === 'group' ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
@@ -1111,7 +724,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     <div className="pt-6 border-t border-slate-100  animate-slide-up">
                         <div className="flex items-center justify-between mb-6">
                             <h4 className="text-sm font-bold text-slate-800  flex items-center gap-2">
-                                <Settings2 className="w-4 h-4 text-blue-500" />
+                                <Settings2 className="w-4 h-4 text-emerald-500" />
                                 Tetapan Data & Paparan
                             </h4>
                             <button
@@ -1132,7 +745,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <select
                                         value={filterStatus}
                                         onChange={(e) => setFilterStatus(e.target.value as any)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                                     >
                                         <option value="ALL">Semua Status</option>
                                         <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
@@ -1162,7 +775,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 </div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors">
+                                    <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                         <option value="ALL">Semua BP</option>
                                         {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
                                     </select>
@@ -1170,7 +783,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 </div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors">
+                                    <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
                                         <option value="ALL">Semua Mukim</option>
                                         {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
                                     </select>
@@ -1181,7 +794,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <select
                                         value={filterVote}
                                         onChange={(e) => setFilterVote(e.target.value)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                                     >
                                         <option value="ALL">Semua Vot</option>
                                         {votesList.map(v => (
@@ -1203,7 +816,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <select
                                         value={filterDateType}
                                         onChange={(e) => setFilterDateType(e.target.value)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white  transition-colors"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
                                     >
                                         <option value="tarikhBuka">Tarikh Buka</option>
                                         <option value="tarikhLantikan">Tarikh Lantikan</option>
@@ -1224,7 +837,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             value={filterDateStart || ''}
                                             onChange={(e) => setFilterDateStart(e.target.value)}
                                             placeholder="Dari (DD/MM/YYYY)"
-                                            className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
                                         />
                                     </div>
                                     {(filterDateStart || filterDateEnd) && (
@@ -1243,7 +856,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                         value={filterDateEnd || ''}
                                         onChange={(e) => setFilterDateEnd(e.target.value)}
                                         placeholder="Hingga (DD/MM/YYYY)"
-                                        className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
                                     />
                                 </div>
                             </div>
@@ -1265,7 +878,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                                         {columnDefs.map(col => (
                                             <label key={col.id} className="flex items-center gap-2 cursor-pointer group p-1.5 rounded-lg hover:bg-white  transition-colors select-none">
-                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-blue-500 border-blue-500' : 'bg-white  border-slate-300  group-hover:border-blue-400'}`}>
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-emerald-500 border-emerald-500' : 'bg-white  border-slate-300  group-hover:border-emerald-400'}`}>
                                                     {visibleColumns[col.id] && <Check className="w-3 h-3 text-white stroke-[3]" />}
                                                 </div>
                                                 <input type="checkbox" className="hidden" checked={visibleColumns[col.id]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col.id]: !prev[col.id] }))} />
@@ -1283,15 +896,15 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 <div className="flex gap-4 items-center">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kos:</span>
                                     <div className="flex bg-slate-100  rounded-lg p-1">
-                                        <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Harga Kontrak</button>
-                                        <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Harga Akhir</button>
-                                        <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Semua</button>
+                                        <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
+                                        <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
+                                        <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 items-center">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tapis Projek:</span>
                                     <label className="flex items-center gap-2 cursor-pointer">
-                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-blue-500' : 'bg-slate-300'}`}>
+                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-emerald-500' : 'bg-slate-300'}`}>
                                             <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showSiap ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <input type="checkbox" className="hidden" checked={showSiap} onChange={() => setShowSiap(!showSiap)} />
@@ -1300,7 +913,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     </label>
 
                                     <label className="flex items-center gap-2 cursor-pointer">
-                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-blue-500' : 'bg-slate-300'}`}>
+                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-emerald-500' : 'bg-slate-300'}`}>
                                             <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showTuntutan ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <input type="checkbox" className="hidden" checked={showTuntutan} onChange={() => setShowTuntutan(!showTuntutan)} />
@@ -1332,7 +945,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             setSortKey('tarikhBuka');
                                             setSortDirection('desc');
                                         }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
                                     >
                                         <RotateCcw className="w-3 h-3" />
                                         Reset Susunan
@@ -1357,7 +970,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                         onChange={handlePageInputChange}
                                         onBlur={handlePageInputBlur}
                                         onKeyDown={handlePageInputKeyDown}
-                                        className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 shadow-sm"
+                                        className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 shadow-sm"
                                     />
                                     <span className="text-xs text-slate-500">dari {totalPages}</span>
                                 </div>
@@ -1396,7 +1009,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     {col.label}
                                                     <div className={`transition-opacity ${isSorted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                                         {isSorted ? (
-                                                            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-blue-600" /> : <ArrowDown className="w-3 h-3 text-blue-600" />
+                                                            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-emerald-600" /> : <ArrowDown className="w-3 h-3 text-emerald-600" />
                                                         ) : (
                                                             <ArrowUpDown className="w-3 h-3 text-slate-300" />
                                                         )}
@@ -1426,7 +1039,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     const pja = getPjaUser(project.pjaId);
                                                     return (
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
+                                                            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
                                                                 {pja?.avatarUrl ? (
                                                                     <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
                                                                 ) : (
@@ -1450,9 +1063,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             {visibleColumns.noInden && <td className="px-6 py-4 text-xs text-slate-500">{project.noInden}</td>}
                                             {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
                                             {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
-                                            {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-blue-500' : 'bg-yellow-500'}`}></span>{getStatusLabel(project.status)}</span></div></td>}
+                                            {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{getStatusLabel(project.status)}</span></div></td>}
                                             {visibleColumns.prestasi && <td className="px-6 py-4 text-center font-bold text-slate-700">{project.prestasi || '-'}</td>}
-                                            {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-blue-600">{formatCurrency(project.kosProjek)}</td>}
+                                            {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
                                             {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(getHargaAkhir(project))}</td>}
                                             {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
                                             {visibleColumns.ladAmount && <td className="px-6 py-4 text-right text-xs font-bold text-red-500">{formatCurrency(project.ladAmount)}</td>}
@@ -1507,7 +1120,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                             <h3 className="text-lg font-bold text-slate-900  truncate flex items-center gap-3">{idx + 1}. {group.company} {group.count > 0 ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-600  font-bold uppercase tracking-wider">{group.count} Fail</span> : <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-400  font-bold uppercase tracking-wider italic">Tiada Projek</span>}</h3>
                                             <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-xs font-medium text-slate-500">
                                                 <div className="flex gap-4 border-l border-slate-200  pl-4 ml-2">
-                                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-blue-700  font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
+                                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-emerald-700  font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
                                                     {(costViewMode === 'actual' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div><span className="opacity-80">Harga Akhir:</span><strong className="text-blue-700  font-mono text-sm">{formatCurrency(group.totalHargaAkhir)}</strong></span>}
                                                 </div>
                                             </div>
@@ -1542,7 +1155,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                             </thead>
                                                             <tbody className="divide-y divide-slate-100">
                                                                 {voteData.projects.map((p, pIdx) => {
-const pjeUser = getPjaUser(p.pjaId);
+                                                                    const pjaUser = getPjaUser(p.pjaId);
                                                                     const hargaAkhir = getHargaAkhir(p);
 
                                                                     return (
@@ -1553,11 +1166,11 @@ const pjeUser = getPjaUser(p.pjaId);
                                                                             <td className="px-6 py-3 text-center align-top text-xs font-bold text-slate-400">{pIdx + 1}</td>
                                                                             <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600  mb-1">{p.noFail}</div><div className="font-medium text-slate-800  leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
                                                                             <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white  border border-slate-200  text-xs font-bold text-slate-600  shadow-sm">{p.bulan || '-'}</span></td>
-                                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjeUser?.username.toUpperCase() || '-'}</span></td>
+                                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
                                                                             <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600  whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
                                                                             <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br />-<br />{formatDate(p.tarikhTamatKontrak)}</td>
                                                                             <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
-                                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-blue-600'}>{formatCurrency(p.kosProjek)}</div>
+                                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600'}>{formatCurrency(p.kosProjek)}</div>
                                                                                 <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600'}>{formatCurrency(getHargaAkhir(p))}</div>
                                                                             </td>
                                                                             <td className="px-6 py-3 text-center align-top">
@@ -1575,9 +1188,9 @@ const pjeUser = getPjaUser(p.pjaId);
                                                                                                         updateProject({ id: p.id, updates: { peratusSiap: parseInt(e.target.value) || 0 } });
                                                                                                     }}
                                                                                                     onClick={(e) => e.stopPropagation()}
-                                                                                                    className="w-12 text-center text-[10px] font-bold text-blue-600 bg-white border border-blue-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-blue-500 transition-shadow"
+                                                                                                    className="w-12 text-center text-[10px] font-bold text-emerald-600 bg-white border border-emerald-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-emerald-500 transition-shadow"
                                                                                                 />
-                                                                                                <span className="text-[10px] font-bold text-blue-600">%</span>
+                                                                                                <span className="text-[10px] font-bold text-emerald-600">%</span>
                                                                                             </div>
                                                                                             <select
                                                                                                 value={p.status}
@@ -1595,7 +1208,7 @@ const pjeUser = getPjaUser(p.pjaId);
                                                                                         </>
                                                                                     ) : (
                                                                                         <>
-                                                                                            <span className="text-[10px] font-bold text-blue-600">{p.peratusSiap}%</span>
+                                                                                            <span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span>
                                                                                             <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{getStatusLabel(p.status)}</span>
                                                                                         </>
                                                                                     )}
@@ -1604,7 +1217,7 @@ const pjeUser = getPjaUser(p.pjaId);
                                                                             <td className="px-6 py-3 text-right align-top">
                                                                                 <button
                                                                                     onClick={(e) => { e.stopPropagation(); onEditProject(p); }}
-                                                                                    className="p-2 rounded-lg bg-white  text-blue-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"
+                                                                                    className="p-2 rounded-lg bg-white  text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"
                                                                                 >
                                                                                     <ArrowUpRight className="w-4 h-4" />
                                                                                 </button>
@@ -1624,14 +1237,14 @@ const pjeUser = getPjaUser(p.pjaId);
                                                     </div>
                                                 );
                                             })}
-                                            <div className="px-6 py-4 bg-blue-50/50  flex justify-end items-center gap-6 border-t border-blue-100">
+                                            <div className="px-6 py-4 bg-emerald-50/50  flex justify-end items-center gap-6 border-t border-emerald-100">
                                                 <div className="flex items-center gap-2 mr-auto">
                                                     <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                                                         :</span>
                                                     <span className="text-xs font-black text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm">{group.count}</span>
                                                 </div>
-                                                <span className="text-[11px] font-bold uppercase text-blue-600  tracking-wider">Jumlah Keseluruhan ({group.company})</span>
-                                                <span className="text-sm font-black font-mono text-blue-700">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
+                                                <span className="text-[11px] font-bold uppercase text-emerald-600  tracking-wider">Jumlah Keseluruhan ({group.company})</span>
+                                                <span className="text-sm font-black font-mono text-emerald-700">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1644,7 +1257,7 @@ const pjeUser = getPjaUser(p.pjaId);
                     {/* Integrated Summary Card (Vertical) */}
                     {groupedProjects.length > 0 && (
                         <div className="relative overflow-hidden rounded-3xl bg-white  border border-slate-200  shadow-xl p-6 mt-8 w-full mx-auto">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100"><div className="p-3 bg-slate-100  rounded-xl shadow-sm text-blue-600"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800  uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100"><div className="p-3 bg-slate-100  rounded-xl shadow-sm text-emerald-600"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800  uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
                             <div className="overflow-hidden rounded-xl border border-slate-200">
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-50">
@@ -1653,22 +1266,22 @@ const pjeUser = getPjaUser(p.pjaId);
                                     <tbody className="divide-y divide-slate-100">
                                         {Object.entries(financialSummary).map(([voteCode, data]) => (
                                             <tr key={voteCode} className="hover:bg-slate-50">
-                                                <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-center font-bold text-slate-600">{data.projectCount}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-blue-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
+                                                <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-center font-bold text-slate-600">{data.projectCount}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-center font-bold text-slate-800">{(Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0)}</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-blue-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
-                                        <tr className="bg-blue-50/30  font-bold border-t border-blue-100">
-                                            <td colSpan={4} className="py-3 px-4 text-right uppercase text-[10px] text-blue-600 tracking-wider">Jumlah Projek Keseluruhan</td>
-                                            <td colSpan={2} className="py-3 px-4 text-right font-mono text-blue-700">{filteredProjects.length} Projek</td>
+                                        <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-center font-bold text-slate-800">{(Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0)}</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
+                                        <tr className="bg-emerald-50/30  font-bold border-t border-emerald-100">
+                                            <td colSpan={4} className="py-3 px-4 text-right uppercase text-[10px] text-emerald-600 tracking-wider">Jumlah Projek Keseluruhan</td>
+                                            <td colSpan={2} className="py-3 px-4 text-right font-mono text-emerald-700">{filteredProjects.length} Projek</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>                            <div className="mt-6 flex flex-col gap-4 border-t border-slate-200  pt-4">
                                 <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
                                 <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-blue-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
+                                <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-emerald-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
                                     <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="px-4 py-2 bg-slate-800  text-white  rounded-lg text-[10px] font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
-                                    <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-blue-600  leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
+                                    <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600  leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
                                 </div>
                             </div>
                         </div>
@@ -1706,7 +1319,7 @@ const pjeUser = getPjaUser(p.pjaId);
                     <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-900  flex items-center gap-2">
-                                <FileText className="w-6 h-6 text-blue-600" />
+                                <FileText className="w-6 h-6 text-emerald-600" />
                                 Laporan Panel Kontraktor
                             </h3>
                             <button onClick={() => setIsExportModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors">
@@ -1717,10 +1330,10 @@ const pjeUser = getPjaUser(p.pjaId);
                         <div className="space-y-4">
                             {isGeneratingPdf ? (
                                 <div className="flex flex-col items-center justify-center py-4">
-                                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                                    <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-2" />
                                     <p className="text-sm font-bold text-slate-700">Menjana PDF... {generationProgress}%</p>
                                     <div className="w-full bg-slate-100  h-2 rounded-full mt-2 overflow-hidden">
-                                        <div className="bg-blue-500 h-full transition-colors duration-300" style={{ width: `${generationProgress}%` }}></div>
+                                        <div className="bg-emerald-500 h-full transition-colors duration-300" style={{ width: `${generationProgress}%` }}></div>
                                     </div>
                                 </div>
                             ) : (
@@ -1733,7 +1346,7 @@ const pjeUser = getPjaUser(p.pjaId);
                                             type="text"
                                             value={exportBilMesyuarat}
                                             onChange={e => setExportBilMesyuarat(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                                             placeholder="cth: 01/01/2025"
                                             autoFocus
                                         />
@@ -1743,7 +1356,7 @@ const pjeUser = getPjaUser(p.pjaId);
                                         <button
                                             onClick={handleExportRealPDF}
                                             disabled={isGeneratingPdf}
-                                            className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-70 group"
+                                            className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 disabled:opacity-70 group"
                                         >
                                             <FileText className="w-4 h-4" />
                                             PDF

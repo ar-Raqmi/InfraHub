@@ -1,210 +1,101 @@
-# ElectricHub
+<p align="center">
+  <img src="../images/icon.svg" alt="ElectricHub Logo" width="120" />
+</p>
 
-> Electrical Project Management System for Majlis Perbandaran Selayang
+<h1 align="center">ElectricHub</h1>
 
 <p align="center">
-  <img src="../images/dashboard.png"
-       alt="ElectricHub Dashboard"
-       style="height:400px; width:auto; border-radius:12px; border: 1px solid #e2e8f0;" />
+  <strong>Sistem Pengurusan Projek Elektrikal (Electrical Project Management System)</strong><br />
+  Designed and built for the Engineering Department of <strong>Majlis Perbandaran Selayang (MPS)</strong>.
+</p>
+
+<p align="center">
+  <a href="#-about-electrichub">About</a> •
+  <a href="#-core-pages">Core Pages</a> •
+  <a href="#-user-roles">User Roles</a> •
+  <a href="#-project-workflow">Project Workflow</a> •
+  <a href="#-support--collaboration">Support</a>
 </p>
 
 ---
 
-## 📌 What is ElectricHub?
+## 📋 About ElectricHub
 
-**ElectricHub** is a project management system for Majlis Perbandaran Selayang that helps with:
-
-- ✅ Managing construction projects from start to finish
-- ✅ Automatically generating official documents
-- ✅ Tracking project costs and progress
-- ✅ Facilitating communication between officers
-
----
-
-## 🎯 Who Is It For?
-
-| Role | Main Responsibilities |
-|------|----------------------|
-| **Admin (Pembantu Tadbir)** | Manage contractor companies, vote numbers, and system settings |
-| **PJE (Penolong Jurutera Elektrik)** | Prepare BQ, monitor progress, and generate reports |
-| **Jurutera** | Sign documents and approve projects |
-
----
-
-## 🚀 Key Features
-
-### 1️⃣ Dashboard
+**ElectricHub** is a comprehensive, modern electrical project management system tailored specifically for the engineering department of **Majlis Perbandaran Selayang**. It streamlines the lifecycle of municipal construction and maintenance projects from initial Bill of Quantities (BQ) drafting, through company appointments, execution tracking, site inspection, to final payment processing and closure.
 
 <p align="center">
-  <img src="../images/dashboard.png"
-       alt="Dashboard View"
-       style="height:300px; width:auto; border-radius:8px; border: 1px solid #e2e8f0;" />
+  <img src="../images/dashboard.png" alt="ElectricHub Dashboard" width="700" style="border-radius:12px; border: 1px solid #e2e8f0;" />
 </p>
 
-- **Project Statistics**: View the number of projects by status in one glance
-- **Bulletins**: Latest announcements from administration
-- **Search**: Find projects easily
-- **Notifications**: Reminders about project deadlines
+---
 
-### 2️⃣ Project List
+## 🖥️ Core Pages
 
-<p align="center">
-  <img src="../images/projectlist.png"
-       alt="Project List"
-       style="height:300px; width:auto; border-radius:8px; border: 1px solid #e2e8f0;" />
-</p>
+Below is an overview of the key pages in the system and their respective functions:
 
-- **List View**: See all projects with status and cost
-- **Filters**: Filter by status, PJE, zone, or BP
-- **Group View**: View projects by company
-- **Export**: Download data for analysis
-
-### 3️⃣ BQ Editor (Bill of Quantities)
-
-<p align="center">
-  <img src="../images/bqeditor.png"
-       alt="BQ Editor"
-       style="height:300px; width:auto; border-radius:8px; border: 1px solid #e2e8f0;" />
-</p>
-
-- **Automatic Calculations**: Measure dimensions and costs are calculated automatically
-- **Preset Library**: Use existing work templates
-- **Multiple Locations**: Measure work in different areas
-- **Secure Storage**: Data is saved in Cloud for security
-
-### 4️⃣ Document Generators
-
-The system automatically generates various official documents:
-
-| Document | Purpose |
-|----------|---------|
-| **Aku Janji** | Contractor commitment letter |
-| **Notis** | Notification and warning notices |
-| **CPC Certificate** | Work completion certificate with DLP calculation |
-| **LAD Certificate** | Late work damages penalty |
-| **Performance Certificate** | Contractor performance evaluation |
-| **Photo Report** | Site report with images and annotations |
-
-### 5️⃣ Admin Settings
-
-- **Manage Companies**: Add and edit contractor company details
-- **Manage Votes**: Organize vote codes and budget allocations
-- **BQ Templates**: Create and save templates for repeated use
-- **Bulletins**: Publish announcements to all users
+* **🔐 Login (`Login.tsx`)**
+  * Secure user authentication with role-based access control (Admin, PJE, Jurutera) to restrict system actions.
+* **📊 Dashboard (`Dashboard.tsx`)**
+  * The main executive view highlighting ongoing/completed project counts, active bulletins, system notifications and a summary of monthly budgets.
+* **📂 Project List (`ProjectsList.tsx`)**
+  * An interactive repository of all electrical projects. Supports comprehensive filtering by status, PJE, zone and budget category, with options to export project metadata.
+* **🔎 Project Details (`ProjectDetail.tsx`)**
+  * The central operational hub for a single project. Displays phase timelines, contract information, contractor details and allows access to specific tools like BQ editors and document generators.
+* **📐 BQ & Pelarasan Editors (`BQEditor.tsx` & `BQPelarasanEditor.tsx`)**
+  * Rich editors for building Bill of Quantities (BQ) and handling adjustments (Pelarasan). Supports standard library presets, location-based measurements and automatic dimension-based cost calculations.
+* **📸 Image Annotation Report (`ImageReportGenerator.tsx`)**
+  * A site report generator allowing engineers to upload site progress photos, tag locations, annotate images with custom shapes/texts and compile them into a PDF.
+* **📄 Document Generators**
+  * Specialized pages to generate formal, audit-ready PDFs:
+    * **Aku Janji (`AkuJanjiEditor.tsx`)**: Generates contractor commitment letters.
+    * **Notis Generator (`NotisGenerator.tsx`)**: Generates warning and reminder letters.
+    * **CPC Certificate (`CPCCertificate.tsx`)**: Formulates Certificate of Practical Completion with DLP calculation.
+    * **LAD Certificate (`LADCertificate.tsx`)**: Automates Liquidated & Ascertained Damages penalty reports.
+    * **LoC Certificate (`LoCCertificate.tsx`)**: Tracks loc deduction details.
+    * **Prestasi Certificate (`PrestasiCertificate.tsx`)**: Scores and creates contractor performance rating reports.
+    * **Cover Page (`CoverPageEditor.tsx`)**: Designs customized project document cover sheets.
+* **⚙️ Admin Settings (`AdminSettings.tsx`)**
+  * Interface for administrators to register contractor details, set up yearly vote codes, allocate budgets, publish dashboard bulletins and edit default BQ templates.
+* **👥 Users (`Users.tsx`)**
+  * Administrator portal to create, modify and manage user accounts and system credentials.
+* **👤 Profile (`Profile.tsx`)**
+  * Displays user account details, role information and personal settings.
+* **📥 Inbox (`Inbox.tsx`)**
+  * System notifications center that alerts users on project status updates and deadlines.
 
 ---
 
-## 📋 Project Phases
+## 👥 User Roles
 
-Each project goes through **6 phases**:
+The platform provides role-based workspaces optimized for different administrative and engineering tasks:
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| **Phase 1** | 📝 Draft | Preparing BQ and initial planning |
-| **Phase 2** | ⏳ Pending Appointment | Waiting for company appointment |
-| **Phase 3** | 🔧 In Progress | Work is being done |
-| **Phase 4** | ✅ Site Inspection | Inspecting progress on site |
-| **Phase 5** | 💰 Payment Claim | Processing contractor payments |
-| **Phase 6** | 🎉 Complete | Project finished and file closed |
+| Role | Main Functions |
+| :--- | :--- |
+| **Admin (Pembantu Tadbir)** | Manages contractor directories, yearly vote/budget codes, template configurations and broadcasts bulletins. |
+| **PJE (Penolong Jurutera Elektrik)** | Drafts BQs, updates site metrics, uploads inspections photos and compiles payment claims. |
+| **Jurutera** | Reviews project outputs, provides formal signatures and issues certificates. |
 
 ---
 
-## 🛠️ Technology Stack
+## 🔄 Project Workflow
 
-```
-Frontend:    React 19 + TypeScript
-Styling:     Tailwind CSS
-Database:    Cloudflare D1 (SQLite)
-Storage:     Cloudflare R2 (Object Storage)
-API:         Cloudflare Workers (Hono)
-Icons:       Lucide React
-PDF:         jsPDF + @react-pdf/renderer
-Build:       Vite
-Photo Edit:  Konva (React-Konva) for image annotations 
+Every electrical project in ElectricHub progresses through **6 structured phases**:
+
+```mermaid
+graph TD
+    P1[Draft BQ & Planning] --> P2[Pending Contractor Appointment]
+    P2 --> P3[Work In Progress]
+    P3 --> P4[Site Inspection & Progress Tracking]
+    P4 --> P5[Payment Claims & Audit]
+    P5 --> P6[Project Complete & DLP Active]
 ```
 
 ---
 
-## 🚦 Getting Started
+## 📞 Support & Collaboration
 
-### Prerequisites
+For system inquiries, feature requests or technical support:
 
-- Node.js (version 18+)
-- Cloudflare Wrangler (`npx wrangler login`)
-
-### Installation & Development
-
-```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd ElectricHub
-
-# 2. Install dependencies
-npm install
-
-# 3. Initialize Database (D1 Local)
-npx wrangler d1 execute electrichub-db --file=schema.sql --local
-
-# 4. Run the development server
-npm run dev
-
-# 5. Open browser at
-http://localhost:3000
-```
-
-### Build for Production
-
-```bash
-# Build the application
-npm run build
-
-# Preview the build
-npm run preview
-```
-
----
-
-## 💾 Database Structure
-
-The system is powered by **Cloudflare D1** with main tables:
-
-| Table | Purpose |
-|-------|---------|
-| `projects` | All project data, BQ, and phase tracking |
-| `app_users` | User profiles and roles |
-| `system_settings` | Yearly settings (companies, votes, templates) |
-| `library_groups` | BQ preset templates |
-| `bulletins` | Dashboard announcements |
-| `temporary_gallery` | Site images storage tracking |
-
----
-
-## 🌐 Language
-
-**Primary Language**: Bahasa Malaysia (Malay)
-**Technical Documentation**: English
-
-All forms, field names, and user-facing content are in **Bahasa Malaysia** for the convenience of primary users (council staff and contractors).
-
----
-
-## 📞 Support
-
-For any questions or technical support:
-
-- Contact: PT Syafiq
-- Location: Jabatan Kejuruteraan, MPS
-
----
-
-## 📄 License
-
-This project is developed by **ar-Raqmi**.
-
----
-
-<div align="center">
-
-**Built with ❤️ for Unit Elektrikal, Jabatan Kejuruteraan MPS**
-
-</div>
+* **In-Charge**: PT Syafiq (Unit Elektrikal)
+* **Department**: Jabatan Kejuruteraan, Majlis Perbandaran Selayang (MPS)
+* **Developer**: by **ar-Raqmi**.
