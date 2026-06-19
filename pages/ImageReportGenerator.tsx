@@ -803,7 +803,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         }
         
         return uploadImage({
-          file: fileToUpload,
+          file: fileToUpload as File,
           userId: user.id,
           userFullName: user.fullName,
           projectId: selectedProjectId ? Number(selectedProjectId) : undefined,

@@ -1,6 +1,6 @@
 import { PDFBaseHelper } from './PDFBaseHelper';
 
-type LayoutType = 'vertical' | 'horizontal' | 'big-top' | 'big-left';
+type LayoutType = 'vertical' | 'horizontal' | 'big-top' | 'big-left' | 'grid';
 
 interface ComplaintRow {
   id: string;

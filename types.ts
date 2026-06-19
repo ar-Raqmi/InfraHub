@@ -144,6 +144,13 @@ export interface VoteDefinition {
 
 
 
+export interface GlobalDimensions {
+  length: number; // P
+  width: number;  // L
+  depth: number;  // T
+  label?: string; // Label for this dimension group
+}
+
 export interface CalculationPart {
   id: string;
   label?: string; // Optional: e.g. "Base", "Wall 1"
@@ -156,8 +163,12 @@ export interface CalculationPart {
   // Values
   length: number;
   width: number;
-  depth: number;
+  depth: number; // Factor
   multiplier: number; // Factor
+
+  // Global linking
+  isGlobal?: boolean;
+  globalIndex?: number; // Index in the globalCalculations array
 }
 
 export interface BQItem {
@@ -176,6 +187,7 @@ export interface BQItem {
   rate: number;
 
   // Dimensions for Calculation
+  isGlobal?: boolean; // If true, syncs with location global dims
 
   // --- NEW: Multiple Calculation Parts ---
   calculationParts?: CalculationPart[];
@@ -211,6 +223,7 @@ export interface BQGroup {
   title: string; // e.g., "KERJA-KERJA PERMULAAN"
   locationId?: string; // act as a fallback for old datas
   locationIds?: string[]; // NEW: Links to multiple locationRow IDs
+  calculationId?: string; // Links to a unique Global Calculation ID
   items: BQItem[];
 }
 
@@ -287,6 +300,15 @@ export interface Project {
   // DATA
   bqData?: BQGroup[]; // Original Contract BQ
   bqDataPelarasan?: BQGroup[]; // Adjusted BQ (Pelarasan)
+
+  // Dimensions
+  globalDimensions?: GlobalDimensions;
+  locationDimensions?: Record<string, GlobalDimensions>;
+  locationDimensionsPelarasan?: Record<string, GlobalDimensions>;
+
+  // Binded by Bil No / Calculation ID
+  globalCalculations?: Record<string, GlobalDimensions | GlobalDimensions[]>;
+  globalCalculationsPelarasan?: Record<string, GlobalDimensions | GlobalDimensions[]>;
 
 
 
