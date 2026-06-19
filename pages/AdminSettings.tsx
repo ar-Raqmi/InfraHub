@@ -6,6 +6,7 @@ import { useBulletins } from '../hooks/useBulletins';
 import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2 } from 'lucide-react';
 import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQItem } from '../types';
 import { createItem, createHeader } from '../data/bqPresets';
+import { TemplateEditor } from './TemplateEditor';
 
 interface AdminSettingsProps {
     user: User;
@@ -216,6 +217,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
     const [templates, setTemplates] = useState<BQTemplateDefinition[]>([]);
     const [editingTemplate, setEditingTemplate] = useState<BQTemplateDefinition | null>(null);
     const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
+    const [activeTemplateForEdit, setActiveTemplateForEdit] = useState<BQTemplateDefinition | null>(null);
 
     const ICON_MAP_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
     const COLOR_LIST = ['slate', 'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
@@ -609,6 +611,26 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         );
     }
 
+    if (activeTemplateForEdit) {
+        return (
+            <TemplateEditor
+                template={activeTemplateForEdit}
+                onClose={() => setActiveTemplateForEdit(null)}
+                onSave={async (updatedTpl) => {
+                    const index = templates.findIndex(t => t.id === updatedTpl.id);
+                    let newTemplates = [...templates];
+                    if (index >= 0) newTemplates[index] = updatedTpl;
+                    else newTemplates.push(updatedTpl);
+
+                    setTemplates(newTemplates);
+                    await apiService.saveTemplates(newTemplates);
+                    setActiveTemplateForEdit(null);
+                }}
+                libraryGroups={libraryGroups}
+            />
+        );
+    }
+
     const categories = Array.from(new Set(libraryGroups.map(g => g.category)));
     const currentCategoryGroups = libraryGroups.filter(g => g.category === selectedCategory);
     const activeGroup = libraryGroups.find(g => g.id === activeGroupId);
@@ -738,8 +760,9 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                             <button onClick={(e) => { e.stopPropagation(); moveTemplate(idx, 'prev'); }} disabled={idx === 0} className="p-1.5 hover:bg-slate-100  rounded disabled:opacity-30 text-slate-500"><ArrowLeft className="w-3.5 h-3.5" /></button>
                                             <button onClick={(e) => { e.stopPropagation(); moveTemplate(idx, 'next'); }} disabled={idx === templates.length - 1} className="p-1.5 hover:bg-slate-100  rounded disabled:opacity-30 text-slate-500"><ArrowRight className="w-3.5 h-3.5" /></button>
                                             <div className="w-px h-4 bg-slate-200  mx-1"></div>
-                                            <button onClick={() => openEditTemplateModal(tpl)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50  rounded-xl transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                            <button onClick={() => initiateDelete('TEMPLATE', tpl.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50  rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                            <button onClick={() => openEditTemplateModal(tpl)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50  rounded-xl transition-colors" title="Kemaskini Info"><Edit2 className="w-4 h-4" /></button>
+                                            <button onClick={() => setActiveTemplateForEdit(tpl)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50  rounded-xl transition-colors" title="Bina Kandungan BQ"><List className="w-4 h-4" /></button>
+                                            <button onClick={() => initiateDelete('TEMPLATE', tpl.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50  rounded-xl transition-colors" title="Padam"><Trash2 className="w-4 h-4" /></button>
                                         </div>
                                     </div>
                                     <h4 className="font-bold text-slate-800  text-lg">{tpl.title}</h4>
