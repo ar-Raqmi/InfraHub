@@ -1487,7 +1487,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     items: g.items
                         .map(item => {
                             const descMatches = item.description.toLowerCase().includes(searchLower);
-                            if (descMatches || !item.variants) {
+                            if (!item.variants || item.variants.length === 0) {
+                                return descMatches ? item : null;
+                            }
+                            if (descMatches) {
                                 return item;
                             }
                             const matchingVariants = item.variants.filter(v => v.label.toLowerCase().includes(searchLower));
