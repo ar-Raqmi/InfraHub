@@ -397,22 +397,24 @@ Jabatan Kejuruteraan` }],
       margin: { left: 20, right: 20 }
     });
 
-    y = doc.lastAutoTable.finalY + 15;
-    const notes = "Sebelum kerja-kerja dimulakan pemborong dikehendaki melawat tapak bersama dengan Penolong Jurutera kawasan untuk mempastikan tempat dan menyelesaikan masalah berbangkit di tapak sebelum memulakan kerja. Kontraktor adalah dikecualikan daripada mengemukakkan Bon Perlaksanaan. Walaubagaimanapun, tempoh tanggungan kecacatan seperti di bawah juga dikenakan kepada kontraktor dan syarat ini hendaklah dinyatakan dalam surat tawaran.\n( Rujuk Kementerian Kewangan Surat Pekeliling Perbendaharaan Bil 3 Tahun 2007)";
+    const notesBody = [
+      ["1. Kontraktor yang dilantik hendaklah bertanggungjawab menyediakan tenaga kerja mahir yang memegang Perakuan Kompeten sebagai Penjaga Jentera Elektrik katergori A1 ke atas sahaja bagi menyelia, mengguji dan mentauliahkan pepasangan menurut Akta Bekalan Elektrik 1990 dan Peraturan -Peraturan Elektrik 1994."],
+      [""],
+      ["2. Peralatan yang dipasang hendaklah dijamin baik dan berfungsi selama 6 bulan dari tarikh INBOIS dihantar."],
+      [""],
+      ["3. Kerja-kerja yang telah dinyatakan di atas dan lain-lain yang berkaitan adalah tertakluk kepada arahan Pegawai Penguasa atau wakilnya."],
+      [""],
+      ["4. Gambar-gambar kemajuan kerja-kerja sebelum, sedang dan telah dilaksanakan hendaklah dikemukakan bersama-sama inbois dihantar ke jabatan ini."],
+      [""],
+      ["5. Semua item didalam BQ hendaklah mendapatkan pengesahan daripada  unit elektrik MPS terlebih dahulu sebelum kerja dilaksanakan ditapak. Semua alat ganti yang ditukar hendaklah dipulangkan ke Bengkel Rawang sebagai pengesahan kerja."]
+    ];
 
     // @ts-ignore
     doc.autoTable({
-      startY: y, margin: { left: 20, right: 20 }, body: [[notes]], theme: 'plain',
-      styles: { fontSize: 9, font: "helvetica", halign: 'justify', cellPadding: 0 },
+      startY: doc.lastAutoTable.finalY + 15, margin: { left: 20, right: 20 }, body: notesBody, theme: 'plain',
+      styles: { fontSize: 8.5, font: "helvetica", halign: 'justify', cellPadding: 0 },
       columnStyles: { 0: { cellWidth: 170 } }
     });
-
-    y = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(9); doc.setFont("helvetica", "bold");
-    doc.text("Nilai Projek", 20, y); doc.text("Tempoh Tanggungan Kecacatan", 100, y);
-    y += 5; doc.setFont("helvetica", "normal");
-    doc.text("RM 10,000 - RM 100,000", 20, y); doc.text("6 Bulan dari tarikh kerja diperakukan siap", 100, y);
-    y += 5; doc.text("Melebihi RM 100,000", 20, y); doc.text("12 bulan dari tarikh kerja diperakukan siap", 100, y);
 
     y = 250; doc.setFont("helvetica", "bold"); doc.text("Disediakan oleh", 20, y); doc.text("Disemak oleh,", 120, y);
     y += 20; doc.line(20, y, 80, y); doc.line(120, y, 180, y);
@@ -807,22 +809,24 @@ Jabatan Kejuruteraan` }],
       columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'right' } }, margin: { left: 20, right: 20 }
     });
 
-    y = doc.lastAutoTable.finalY + 15;
-    const notes = "Sebelum kerja-kerja dimulakan pemborong dikehendaki melawat tapak bersama dengan Penolong Jurutera kawasan untuk mempastikan tempat dan menyelesaikan masalah berbangkit di tapak sebelum memulakan kerja. Kontraktor adalah dikecualikan daripada mengemukakkan Bon Perlaksanaan. Walaubagaimanapun, tempoh tanggungan kecacatan seperti di bawah juga dikenakan kepada kontraktor dan syarat ini hendaklah dinyatakan dalam surat tawaran.\n( Rujuk Kementerian Kewangan Surat Pekeliling Perbendaharaan Bil 3 Tahun 2007)";
+    const notesBody = [
+      ["1. Kontraktor yang dilantik hendaklah bertanggungjawab menyediakan tenaga kerja mahir yang memegang Perakuan Kompeten sebagai Penjaga Jentera Elektrik katergori A1 ke atas sahaja bagi menyelia, mengguji dan mentauliahkan pepasangan menurut Akta Bekalan Elektrik 1990 dan Peraturan -Peraturan Elektrik 1994."],
+      [""],
+      ["2. Peralatan yang dipasang hendaklah dijamin baik dan berfungsi selama 6 bulan dari tarikh INBOIS dihantar."],
+      [""],
+      ["3. Kerja-kerja yang telah dinyatakan di atas dan lain-lain yang berkaitan adalah tertakluk kepada arahan Pegawai Penguasa atau wakilnya."],
+      [""],
+      ["4. Gambar-gambar kemajuan kerja-kerja sebelum, sedang dan telah dilaksanakan hendaklah dikemukakan bersama-sama inbois dihantar ke jabatan ini."],
+      [""],
+      ["5. Semua item didalam BQ hendaklah mendapatkan pengesahan daripada  unit elektrik MPS terlebih dahulu sebelum kerja dilaksanakan ditapak. Semua alat ganti yang ditukar hendaklah dipulangkan ke Bengkel Rawang sebagai pengesahan kerja."]
+    ];
 
     // @ts-ignore
     doc.autoTable({
-      startY: y, margin: { left: 20, right: 20 }, body: [[notes]], theme: 'plain',
-      styles: { fontSize: 9, font: "helvetica", halign: 'justify', cellPadding: 0 },
+      startY: doc.lastAutoTable.finalY + 15, margin: { left: 20, right: 20 }, body: notesBody, theme: 'plain',
+      styles: { fontSize: 8.5, font: "helvetica", halign: 'justify', cellPadding: 0 },
       columnStyles: { 0: { cellWidth: 170 } }
     });
-
-    y = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(9); doc.setFont("helvetica", "bold");
-    doc.text("Nilai Projek", 20, y); doc.text("Tempoh Tanggungan Kecacatan", 100, y);
-    y += 5; doc.setFont("helvetica", "normal");
-    doc.text("RM 10,000 - RM 100,000", 20, y); doc.text("6 Bulan dari tarikh kerja diperakukan siap", 100, y);
-    y += 5; doc.text("Melebihi RM 100,000", 20, y); doc.text("12 bulan dari tarikh kerja diperakukan siap", 100, y);
 
     y = 250; doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.text("Disediakan oleh", 20, y); doc.text("Disemak oleh,", 120, y);
     y += 20; doc.line(20, y, 80, y); doc.line(120, y, 180, y);
