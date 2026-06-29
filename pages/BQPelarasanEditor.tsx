@@ -1240,7 +1240,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     )}
                 </div>
 
-                {extraPrice > 0 && (
+                {pelarasanData.length > 0 && extraPrice > 0 && (
                     <div className="bg-blue-50  p-3 rounded-xl border border-blue-200 animate-pulse">
                         <div className="flex items-center gap-2 text-blue-600 mb-1">
                             <Info className="w-4 h-4" />
@@ -1255,7 +1255,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     </div>
                 )}
 
-                {reductionPrice > 0 && (
+                {pelarasanData.length > 0 && reductionPrice > 0 && (
                     <div className="bg-red-50 p-3 rounded-xl border border-red-200 animate-pulse">
                         <div className="flex items-center gap-2 text-red-600 mb-1">
                             <Info className="w-4 h-4" />
