@@ -1167,6 +1167,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
     const contractPrice = projectData.kosProjek || 0;
     const extraPrice = Math.max(0, totalPelarasanRaw - contractPrice);
+    const reductionPrice = Math.max(0, contractPrice - totalPelarasanRaw);
 
     const isTopBill = (b: BQGroup) => b.title.toUpperCase().includes('INSURANS') || b.title.includes('PERMULAAN') || b.id.includes('permulaan');
 
@@ -1250,6 +1251,21 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                         </div>
                         <p className="text-[9px] text-blue-500 mt-1 leading-tight">
                             Harga akhir akan dihadkan mengikut Harga Kontrak.
+                        </p>
+                    </div>
+                )}
+
+                {reductionPrice > 0 && (
+                    <div className="bg-red-50 p-3 rounded-xl border border-red-200 animate-pulse">
+                        <div className="flex items-center gap-2 text-red-600 mb-1">
+                            <Info className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">Pengurangan Harga</span>
+                        </div>
+                        <div className="text-sm font-black text-red-700 font-mono">
+                            -{formatCurrency(reductionPrice)}
+                        </div>
+                        <p className="text-[9px] text-red-500 mt-1 leading-tight">
+                            Harga akhir lebih rendah mengikut pelarasan semasa.
                         </p>
                     </div>
                 )}
