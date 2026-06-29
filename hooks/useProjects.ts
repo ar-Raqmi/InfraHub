@@ -97,7 +97,9 @@ export const useProjects = () => {
     isFetching,
     error,
     createProject: createProjectMutation.mutate,
+    createProjectAsync: createProjectMutation.mutateAsync,
     updateProject: updateProjectMutation.mutate,
+    updateProjectAsync: updateProjectMutation.mutateAsync,
     deleteProject: deleteProjectMutation.mutate
   };
 };
