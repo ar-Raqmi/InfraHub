@@ -24,7 +24,7 @@ interface ProjectDetailProps {
   project?: Project;
   projects?: Project[];
   onClose: () => void;
-  onSave: () => void;
+  onSave: (savedProject?: Project) => void;
   onSwitchProject?: (project: Project) => void;
   currentUserRole: Role;
   selectedYear: number;
@@ -285,7 +285,7 @@ const CostHUD = ({
 };
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], onClose, onSave, onSwitchProject, currentUserRole, selectedYear, onShowToast }) => {
-  const { createProject, updateProject } = useProjects();
+  const { createProject, createProjectAsync, updateProject, updateProjectAsync } = useProjects();
   const { users } = useUsers();
   const queryClient = useQueryClient();
   const projectYear = project?.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : selectedYear;
@@ -664,13 +664,14 @@ const CACHE_VERSION = 'v126';
     else if (confirmationState.type === 'save') {
       setConfirmationState({ isOpen: false, type: null }); setIsSaving(true);
       try {
+        let savedProject;
         if (project && project.id) {
-          await updateProject({ id: project.id, updates: formData });
+          savedProject = await updateProjectAsync({ id: project.id, updates: formData });
         } else {
-          await createProject(formData as any);
+          savedProject = await createProjectAsync(formData as any);
         }
         setHasUnsavedChanges(false);
-        onSave();
+        onSave(savedProject);
       } catch (e) {
         console.error(e);
         if (onShowToast) onShowToast("Ralat menyimpan projek.", "error");
@@ -683,9 +684,9 @@ const CACHE_VERSION = 'v126';
       setConfirmationState({ isOpen: false, type: null }); setIsSaving(true);
       try {
         if (project && project.id) {
-          await updateProject({ id: project.id, updates: formData });
+          await updateProjectAsync({ id: project.id, updates: formData });
         } else {
-          await createProject(formData as any);
+          await createProjectAsync(formData as any);
         }
         setHasUnsavedChanges(false);
         if (onShowToast) onShowToast("Projek disimpan. Menukar projek...", "success");

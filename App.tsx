@@ -169,8 +169,11 @@ function App() {
     }
   };
 
-  const handleProjectSaved = () => {
+  const handleProjectSaved = (savedProject?: Project) => {
     showToast('Projek berjaya disimpan!', 'success');
+    if (savedProject) {
+      setSelectedProject(savedProject);
+    }
   };
 
   const handleNavClick = (page: string) => {
