@@ -3,10 +3,13 @@ import { createPortal } from 'react-dom';
 import { apiService } from '../services/apiService';
 import { useSettings } from '../hooks/useSettings';
 import { useBulletins } from '../hooks/useBulletins';
-import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2 } from 'lucide-react';
+import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, ChevronUp, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2, MoveRight, FolderInput } from 'lucide-react';
 import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQItem } from '../types';
 import { createItem, createHeader } from '../data/bqPresets';
 import { TemplateEditor } from './TemplateEditor';
+import LibraryMoveModal from '../components/LibraryMoveModal';
+import BulkEditModal from '../components/BulkEditModal';
+import CategoryEdit from '../components/CategoryEdit';
 
 interface AdminSettingsProps {
     user: User;
@@ -218,6 +221,18 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
     const [editingTemplate, setEditingTemplate] = useState<BQTemplateDefinition | null>(null);
     const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
     const [activeTemplateForEdit, setActiveTemplateForEdit] = useState<BQTemplateDefinition | null>(null);
+
+    // --- Library: Category Rename ---
+    const [editingCategory, setEditingCategory] = useState<string | null>(null);
+    const [editingCategoryName, setEditingCategoryName] = useState('');
+    const [renamingCategory, setRenamingCategory] = useState(false);
+
+    // --- Library: Multi-Selection & Bulk ---
+    const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
+    const [moveTarget, setMoveTarget] = useState<{ groupId: string, itemId: string, description: string } | null>(null);
+    const [bulkMoveOpen, setBulkMoveOpen] = useState(false);
+    const [bulkEditOpen, setBulkEditOpen] = useState(false);
+    const [bulkEdit, setBulkEdit] = useState<{ unit: string; rate: string; rateMode: 'set' | 'adjust' }>({ unit: '', rate: '', rateMode: 'set' });
 
     const ICON_MAP_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
     const COLOR_LIST = ['slate', 'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
@@ -520,6 +535,152 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         saveLibraryState(newGroups);
     };
 
+    // --- CATEGORY RENAME ---
+    const startRenameCategory = (cat: string) => {
+        setEditingCategory(cat);
+        setEditingCategoryName(cat);
+    };
+
+    const commitRenameCategory = async () => {
+        const newName = editingCategoryName.trim();
+        if (!editingCategory || !newName || newName === editingCategory) {
+            setEditingCategory(null);
+            return;
+        }
+        setRenamingCategory(true);
+        const newGroups = libraryGroups.map(g =>
+            g.category === editingCategory ? { ...g, category: newName } : g
+        );
+        await saveLibraryState(newGroups);
+        setSelectedCategory(newName);
+        setRenamingCategory(false);
+        setEditingCategory(null);
+    };
+
+    // --- ITEM MOVE BETWEEN GROUPS ---
+    const handleMoveItemToGroup = async (sourceGroupId: string, itemId: string, targetGroupId: string) => {
+        if (sourceGroupId === targetGroupId) return;
+        const sourceGroup = libraryGroups.find(g => g.id === sourceGroupId);
+        const item = sourceGroup?.items.find(i => i.id === itemId);
+        if (!item) return;
+
+        const newGroups = libraryGroups.map(g => {
+            if (g.id === sourceGroupId) {
+                return { ...g, items: g.items.filter(i => i.id !== itemId) };
+            }
+            if (g.id === targetGroupId) {
+                return { ...g, items: [...g.items, item] };
+            }
+            return g;
+        });
+        await saveLibraryState(newGroups);
+        setActiveGroupId(targetGroupId);
+    };
+
+    // --- ITEM REORDER WITHIN GROUP ---
+    const handleReorderItem = (groupId: string, itemIndex: number, direction: 'up' | 'down') => {
+        const group = libraryGroups.find(g => g.id === groupId);
+        if (!group) return;
+        const targetIndex = direction === 'up' ? itemIndex - 1 : itemIndex + 1;
+        if (targetIndex < 0 || targetIndex >= group.items.length) return;
+
+        const newItems = [...group.items];
+        const [moved] = newItems.splice(itemIndex, 1);
+        newItems.splice(targetIndex, 0, moved);
+
+        const newGroups = libraryGroups.map(g => g.id === groupId ? { ...g, items: newItems } : g);
+        saveLibraryState(newGroups);
+    };
+
+    // --- MULTI-SELECTION & BULK ---
+    const toggleItemSelection = (itemId: string) => {
+        const next = new Set(selectedItemIds);
+        if (next.has(itemId)) next.delete(itemId);
+        else next.add(itemId);
+        setSelectedItemIds(next);
+    };
+
+    const toggleSelectAllInGroup = () => {
+        if (!activeGroup) return;
+        const next = new Set(selectedItemIds);
+        if (allItemsInGroupSelected) {
+            activeGroup.items.forEach(i => next.delete(i.id));
+        } else {
+            activeGroup.items.forEach(i => next.add(i.id));
+        }
+        setSelectedItemIds(next);
+    };
+
+    const clearSelection = () => setSelectedItemIds(new Set());
+
+    const handleBulkDelete = () => {
+        const ids = Array.from(selectedItemIds);
+        const newGroups = libraryGroups.map(g => ({
+            ...g,
+            items: g.items.filter(i => !ids.includes(i.id))
+        }));
+        saveLibraryState(newGroups);
+        clearSelection();
+    };
+
+    const handleBulkMove = async (targetGroupId: string) => {
+        const ids = Array.from(selectedItemIds);
+        const movingItems: { item: PresetItem; sourceGroupId: string }[] = [];
+        libraryGroups.forEach(g => {
+            g.items.forEach(i => {
+                if (ids.includes(i.id)) movingItems.push({ item: i, sourceGroupId: g.id });
+            });
+        });
+
+        const newGroups = libraryGroups.map(g => {
+            let items = g.items;
+            // Remove selected items from any source group (including target)
+            items = items.filter(i => !ids.includes(i.id));
+            // Append moving items into target group
+            if (g.id === targetGroupId) {
+                const additions = movingItems.filter(m => m.sourceGroupId !== targetGroupId).map(m => m.item);
+                items = [...items, ...additions];
+            }
+            return { ...g, items };
+        });
+        await saveLibraryState(newGroups);
+        setActiveGroupId(targetGroupId);
+        clearSelection();
+        setBulkMoveOpen(false);
+    };
+
+    const handleBulkUpdate = async () => {
+        const ids = Array.from(selectedItemIds);
+        const updates: Partial<PresetItem> = {};
+        if (bulkEdit.unit.trim()) updates.unit = bulkEdit.unit.trim();
+        const rateVal = parseFloat(bulkEdit.rate);
+        if (!isNaN(rateVal)) {
+            updates.rate = bulkEdit.rateMode === 'set' ? rateVal : undefined;
+        }
+
+        const newGroups = libraryGroups.map(g => ({
+            ...g,
+            items: g.items.map(item => {
+                if (!ids.includes(item.id)) return item;
+                let merged = { ...item, ...updates };
+                // Rate adjustment mode applies relative to existing rate
+                if (bulkEdit.rateMode === 'adjust' && !isNaN(rateVal)) {
+                    const base = item.rate ?? 0;
+                    merged.rate = Math.max(0, +(base + base * (rateVal / 100)).toFixed(2));
+                }
+                // If item has variants, applying unit cascades to variants too
+                if (bulkEdit.unit.trim() && merged.variants) {
+                    merged.variants = merged.variants.map(v => ({ ...v, unit: bulkEdit.unit.trim() }));
+                }
+                return merged;
+            })
+        }));
+        await saveLibraryState(newGroups);
+        clearSelection();
+        setBulkEditOpen(false);
+        setBulkEdit({ unit: '', rate: '', rateMode: 'set' });
+    };
+
     // --- TEMPLATE GENERATION LOGIC ---
 
     const generateInsuransTemplate = async () => {
@@ -634,6 +795,9 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
     const categories = Array.from(new Set(libraryGroups.map(g => g.category)));
     const currentCategoryGroups = libraryGroups.filter(g => g.category === selectedCategory);
     const activeGroup = libraryGroups.find(g => g.id === activeGroupId);
+    const allItemsInGroupSelected = activeGroup
+        ? activeGroup.items.length > 0 && activeGroup.items.every(i => selectedItemIds.has(i.id))
+        : false;
 
     const inputClass = "w-full px-4 py-2.5 rounded-lg bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 text-sm";
     const labelClass = "block text-xs font-bold text-slate-500  uppercase tracking-wide mb-1";
@@ -831,16 +995,34 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                 )}
 
                                 <div className="flex flex-wrap gap-1.5 bg-slate-50  p-2 rounded-2xl border border-slate-100">
-                                    {categories.map(cat => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => { setSelectedCategory(cat); setActiveGroupId(null); }}
-                                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-white'}`}
-                                        >
-
-                                            {cat}
-                                        </button>
-                                    ))}
+                                    {categories.map(cat => {
+                                        const isSelectedCategory = selectedCategory === cat;
+                                        return (
+                                            <div
+                                                key={cat}
+                                                onClick={(e) => {
+                                                    if (editingCategory !== cat) {
+                                                        e.stopPropagation();
+                                                        setSelectedCategory(cat);
+                                                        setActiveGroupId(null);
+                                                        clearSelection();
+                                                    }
+                                                }}
+                                                className={`cursor-pointer ${isSelectedCategory ? 'bg-indigo-600 text-white shadow-md rounded-xl px-3 py-2 text-xs font-bold transition-colors' : 'rounded-xl'}`}
+                                            >
+                                                <CategoryEdit
+                                                    categoryName={cat}
+                                                    isEditing={editingCategory === cat}
+                                                    isSaving={renamingCategory}
+                                                    editingName={editingCategoryName}
+                                                    onNameChange={setEditingCategoryName}
+                                                    onEdit={() => startRenameCategory(cat)}
+                                                    onSave={commitRenameCategory}
+                                                    onCancel={() => setEditingCategory(null)}
+                                                />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -885,18 +1067,49 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                                     placeholder="CONTOH: KERJA PENGOREKAN"
                                                 />
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase">Items: {activeGroup.items.length}</span>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-3">
+                                                    {activeGroup.items.length > 0 && (
+                                                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={allItemsInGroupSelected}
+                                                                onChange={toggleSelectAllInGroup}
+                                                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                            />
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pilih Semua</span>
+                                                        </label>
+                                                    )}
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Items: {activeGroup.items.length}</span>
+                                                    {selectedItemIds.size > 0 && (
+                                                        <span className="text-[10px] font-bold text-indigo-600 uppercase">{selectedItemIds.size} dipilih</span>
+                                                    )}
+                                                </div>
                                                 <button onClick={() => handleAddItem(activeGroup.id)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors"><Plus className="w-4 h-4" /> Tambah Item</button>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex-1 p-6 overflow-y-auto space-y-10 custom-scrollbar">
-                                        {activeGroup.items.map((item, idx) => (
-                                            <div key={item.id} className="relative p-5 rounded-3xl border-2 border-slate-100  bg-slate-50/30  hover:border-indigo-100 transition-colors group/item">
-                                                <div className="absolute -top-3 left-6 px-3 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest shadow-sm">Item {idx + 1}</div>
-                                                <button onClick={() => handleDeleteItem(activeGroup.id, item.id)} className="absolute top-4 right-4 p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                        {activeGroup.items.map((item, idx) => {
+                                            const isSelected = selectedItemIds.has(item.id);
+                                            return (
+                                            <div key={item.id} className={`relative pt-8 pb-5 px-5 rounded-3xl border-2 transition-colors group/item ${isSelected ? 'border-indigo-400 bg-indigo-50/40' : 'border-slate-100 bg-slate-50/30 hover:border-indigo-100'}`}>
+                                                <div className="absolute top-3 left-6 px-3 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest shadow-sm">Item {idx + 1}</div>
+                                                <div className="absolute top-3 right-4 flex items-center gap-1">
+                                                    <label className="flex items-center cursor-pointer p-1.5 rounded-lg hover:bg-slate-100 transition-colors" title="Pilih item">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => toggleItemSelection(item.id)}
+                                                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                        />
+                                                    </label>
+                                                    <button onClick={() => handleReorderItem(activeGroup.id, idx, 'up')} disabled={idx === 0} className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-30" title="Naik"><ChevronUp className="w-4 h-4" /></button>
+                                                    <button onClick={() => handleReorderItem(activeGroup.id, idx, 'down')} disabled={idx === activeGroup.items.length - 1} className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-30" title="Turun"><ChevronDown className="w-4 h-4" /></button>
+                                                    <button onClick={() => setMoveTarget({ groupId: activeGroup.id, itemId: item.id, description: item.description })} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors opacity-0 group-hover/item:opacity-100" title="Pindah ke kumpulan lain"><MoveRight className="w-4 h-4" /></button>
+                                                    <button onClick={() => handleDeleteItem(activeGroup.id, item.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover/item:opacity-100" title="Padam item"><Trash2 className="w-4 h-4" /></button>
+                                                </div>
 
                                                 <div className="flex flex-col gap-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -951,7 +1164,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                                     </div>
                                                 </div>
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </>
                             ) : (
@@ -1119,6 +1333,48 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 </div>,
                 document.body
             )}
+
+            {/* --- Single Item Move Modal --- */}
+            <LibraryMoveModal
+                isOpen={!!moveTarget}
+                onClose={() => setMoveTarget(null)}
+                groups={libraryGroups}
+                excludeGroupId={moveTarget?.groupId || ''}
+                itemDescription={moveTarget?.description || ''}
+                onMove={(targetGroupId) => {
+                    if (moveTarget) {
+                        handleMoveItemToGroup(moveTarget.groupId, moveTarget.itemId, targetGroupId);
+                        setMoveTarget(null);
+                    }
+                }}
+                isBulk={false}
+            />
+
+            {/* --- Bulk Move Modal --- */}
+            <LibraryMoveModal
+                isOpen={bulkMoveOpen}
+                onClose={() => setBulkMoveOpen(false)}
+                groups={libraryGroups}
+                excludeGroupId={''}
+                itemDescription={''}
+                onMove={handleBulkMove}
+                isBulk={true}
+                selectionCount={selectedItemIds.size}
+            />
+
+            {/* --- Bulk Edit Modal --- */}
+            <BulkEditModal
+                isOpen={bulkEditOpen}
+                onClose={() => setBulkEditOpen(false)}
+                selectionCount={selectedItemIds.size}
+                unit={bulkEdit.unit}
+                rate={bulkEdit.rate}
+                rateMode={bulkEdit.rateMode}
+                onUnitChange={(val) => setBulkEdit({ ...bulkEdit, unit: val })}
+                onRateChange={(val) => setBulkEdit({ ...bulkEdit, rate: val })}
+                onRateModeChange={(mode) => setBulkEdit({ ...bulkEdit, rateMode: mode })}
+                onApply={handleBulkUpdate}
+            />
         </div>
     );
 };
