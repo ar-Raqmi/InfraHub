@@ -292,7 +292,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], o
   const { companies, votes: voteNumbers, sebuthargaNumbers, settings } = useSettings(projectYear);
 
   // Get the latest project data from the cache (which is updated by Realtime in useProjects)
-  const { data: latestProject, isFetching: isVerifying } = useQuery({
+  const { data: latestProject, isFetching: isVerifying, isError: isVerifyError } = useQuery({
     queryKey: ['projects', project?.id, 'v126'],
     queryFn: async () => {
       if (!project?.id) return null;
@@ -308,10 +308,12 @@ const CACHE_VERSION = 'v126';
   // Track if local form has unsaved changes
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showRemoteUpdateNotice, setShowRemoteUpdateNotice] = useState(false);
+  const hasFullSyncRef = useRef(false);
 
   // Detect remote changes
   useEffect(() => {
     if (latestProject && project && latestProject.id === project.id) {
+      hasFullSyncRef.current = true;
       const hasFullDataLocally = formData?.bqData && formData.bqData.length > 0;
       const hasFullDataRemotely = latestProject?.bqData && latestProject.bqData.length > 0;
       
@@ -344,6 +346,7 @@ const CACHE_VERSION = 'v126';
   const handleApplyRemoteUpdate = () => {
     if (latestProject) {
       setFormData(latestProject);
+      hasFullSyncRef.current = true;
       setHasUnsavedChanges(false);
       setShowRemoteUpdateNotice(false);
       if (onShowToast) onShowToast("Data awan telah digunakan.", "success");
@@ -353,6 +356,7 @@ const CACHE_VERSION = 'v126';
   // Detect project switch and reset ALL local state to reflect the new project
   useEffect(() => {
     setHasUnsavedChanges(false);
+    hasFullSyncRef.current = false;
     setShowRemoteUpdateNotice(false);
     setIsSwitcherOpen(false);
     setSwitcherSearchQuery('');
@@ -837,6 +841,7 @@ const CACHE_VERSION = 'v126';
   }, [formData.tarikhSiapSebenar, formData.tarikhTuntutanBayaran, formData.isLocDeductionEnabled]);
 
   useEffect(() => {
+    if (project?.id && !hasFullSyncRef.current) return;
     const bqSum = formData.bqDataPelarasan?.reduce((acc, group) => {
       const gSum = group.items.reduce((itemSum, item) => {
         const val = Number(item.amount) || 0;
@@ -970,6 +975,7 @@ const CACHE_VERSION = 'v126';
   };
 
   useEffect(() => {
+    if (project?.id && !hasFullSyncRef.current) return;
     const total = formData.bqData?.reduce((acc, group) => {
       const gSum = group.items.reduce((itemSum, item) => {
         return itemSum + (Number(item.amount) || 0);
@@ -1036,7 +1042,7 @@ const CACHE_VERSION = 'v126';
   const orangePhaseClass = "bg-white/80 border border-orange-500/30 p-8 rounded-3xl animate-fade-in shadow-xl relative overflow-hidden";
 
   const isDataMissing = (!formData.bqData || formData.bqData.length === 0);
-  const isStillLoading = isVerifying || (formData.kosProjek > 0 && isDataMissing);
+  const isStillLoading = isVerifying || (!!project?.id && !hasFullSyncRef.current && isDataMissing && !isVerifyError);
 
   return (
     <div className="relative min-h-screen text-slate-900 pb-20">
