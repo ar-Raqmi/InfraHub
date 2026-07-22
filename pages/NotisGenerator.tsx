@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, User, Role, formatDateMalay, formatCurrency } from '../types';
+import { Project, User, Role, formatDateMalay, formatCurrency, calculateLADDailyRate } from '../types';
 import { apiService } from '../services/apiService';
 import { Download, Loader2, X, FileText, Calendar, User as UserIcon, Settings } from 'lucide-react';
 import StrictDateInput from '../components/StrictDateInput';
@@ -95,20 +95,6 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
 
     const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setLetterMonthYear(`${currentMonth} ${e.target.value}`);
-    };
-
-    const calculateLAD = () => {
-        const contractSum = project.kosProjek || 0;
-        let dailyRate = 0;
-        
-        // 2025 Standard Logic
-        if (contractSum < 20000) {
-            dailyRate = 20.00;
-        } else {
-            // BLR 6.65 - 0.25 = 6.4 (Standard treasury rate logic)
-            dailyRate = (contractSum * 0.064) / 365;
-        }
-        return Math.round((dailyRate + Number.EPSILON) * 100) / 100;
     };
 
     const handleDownload = async () => {
@@ -207,7 +193,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                                 <div className="space-y-2 text-xs">
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Kadar LAD:</span>
-                                        <span className="font-mono font-bold text-slate-700">RM {calculateLAD().toFixed(2)}/hari</span>
+                                        <span className="font-mono font-bold text-slate-700">RM {calculateLADDailyRate(project.kosProjek).toFixed(2)}/hari</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Tarikh Mula (SST):</span>

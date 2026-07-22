@@ -1914,8 +1914,8 @@ const CACHE_VERSION = 'v126';
         </div>,
         document.body
       )}
-      {isLADOpen && (<LADCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsLADOpen(false)} />)}
-      {isLoCOpen && (<LoCCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsLoCOpen(false)} />)}
+      {isLADOpen && (<LADCertificate project={formData as Project} onClose={() => setIsLADOpen(false)} />)}
+      {isLoCOpen && (<LoCCertificate project={formData as Project} onClose={() => setIsLoCOpen(false)} />)}
       {isCPCOpen && (<CPCCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsCPCOpen(false)} />)}
       {isPrestasiOpen && (<PrestasiCertificate project={formData as Project} onClose={() => setIsPrestasiOpen(false)} onPersist={handlePrestasiPersist} />)}
       {isNotisOpen && (<NotisGenerator project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsNotisOpen(false)} />)}

@@ -1,16 +1,15 @@
 
 import React, { useState } from 'react';
-import { Project, User, formatCurrency, formatDate } from '../types';
+import { Project, formatCurrency, formatDate } from '../types';
 import { LoCPDFExporter } from '../services/pdf/LoCPDFExporter';
 import CertificateModal from '../components/CertificateModal';
 
 interface LoCCertificateProps {
     project: Project;
-    pjaUser?: User;
     onClose: () => void;
 }
 
-const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, pjaUser, onClose }) => {
+const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, onClose }) => {
     const [isGenerating, setIsGenerating] = useState(false);
 
     // --- Calculation Logic ---

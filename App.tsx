@@ -6,6 +6,12 @@ import { apiService } from './services/apiService';
 import Sidebar from './components/Sidebar';
 import { SyncStatus } from './components/SyncStatus';
 import { useProjects } from './hooks/useProjects';
+
+declare global {
+  interface Window {
+    __APP_READY__?: () => void;
+  }
+}
 import { useUsers } from './hooks/useUsers';
 import { useBulletins } from './hooks/useBulletins';
 import { useSettings } from './hooks/useSettings';
@@ -69,9 +75,7 @@ function App() {
 
   useEffect(() => {
     // Signal to the splash screen that the app is ready
-    // @ts-ignore
     if (typeof window.__APP_READY__ === 'function') {
-      // @ts-ignore
       window.__APP_READY__();
     }
   }, []);

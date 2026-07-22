@@ -1,34 +1,26 @@
 
 import React, { useState } from 'react';
-import { Project, User, formatCurrency, formatDate } from '../types';
+import { Project, formatCurrency, formatDate } from '../types';
 import { LADPDFExporter } from '../services/pdf/LADPDFExporter';
 import CertificateModal from '../components/CertificateModal';
+import { calculateLADDailyRate, LAD_BLR, LAD_EFFECTIVE_RATE, LAD_SMALL_PROJECT_THRESHOLD } from '../services/finance';
 
 interface LADCertificateProps {
     project: Project;
-    pjaUser?: User;
     onClose: () => void;
 }
 
-const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClose }) => {
+const LADCertificate: React.FC<LADCertificateProps> = ({ project, onClose }) => {
     const [isGenerating, setIsGenerating] = useState(false);
 
     // --- Calculation Logic ---
     const contractSum = project.kosProjek || 0;
-    const isSmallProject = contractSum < 20000;
-    
-    // BLR Constants based on image (6.65 - 0.25 = 6.4)
-    const BLR = 6.65;
-    const treasuryRate = 0.25;
-    const effectiveRate = BLR - treasuryRate; // 6.4
+    const isSmallProject = contractSum < LAD_SMALL_PROJECT_THRESHOLD;
+    const BLR = LAD_BLR;                 // 6.65 (display value)
+    const effectiveRate = LAD_EFFECTIVE_RATE; // 6.4 (display value)
 
-    // Daily Rate
-    let dailyRate = 0;
-    if (isSmallProject) {
-        dailyRate = 20.00;
-    } else {
-        dailyRate = Math.round(((contractSum * (effectiveRate / 100)) / 365 + Number.EPSILON) * 100) / 100;
-    }
+    // Daily Rate (shared finance util)
+    const dailyRate = calculateLADDailyRate(contractSum);
 
     // Days
     const daysLate = project.ladDays || 0;
