@@ -1,4 +1,4 @@
-import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, Role, CompanyDetail, VoteDefinition, TemporaryImage } from '../types';
+import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, CompanyDetail, VoteDefinition, TemporaryImage } from '../types';
 
 class CloudflareService {
     private apiVersion = 'v126';
@@ -7,6 +7,45 @@ class CloudflareService {
 
     constructor() {
         this.loadSession();
+    }
+
+    // --- HTTP HELPER ---
+    // Centralizes fetch boilerplate (URL build, JSON/FormData body, status check,
+    // error message). `json` controls whether the body is JSON-encoded (default)
+    // or passed through raw (FormData). `expectJson=false` for void responses.
+    private async request<T = any>(opts: {
+        path: string;
+        method?: string;
+        body?: any;
+        query?: Record<string, string>;
+        json?: boolean;
+        expectJson?: boolean;
+        errorMessage: string;
+    }): Promise<T> {
+        const { path, method = 'GET', body, query, json = true, expectJson = true, errorMessage } = opts;
+        let url = `${this.baseUrl}${path}`;
+        if (query) url += `?${new URLSearchParams(query).toString()}`;
+
+        const init: RequestInit = { method };
+        if (body !== undefined) {
+            if (json) {
+                init.headers = { 'Content-Type': 'application/json' };
+                init.body = JSON.stringify(body);
+            } else {
+                init.body = body as BodyInit;
+            }
+        }
+
+        const response = await fetch(url, init);
+        if (!response.ok) throw new Error(errorMessage);
+        return expectJson ? response.json() : (undefined as T);
+    }
+
+    // Read a single settings key with a fallback (avoids repeating the
+    // getSettings + `s.x || default` pattern across every accessor).
+    private async getSetting<T>(year: number, key: string, fallback: T): Promise<T> {
+        const s: any = await this.getSettings(year);
+        return s[key] ?? fallback;
     }
 
     private loadSession() {
@@ -43,14 +82,12 @@ class CloudflareService {
     }
 
     async login(username: string, password: string): Promise<User> {
-        const response = await fetch(`${this.baseUrl}/auth/login`, {
+        const data: any = await this.request({
+            path: '/auth/login',
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: { username, password },
+            errorMessage: 'Invalid credentials'
         });
-
-        if (!response.ok) throw new Error('Invalid credentials');
-        const data: any = await response.json();
         localStorage.setItem('infrahub_login_time', Date.now().toString());
         this.setCurrentUser(data.user);
         return data.user;
@@ -66,147 +103,85 @@ class CloudflareService {
 
     // --- BULLETINS ---
     async getBulletins(): Promise<BulletinItem[]> {
-        const response = await fetch(`${this.baseUrl}/bulletins`);
-        if (!response.ok) throw new Error('Failed to fetch bulletins');
-        return response.json();
+        return this.request<BulletinItem[]>({ path: '/bulletins', errorMessage: 'Failed to fetch bulletins' });
     }
 
     async addBulletin(content: string, author: string): Promise<BulletinItem> {
-        const response = await fetch(`${this.baseUrl}/bulletins`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content, author })
+        return this.request<BulletinItem>({
+            path: '/bulletins', method: 'POST', body: { content, author }, errorMessage: 'Failed to add bulletin'
         });
-        if (!response.ok) throw new Error('Failed to add bulletin');
-        return response.json();
     }
 
     async markBulletinAsRead(id: string, userId: number) {
-        const response = await fetch(`${this.baseUrl}/bulletins/${id}/read`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-        });
-        if (!response.ok) throw new Error('Failed to mark as read');
+        await this.request({ path: `/bulletins/${id}/read`, method: 'PUT', body: { userId }, expectJson: false, errorMessage: 'Failed to mark as read' });
     }
 
     async toggleReaction(id: string, userId: number, emoji: string) {
-        const response = await fetch(`${this.baseUrl}/bulletins/${id}/react`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, emoji })
-        });
-        if (!response.ok) throw new Error('Failed to react');
+        await this.request({ path: `/bulletins/${id}/react`, method: 'PUT', body: { userId, emoji }, expectJson: false, errorMessage: 'Failed to react' });
     }
 
     async deleteBulletin(id: string) {
-        const response = await fetch(`${this.baseUrl}/bulletins/${id}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Failed to delete bulletin');
+        await this.request({ path: `/bulletins/${id}`, method: 'DELETE', expectJson: false, errorMessage: 'Failed to delete bulletin' });
     }
 
     // --- SYSTEM LIBRARY GROUPS ---
     async getLibraryGroups(): Promise<PresetGroup[]> {
-        const response = await fetch(`${this.baseUrl}/system/library_groups`);
-        if (!response.ok) throw new Error('Failed to fetch library groups');
-        return response.json();
+        return this.request<PresetGroup[]>({ path: '/system/library_groups', errorMessage: 'Failed to fetch library groups' });
     }
 
     async saveLibraryGroups(groups: PresetGroup[]) {
-        const response = await fetch(`${this.baseUrl}/system/library_groups`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(groups)
-        });
-        if (!response.ok) throw new Error('Failed to save library groups');
+        await this.request({ path: '/system/library_groups', method: 'PUT', body: groups, expectJson: false, errorMessage: 'Failed to save library groups' });
     }
 
     // --- TEMPLATES ---
     async getTemplates(): Promise<BQTemplateDefinition[]> {
-        const response = await fetch(`${this.baseUrl}/system/templates`);
-        if (!response.ok) throw new Error('Failed to fetch templates');
-        return response.json();
+        return this.request<BQTemplateDefinition[]>({ path: '/system/templates', errorMessage: 'Failed to fetch templates' });
     }
 
     async saveTemplates(templates: BQTemplateDefinition[]) {
-        const response = await fetch(`${this.baseUrl}/system/templates`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(templates)
-        });
-        if (!response.ok) throw new Error('Failed to save templates');
+        await this.request({ path: '/system/templates', method: 'PUT', body: templates, expectJson: false, errorMessage: 'Failed to save templates' });
     }
 
     async deleteTemplate(id: string) {
-        const response = await fetch(`${this.baseUrl}/system/templates/${id}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Failed to delete template');
+        await this.request({ path: `/system/templates/${id}`, method: 'DELETE', expectJson: false, errorMessage: 'Failed to delete template' });
     }
 
     // --- PROJECTS ---
     async getProjects(): Promise<Project[]> {
         // This endpoint is optimized and excludes heavy JSON blobs like bq_data
-        const response = await fetch(`${this.baseUrl}/projects?v=${this.apiVersion}`);
-        if (!response.ok) throw new Error('Failed to fetch projects');
-        return response.json();
+        return this.request<Project[]>({ path: '/projects', query: { v: this.apiVersion }, errorMessage: 'Failed to fetch projects' });
     }
 
     async getProjectById(id: number): Promise<Project> {
         // This endpoint returns all data including the heavy JSON blobs for editing
-        const response = await fetch(`${this.baseUrl}/projects/${id}?v=${this.apiVersion}`);
-        if (!response.ok) throw new Error('Failed to fetch project');
-        return response.json();
+        return this.request<Project>({ path: `/projects/${id}`, query: { v: this.apiVersion }, errorMessage: 'Failed to fetch project' });
     }
 
     async createProject(project: Omit<Project, 'id'>) {
-        const response = await fetch(`${this.baseUrl}/projects`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(project)
-        });
-        if (!response.ok) throw new Error('Failed to create project');
-        return response.json();
+        return this.request({ path: '/projects', method: 'POST', body: project, errorMessage: 'Failed to create project' });
     }
 
     async updateProject(id: number, updates: Partial<Project>) {
-        const response = await fetch(`${this.baseUrl}/projects/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
-        });
-        if (!response.ok) throw new Error('Failed to update project');
-        return response.json();
+        return this.request({ path: `/projects/${id}`, method: 'PUT', body: updates, errorMessage: 'Failed to update project' });
     }
 
     async deleteProject(id: number) {
-        const response = await fetch(`${this.baseUrl}/projects/${id}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Failed to delete project');
+        await this.request({ path: `/projects/${id}`, method: 'DELETE', expectJson: false, errorMessage: 'Failed to delete project' });
     }
 
     // --- USERS ---
     async getUsers(): Promise<User[]> {
-        const response = await fetch(`${this.baseUrl}/users`);
-        if (!response.ok) throw new Error('Failed to fetch users');
-        return response.json();
+        return this.request<User[]>({ path: '/users', errorMessage: 'Failed to fetch users' });
     }
 
     async addUser(user: Omit<User, 'id'>) {
-        const response = await fetch(`${this.baseUrl}/users`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(user)
-        });
-        if (!response.ok) throw new Error('Failed to add user');
-        return response.json();
+        return this.request({ path: '/users', method: 'POST', body: user, errorMessage: 'Failed to add user' });
     }
 
     async updateUser(id: number, updates: Partial<User>) {
-        const response = await fetch(`${this.baseUrl}/users/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
+        const updatedUser: any = await this.request({
+            path: `/users/${id}`, method: 'PUT', body: updates, errorMessage: 'Failed to update user'
         });
-        if (!response.ok) throw new Error('Failed to update user');
-
-        const updatedUser: any = await response.json();
         if (this.currentUser && this.currentUser.id === id) {
             this.setCurrentUser(updatedUser);
         }
@@ -214,11 +189,12 @@ class CloudflareService {
     }
 
     async deleteUser(id: number) {
-        const response = await fetch(`${this.baseUrl}/users/${id}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Failed to delete user');
+        await this.request({ path: `/users/${id}`, method: 'DELETE', expectJson: false, errorMessage: 'Failed to delete user' });
     }
 
     // --- SYSTEM SETTINGS (COMPANIES, VOTES, ETC) ---
+    // Note: getSettings intentionally returns {} on failure (fallback for new
+    // years) instead of throwing, so it does not use request().
     async getSettings(year: number) {
         const response = await fetch(`${this.baseUrl}/system/settings/${year}`);
         if (!response.ok) return {}; // Fallback for new years
@@ -226,22 +202,15 @@ class CloudflareService {
     }
 
     async updateSettings(year: number, settings: any) {
-        const response = await fetch(`${this.baseUrl}/system/settings/${year}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(settings)
-        });
-        if (!response.ok) throw new Error('Failed to update settings');
+        await this.request({ path: `/system/settings/${year}`, method: 'PUT', body: settings, expectJson: false, errorMessage: 'Failed to update settings' });
     }
 
     async getCompanies(year: number): Promise<string[]> {
-        const s: any = await this.getSettings(year);
-        return s.companies || [];
+        return this.getSetting<string[]>(year, 'companies', []);
     }
 
     async getCompanyOrder(year: number): Promise<string[]> {
-        const s: any = await this.getSettings(year);
-        return s.company_order || [];
+        return this.getSetting<string[]>(year, 'company_order', []);
     }
 
     async saveCompanyOrder(year: number, order: string[]) {
@@ -271,13 +240,12 @@ class CloudflareService {
     }
 
     async getCompanyDetails(year: number, name: string): Promise<CompanyDetail | undefined> {
-        const s: any = await this.getSettings(year);
-        return s.company_details?.[name];
+        const details = await this.getSetting<Record<string, CompanyDetail>>(year, 'company_details', {});
+        return details?.[name];
     }
 
     async getAllCompanyDetails(year: number): Promise<Record<string, CompanyDetail>> {
-        const s: any = await this.getSettings(year);
-        return s.company_details || {};
+        return this.getSetting<Record<string, CompanyDetail>>(year, 'company_details', {});
     }
 
     async saveCompanyDetails(year: number, detail: CompanyDetail) {
@@ -297,8 +265,7 @@ class CloudflareService {
     }
 
     async getVotes(year: number): Promise<VoteDefinition[]> {
-        const s: any = await this.getSettings(year);
-        return s.vote_numbers || [];
+        return this.getSetting<VoteDefinition[]>(year, 'vote_numbers', []);
     }
 
     async saveVote(year: number, vote: VoteDefinition) {
@@ -318,8 +285,7 @@ class CloudflareService {
     }
 
     async getSebuthargaNumbers(year: number): Promise<string[]> {
-        const s: any = await this.getSettings(year);
-        return s.sebutharga_numbers || [];
+        return this.getSetting<string[]>(year, 'sebutharga_numbers', []);
     }
 
     async addSebuthargaNumber(year: number, sh: string) {
@@ -338,8 +304,7 @@ class CloudflareService {
     }
 
     async getManualFinancials(year: number) {
-        const s: any = await this.getSettings(year);
-        return s.manual_financials || { outsource: 0, ydp: 0 };
+        return this.getSetting(year, 'manual_financials', { outsource: 0, ydp: 0 });
     }
 
     async saveManualFinancials(year: number, data: { outsource: number, ydp: number }) {
@@ -348,9 +313,11 @@ class CloudflareService {
 
     // --- TEMPORARY GALLERY ---
     async getTemporaryGallery(limit = 24, offset = 0): Promise<TemporaryImage[]> {
-        const response = await fetch(`${this.baseUrl}/storage/gallery?limit=${limit}&offset=${offset}&v=${this.apiVersion}`);
-        if (!response.ok) throw new Error('Failed to fetch gallery');
-        return response.json();
+        return this.request<TemporaryImage[]>({
+            path: '/storage/gallery',
+            query: { limit: String(limit), offset: String(offset), v: this.apiVersion },
+            errorMessage: 'Failed to fetch gallery'
+        });
     }
 
     async uploadTemporaryImage(file: File | Blob, userId: number, userFullName: string, projectId?: number, location?: string): Promise<TemporaryImage> {
@@ -362,31 +329,17 @@ class CloudflareService {
         if (projectId) formData.append('projectId', projectId.toString());
         if (location) formData.append('location', location);
 
-        const response = await fetch(`${this.baseUrl}/storage/upload`, {
-            method: 'POST',
-            body: formData
+        return this.request<TemporaryImage>({
+            path: '/storage/upload', method: 'POST', body: formData, json: false, errorMessage: 'Failed to upload image'
         });
-
-        if (!response.ok) throw new Error('Failed to upload image');
-        return response.json();
     }
 
     async updateTemporaryImageLocation(id: string, location: string): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/storage/gallery/${id}/location`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ location })
-        });
-        if (!response.ok) throw new Error('Failed to update location');
+        await this.request({ path: `/storage/gallery/${id}/location`, method: 'PUT', body: { location }, expectJson: false, errorMessage: 'Failed to update location' });
     }
 
     async deleteTemporaryImage(id: string, imageUrl: string) {
-        const response = await fetch(`${this.baseUrl}/storage/gallery/${id}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl })
-        });
-        if (!response.ok) throw new Error('Failed to delete image');
+        await this.request({ path: `/storage/gallery/${id}`, method: 'DELETE', body: { imageUrl }, expectJson: false, errorMessage: 'Failed to delete image' });
     }
 
     async batchUpdateTemporaryImageLocation(ids: string[], location: string) {
@@ -398,31 +351,22 @@ class CloudflareService {
     }
 
     async cleanupExpiredGalleryImages() {
-        const response = await fetch(`${this.baseUrl}/storage/cleanup`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Failed to cleanup images');
+        await this.request({ path: '/storage/cleanup', method: 'DELETE', expectJson: false, errorMessage: 'Failed to cleanup images' });
     }
 
     // --- NOTIFICATIONS ---
     async getNotificationStates(userId: number): Promise<any[]> {
-        const response = await fetch(`${this.baseUrl}/notifications?userId=${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch notification states');
-        return response.json();
+        return this.request<any[]>({ path: '/notifications', query: { userId: String(userId) }, errorMessage: 'Failed to fetch notification states' });
     }
 
     async updateNotificationState(id: string, userId: number, updates: { isRead?: boolean, isDeleted?: boolean }) {
-        const response = await fetch(`${this.baseUrl}/notifications/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, ...updates })
+        await this.request({
+            path: `/notifications/${id}`, method: 'PUT', body: { userId, ...updates }, expectJson: false, errorMessage: 'Failed to update notification state'
         });
-        if (!response.ok) throw new Error('Failed to update notification state');
     }
 
     async deleteNotificationPermanently(id: string, userId: number) {
-        const response = await fetch(`${this.baseUrl}/notifications/${id}?userId=${userId}`, {
-            method: 'DELETE'
-        });
-        if (!response.ok) throw new Error('Failed to delete notification permanently');
+        await this.request({ path: `/notifications/${id}`, method: 'DELETE', query: { userId: String(userId) }, expectJson: false, errorMessage: 'Failed to delete notification permanently' });
     }
 }
 
