@@ -1,24 +1,17 @@
 import { Project, formatDate, formatCurrency } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
+import { calculateLADDailyRate, LAD_BLR, LAD_EFFECTIVE_RATE, LAD_SMALL_PROJECT_THRESHOLD } from '../finance';
 
 export class LADPDFExporter {
     static async export(project: Project): Promise<void> {
         // --- Calculation Logic ---
         const contractSum = project.kosProjek || 0;
-        const isSmallProject = contractSum < 20000;
-        
-        // BLR Constants based on image (6.65 - 0.25 = 6.4)
-        const BLR = 6.65;
-        const treasuryRate = 0.25;
-        const effectiveRate = BLR - treasuryRate; // 6.4
+        const isSmallProject = contractSum < LAD_SMALL_PROJECT_THRESHOLD;
+        const BLR = LAD_BLR;                 // 6.65 (display value)
+        const effectiveRate = LAD_EFFECTIVE_RATE; // 6.4 (display value)
 
-        // Daily Rate
-        let dailyRate = 0;
-        if (isSmallProject) {
-            dailyRate = 20.00;
-        } else {
-            dailyRate = Math.round(((contractSum * (effectiveRate / 100)) / 365 + Number.EPSILON) * 100) / 100;
-        }
+        // Daily Rate (shared finance util)
+        const dailyRate = calculateLADDailyRate(contractSum);
 
         // Days
         const daysLate = project.ladDays || 0;

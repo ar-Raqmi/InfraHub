@@ -1,4 +1,7 @@
 export class Formatter {
+  // Title-case Malay month names (shared by Notis/AkuJangi documents).
+  static readonly MALAY_MONTHS_TITLE = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+
   static formatCurrency(amount: number | undefined | null): string {
     if (amount === undefined || amount === null || isNaN(Number(amount))) return '-';
     return new Intl.NumberFormat('ms-MY', {
@@ -32,6 +35,15 @@ export class Formatter {
     const year = date.getFullYear();
 
     return `${day} ${month} ${year}`;
+  }
+
+  // Title-case Malay long date, e.g. "23 Julai 2026". Used by formal letters
+  // (Notis/AkuJanji). `fallback` is returned for empty/invalid input.
+  static formatDateMalayTitleCase(dateString?: string, fallback = '.............'): string {
+    if (!dateString) return fallback;
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return fallback;
+    return `${d.getDate()} ${Formatter.MALAY_MONTHS_TITLE[d.getMonth()]} ${d.getFullYear()}`;
   }
 
   static getCurrentDate(): string {

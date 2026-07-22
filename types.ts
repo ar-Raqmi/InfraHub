@@ -329,10 +329,13 @@ export interface Project {
 
 import { Formatter } from './services/Formatter';
 import { StatusHelper } from './services/StatusHelper';
+import { calculateLADDailyRate } from './services/finance';
 
 export const formatCurrency = Formatter.formatCurrency;
 export const formatDate = Formatter.formatDate;
 export const formatDateMalay = Formatter.formatDateMalay;
+export const formatDateMalayTitleCase = Formatter.formatDateMalayTitleCase;
 export const getCurrentDate = Formatter.getCurrentDate;
 export const getStatusColor = StatusHelper.getStatusColor;
 export const getStatusLabel = StatusHelper.getStatusLabel;
+export { calculateLADDailyRate };

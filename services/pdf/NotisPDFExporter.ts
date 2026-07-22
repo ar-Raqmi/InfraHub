@@ -1,9 +1,9 @@
 import { Project, User } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
+import { Formatter } from '../Formatter';
+import { calculateLADDailyRate } from '../finance';
 
 type NoticeType = 'PEMBERITAHUAN' | 'PERINGATAN_1' | 'KERJA_TIDAK_SIAP' | 'PERINGATAN_2' | 'PERINGATAN_3';
-
-const MONTHS = ["Januari","Februari","Mac","April","Mei","Jun","Julai","Ogos","September","Oktober","November","Disember"];
 
 export class NotisPDFExporter {
     static async export(project: Project, pjaUser: User | undefined, companyDetails: any, options: {
@@ -33,24 +33,11 @@ export class NotisPDFExporter {
     }
 
     private static formatMalayDateLong(isoDate: string): string {
-        if (!isoDate) return '.............';
-        const d = new Date(isoDate);
-        if (isNaN(d.getTime())) return '.............';
-        return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+        return Formatter.formatDateMalayTitleCase(isoDate);
     }
 
     private static calculateLAD(kosProjek: number): number {
-        const contractSum = kosProjek || 0;
-        let dailyRate = 0;
-        
-        // 2025 Standard Logic
-        if (contractSum < 20000) {
-            dailyRate = 20.00;
-        } else {
-            // BLR 6.65 - 0.25 = 6.4 (Standard treasury rate logic)
-            dailyRate = (contractSum * 0.064) / 365;
-        }
-        return Math.round((dailyRate + Number.EPSILON) * 100) / 100;
+        return calculateLADDailyRate(kosProjek);
     }
 
     // --- PDF GENERATOR 1: NOTIS PEMBERITAHUAN ---
@@ -80,7 +67,7 @@ export class NotisPDFExporter {
         
         const dateObj = startDate ? new Date(startDate) : new Date();
         const safeDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
-        const dateStr = `${MONTHS[safeDate.getMonth()]} ${safeDate.getFullYear()}`;
+        const dateStr = `${Formatter.MALAY_MONTHS_TITLE[safeDate.getMonth()]} ${safeDate.getFullYear()}`;
         doc.text(dateStr, pageWidth - margin, y, { align: 'right' });
         
         y += 15;
