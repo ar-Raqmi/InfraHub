@@ -257,7 +257,7 @@ export class ProjectRepository extends BaseRepository {
       return null;
     }
     const mapped = this.mapProjectFromRow(results[0]);
-    return { ...mapped, debug_sig: 'v_detail_fix_103' };
+    return mapped;
   }
 
   public async create(body: any): Promise<any> {

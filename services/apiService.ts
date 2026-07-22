@@ -424,11 +424,6 @@ class CloudflareService {
         });
         if (!response.ok) throw new Error('Failed to delete notification permanently');
     }
-
-    // Compatibility mappers for legacy real-time hooks
-    mapProject(p: any) { return p; }
-    mapBulletin(b: any) { return b; }
-    mapUser(u: any) { return u; }
 }
 
 // Export a singleton instance
@@ -442,9 +437,4 @@ export const api: any = {
         return channelMock;
     },
     removeChannel: () => { },
-    storage: {
-        from: () => ({
-            getPublicUrl: (path: string) => ({ data: { publicUrl: path } })
-        })
-    }
 };

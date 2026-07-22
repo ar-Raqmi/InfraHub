@@ -1,5 +1,4 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
 import { StorageRepository } from '../repositories/StorageRepository'
 
 type Bindings = {
@@ -8,8 +7,6 @@ type Bindings = {
 }
 
 export const storageApp = new Hono<{ Bindings: Bindings }>()
-
-storageApp.use('*', cors())
 
 storageApp.use('*', async (c, next) => {
   if (!c.env.DB) {
