@@ -8,6 +8,12 @@ export class StorageRepository extends BaseRepository {
     this.bucket = bucket;
   }
 
+  private async deleteR2ByUrl(url: string | null | undefined): Promise<void> {
+    if (!url) return;
+    const fileName = url.split('/').pop();
+    if (fileName) await this.bucket.delete(fileName);
+  }
+
   private mapTemporaryImageFromRow(row: any): any {
     return {
       id: row.id,
@@ -92,15 +98,8 @@ export class StorageRepository extends BaseRepository {
       .first();
 
     if (row) {
-      const parts = row.image_url.split('/');
-      const fileName = parts[parts.length - 1];
-      await this.bucket.delete(fileName);
-
-      if (row.thumbnail_url) {
-        const thumbParts = row.thumbnail_url.split('/');
-        const thumbFileName = thumbParts[thumbParts.length - 1];
-        await this.bucket.delete(thumbFileName);
-      }
+      await this.deleteR2ByUrl(row.image_url as string);
+      await this.deleteR2ByUrl(row.thumbnail_url as string);
     }
 
     await this.db.prepare('DELETE FROM temporary_gallery WHERE id = ?').bind(id).run();
@@ -118,18 +117,11 @@ export class StorageRepository extends BaseRepository {
       const ids = [];
       for (const img of expiredImages) {
         ids.push(img.id);
-        const parts = (img.image_url as string).split('/');
-        const fileName = parts[parts.length - 1];
-        await this.bucket.delete(fileName);
-
-        if (img.thumbnail_url) {
-          const thumbParts = (img.thumbnail_url as string).split('/');
-          const thumbFileName = thumbParts[thumbParts.length - 1];
-          await this.bucket.delete(thumbFileName);
-        }
+        await this.deleteR2ByUrl(img.image_url as string);
+        await this.deleteR2ByUrl(img.thumbnail_url as string);
       }
 
-      const pl = ids.map(() => '?').join(',');
+      const pl = this.buildInPlaceholders(ids.length);
       await this.db.prepare(`DELETE FROM temporary_gallery WHERE id IN (${pl})`).bind(...ids).run();
       return expiredImages.length;
     }

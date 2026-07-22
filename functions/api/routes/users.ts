@@ -1,11 +1,8 @@
 import { Hono } from 'hono'
 import { UserRepository } from '../repositories/UserRepository'
+import { AppBindings } from '../types'
 
-type Bindings = {
-  DB: D1Database
-}
-
-export const userApp = new Hono<{ Bindings: Bindings }>()
+export const userApp = new Hono<{ Bindings: AppBindings }>()
 
 // GET /api/users
 userApp.get('/', async (c) => {

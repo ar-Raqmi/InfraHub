@@ -1,11 +1,8 @@
 import { Hono } from 'hono'
 import { BulletinRepository } from '../repositories/BulletinRepository'
+import { AppBindings } from '../types'
 
-type Bindings = {
-  DB: D1Database
-}
-
-export const bulletinApp = new Hono<{ Bindings: Bindings }>()
+export const bulletinApp = new Hono<{ Bindings: AppBindings }>()
 
 // GET /api/bulletins
 bulletinApp.get('/', async (c) => {

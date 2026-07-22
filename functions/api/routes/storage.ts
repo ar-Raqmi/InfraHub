@@ -1,12 +1,8 @@
 import { Hono } from 'hono'
 import { StorageRepository } from '../repositories/StorageRepository'
+import { AppBindings } from '../types'
 
-type Bindings = {
-  DB: D1Database
-  BUCKET: R2Bucket
-}
-
-export const storageApp = new Hono<{ Bindings: Bindings }>()
+export const storageApp = new Hono<{ Bindings: AppBindings }>()
 
 storageApp.use('*', async (c, next) => {
   if (!c.env.DB) {

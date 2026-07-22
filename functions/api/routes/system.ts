@@ -1,11 +1,8 @@
 import { Hono } from 'hono'
 import { SystemRepository } from '../repositories/SystemRepository'
+import { AppBindings } from '../types'
 
-type Bindings = {
-  DB: D1Database
-}
-
-export const systemApp = new Hono<{ Bindings: Bindings }>()
+export const systemApp = new Hono<{ Bindings: AppBindings }>()
 
 // Settings API endpoints
 // GET /api/system/settings/:year

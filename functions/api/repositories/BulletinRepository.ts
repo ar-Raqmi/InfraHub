@@ -24,7 +24,7 @@ export class BulletinRepository extends BaseRepository {
     const { results: existing } = await this.db.prepare('SELECT id FROM bulletins ORDER BY date DESC, id DESC').all();
     if (existing && existing.length >= 3) {
       const idsToDelete = existing.slice(2).map(r => r.id as string);
-      const placeholders = idsToDelete.map(() => '?').join(',');
+      const placeholders = this.buildInPlaceholders(idsToDelete.length);
       await this.db.prepare(`DELETE FROM bulletins WHERE id IN (${placeholders})`).bind(...idsToDelete).run();
     }
 

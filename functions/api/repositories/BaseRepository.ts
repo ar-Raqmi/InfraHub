@@ -34,4 +34,38 @@ export abstract class BaseRepository {
     const values = Object.values(sanitized);
     return { keys, setClauses, values };
   }
+
+  protected buildInPlaceholders(count: number): string {
+    return Array.from({ length: count }, () => '?').join(',');
+  }
+
+  // SELECT-then-UPDATE-or-INSERT. `record` is used verbatim for INSERT and as
+  // the SET payload for UPDATE (merged with optional extraUpdate). Does nothing
+  // on UPDATE when there are no columns to set (preserving no-op behavior).
+  protected async upsert(
+    table: string,
+    whereClause: string,
+    whereValues: any[],
+    record: Record<string, any>,
+    extraUpdate: Record<string, any> = {}
+  ): Promise<void> {
+    const existing = await this.db.prepare(`SELECT 1 FROM ${table} WHERE ${whereClause}`)
+      .bind(...whereValues)
+      .first();
+
+    if (existing) {
+      const merged = { ...record, ...extraUpdate };
+      const { keys, setClauses, values } = this.buildUpdate(merged);
+      if (keys.length > 0) {
+        await this.db.prepare(`UPDATE ${table} SET ${setClauses} WHERE ${whereClause}`)
+          .bind(...values, ...whereValues)
+          .run();
+      }
+    } else {
+      const { keys, values, placeholders } = this.buildInsert(record);
+      await this.db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`)
+        .bind(...values)
+        .run();
+    }
+  }
 }

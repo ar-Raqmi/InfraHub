@@ -1,11 +1,8 @@
 import { Hono } from 'hono'
 import { NotificationRepository } from '../repositories/NotificationRepository'
+import { AppBindings } from '../types'
 
-type Bindings = {
-  DB: D1Database
-}
-
-export const notificationApp = new Hono<{ Bindings: Bindings }>()
+export const notificationApp = new Hono<{ Bindings: AppBindings }>()
 
 // GET /api/notifications?userId=123
 notificationApp.get('/', async (c) => {

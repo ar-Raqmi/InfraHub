@@ -21,9 +21,6 @@ export class SystemRepository extends BaseRepository {
   }
 
   public async updateSettings(year: number, body: any): Promise<boolean> {
-    const { results } = await this.db.prepare('SELECT * FROM system_settings WHERE year = ?').bind(year).all();
-    const exists = results && results.length > 0;
-
     const dbUpdates: Record<string, string | number> = { year };
     if (body.companies !== undefined) dbUpdates.companies = JSON.stringify(body.companies);
     if (body.company_order !== undefined) dbUpdates.company_order = JSON.stringify(body.company_order);
@@ -34,17 +31,7 @@ export class SystemRepository extends BaseRepository {
     if (body.meeting_date !== undefined) dbUpdates.meeting_date = body.meeting_date;
     if (body.meeting_number !== undefined) dbUpdates.meeting_number = body.meeting_number;
 
-    if (exists) {
-      const { setClauses, values } = this.buildUpdate(dbUpdates);
-      await this.db.prepare(`UPDATE system_settings SET ${setClauses} WHERE year = ?`)
-        .bind(...values, year)
-        .run();
-    } else {
-      const { keys, values, placeholders } = this.buildInsert(dbUpdates);
-      await this.db.prepare(`INSERT INTO system_settings (${keys.join(', ')}) VALUES (${placeholders})`)
-        .bind(...values)
-        .run();
-    }
+    await this.upsert('system_settings', 'year = ?', [year], dbUpdates);
     return true;
   }
 

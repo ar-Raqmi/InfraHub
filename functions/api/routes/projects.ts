@@ -1,12 +1,8 @@
 import { Hono } from 'hono'
 import { ProjectRepository } from '../repositories/ProjectRepository'
+import { AppBindings } from '../types'
 
-type Bindings = {
-  DB: D1Database
-  BUCKET: R2Bucket
-}
-
-export const projectApp = new Hono<{ Bindings: Bindings }>()
+export const projectApp = new Hono<{ Bindings: AppBindings }>()
 
 // GET /api/projects
 projectApp.get('/', async (c) => {

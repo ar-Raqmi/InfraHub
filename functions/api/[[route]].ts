@@ -10,13 +10,9 @@ import { storageApp } from './routes/storage'
 import { notificationApp } from './routes/notifications'
 
 import { UserRepository } from './repositories/UserRepository'
+import { AppBindings } from './types'
 
-type Bindings = {
-  DB: D1Database
-  BUCKET: R2Bucket
-}
-
-const app = new Hono<{ Bindings: Bindings }>().basePath('/api')
+const app = new Hono<{ Bindings: AppBindings }>().basePath('/api')
 
 app.use('*', cors())
 
@@ -29,35 +25,23 @@ app.onError((err, c) => {
   }, 500)
 })
 
+// Cache-Control middleware factory: applies the given header to GET responses.
+const cacheControl = (value: string) => async (c: any, next: any) => {
+  await next()
+  if (c.req.method === 'GET') {
+    c.header('Cache-Control', value)
+  }
+}
+
 // Disable caching for DATA routes (Projects & System) - GET ONLY
-app.use('/projects/*', async (c, next) => {
-  await next()
-  if (c.req.method === 'GET') {
-    c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
-  }
-})
-app.use('/system/*', async (c, next) => {
-  await next()
-  if (c.req.method === 'GET') {
-    c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
-  }
-})
+app.use('/projects/*', cacheControl('no-cache, no-store, must-revalidate'))
+app.use('/system/*', cacheControl('no-cache, no-store, must-revalidate'))
 
 // Allow caching for STORAGE FILES (Images) - GET ONLY
-app.use('/storage/file/*', async (c, next) => {
-  await next()
-  if (c.req.method === 'GET') {
-    c.header('Cache-Control', 'public, max-age=3600') // Cache for 1 hour
-  }
-})
+app.use('/storage/file/*', cacheControl('public, max-age=3600')) // Cache for 1 hour
 
 // Gallery List must be fresh - GET ONLY
-app.use('/storage/gallery', async (c, next) => {
-  await next()
-  if (c.req.method === 'GET') {
-    c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
-  }
-})
+app.use('/storage/gallery', cacheControl('no-cache, no-store, must-revalidate'))
 
 // Mount sub-routers
 app.route('/projects', projectApp)
