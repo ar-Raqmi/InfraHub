@@ -53,15 +53,12 @@ Below is an overview of the key pages in the system and their respective functio
     * **LAD Certificate (`LADCertificate.tsx`)**: Automates Liquidated & Ascertained Damages penalty reports.
     * **LoC Certificate (`LoCCertificate.tsx`)**: Tracks loc deduction details.
     * **Prestasi Certificate (`PrestasiCertificate.tsx`)**: Scores and creates contractor performance rating reports.
-    * **Cover Page (`CoverPageEditor.tsx`)**: Designs customized project document cover sheets.
 * **⚙️ Admin Settings (`AdminSettings.tsx`)**
   * Interface for administrators to register contractor details, set up yearly vote codes, allocate budgets, publish dashboard bulletins and edit default BQ templates.
 * **👥 Users (`Users.tsx`)**
   * Administrator portal to create, modify and manage user accounts and system credentials.
 * **👤 Profile (`Profile.tsx`)**
   * Displays user account details, role information and personal settings.
-* **📥 Inbox (`Inbox.tsx`)**
-  * System notifications center that alerts users on project status updates and deadlines.
 
 ---
 
