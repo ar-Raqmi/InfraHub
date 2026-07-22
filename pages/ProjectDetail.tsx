@@ -735,11 +735,22 @@ const CACHE_VERSION = 'v126';
     setHasUnsavedChanges(true);
   };
 
-  const handlePrestasiUpdate = (newScores: number[], percentage: number, skop: 'BEKALAN' | 'PERKHIDMATAN' | 'KERJA', noInbois: string) => {
-    const prestasiString = `${percentage}%`;
-    setFormData(prev => ({ ...prev, prestasiScores: newScores, prestasi: prestasiString, skop: skop, noInbois: noInbois }));
-    setHasUnsavedChanges(true);
-    if (onShowToast) onShowToast("Maklumat prestasi dikemaskini. Sila simpan projek.", "info");
+  const handlePrestasiPersist = async (updates: Partial<Project>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+    try {
+      if (project?.id) {
+        await updateProjectAsync({ id: project.id, updates: { ...formData, ...updates } });
+        setHasUnsavedChanges(false);
+        if (onShowToast) onShowToast("Penilaian prestasi telah disimpan.", "success");
+      } else {
+        setHasUnsavedChanges(true);
+        if (onShowToast) onShowToast("Maklumat prestasi dikemaskini. Sila simpan projek.", "info");
+      }
+    } catch (e) {
+      console.error(e);
+      setHasUnsavedChanges(true);
+      if (onShowToast) onShowToast("Gagal menyimpan ke awan. Sila simpan secara manual.", "error");
+    }
   };
 
   useEffect(() => {
@@ -1906,7 +1917,7 @@ const CACHE_VERSION = 'v126';
       {isLADOpen && (<LADCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsLADOpen(false)} />)}
       {isLoCOpen && (<LoCCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsLoCOpen(false)} />)}
       {isCPCOpen && (<CPCCertificate project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsCPCOpen(false)} />)}
-      {isPrestasiOpen && (<PrestasiCertificate project={formData as Project} onClose={() => setIsPrestasiOpen(false)} onUpdate={handlePrestasiUpdate} />)}
+      {isPrestasiOpen && (<PrestasiCertificate project={formData as Project} onClose={() => setIsPrestasiOpen(false)} onPersist={handlePrestasiPersist} />)}
       {isNotisOpen && (<NotisGenerator project={formData as Project} pjaUser={users.find(u => u.id === formData.pjaId)} onClose={() => setIsNotisOpen(false)} />)}
     </div>
   );
