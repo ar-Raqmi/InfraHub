@@ -993,7 +993,35 @@ const CACHE_VERSION = 'v126';
     setHasUnsavedChanges(true);
   };
 
+  const getExportMissingFields = (): string[] => {
+    const missing: string[] = [];
+    const isBlank = (val: unknown) => !String(val ?? '').trim();
+    const hasLineValue = (val: unknown) => String(val ?? '').split('\n').some(s => s.trim() !== '');
+
+    if (activeTab === 'phase1') {
+      if (isBlank(formData.namaProjek)) missing.push('Cadangan Kerja');
+      if (!hasLineValue(formData.lokasi)) missing.push('Lokasi');
+      if (!hasLineValue(formData.noAduan)) missing.push('Aduan');
+      if (isBlank(formData.zon)) missing.push('Zon');
+      if (isBlank(formData.mukim)) missing.push('Mukim');
+      if (isBlank(formData.tarikhBuka)) missing.push('Tarikh Buka');
+      if (isBlank(formData.bp)) missing.push('BP');
+    } else if (activeTab === 'phase3') {
+      if (isBlank(formData.tarikhPemeriksaan)) missing.push('Tarikh Pemeriksaan');
+      if (isBlank(formData.tarikhSiapSebenar)) missing.push('Tarikh Siap');
+      if (isBlank(formData.tarikhTuntutanBayaran)) missing.push('Tarikh Tuntutan Bayaran');
+      if (isBlank(formData.noInbois)) missing.push('No. Inbois');
+      if (isBlank(formData.prestasi)) missing.push('Borang Penilaian Prestasi');
+    }
+    return missing;
+  };
+
   const handleExportPDF = async () => {
+    const missing = getExportMissingFields();
+    if (missing.length > 0) {
+      if (onShowToast) onShowToast(`Sila isi: ${missing.join(', ')}`, 'error');
+      return;
+    }
     setIsExporting(true);
     try {
       if (activeTab === 'phase1') { await handleExportRealBQPDF(); }
