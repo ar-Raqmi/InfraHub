@@ -25,7 +25,7 @@ export class LADPDFExporter {
         const totalLAD = Math.round((dailyRate * daysLate + Number.EPSILON) * 100) / 100;
 
         // Helper to format number to 2 decimals
-        const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const fmt = PDFBaseHelper.formatNumber2dp;
 
         const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');

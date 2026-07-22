@@ -148,20 +148,7 @@ Jabatan Kejuruteraan` }],
     doc.text("Sekian, terima kasih.", 20, y);
     y += 8;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    const slogans = [
-      "“KITASELANGOR MAJU BERSAMA”",
-      "“MALAYSIA MADANI”",
-      "“BERKHIDMAT UNTUK NEGARA”",
-      "“MAMPAN PROGRESIF SEJAHTERA”"
-    ];
-    slogans.forEach(s => {
-      doc.text(s, 20, y);
-      y += 4;
-    });
-
-    y += 6;
+    y = PDFBaseHelper.drawGovernmentSlogans(doc, 20, y, 4, 10);
 
     if (y + 40 > pageHeight - marginBottom) {
       doc.addPage();

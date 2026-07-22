@@ -124,12 +124,7 @@ export class NotisPDFExporter {
         y += 15;
 
         // Slogans
-        doc.setFont("helvetica","bold");
-        doc.setFontSize(9);
-        doc.text("“KITASELANGOR MAJU BERSAMA”", margin, y); y += 5;
-        doc.text("“MALAYSIA MADANI”", margin, y); y += 5;
-        doc.text("“BERKHIDMAT UNTUK NEGARA”", margin, y); y += 5;
-        doc.text("“MAMPAN PROGRESIF SEJAHTERA”", margin, y); y += 12;
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 5, 12);
 
         // Signature
         doc.setFont("helvetica","normal");
@@ -255,7 +250,7 @@ export class NotisPDFExporter {
 
         // --- Para 4 (LAD Warning) ---
         const ladRate = this.calculateLAD(project.kosProjek);
-        const ladRateStr = `RM${ladRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const ladRateStr = `RM${PDFBaseHelper.formatNumber2dp(ladRate)}`;
 
         const para4Part1 = "4. Kelewatan pihak tuan berbuat demikian akan mengakibatkan laporan prestasi kerja syarikat tuan terjejas dan denda kelewatan (LAD) sebanyak";
         const para4Part2 = "/hari akan dikenakan.";
@@ -293,12 +288,7 @@ export class NotisPDFExporter {
         y += 10;
 
         // Slogans
-        doc.setFont("helvetica","bold");
-        doc.setFontSize(9);
-        doc.text("“KITASELANGOR MAJU BERSAMA”", margin, y); y += 4;
-        doc.text("“MALAYSIA MADANI”", margin, y); y += 4;
-        doc.text("“BERKHIDMAT UNTUK NEGARA”", margin, y); y += 4;
-        doc.text("“MAMPAN PROGRESIF SEJAHTERA”", margin, y); y += 8;
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 8);
 
         // Signature
         doc.setFont("helvetica","normal");
@@ -424,7 +414,7 @@ export class NotisPDFExporter {
 
         // --- Para 4 (LAD HAS BEEN CHARGED) ---
         const ladRate = this.calculateLAD(project.kosProjek);
-        const ladRateStr = `RM${ladRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const ladRateStr = `RM${PDFBaseHelper.formatNumber2dp(ladRate)}`;
 
         const segments = [
             { text:"4. Sehubungan dengan itu, pihak tuan dikehendaki menyerahkan tuntutan dengan kadar segera dan pihak tuan juga telah dikenakan denda lewat LAD sebanyak", bold: false },
@@ -461,12 +451,7 @@ export class NotisPDFExporter {
         y += 10;
 
         // Slogans
-        doc.setFont("helvetica","bold");
-        doc.setFontSize(9);
-        doc.text("“KITASELANGOR MAJU BERSAMA”", margin, y); y += 4;
-        doc.text("“MALAYSIA MADANI”", margin, y); y += 4;
-        doc.text("“BERKHIDMAT UNTUK NEGARA”", margin, y); y += 4;
-        doc.text("“MAMPAN PROGRESIF SEJAHTERA”", margin, y); y += 8;
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 8);
 
         // Signature
         doc.setFont("helvetica","normal");
@@ -608,12 +593,7 @@ export class NotisPDFExporter {
         y += 12;
 
         // Slogans
-        doc.setFont("helvetica","bold");
-        doc.setFontSize(9);
-        doc.text("“KITASELANGOR MAJU BERSAMA”", margin, y); y += 4;
-        doc.text("“MALAYSIA MADANI”", margin, y); y += 4;
-        doc.text("“BERKHIDMAT UNTUK NEGARA”", margin, y); y += 4;
-        doc.text("“MAMPAN PROGRESIF SEJAHTERA”", margin, y); y += 10;
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 10);
 
         // Signature
         doc.setFont("helvetica","normal");
@@ -809,7 +789,7 @@ export class NotisPDFExporter {
         const para2Width = contentWidth - indent;
 
         const ladRate = this.calculateLAD(project.kosProjek);
-        const ladStr = `RM${ladRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const ladStr = `RM${PDFBaseHelper.formatNumber2dp(ladRate)}`;
 
         doc.setFont("helvetica","normal");
         doc.text("2.", margin, y);
