@@ -311,6 +311,32 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         filterDateEnd !== null
     ].filter(Boolean).length;
 
+    /**
+     * getHargaAkhir (The Single Source of Truth for Final Net Cost)
+     * This includes BQ Pelarasan total minus LAD and Wang Tahanan.
+     */
+    const getHargaAkhir = (p: Project) => {
+        // If we are in Phase 3 (Tuntutan) or Phase 4 (Siap), we use the computed net final total.
+        const isPostPelarasan = [ProjectStatus.TUNTUTAN_BAYARAN, ProjectStatus.SIAP].includes(p.status);
+
+        if (!isPostPelarasan) {
+            return p.kosProjek ?? 0;
+        }
+
+        // If kosSebenar is already pre-calculated in ProjectDetail saving logic, use it.
+        // Otherwise, we calculate it on the fly: BQ Pelarasan Sum - LAD - Wang Tahanan.
+        if (p.kosSebenar !== undefined && p.kosSebenar !== null) {
+            return p.kosSebenar;
+        }
+
+        const pelarasanSum = p.bqDataPelarasan?.reduce((acc, group) => {
+            return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
+        }, 0) || (p.kosProjek ?? 0);
+
+        const netTotal = pelarasanSum - (p.ladAmount || 0) - (p.wangTahanan || 0);
+        return Math.max(0, netTotal);
+    };
+
     const filteredProjects = useMemo(() => {
         const filtered = projects.filter(p => {
             const matchesSearch =
@@ -415,32 +441,6 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
             handlePageInputBlur();
             e.currentTarget.blur();
         }
-    };
-
-    /**
-     * getHargaAkhir (The Single Source of Truth for Final Net Cost)
-     * This includes BQ Pelarasan total minus LAD and Wang Tahanan.
-     */
-    const getHargaAkhir = (p: Project) => {
-        // If we are in Phase 3 (Tuntutan) or Phase 4 (Siap), we use the computed net final total.
-        const isPostPelarasan = [ProjectStatus.TUNTUTAN_BAYARAN, ProjectStatus.SIAP].includes(p.status);
-
-        if (!isPostPelarasan) {
-            return p.kosProjek ?? 0;
-        }
-
-        // If kosSebenar is already pre-calculated in ProjectDetail saving logic, use it.
-        // Otherwise, we calculate it on the fly: BQ Pelarasan Sum - LAD - Wang Tahanan.
-        if (p.kosSebenar !== undefined && p.kosSebenar !== null) {
-            return p.kosSebenar;
-        }
-
-        const pelarasanSum = p.bqDataPelarasan?.reduce((acc, group) => {
-            return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
-        }, 0) || (p.kosProjek ?? 0);
-
-        const netTotal = pelarasanSum - (p.ladAmount || 0) - (p.wangTahanan || 0);
-        return Math.max(0, netTotal);
     };
 
     // Grouped Projects with Custom Sorting and Vote Breakdown
