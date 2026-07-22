@@ -1,11 +1,7 @@
 import { BaseRepository } from './BaseRepository'
 
 export class ProjectRepository extends BaseRepository {
-  constructor(db: D1Database) {
-    super(db);
-  }
-
-  public mapProjectFromRow(row: any): any {
+  private mapProjectFromRow(row: any): any {
     return {
       id: row.id,
       apiVersion: 'v126',

@@ -1,10 +1,6 @@
 import { BaseRepository } from './BaseRepository'
 
 export class SystemRepository extends BaseRepository {
-  constructor(db: D1Database) {
-    super(db);
-  }
-
   public async getSettings(year: string): Promise<any> {
     const { results } = await this.db.prepare('SELECT * FROM system_settings WHERE year = ?').bind(year).all();
     if (!results || results.length === 0) {

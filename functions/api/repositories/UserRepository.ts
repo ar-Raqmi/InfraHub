@@ -1,11 +1,7 @@
 import { BaseRepository } from './BaseRepository'
 
 export class UserRepository extends BaseRepository {
-  constructor(db: D1Database) {
-    super(db);
-  }
-
-  public mapUserFromRow(row: any): any {
+  private mapUserFromRow(row: any): any {
     return {
       id: row.id,
       username: row.username,

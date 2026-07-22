@@ -8,7 +8,7 @@ export class StorageRepository extends BaseRepository {
     this.bucket = bucket;
   }
 
-  public mapTemporaryImageFromRow(row: any): any {
+  private mapTemporaryImageFromRow(row: any): any {
     return {
       id: row.id,
       createdAt: row.created_at,

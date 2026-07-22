@@ -1,10 +1,6 @@
 import { BaseRepository } from './BaseRepository'
 
 export class NotificationRepository extends BaseRepository {
-  constructor(db: D1Database) {
-    super(db);
-  }
-
   public async getStates(userId: string): Promise<any[]> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);

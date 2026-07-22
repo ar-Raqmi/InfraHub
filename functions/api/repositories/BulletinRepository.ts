@@ -1,11 +1,7 @@
 import { BaseRepository } from './BaseRepository'
 
 export class BulletinRepository extends BaseRepository {
-  constructor(db: D1Database) {
-    super(db);
-  }
-
-  public mapBulletinFromRow(row: any): any {
+  private mapBulletinFromRow(row: any): any {
     return {
       id: row.id,
       content: row.content,
