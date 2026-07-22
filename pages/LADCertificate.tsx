@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Project, User, formatCurrency, formatDate } from '../types';
-import { Download, Loader2, X } from 'lucide-react';
 import { LADPDFExporter } from '../services/pdf/LADPDFExporter';
+import CertificateModal from '../components/CertificateModal';
 
 interface LADCertificateProps {
     project: Project;
@@ -58,30 +57,13 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
         </div>
     );
 
-    return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  animate-fade-in" style={{ zIndex: 9999 }}>
-            <div className="bg-white  w-full max-w-[230mm] h-[95vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
-                
-                {/* Modal Header */}
-                <div className="p-4 border-b border-slate-200  flex justify-between items-center bg-white  shrink-0">
-                    <h3 className="font-bold text-slate-800">Pratonton Perakuan LAD</h3>
-                    <div className="flex gap-2">
-                        <button 
-                            onClick={handleDownload}
-                            disabled={isGenerating}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
-                        >
-                            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
-                            PDF
-                        </button>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100  rounded-lg text-slate-500">
-                            <X className="w-5 h-5"/>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Preview Area (Visual Only, Matches jsPDF logic visually) */}
-                <div className="flex-1 overflow-y-auto bg-gray-100 p-8 flex justify-center">
+    return (
+        <CertificateModal
+            title="Pratonton Perakuan LAD"
+            onClose={onClose}
+            onDownload={handleDownload}
+            isGenerating={isGenerating}
+        >
                     <div className="w-[210mm] min-h-[297mm] bg-white p-[20mm] shadow-lg text-black font-sans leading-snug relative box-border">
                         
                         {/* Title */}
@@ -180,10 +162,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, pjaUser, onClo
                         </div>
 
                     </div>
-                </div>
-            </div>
-        </div>,
-        document.body
+        </CertificateModal>
     );
 };
 

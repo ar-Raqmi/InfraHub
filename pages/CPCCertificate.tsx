@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { Project, User, formatDateMalay } from '../types';
 import { apiService } from '../services/apiService';
-import { Download, Loader2, X } from 'lucide-react';
 import { CPCPDFExporter } from '../services/pdf/CPCPDFExporter';
+import CertificateModal from '../components/CertificateModal';
 
 interface CPCCertificateProps {
     project: Project;
@@ -61,28 +60,13 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
         }
     };
 
-    return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  animate-fade-in" style={{ zIndex: 9999 }}>
-            <div className="bg-white  w-full max-w-[230mm] h-[95vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative animate-slide-up">
-                
-                <div className="p-4 border-b border-slate-200  flex justify-between items-center bg-white  shrink-0">
-                    <h3 className="font-bold text-slate-800">Pratonton CPC (Perakuan Siap Kerja)</h3>
-                    <div className="flex gap-2">
-                        <button 
-                            onClick={handleDownload}
-                            disabled={isGenerating}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
-                        >
-                            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
-                            PDF
-                        </button>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100  rounded-lg text-slate-500">
-                            <X className="w-5 h-5"/>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto bg-gray-100 p-8 flex justify-center">
+    return (
+        <CertificateModal
+            title="Pratonton CPC (Perakuan Siap Kerja)"
+            onClose={onClose}
+            onDownload={handleDownload}
+            isGenerating={isGenerating}
+        >
                     <div id="cpc-cert-container" className="w-[210mm] min-h-[297mm] bg-white px-[25mm] pt-[20mm] pb-[20mm] shadow-lg text-black relative box-border flex flex-col leading-snug" style={{ fontFamily: 'Arial, sans-serif' }}>
                         
                         <div className="text-center mb-6">
@@ -160,10 +144,7 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                         </div>
 
                     </div>
-                </div>
-            </div>
-        </div>,
-        document.body
+        </CertificateModal>
     );
 };
 
