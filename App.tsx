@@ -289,6 +289,7 @@ function App() {
               <Suspense fallback={<PageLoader />}>
                 <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-4 md:p-6 shadow-xl border border-white/20">
                   <ProjectDetail
+                    key={selectedProject ? selectedProject.id : 'new'}
                     project={selectedProject}
                     projects={projects}
                     onClose={() => setIsEditing(false)}
