@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
             login: path.resolve(__dirname, 'login.html'),
             dashboard: path.resolve(__dirname, 'dashboard.html'),
             projects: path.resolve(__dirname, 'projects.html'),
+            project: path.resolve(__dirname, 'project.html'),
           },
         },
       }
