@@ -40,6 +40,10 @@ export default defineConfig(({ mode }) => {
             dashboard: path.resolve(__dirname, 'dashboard.html'),
             projects: path.resolve(__dirname, 'projects.html'),
             project: path.resolve(__dirname, 'project.html'),
+            users: path.resolve(__dirname, 'users.html'),
+            report: path.resolve(__dirname, 'report.html'),
+            profile: path.resolve(__dirname, 'profile.html'),
+            settings: path.resolve(__dirname, 'settings.html'),
           },
         },
       }
