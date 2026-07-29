@@ -19,6 +19,20 @@ export const PageUrl = {
   settings: (year?: number) => addQuery('/settings.html', { year }),
 };
 
+export function pageHref(page: string, year?: number): string {
+  switch (page) {
+    case 'dashboard': return PageUrl.dashboard(year);
+    case 'projects': return PageUrl.projects(year);
+    case 'users': return PageUrl.users;
+    case 'report': return PageUrl.report(year);
+    case 'profile': return PageUrl.profile;
+    case 'settings': return PageUrl.settings(year);
+    case 'logout':
+    case 'login': return PageUrl.login;
+    default: return PageUrl.index;
+  }
+}
+
 export function getQueryParam(name: string): string | null {
   return new URLSearchParams(window.location.search).get(name);
 }
