@@ -31,6 +31,14 @@ export default defineConfig(({ mode }) => {
           // Fix: Use the derived __dirname to resolve the '@' alias
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          input: {
+            main: path.resolve(__dirname, 'index.html'),
+            login: path.resolve(__dirname, 'login.html'),
+          },
+        },
       }
     };
 });
