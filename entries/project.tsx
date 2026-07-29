@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelectedYear } from '../lib/useSelectedYear';
 import { mountPage } from '../lib/mountPage';
 import { PageUrl, getQueryNumber } from '../lib/appUrl';
+import { navigate, navigateReplace } from '../lib/navigate';
 import AppShell from '../components/AppShell';
 import ProjectDetail from '../pages/ProjectDetail';
 import Toast from '../components/Toast';
@@ -32,15 +33,15 @@ const ProjectPage: React.FC = () => {
           currentUserRole={user.role}
           selectedYear={selectedYear}
           onShowToast={showToast}
-          onClose={() => { window.location.href = PageUrl.projects(selectedYear); }}
+          onClose={() => { navigate(PageUrl.projects(selectedYear)); }}
           onSave={(saved?: Project) => {
             if (saved && id === 0) {
-              window.location.replace(PageUrl.project(saved.id, selectedYear));
+              navigateReplace(PageUrl.project(saved.id, selectedYear));
             } else {
               showToast('Projek berjaya disimpan!', 'success');
             }
           }}
-          onSwitchProject={(p: Project) => { window.location.href = PageUrl.project(p.id, selectedYear); }}
+          onSwitchProject={(p: Project) => { navigate(PageUrl.project(p.id, selectedYear)); }}
         />
       </div>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

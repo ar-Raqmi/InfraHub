@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useSelectedYear } from '../lib/useSelectedYear';
 import { mountPage } from '../lib/mountPage';
 import { PageUrl, pageHref } from '../lib/appUrl';
+import { navigate } from '../lib/navigate';
 import AppShell from '../components/AppShell';
 import Dashboard from '../pages/Dashboard';
 import { useProjects } from '../hooks/useProjects';
@@ -23,10 +24,10 @@ const DashboardPage: React.FC = () => {
       <Dashboard
         projects={filteredProjects}
         user={user}
-        onProjectClick={(p: Project) => { window.location.href = PageUrl.project(p.id, selectedYear); }}
-        onNewProject={() => { window.location.href = PageUrl.project(0, selectedYear); }}
-        onNavigate={(page: string) => { window.location.href = pageHref(page, selectedYear); }}
-        onProfileClick={() => { window.location.href = PageUrl.profile; }}
+        onProjectClick={(p: Project) => { navigate(PageUrl.project(p.id, selectedYear)); }}
+        onNewProject={() => { navigate(PageUrl.project(0, selectedYear)); }}
+        onNavigate={(page: string) => { navigate(pageHref(page, selectedYear)); }}
+        onProfileClick={() => { navigate(PageUrl.profile); }}
         onUpdateProject={async (params) => updateProjectAsync(params)}
       />
     </AppShell>

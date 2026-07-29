@@ -5,6 +5,7 @@ import { RefreshCw } from 'lucide-react';
 import { apiService } from '../services/apiService';
 import { Role } from '../types';
 import { PageUrl } from '../lib/appUrl';
+import { navigateReplace } from '../lib/navigate';
 
 interface AppShellProps {
   currentPage: string;
@@ -20,7 +21,7 @@ const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearCh
 
   const handleLogout = async () => {
     await apiService.logout();
-    window.location.replace(PageUrl.login);
+    navigateReplace(PageUrl.login);
   };
 
   return (

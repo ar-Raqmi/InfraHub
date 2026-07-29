@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useSelectedYear } from '../lib/useSelectedYear';
 import { mountPage } from '../lib/mountPage';
 import { PageUrl } from '../lib/appUrl';
+import { navigate } from '../lib/navigate';
 import AppShell from '../components/AppShell';
 import ProjectsList from '../pages/ProjectsList';
 import { useProjects } from '../hooks/useProjects';
@@ -23,8 +24,8 @@ const ProjectsPage: React.FC = () => {
         projects={filteredProjects}
         selectedYear={selectedYear}
         user={user}
-        onAddProject={() => { window.location.href = PageUrl.project(0, selectedYear); }}
-        onEditProject={(p) => { window.location.href = PageUrl.project(p.id, selectedYear); }}
+        onAddProject={() => { navigate(PageUrl.project(0, selectedYear)); }}
+        onEditProject={(p) => { navigate(PageUrl.project(p.id, selectedYear)); }}
         onDeleteProject={(p) => { deleteProject(p.id); }}
       />
     </AppShell>
