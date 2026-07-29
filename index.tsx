@@ -1,18 +1,8 @@
-import { createRoot } from "react-dom/client";
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { queryClient, persister } from './lib/queryClient';
-import App from "./App";
-import './index.css';
+import { apiService } from './services/apiService';
+import { PageUrl } from './lib/appUrl';
 
-const rootElement = document.getElementById("root");
-if (rootElement) {
-  const root = createRoot(rootElement);
-  root.render(
-    <PersistQueryClientProvider 
-      client={queryClient} 
-      persistOptions={{ persister }}
-    >
-      <App />
-    </PersistQueryClientProvider>
-  );
+if (apiService.getCurrentUser()) {
+  window.location.replace(PageUrl.dashboard());
+} else {
+  window.location.replace(PageUrl.login);
 }

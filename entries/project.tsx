@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { createQueryClient } from '../lib/createQueryClient';
-import { RequireAuth } from '../lib/RequireAuth';
 import { useSelectedYear } from '../lib/useSelectedYear';
+import { mountPage } from '../lib/mountPage';
 import { PageUrl, getQueryNumber } from '../lib/appUrl';
 import AppShell from '../components/AppShell';
 import ProjectDetail from '../pages/ProjectDetail';
@@ -51,13 +48,4 @@ const ProjectPage: React.FC = () => {
   );
 };
 
-const rootEl = document.getElementById('root');
-if (rootEl) {
-  createRoot(rootEl).render(
-    <QueryClientProvider client={createQueryClient()}>
-      <RequireAuth>
-        <ProjectPage />
-      </RequireAuth>
-    </QueryClientProvider>
-  );
-}
+mountPage(ProjectPage);
