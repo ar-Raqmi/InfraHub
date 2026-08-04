@@ -6,6 +6,7 @@ import { useBulletins } from '../hooks/useBulletins';
 import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2 } from 'lucide-react';
 import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQItem } from '../types';
 import { createItem, createHeader } from '../data/bqPresets';
+import { setNavigationGuard } from '../lib/navigate';
 
 interface AdminSettingsProps {
     user: User;
@@ -209,7 +210,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
     const [libraryGroups, setLibraryGroups] = useState<PresetGroup[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
-    const [isSavingLibrary, setIsSavingLibrary] = useState(false);
+    const [isLibraryDirty, setIsLibraryDirty] = useState(false);
+    const [librarySaveStatus, setLibrarySaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [newCategoryName, setNewCategoryName] = useState('');
     const [isAddingCategory, setIsAddingCategory] = useState(false);
 
@@ -319,8 +321,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             await updateSettings({ sebutharga_numbers: newNums });
         } else if (type === 'PRESET_GROUP') {
             const newGroups = libraryGroups.filter(g => g.id !== value);
-            setLibraryGroups(newGroups);
-            await apiService.saveLibraryGroups(newGroups);
+            applyLibraryChange(newGroups);
         } else if (type === 'TEMPLATE') {
             await apiService.deleteTemplate(value);
             const newTemplates = templates.filter(t => t.id !== value);
@@ -390,17 +391,30 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
 
 
 
-    const saveLibraryState = async (newGroups: PresetGroup[]) => {
-        setIsSavingLibrary(true);
+    const applyLibraryChange = (newGroups: PresetGroup[]) => {
         setLibraryGroups(newGroups);
+        setIsLibraryDirty(true);
+        setLibrarySaveStatus('idle');
+    };
+
+    const handleSaveLibrary = async () => {
+        setLibrarySaveStatus('saving');
         try {
-            await apiService.saveLibraryGroups(newGroups);
-        } catch (err) {
+            await apiService.saveLibraryGroups(libraryGroups);
+            setIsLibraryDirty(false);
+            setLibrarySaveStatus('saved');
+            setTimeout(() => setLibrarySaveStatus(s => s === 'saved' ? 'idle' : s), 2500);
+        } catch (err: any) {
             console.error('Failed to save library:', err);
-        } finally {
-            setIsSavingLibrary(false);
+            setLibrarySaveStatus('error');
+            alert('Gagal menyimpan Pustaka BQ: ' + (err.message || 'Sila cuba lagi'));
         }
     };
+
+    useEffect(() => {
+        setNavigationGuard(() => isLibraryDirty);
+        return () => setNavigationGuard(null);
+    }, [isLibraryDirty]);
 
     const handleAddGroup = (category: string) => {
         const newGroup: PresetGroup = {
@@ -409,7 +423,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             category: category,
             items: []
         };
-        saveLibraryState([...libraryGroups, newGroup]);
+        applyLibraryChange([...libraryGroups, newGroup]);
         setActiveGroupId(newGroup.id);
     };
 
@@ -422,7 +436,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 category: newCategoryName.trim(),
                 items: []
             };
-            saveLibraryState([...libraryGroups, newGroup]);
+            applyLibraryChange([...libraryGroups, newGroup]);
             setSelectedCategory(newCategoryName.trim());
             setActiveGroupId(newGroup.id);
             setNewCategoryName('');
@@ -432,7 +446,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
 
     const handleUpdateGroup = (groupId: string, updates: Partial<PresetGroup>) => {
         const newGroups = libraryGroups.map(g => g.id === groupId ? { ...g, ...updates } : g);
-        saveLibraryState(newGroups);
+        applyLibraryChange(newGroups);
     };
 
     const handleAddItem = (groupId: string) => {
@@ -446,7 +460,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             };
             return { ...g, items: [...g.items, newItem] };
         });
-        saveLibraryState(newGroups);
+        applyLibraryChange(newGroups);
     };
 
     const handleUpdateItem = (groupId: string, itemId: string, updates: Partial<PresetItem>) => {
@@ -457,7 +471,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 items: g.items.map(i => i.id === itemId ? { ...i, ...updates } : i)
             };
         });
-        saveLibraryState(newGroups);
+        applyLibraryChange(newGroups);
     };
 
     const handleDeleteItem = (groupId: string, itemId: string) => {
@@ -465,7 +479,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             if (g.id !== groupId) return g;
             return { ...g, items: g.items.filter(i => i.id !== itemId) };
         });
-        saveLibraryState(newGroups);
+        applyLibraryChange(newGroups);
     };
 
     const handleAddVariant = (groupId: string, itemId: string) => {
@@ -485,7 +499,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 })
             };
         });
-        saveLibraryState(newGroups);
+        applyLibraryChange(newGroups);
     };
 
     const handleUpdateVariant = (groupId: string, itemId: string, varId: string, updates: Partial<PresetVariant>) => {
@@ -502,7 +516,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 })
             };
         });
-        saveLibraryState(newGroups);
+        applyLibraryChange(newGroups);
     };
 
     const handleDeleteVariant = (groupId: string, itemId: string, varId: string) => {
@@ -515,7 +529,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 })
             };
         });
-        saveLibraryState(newGroups);
+        applyLibraryChange(newGroups);
     };
 
     // --- TEMPLATE GENERATION LOGIC ---
@@ -778,7 +792,13 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                     </ul>
                                 </div>
                             </div>
-                            {isSavingLibrary && <div className="flex items-center gap-2 text-xs font-bold text-emerald-600"><Save className="w-4 h-4" /> Menyimpan...</div>}
+                            {librarySaveStatus === 'saving' && <span className="flex items-center gap-2 text-xs font-bold text-emerald-600"><Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...</span>}
+                            {librarySaveStatus === 'saved' && <span className="flex items-center gap-2 text-xs font-bold text-emerald-600"><Check className="w-4 h-4" /> Disimpan</span>}
+                            {librarySaveStatus === 'error' && <span className="flex items-center gap-2 text-xs font-bold text-red-600"><AlertTriangle className="w-4 h-4" /> Gagal menyimpan</span>}
+                            {isLibraryDirty && librarySaveStatus !== 'saving' && <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Belum disimpan</span>}
+                            <button onClick={handleSaveLibrary} disabled={!isLibraryDirty || librarySaveStatus === 'saving'} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors text-sm shadow-lg shadow-indigo-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
+                                <Save className="w-4 h-4" /> Simpan Pustaka
+                            </button>
                         </div>
                     </div>
 
