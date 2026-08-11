@@ -70,6 +70,57 @@ export const getAutoNumber = (items: BQItem[], currentIndex: number) => {
     if (lastHeaderType === 'ITEM_PARENT') { return `${toRoman(variantIndex)})`; } else { return `${sectionIndex}.${itemIndex}`; }
 };
 
+export const DimensionInput = ({
+    value,
+    onChange,
+    className,
+    placeholder,
+    disabled,
+    backspaceOnZero
+}: {
+    value: number;
+    onChange: (val: number) => void;
+    className?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    backspaceOnZero?: boolean;
+}) => {
+    const [localValue, setLocalValue] = useState<string>(value?.toString() || '');
+    useEffect(() => {
+        const parsedLocal = parseFloat(localValue);
+        if (parsedLocal === value) return;
+        if (isNaN(parsedLocal) && value === 0) return;
+        setLocalValue(value?.toString() || '');
+    }, [value]);
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newVal = e.target.value;
+        if (/^0+$/.test(newVal)) newVal = '0';
+        newVal = newVal.replace(/^0+(?=[1-9])/, '');
+        setLocalValue(newVal);
+        const parsed = parseFloat(newVal);
+        if (!isNaN(parsed)) { onChange(parsed); } else { onChange(0); }
+    };
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && backspaceOnZero && localValue.length <= 1) {
+            e.preventDefault();
+            setLocalValue('0');
+            onChange(0);
+        }
+    };
+    return (
+        <input
+            type="number"
+            value={localValue}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            className={className}
+            placeholder={placeholder}
+            step="any"
+            disabled={disabled}
+        />
+    );
+};
+
 export const AutoResizeTextarea = ({
     value,
     onChange,

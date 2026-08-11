@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
 import { apiService } from '../services/apiService';
 import { createItem, createHeader } from '../data/bqPresets';
-import { getColorStyles, toRoman, getItemLevel, getAutoNumber, AutoResizeTextarea } from '../lib/bqShared';
+import { getColorStyles, toRoman, getItemLevel, getAutoNumber, AutoResizeTextarea, DimensionInput } from '../lib/bqShared';
 import { Plus, Trash2, MapPin, X, Copy, List, Calculator, Edit3, ArrowRight, ChevronRight, Check, LayoutTemplate, FilePlus, Info, Play, Link, Unlink, FileText, FolderPlus, Layers, RotateCcw, PlusCircle, MinusCircle, AlertTriangle, Settings2, RefreshCw, Save, Ruler, Box, Package, ChevronDown, ChevronUp, GripVertical, Type, FolderOpen, Folder, Download, Loader2, FileInput, ClipboardList, Truck, Wrench, Hammer, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, Search, History, Clock } from 'lucide-react';
 
 interface BQEditorProps {
@@ -47,44 +47,6 @@ const ICON_MAP = {
 // (getColorStyles, toRoman, AutoResizeTextarea, getItemLevel, getAutoNumber
 //  are imported from ../lib/bqShared)
 
-const DimensionInput = ({
-    value,
-    onChange,
-    className,
-    placeholder,
-    disabled
-}: {
-    value: number,
-    onChange: (val: number) => void,
-    className?: string,
-    placeholder?: string,
-    disabled?: boolean
-}) => {
-    const [localValue, setLocalValue] = useState<string>(value?.toString() || '');
-    useEffect(() => {
-        const parsedLocal = parseFloat(localValue);
-        if (parsedLocal === value) return;
-        if (isNaN(parsedLocal) && value === 0) return;
-        setLocalValue(value?.toString() || '');
-    }, [value]);
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVal = e.target.value;
-        setLocalValue(newVal);
-        const parsed = parseFloat(newVal);
-        if (!isNaN(parsed)) { onChange(parsed); } else { onChange(0); }
-    };
-    return (
-        <input
-            type="number"
-            value={localValue}
-            onChange={handleChange}
-            className={className}
-            placeholder={placeholder}
-            step="any"
-            disabled={disabled}
-        />
-    );
-};
 import MoveItemModal from '../components/MoveItemModal';
 
 
@@ -128,7 +90,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     length: Number(part.length) || 0,
                     width: Number(part.width) || 0,
                     depth: Number(part.depth) || 0,
-                    multiplier: Number(part.multiplier) || 1
+                    multiplier: part.multiplier == null ? 1 : Number(part.multiplier)
                 }))
             }))
         }));
@@ -1158,7 +1120,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                 {part.hasWidth && part.hasDepth && <span className="text-slate-300">×</span>}
                 <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<DimensionInput value={part.depth || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { depth: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
                 <span className="text-slate-300">×</span>
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" /></div>
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" backspaceOnZero /></div>
 
                 {/* Individual Row Result with Full Breakdown */}
                 <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
