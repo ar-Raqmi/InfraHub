@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { apiService } from '../services/apiService';
 import { useSettings } from '../hooks/useSettings';
 import { useBulletins } from '../hooks/useBulletins';
-import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2, MoveRight, ChevronUp } from 'lucide-react';
+import { Trash2, Plus, Building2, FileDigit, ShieldAlert, Calendar, Info, Edit2, X, Save, FileText, AlertTriangle, ArrowUp, ArrowDown, Package, Layers, PlusCircle, MinusCircle, ChevronRight, ChevronDown, List, HelpCircle, LayoutTemplate, FileInput, Edit3, Grid2x2, Check, GripVertical, ArrowLeft, ArrowRight, ClipboardList, Box, Truck, Wrench, Hammer, Ruler, CheckSquare, Grid, Zap, Briefcase, Archive, Star, Award, Bookmark, PenTool, RefreshCw, ChevronsUp, ChevronsDown, Hash, Loader2, MoveRight, ChevronUp, FileSpreadsheet } from 'lucide-react';
 import { User, Role, CompanyDetail, VoteDefinition, PresetGroup, PresetItem, PresetVariant, BQTemplateDefinition, BQTemplateBillDefinition, BQItem } from '../types';
 import { createItem, createHeader } from '../data/bqPresets';
 import { setNavigationGuard } from '../lib/navigate';
@@ -432,6 +432,22 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             console.error('Failed to save library:', err);
             setLibrarySaveStatus('error');
             alert('Gagal menyimpan Pustaka BQ: ' + (err.message || 'Sila cuba lagi'));
+        }
+    };
+
+    const [isExportingLibrary, setIsExportingLibrary] = useState(false);
+
+    const handleExportLibrary = async () => {
+        if (isLibraryDirty || librarySaveStatus === 'saving' || isExportingLibrary) return;
+        setIsExportingLibrary(true);
+        try {
+            const { exportLibraryToExcel } = await import('../lib/bqExport');
+            await exportLibraryToExcel(libraryGroups);
+        } catch (err: any) {
+            console.error('Failed to export library:', err);
+            alert('Gagal mengeksport Pustaka BQ: ' + (err.message || 'Sila cuba lagi'));
+        } finally {
+            setIsExportingLibrary(false);
         }
     };
 
@@ -914,6 +930,15 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                             {isLibraryDirty && librarySaveStatus !== 'saving' && <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Belum disimpan</span>}
                             <button onClick={handleSaveLibrary} disabled={!isLibraryDirty || librarySaveStatus === 'saving'} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors text-sm shadow-lg shadow-indigo-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
                                 <Save className="w-4 h-4" /> Simpan Pustaka
+                            </button>
+                            <button
+                                onClick={handleExportLibrary}
+                                disabled={isLibraryDirty || librarySaveStatus === 'saving' || isExportingLibrary || libraryGroups.length === 0}
+                                title={isLibraryDirty ? 'Simpan pustaka dahulu sebelum eksport' : 'Eksport seluruh Pustaka BQ ke Excel'}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+                            >
+                                {isExportingLibrary ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                                {isExportingLibrary ? 'Menjana...' : 'Export Excel'}
                             </button>
                         </div>
                     </div>
