@@ -218,7 +218,7 @@ Jabatan Kejuruteraan` }],
 
         const rawParts = (!isHeader && item.calculationParts) ? item.calculationParts : [];
         const activeParts = rawParts.filter(p =>
-          (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1
+          (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1 || (p.label && p.label.trim() !== '')
         );
 
         let hideMainValues = activeParts.length > 0;
