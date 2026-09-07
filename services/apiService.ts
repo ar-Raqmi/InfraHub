@@ -1,4 +1,5 @@
 import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, CompanyDetail, VoteDefinition, TemporaryImage } from '../types';
+import { sanitizeProject, sanitizeLibraryGroups, sanitizeTemplates, sanitizeUser } from '../lib/text';
 
 class CloudflareService {
     private apiVersion = 'v126';
@@ -130,7 +131,7 @@ class CloudflareService {
     }
 
     async saveLibraryGroups(groups: PresetGroup[]) {
-        await this.request({ path: '/system/library_groups', method: 'PUT', body: groups, expectJson: false, errorMessage: 'Failed to save library groups' });
+        await this.request({ path: '/system/library_groups', method: 'PUT', body: sanitizeLibraryGroups(groups), expectJson: false, errorMessage: 'Failed to save library groups' });
     }
 
     // --- TEMPLATES ---
@@ -139,7 +140,7 @@ class CloudflareService {
     }
 
     async saveTemplates(templates: BQTemplateDefinition[]) {
-        await this.request({ path: '/system/templates', method: 'PUT', body: templates, expectJson: false, errorMessage: 'Failed to save templates' });
+        await this.request({ path: '/system/templates', method: 'PUT', body: sanitizeTemplates(templates), expectJson: false, errorMessage: 'Failed to save templates' });
     }
 
     async deleteTemplate(id: string) {
@@ -158,11 +159,11 @@ class CloudflareService {
     }
 
     async createProject(project: Omit<Project, 'id'>) {
-        return this.request({ path: '/projects', method: 'POST', body: project, errorMessage: 'Failed to create project' });
+        return this.request({ path: '/projects', method: 'POST', body: sanitizeProject(project), errorMessage: 'Failed to create project' });
     }
 
     async updateProject(id: number, updates: Partial<Project>) {
-        return this.request({ path: `/projects/${id}`, method: 'PUT', body: updates, errorMessage: 'Failed to update project' });
+        return this.request({ path: `/projects/${id}`, method: 'PUT', body: sanitizeProject(updates), errorMessage: 'Failed to update project' });
     }
 
     async deleteProject(id: number) {
@@ -175,12 +176,12 @@ class CloudflareService {
     }
 
     async addUser(user: Omit<User, 'id'>) {
-        return this.request({ path: '/users', method: 'POST', body: user, errorMessage: 'Failed to add user' });
+        return this.request({ path: '/users', method: 'POST', body: sanitizeUser(user), errorMessage: 'Failed to add user' });
     }
 
     async updateUser(id: number, updates: Partial<User>) {
         const updatedUser: any = await this.request({
-            path: `/users/${id}`, method: 'PUT', body: updates, errorMessage: 'Failed to update user'
+            path: `/users/${id}`, method: 'PUT', body: sanitizeUser(updates), errorMessage: 'Failed to update user'
         });
         if (this.currentUser && this.currentUser.id === id) {
             this.setCurrentUser(updatedUser);
