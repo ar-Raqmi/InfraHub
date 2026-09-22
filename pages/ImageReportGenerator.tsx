@@ -31,7 +31,8 @@ import {
   Tag,
   History,
   RotateCw,
-  MapPin
+  MapPin,
+  Download
 } from 'lucide-react';
 import { ImageReportPDFExporter } from '../services/pdf';
 import { useUsers } from '../hooks/useUsers';
@@ -557,6 +558,7 @@ interface GalleryItemProps {
   editingLocationTag: string;
   onSelect: (img: TemporaryImage) => void;
   onDelete: (img: TemporaryImage) => void;
+  onDownload: (img: TemporaryImage) => void;
   onToggleSelection: (id: string) => void;
   onStartEdit: (img: TemporaryImage) => void;
   onSaveEdit: () => void;
@@ -576,6 +578,7 @@ const GalleryItem = React.memo(({
   editingLocationTag,
   onSelect,
   onDelete,
+  onDownload,
   onToggleSelection,
   onStartEdit,
   onSaveEdit,
@@ -645,6 +648,13 @@ const GalleryItem = React.memo(({
           className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors z-20 shadow-sm"
         >
           <Trash2 size={18} />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onDownload(img); }}
+          className="absolute top-2 right-12 p-1.5 bg-white text-slate-700 rounded-lg hover:bg-slate-100 transition-colors z-20 shadow-sm"
+          title="Muat Turun Imej"
+        >
+          <Download size={18} />
         </button>
       </div>
 
@@ -780,6 +790,26 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       alert("Gagal memadam gambar.");
     }
   }, [deleteImage]);
+
+  const handleDownloadImage = useCallback(async (img: TemporaryImage) => {
+    try {
+      const res = await fetch(img.imageUrl, { mode: 'cors' });
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const extension = blob.type === 'image/png' ? 'png' : 'jpg';
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = `galeri-sementara-${img.id}.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      console.error('Download failed:', e);
+      alert("Gagal memuat turun gambar.");
+    }
+  }, []);
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -1242,6 +1272,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   editingLocationTag={editingLocationTag}
                   onSelect={handleSelectGalleryImage}
                   onDelete={handleGalleryDelete}
+                  onDownload={handleDownloadImage}
                   onToggleSelection={toggleSelection}
                   onStartEdit={handleStartEdit}
                   onSaveEdit={handleSaveEdit}
