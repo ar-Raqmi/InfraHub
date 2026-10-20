@@ -450,6 +450,11 @@ Jabatan Kejuruteraan` }],
         const rawOrigParts = (originalItem && !isHeader && originalItem.calculationParts) ? originalItem.calculationParts : [];
         const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
 
+        // activeParts is only a display heuristic: a part with multiplier 1, no dimensions and no label
+        // (e.g. a qty reduced to 1) is filtered out yet still exists. Existence is decided by id.
+        const presentPartIds = new Set<string>(rawParts.map(p => p.id));
+        const subRowParts = rawParts.filter(p => activeParts.includes(p) || activeOrigParts.some(op => op.id === p.id));
+
         const fmtQty = (val: number | undefined, forceZero: boolean = false) => {
           if (val === undefined || val === null || isNaN(val)) return '';
           if (val === 0 && !forceZero) return '';
@@ -575,7 +580,7 @@ Jabatan Kejuruteraan` }],
           }
         } else if (!isHeader && showSubRows) {
           const processedOrigIds = new Set<string>();
-          activeParts.forEach(p => {
+          subRowParts.forEach(p => {
             const pOrig = activeOrigParts.find(op => op.id === p.id);
             if (pOrig) processedOrigIds.add(pOrig.id);
             let product = 1;
@@ -645,7 +650,7 @@ Jabatan Kejuruteraan` }],
             }
           });
           activeOrigParts.forEach(pOrig => {
-            if (!processedOrigIds.has(pOrig.id)) {
+            if (!processedOrigIds.has(pOrig.id) && !presentPartIds.has(pOrig.id)) {
               let origProd = 1; if (pOrig.hasLength) origProd *= (pOrig.length || 0); if (pOrig.hasWidth) origProd *= (pOrig.width || 0); if (pOrig.hasDepth) origProd *= (pOrig.depth || 0);
               const pOrigAmt = (origProd * (pOrig.multiplier || 1)) * (originalItem?.rate || 0);
               const dimStrOrig = getDimStr(pOrig, false);
