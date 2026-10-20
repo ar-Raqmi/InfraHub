@@ -134,7 +134,6 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     useEffect(() => {
         const nextData = pelarasanData || [];
 
-        // Legacy records may store multiplier 0/null on dimensionless parts; that means 1.
         let needsFix = false;
         const fixedData = nextData.map(bill => ({
             ...bill,

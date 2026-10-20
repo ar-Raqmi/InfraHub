@@ -85,7 +85,7 @@ export const DimensionInput = ({
     placeholder?: string;
     disabled?: boolean;
     backspaceOnZero?: boolean;
-    // Committed when the field is cleared. Dimensions/rate/qty mean 0; a multiplier means 1.
+    // Clearing a multiplier means 1, not 0.
     emptyValue?: number;
 }) => {
     const [localValue, setLocalValue] = useState<string>(value?.toString() || '');

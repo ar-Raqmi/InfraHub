@@ -450,8 +450,7 @@ Jabatan Kejuruteraan` }],
         const rawOrigParts = (originalItem && !isHeader && originalItem.calculationParts) ? originalItem.calculationParts : [];
         const activeOrigParts = rawOrigParts.filter(p => (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number') || p.multiplier !== 1 || (p.label && p.label.trim() !== ''));
 
-        // activeParts is only a display heuristic: a part with multiplier 1, no dimensions and no label
-        // (e.g. a qty reduced to 1) is filtered out yet still exists. Existence is decided by id.
+        // Existence is decided by part id: a part with multiplier 1 and no dimensions is still present.
         const presentPartIds = new Set<string>(rawParts.map(p => p.id));
         const subRowParts = rawParts.filter(p => activeParts.includes(p) || activeOrigParts.some(op => op.id === p.id));
 
