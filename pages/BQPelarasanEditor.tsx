@@ -133,6 +133,31 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
 
     useEffect(() => {
         const nextData = pelarasanData || [];
+
+        // Legacy records may store multiplier 0/null on dimensionless parts; that means 1.
+        let needsFix = false;
+        const fixedData = nextData.map(bill => ({
+            ...bill,
+            items: (bill.items || []).map(item => {
+                if (!item.calculationParts) return item;
+                return {
+                    ...item,
+                    calculationParts: item.calculationParts.map(part => {
+                        const multiplier = part.multiplier == null
+                            ? 1
+                            : (!part.hasLength && !part.hasWidth && !part.hasDepth && !part.multiplier) ? 1 : Number(part.multiplier);
+                        if (multiplier === part.multiplier) return part;
+                        needsFix = true;
+                        return { ...part, multiplier };
+                    })
+                };
+            })
+        }));
+        if (needsFix && !readOnly) {
+            onDataChange(fixedData);
+            return;
+        }
+
         // Check if current activeBillId still exists in new data
         const stillValid = activeBillId && nextData.some(b => b.id === activeBillId);
         
@@ -350,7 +375,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             if (part.hasLength) product *= (part.length || 0);
             if (part.hasWidth) product *= (part.width || 0);
             if (part.hasDepth) product *= (part.depth || 0);
-            const res = product * (part.multiplier || 0);
+            const res = product * (part.multiplier || 1);
             return acc + (isNaN(res) ? 0 : res);
         }, 0);
     };
@@ -858,7 +883,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 {part.hasWidth && part.hasDepth && <span className="text-slate-300">×</span>}
                 <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-amber-50 border-amber-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-amber-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<DimensionInput value={part.depth || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { depth: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
                 <span className="text-slate-300">×</span>
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" backspaceOnZero /></div>
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" backspaceOnZero emptyValue={1} /></div>
 
                 <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
                     {isGlobal && <span className="text-[8px] font-bold text-amber-500 uppercase tracking-tighter bg-amber-50 px-1 rounded">{gDimLabel}</span>}
@@ -866,7 +891,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
                         {(() => {
                             let product = 1; if (part.hasLength) product *= part.length; if (part.hasWidth) product *= part.width; if (part.hasDepth) product *= part.depth;
-                            const qty = product * part.multiplier; return qty % 1 === 0 ? qty : qty.toFixed(2);
+                            const qty = product * (part.multiplier || 1); return qty % 1 === 0 ? qty : qty.toFixed(2);
                         })()}
                     </div>
                     {!readOnly && <button onClick={() => removeCalculationPart(bill.id, item.id, part.id)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><MinusCircle className="w-4 h-4" /></button>}

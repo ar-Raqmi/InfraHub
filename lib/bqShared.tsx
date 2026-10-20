@@ -76,7 +76,8 @@ export const DimensionInput = ({
     className,
     placeholder,
     disabled,
-    backspaceOnZero
+    backspaceOnZero,
+    emptyValue = 0
 }: {
     value: number;
     onChange: (val: number) => void;
@@ -84,12 +85,14 @@ export const DimensionInput = ({
     placeholder?: string;
     disabled?: boolean;
     backspaceOnZero?: boolean;
+    // Committed when the field is cleared. Dimensions/rate/qty mean 0; a multiplier means 1.
+    emptyValue?: number;
 }) => {
     const [localValue, setLocalValue] = useState<string>(value?.toString() || '');
     useEffect(() => {
         const parsedLocal = parseFloat(localValue);
         if (parsedLocal === value) return;
-        if (isNaN(parsedLocal) && value === 0) return;
+        if (isNaN(parsedLocal) && value === emptyValue) return;
         setLocalValue(value?.toString() || '');
     }, [value]);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,13 +101,13 @@ export const DimensionInput = ({
         newVal = newVal.replace(/^0+(?=[1-9])/, '');
         setLocalValue(newVal);
         const parsed = parseFloat(newVal);
-        if (!isNaN(parsed)) { onChange(parsed); } else { onChange(0); }
+        if (!isNaN(parsed)) { onChange(parsed); } else { onChange(emptyValue); }
     };
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Backspace' && backspaceOnZero && localValue.length <= 1) {
             e.preventDefault();
-            setLocalValue('0');
-            onChange(0);
+            setLocalValue(emptyValue.toString());
+            onChange(emptyValue);
         }
     };
     return (

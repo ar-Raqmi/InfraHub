@@ -356,7 +356,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
             if (part.hasLength) product *= (part.length || 0);
             if (part.hasWidth) product *= (part.width || 0);
             if (part.hasDepth) product *= (part.depth || 0);
-            const res = product * (part.multiplier || 0);
+            const res = product * (part.multiplier || 1);
             return acc + (isNaN(res) ? 0 : res);
         }, 0);
     };
@@ -1120,7 +1120,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                 {part.hasWidth && part.hasDepth && <span className="text-slate-300">×</span>}
                 <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<DimensionInput value={part.depth || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { depth: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
                 <span className="text-slate-300">×</span>
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" backspaceOnZero /></div>
+                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" backspaceOnZero emptyValue={1} /></div>
 
                 {/* Individual Row Result with Full Breakdown */}
                 <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
@@ -1132,7 +1132,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                             if (part.hasLength) product *= part.length;
                             if (part.hasWidth) product *= part.width;
                             if (part.hasDepth) product *= part.depth;
-                            const qty = product * part.multiplier;
+                            const qty = product * (part.multiplier || 1);
                             return qty % 1 === 0 ? qty : qty.toFixed(2);
                         })()}
                     </div>
@@ -1143,7 +1143,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                             if (part.hasLength) product *= part.length;
                             if (part.hasWidth) product *= part.width;
                             if (part.hasDepth) product *= part.depth;
-                            const qty = product * part.multiplier;
+                            const qty = product * (part.multiplier || 1);
                             return formatCurrency(qty * item.rate);
                         })()}
                     </div>

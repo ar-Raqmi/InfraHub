@@ -254,7 +254,7 @@ Jabatan Kejuruteraan` }],
             if (p.hasLength && typeof p.length === 'number') product *= p.length;
             if (p.hasWidth && typeof p.width === 'number') product *= p.width;
             if (p.hasDepth && typeof p.depth === 'number') product *= p.depth;
-            const partQtyVal = product * p.multiplier;
+            const partQtyVal = product * (p.multiplier || 1);
             const partQty = partQtyVal % 1 === 0 ? partQtyVal : parseFloat(partQtyVal.toFixed(2));
             const partAmount = partQtyVal * item.rate;
 
@@ -582,7 +582,7 @@ Jabatan Kejuruteraan` }],
             if (p.hasLength && typeof p.length === 'number') product *= p.length;
             if (p.hasWidth && typeof p.width === 'number') product *= p.width;
             if (p.hasDepth && typeof p.depth === 'number') product *= p.depth;
-            const pQtyVal = product * p.multiplier;
+            const pQtyVal = product * (p.multiplier || 1);
             const pAmt = pQtyVal * item.rate;
             const hasDimensions = (p.hasLength && typeof p.length === 'number') || (p.hasWidth && typeof p.width === 'number') || (p.hasDepth && typeof p.depth === 'number');
             const isPartInlineType = !hasDimensions && activeParts.length === 1;
@@ -609,8 +609,8 @@ Jabatan Kejuruteraan` }],
                 { content: fmtAmt(pAmt, true), styles: { halign: 'right', fontsize: 6.5, textColor: [0, 80, 200], fontStyle: 'bold', lineWidth: sideOnlyBorder, cellPadding: { top: 0.1, bottom: 0.5 } } }
               ]);
             } else if (hasPartChanged(p, pOrig)) {
-              let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
-              const pOrigAmt = (origProd * pOrig.multiplier) * (originalItem?.rate || 0);
+              let origProd = 1; if (pOrig.hasLength) origProd *= (pOrig.length || 0); if (pOrig.hasWidth) origProd *= (pOrig.width || 0); if (pOrig.hasDepth) origProd *= (pOrig.depth || 0);
+              const pOrigAmt = (origProd * (pOrig.multiplier || 1)) * (originalItem?.rate || 0);
               const partColor = pAmt < pOrigAmt ? [200, 0, 0] : [0, 80, 200];
               const dimStrOrig = getDimStr(pOrig, false);
 
@@ -618,7 +618,7 @@ Jabatan Kejuruteraan` }],
                 { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
                 { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                { content: fmtQty(origProd * pOrig.multiplier), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                { content: fmtQty(origProd * (pOrig.multiplier || 1)), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
@@ -646,14 +646,14 @@ Jabatan Kejuruteraan` }],
           });
           activeOrigParts.forEach(pOrig => {
             if (!processedOrigIds.has(pOrig.id)) {
-              let origProd = 1; if (pOrig.hasLength) origProd *= pOrig.length; if (pOrig.hasWidth) origProd *= pOrig.width; if (pOrig.hasDepth) origProd *= pOrig.depth;
-              const pOrigAmt = (origProd * pOrig.multiplier) * (originalItem?.rate || 0);
+              let origProd = 1; if (pOrig.hasLength) origProd *= (pOrig.length || 0); if (pOrig.hasWidth) origProd *= (pOrig.width || 0); if (pOrig.hasDepth) origProd *= (pOrig.depth || 0);
+              const pOrigAmt = (origProd * (pOrig.multiplier || 1)) * (originalItem?.rate || 0);
               const dimStrOrig = getDimStr(pOrig, false);
               tableBody.push([
                 { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: dimStrOrig, styles: { fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1, left: 3 } } },
                 { content: item.unit, styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
-                { content: fmtQty(origProd * pOrig.multiplier), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
+                { content: fmtQty(origProd * (pOrig.multiplier || 1)), styles: { halign: 'center', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: originalItem?.rate ? formatCurrency(originalItem.rate).replace('RM', '') : '', styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: fmtAmt(pOrigAmt), styles: { halign: 'right', fontsize: 6.5, lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } },
                 { content: '', styles: { lineWidth: sideOnlyBorder, cellPadding: { top: 0.2, bottom: 0.1 } } }
