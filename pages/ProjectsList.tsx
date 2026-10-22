@@ -6,8 +6,9 @@ import { apiService } from '../services/apiService';
 import { useUsers } from '../hooks/useUsers';
 import { useProjects } from '../hooks/useProjects';
 import { useSettings } from '../hooks/useSettings';
-import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown, CalendarX } from 'lucide-react';
+import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, FileUp, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown, CalendarX } from 'lucide-react';
 import StrictDateInput from '../components/StrictDateInput';
+import ImportIndenModal from '../components/ImportIndenModal';
 import { ProjectsListPDFExporter } from '../services/pdf';
 
 interface ProjectsListProps {
@@ -81,6 +82,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     } = useSettings(selectedYear);
 
     const canQuickEdit = user.role === Role.ADMIN || user.role === Role.JURUTERA;
+    const canImportInden = user.role === Role.ADMIN;
 
     const [manualFinancials, setManualFinancials] = useState(hookManualFinancials);
 
@@ -115,6 +117,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [exportBilMesyuarat, setExportBilMesyuarat] = useState('');
+    const [isImportIndenOpen, setIsImportIndenOpen] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [generationProgress, setGenerationProgress] = useState(0);
 
@@ -717,6 +720,16 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Recycle className="w-4 h-4" />}
                             <span className="hidden sm:inline">Rotasi</span>
                         </button>
+                        {canImportInden && (
+                            <button
+                                onClick={() => setIsImportIndenOpen(true)}
+                                className="h-full px-4 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center gap-2 transition-colors font-bold text-sm"
+                                title="Import No. Inden (PDF)"
+                            >
+                                <FileUp className="w-4 h-4" />
+                                <span className="hidden sm:inline">Import No. Inden (PDF)</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -1289,6 +1302,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                     {groupedProjects.length === 0 && <div className="text-center text-slate-400 italic py-12 bg-white/95  border border-white/10 shadow-xl rounded-3xl">Tiada data syarikat untuk dipaparkan.</div>}
                 </div>
+            )}
+
+            {isImportIndenOpen && canImportInden && (
+                <ImportIndenModal projects={projects} onClose={() => setIsImportIndenOpen(false)} />
             )}
 
             {/* Delete Modal */}

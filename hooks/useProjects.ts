@@ -13,7 +13,8 @@ export const useProjects = () => {
     data: projects = [], 
     isLoading, 
     isFetching,
-    error 
+    error,
+    refetch
   } = useQuery({
     queryKey: ['projects', CACHE_VERSION],
     queryFn: () => apiService.getProjects(),
@@ -96,6 +97,7 @@ export const useProjects = () => {
     isLoading,
     isFetching,
     error,
+    refetchProjects: refetch,
     createProject: createProjectMutation.mutate,
     createProjectAsync: createProjectMutation.mutateAsync,
     updateProject: updateProjectMutation.mutate,
