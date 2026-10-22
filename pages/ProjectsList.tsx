@@ -724,10 +724,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                             <button
                                 onClick={() => setIsImportIndenOpen(true)}
                                 className="h-full px-4 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center gap-2 transition-colors font-bold text-sm"
-                                title="Import No. Inden (PDF)"
+                                title="Import No. Inden"
                             >
                                 <FileUp className="w-4 h-4" />
-                                <span className="hidden sm:inline">Import No. Inden (PDF)</span>
+                                <span className="hidden sm:inline">Import No. Inden</span>
                             </button>
                         )}
                     </div>
