@@ -39,7 +39,7 @@ const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearCh
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-200 relative overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-900">
+    <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-200 relative overflow-x-clip selection:bg-emerald-500/30 selection:text-emerald-900">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent"></div>
       </div>
