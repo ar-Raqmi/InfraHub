@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { User, Role } from '../types';
 import { useUsers } from '../hooks/useUsers'; // New Hook
-import { Trash2, UserPlus, Shield, User as UserIcon, Edit2, X, Save, Mail, Phone, Loader2 } from 'lucide-react';
+import { Trash2, UserPlus, Edit2, X, Save, Mail, Phone, Loader2 } from 'lucide-react';
+import UserAvatar from '../components/admin/UserAvatar';
+import UserMobileList from '../components/admin/UserMobileList';
+import UserDetailSheet from '../components/admin/UserDetailSheet';
+import MobilePortal from '../components/admin/MobilePortal';
 
 interface UsersProps {
   currentUser: User;
@@ -15,6 +19,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   const initialFormState = { 
     username: '', 
@@ -64,6 +69,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
       });
       setEditingId(user.id);
       setIsFormOpen(true);
+      setSelectedUser(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,6 +103,7 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
     if (window.confirm('Adakah anda pasti mahu memadam pengguna ini?')) {
       try {
         await deleteUser(id);
+        setSelectedUser(null);
         if (onUserUpdate) onUserUpdate();
       } catch (err) {
         console.error('Failed to delete user:', err);
@@ -140,14 +147,18 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
       </div>
 
       {isAdmin && isFormOpen && (
-        <div className="bg-white/95 border border-white/10 shadow-xl p-6 rounded-3xl shadow-xl border border-emerald-100 animate-slide-up relative">
+        <MobilePortal>
+        <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white px-4 pt-4 md:inset-auto md:z-auto md:overflow-visible md:bg-white/95 border border-white/10 shadow-xl md:p-6 md:rounded-3xl shadow-xl border border-emerald-100 animate-slide-up md:relative">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-200">
               <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
                   {editingId ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
               </div>
-              <h3 className="font-bold text-lg text-slate-800">
+              <h3 className="flex-1 font-bold text-lg text-slate-800">
                   {editingId ? 'Kemaskini Pengguna' : 'Tambah Pengguna Baru'}
               </h3>
+              <button type="button" onClick={resetForm} aria-label="Tutup" className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl text-slate-500 active:bg-slate-100">
+                  <X className="w-5 h-5" />
+              </button>
           </div>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -256,19 +267,19 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
               </select>
             </div>
 
-            <div className="md:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t border-slate-200">
+            <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-white md:static md:mx-0 md:px-0 md:pt-4 md:pb-0 md:bg-transparent md:col-span-2 lg:col-span-4 flex justify-end gap-3 md:mt-4 border-t border-slate-200">
               <button 
                   type="button" 
                   onClick={resetForm}
                   disabled={isSaving}
-                  className="px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                  className="flex-1 md:flex-none min-h-[48px] md:min-h-0 border border-slate-200 md:border-0 px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-50"
               >
                   Batal
               </button>
               <button 
                   type="submit" 
                   disabled={isSaving}
-                  className="px-8 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-1 md:flex-none min-h-[48px] md:min-h-0 justify-center px-8 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   {isSaving ? 'Menyimpan...' : 'Simpan'}
@@ -276,20 +287,26 @@ const Users: React.FC<UsersProps> = ({ currentUser, onUserUpdate }) => {
             </div>
           </form>
         </div>
+        </MobilePortal>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <UserMobileList users={sortedUsers} onSelect={setSelectedUser} />
+
+      <UserDetailSheet
+        user={selectedUser}
+        canManage={isAdmin}
+        canDelete={selectedUser !== null && currentUser.id !== selectedUser.id}
+        onClose={() => setSelectedUser(null)}
+        onEdit={handleEditClick}
+        onDelete={handleDeleteUser}
+      />
+
+      <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedUsers.map(u => (
           <div key={u.id} className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-6 border border-white/20 shadow-lg relative group transition-colors hover:scale-[1.01]">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white shrink-0 overflow-hidden ${u.role === Role.ADMIN ? 'bg-gradient-to-br from-teal-500 to-emerald-600' : 'bg-gradient-to-br from-blue-400 to-cyan-500'}`}>
-                  {u.avatarUrl ? (
-                    <img src={u.avatarUrl} alt={u.fullName} className="w-full h-full object-cover" />
-                  ) : (
-                    u.role === Role.ADMIN ? <Shield className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />
-                  )}
-                </div>
+                <UserAvatar user={u} />
                 <div>
                   <h3 className="font-bold text-slate-900 break-words">{u.fullName}</h3>
                   <p className="text-sm text-slate-500">@{u.username}</p>
