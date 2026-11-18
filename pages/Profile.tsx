@@ -17,6 +17,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [passwordData, setPasswordData] = useState({
     current: '',
@@ -166,15 +167,15 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
         )}
       </div>
 
-      <div className="bg-white/95  border border-white/10 shadow-xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-white/20  relative overflow-hidden">
+      <div className="bg-white/95  border border-white/10 shadow-xl p-5 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-xl border border-white/20  relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full  -mr-32 -mt-32"></div>
 
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
-          <div className="relative group">
+        <div className="grid grid-cols-[72px_1fr] gap-x-4 items-center md:flex md:flex-row md:items-start md:gap-8 relative z-10">
+          <div className="relative group row-span-2">
             {user.avatarUrl && !isUploading && (
                 <button 
                     onClick={(e) => { e.stopPropagation(); setIsDeleteDialogOpen(true); }}
-                    className="absolute -top-2 -right-2 w-10 h-10 bg-white  rounded-full flex items-center justify-center shadow-xl border border-slate-100  text-red-500 hover:text-red-600  transition-colors z-20 group/remove"
+                    className="hidden md:flex absolute -top-2 -right-2 w-10 h-10 bg-white  rounded-full items-center justify-center shadow-xl border border-slate-100  text-red-500 hover:text-red-600  transition-colors z-20 group/remove"
                     title="Padam Foto"
                 >
                     <Trash2 className="w-5 h-5" />
@@ -183,7 +184,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
 
             <div 
               onClick={handleAvatarClick}
-              className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-5xl font-bold shadow-2xl cursor-pointer overflow-hidden border-4 border-white  transition-transform"
+              className="w-[72px] h-[72px] md:w-40 md:h-40 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-3xl md:text-5xl font-bold shadow-2xl cursor-pointer overflow-hidden border-2 md:border-4 border-white  transition-transform"
             >
               {user.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
@@ -212,17 +213,34 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
             />
           </div>
 
-          <div className="flex-1 text-center md:text-left pt-2">
-                          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
-                            <h2 className="text-3xl font-black text-slate-900 leading-tight break-words">{user.fullName}</h2>
-                            <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest self-center md:self-auto ${user.role === Role.ADMIN ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+          <div className="contents md:block flex-1 text-left md:pt-2">
+                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 md:mb-2 self-end md:self-auto">
+                            <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight md:leading-tight break-words">{user.fullName}</h2>
+                            <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest self-start md:self-auto ${user.role === Role.ADMIN ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
                               {user.role}
                             </span>
             
             </div>
-            <p className="text-lg text-slate-500  font-medium">@{user.username}</p>
+            <p className="text-sm md:text-lg text-slate-500  font-medium self-start md:self-auto">@{user.username}</p>
+
+            <div className="md:hidden col-span-2 grid grid-cols-2 gap-3 mt-4">
+                <button
+                    onClick={handleAvatarClick}
+                    disabled={isUploading}
+                    className="min-h-[44px] flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-bold active:bg-emerald-100 disabled:opacity-50"
+                >
+                    <Camera className="w-4 h-4" /> Tukar Foto
+                </button>
+                <button
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    disabled={!user.avatarUrl || isUploading}
+                    className="min-h-[44px] flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-bold active:bg-red-50 disabled:text-slate-300"
+                >
+                    <Trash2 className="w-4 h-4" /> Padam Foto
+                </button>
+            </div>
             
-            <div className="mt-8 grid grid-cols-3 sm:grid-cols-1 gap-6">
+            <div className="col-span-2 mt-4 md:mt-8 grid grid-cols-1 gap-3 md:gap-6">
                 <div className="bg-slate-50/50  p-4 rounded-2xl border border-slate-100">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Rasmi</label>
                     <p className="text-sm text-slate-800  font-bold break-all leading-tight">{user.email || 'N/A'}</p>
@@ -239,7 +257,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
           </div>
         </div>
         
-        <div className="mt-10 pt-8 border-t border-slate-100  flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="mt-6 pt-6 md:mt-10 md:pt-8 border-t border-slate-100  flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-2 text-slate-400">
                 <Info className="w-4 h-4" />
                 <p className="text-xs font-medium italic">Gambar profil akan dimampatkan secara automatik untuk menjimatkan storan.</p>
@@ -247,7 +265,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
             
             <button 
                 onClick={() => setIsChangingPassword(!isChangingPassword)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-colors shadow-md  ${isChangingPassword ? 'bg-slate-200 text-slate-600   hover:bg-slate-300' : 'bg-white  text-emerald-600 border border-emerald-100  hover:bg-emerald-50'}`}
+                className={`order-first md:order-none w-full md:w-auto min-h-[48px] md:min-h-0 justify-center flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-colors shadow-md  ${isChangingPassword ? 'bg-slate-200 text-slate-600   hover:bg-slate-300' : 'bg-white  text-emerald-600 border border-emerald-100  hover:bg-emerald-50'}`}
             >
                 {isChangingPassword ? <X className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                 {isChangingPassword ? 'Batal Tukar Password' : 'Tukar Kata Laluan'}
@@ -255,7 +273,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
         </div>
 
         {isChangingPassword && (
-            <div className="mt-8 p-8 bg-slate-50  rounded-[2rem] border border-emerald-100  animate-slide-up">
+            <div className="mt-6 md:mt-8 p-4 md:p-8 bg-slate-50  rounded-3xl md:rounded-[2rem] border border-emerald-100  animate-slide-up">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-xl bg-emerald-100  text-emerald-600 flex items-center justify-center">
                         <Lock className="w-5 h-5" />
@@ -271,13 +289,13 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
                                 type={showCurrentPassword ?"text" :"password"}
                                 value={passwordData.current}
                                 onChange={e => setPasswordData({...passwordData, current: e.target.value})}
-                                className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-sm font-bold"
+                                className="w-full px-4 pr-12 md:pr-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-base md:text-sm font-bold"
                                 required
                             />
                             <button 
                                 type="button" 
                                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500"
+                                className="absolute right-0 md:right-3 top-1/2 -translate-y-1/2 w-11 h-11 md:w-auto md:h-auto flex items-center justify-center text-slate-400 hover:text-emerald-500"
                             >
                                 {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
@@ -291,28 +309,38 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
                                 type={showNewPassword ?"text" :"password"}
                                 value={passwordData.new}
                                 onChange={e => setPasswordData({...passwordData, new: e.target.value})}
-                                className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-sm font-bold"
+                                className="w-full px-4 pr-12 md:pr-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-base md:text-sm font-bold"
                                 required
                             />
                             <button 
                                 type="button" 
                                 onClick={() => setShowNewPassword(!showNewPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500"
+                                className="absolute right-0 md:right-3 top-1/2 -translate-y-1/2 w-11 h-11 md:w-auto md:h-auto flex items-center justify-center text-slate-400 hover:text-emerald-500"
                             >
                                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
+                        <p className="md:hidden text-xs text-slate-500 pl-1">Sekurang-kurangnya 6 aksara</p>
                     </div>
 
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1">Sahkan Kata Laluan</label>
-                        <input 
-                            type="password"
-                            value={passwordData.confirm}
-                            onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
-                            className="w-full px-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-sm font-bold"
-                            required
-                        />
+                        <div className="relative">
+                            <input 
+                                type={showConfirmPassword ?"text" :"password"}
+                                value={passwordData.confirm}
+                                onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
+                                className="w-full px-4 pr-12 md:pr-4 py-3 rounded-xl bg-white  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 transition-colors text-base md:text-sm font-bold"
+                                required
+                            />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="md:hidden absolute right-0 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-slate-400"
+                            >
+                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
                     </div>
 
                     {passwordError && (
@@ -322,13 +350,20 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
                     )}
 
                     <div className="md:col-span-3 flex justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsChangingPassword(false)}
+                            className="md:hidden min-h-[48px] px-5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold"
+                        >
+                            Batal
+                        </button>
                         <button 
                             type="submit" 
                             disabled={isUploading}
-                            className="px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-colors flex items-center gap-2  disabled:opacity-50"
+                            className="flex-1 md:flex-none justify-center min-h-[48px] md:min-h-0 px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-colors flex items-center gap-2  disabled:opacity-50"
                         >
                             <Save className="w-4 h-4" />
-                            {isUploading ? 'Menyimpan...' : 'Kemaskini Kata Laluan'}
+                            {isUploading ? 'Menyimpan...' : <><span className="md:hidden">Kemaskini</span><span className="hidden md:inline">Kemaskini Kata Laluan</span></>}
                         </button>
                     </div>
                 </form>
