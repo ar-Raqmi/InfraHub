@@ -11,6 +11,7 @@ interface SidebarProps {
   selectedYear?: number;
   mobileTitle?: string;
   mobileTopBar?: boolean;
+  mobileBottomNav?: boolean;
   mobileTopBarActions?: React.ReactNode;
 }
 
@@ -35,7 +36,7 @@ const NAV_ENTRIES: NavEntry[] = [
 
 const Sidebar: React.FC<SidebarProps> = ({
   role, currentPage, onLogout, onNavigate, selectedYear,
-  mobileTitle, mobileTopBar = true, mobileTopBarActions,
+  mobileTitle, mobileTopBar = true, mobileBottomNav = true, mobileTopBarActions,
 }) => {
   const linkMode = !onNavigate;
   const entries = NAV_ENTRIES.filter(e => !e.adminOnly || role === Role.ADMIN);
@@ -128,11 +129,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Mobile bottom tab bar */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Navigasi utama">
-        <div className="h-16 flex items-stretch">
-          {entries.map(e => <MobileTab key={e.page} entry={e} />)}
-        </div>
-      </nav>
+      {mobileBottomNav && (
+        <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Navigasi utama">
+          <div className="h-16 flex items-stretch">
+            {entries.map(e => <MobileTab key={e.page} entry={e} />)}
+          </div>
+        </nav>
+      )}
     </>
   );
 };

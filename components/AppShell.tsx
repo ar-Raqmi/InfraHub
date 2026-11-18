@@ -13,10 +13,11 @@ interface AppShellProps {
   onYearChange?: (year: number) => void;
   showYearSelector?: boolean;
   mobileTopBar?: boolean;
+  mobileBottomNav?: boolean;
   children: React.ReactNode;
 }
 
-const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearChange, showYearSelector = true, mobileTopBar = true, children }) => {
+const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearChange, showYearSelector = true, mobileTopBar = true, mobileBottomNav = true, children }) => {
   const user = apiService.getCurrentUser();
   const role = (user?.role ?? Role.PJA) as Role;
 
@@ -49,6 +50,7 @@ const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearCh
         onLogout={handleLogout}
         selectedYear={selectedYear}
         mobileTopBar={mobileTopBar}
+        mobileBottomNav={mobileBottomNav}
         mobileTopBarActions={hasYear && (
           <div className="flex items-center gap-2">
             <YearSelector selectedYear={selectedYear} onYearChange={onYearChange} variant="sheet" />
@@ -57,7 +59,7 @@ const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearCh
         )}
       />
 
-      <main className={`md:pl-32 ${mobileTopBar ? 'pt-14' : 'pt-0'} md:pt-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-10 min-h-screen relative z-10`}>
+      <main className={`md:pl-32 ${mobileTopBar ? 'pt-14' : 'pt-0'} md:pt-0 ${mobileBottomNav ? 'pb-[calc(4rem+env(safe-area-inset-bottom))]' : 'pb-0'} md:pb-10 min-h-screen relative z-10`}>
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
           {hasYear && (
             <header className="relative z-40 animate-fade-in hidden md:flex md:items-center justify-between mb-10 gap-4">
