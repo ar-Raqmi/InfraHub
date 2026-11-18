@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { formatCurrency } from '../../types';
@@ -30,10 +30,18 @@ const MobileDetailHeader: React.FC<MobileDetailHeaderProps> = ({
   title, noFail, onBack, onOpenSwitcher, grandTotal, finalTotal, isLoading,
   progress, tabs, activeTab, onTabChange
 }) => {
+  const barRef = useRef<HTMLDivElement>(null);
   const active = tabs.find(t => t.id === activeTab) ?? tabs[0];
   const isPelarasan = finalTotal !== undefined;
   const shownTotal = finalTotal ?? grandTotal;
   const totalColour = shownTotal < grandTotal ? 'text-red-600' : shownTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600';
+
+  // The BQ editors pin their own bar below this header (components/bq/BillNav.tsx).
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--bq-sticky-top', `${barRef.current?.offsetHeight ?? 0}px`);
+    return () => root.style.removeProperty('--bq-sticky-top');
+  }, []);
 
   const selectTab = (id: string) => {
     onTabChange(id);
@@ -41,7 +49,7 @@ const MobileDetailHeader: React.FC<MobileDetailHeaderProps> = ({
   };
 
   return createPortal(
-    <div className="md:hidden fixed top-0 inset-x-0 z-[90] bg-white border-b border-slate-200 no-print">
+    <div ref={barRef} className="md:hidden fixed top-0 inset-x-0 z-[90] bg-white border-b border-slate-200 no-print">
       <div className="h-14 flex items-center gap-2 px-2">
         <button onClick={onBack} aria-label="Kembali ke Senarai" className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-700 active:bg-slate-100">
           <ArrowLeft className="w-5 h-5" />
