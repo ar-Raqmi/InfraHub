@@ -10,6 +10,16 @@ import { setNavigationGuard } from '../lib/navigate';
 import LibraryMoveModal from '../components/LibraryMoveModal';
 import BulkEditModal from '../components/BulkEditModal';
 import CategoryEdit from '../components/CategoryEdit';
+import { useSettingsRoute, SettingsSection } from '../components/admin/settings/useSettingsRoute';
+import SettingsHub from '../components/admin/settings/SettingsHub';
+import MobileBackBar from '../components/admin/settings/MobileBackBar';
+import CompanyListMobile from '../components/admin/settings/CompanyListMobile';
+import VoteListMobile from '../components/admin/settings/VoteListMobile';
+import TemplateListMobile from '../components/admin/settings/TemplateListMobile';
+import LibraryMobile from '../components/admin/settings/LibraryMobile';
+import { LibraryActions } from '../components/admin/settings/libraryTypes';
+import { librarySummary } from '../components/admin/settings/librarySummary';
+import { formatRM } from '../components/admin/settings/format';
 
 interface AdminSettingsProps {
     user: User;
@@ -166,7 +176,7 @@ const DatePickerInput = ({ value, onChange, placeholder }: { value: string, onCh
     };
 
     return (
-        <div className="relative flex items-center w-full px-4 py-3 rounded-lg bg-white  border border-slate-300  focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 outline-none transition-colors text-slate-900  shadow-sm  h-14">
+        <div className="relative flex items-center w-full px-4 py-3 max-md:py-0 rounded-lg bg-white  border border-slate-300  focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 outline-none transition-colors text-slate-900  shadow-sm  h-14">
             <input
                 type="text"
                 value={text}
@@ -175,7 +185,7 @@ const DatePickerInput = ({ value, onChange, placeholder }: { value: string, onCh
                 className="w-full h-full bg-transparent border-none outline-none p-0 text-inherit placeholder-slate-400 font-bold"
             />
             <div
-                className="relative ml-2 w-5 h-5 shrink-0 group cursor-pointer"
+                className="relative ml-2 w-5 h-5 max-md:w-11 max-md:h-11 max-md:-mr-3 flex items-center justify-center shrink-0 group cursor-pointer"
                 onClick={handleIconClick}
             >
                 <Calendar className="w-5 h-5 pointer-events-none text-slate-400 group-hover:text-emerald-500 transition-colors" />
@@ -212,7 +222,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [companyToEdit, setCompanyToEdit] = useState<CompanyDetail | null>(null);
     const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
-    const [deleteConfig, setDeleteConfig] = useState<{ isOpen: boolean; type: 'COMPANY' | 'VOTE' | 'SEBUTHARGA' | 'PRESET_GROUP' | 'TEMPLATE' | null; value: string; }>({ isOpen: false, type: null, value: '' });
+    const [deleteConfig, setDeleteConfig] = useState<{ isOpen: boolean; type: 'COMPANY' | 'VOTE' | 'SEBUTHARGA' | 'PRESET_GROUP' | 'TEMPLATE' | null; value: string; label?: string; }>({ isOpen: false, type: null, value: '' });
 
     const [libraryGroups, setLibraryGroups] = useState<PresetGroup[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -319,8 +329,9 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         await apiService.saveTemplates(newTemplates);
     };
 
-    const initiateDelete = (type: 'COMPANY' | 'VOTE' | 'SEBUTHARGA' | 'PRESET_GROUP' | 'TEMPLATE', value: string) => {
-        setDeleteConfig({ isOpen: true, type, value });
+    // `label` names what is deleted when `value` is an internal id (templates, groups).
+    const initiateDelete = (type: 'COMPANY' | 'VOTE' | 'SEBUTHARGA' | 'PRESET_GROUP' | 'TEMPLATE', value: string, label?: string) => {
+        setDeleteConfig({ isOpen: true, type, value, label });
     };
 
     const confirmDelete = async () => {
@@ -604,6 +615,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         };
         applyLibraryChange([...libraryGroups, newGroup]);
         setActiveGroupId(newGroup.id);
+        return newGroup.id;
     };
 
     const handleAddCategory = () => {
@@ -630,6 +642,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
     const handleAddItem = (groupId: string) => {
         const newItem: PresetItem = { id: `item-${Date.now()}`, description: 'ITEM BARU', rate: 0, unit: 'm' };
         updateGroup(groupId, g => ({ ...g, items: [...g.items, newItem] }));
+        return newItem.id;
     };
 
     const handleUpdateItem = (groupId: string, itemId: string, updates: Partial<PresetItem>) => {
@@ -742,6 +755,14 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         setIsEditTemplateModalOpen(true);
     };
 
+    const { route, go, replace, back } = useSettingsRoute();
+
+    useEffect(() => {
+        if (route.cat) setSelectedCategory(route.cat);
+        if (route.groupId) setActiveGroupId(route.groupId);
+        setSelectedItemIds(new Set());
+    }, [route.cat, route.groupId]);
+
     if (user.role !== Role.ADMIN) {
         return (
             <div className="h-full flex flex-col items-center justify-center text-slate-500">
@@ -759,21 +780,71 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
         ? activeGroup.items.length > 0 && activeGroup.items.every(i => selectedItemIds.has(i.id))
         : false;
 
-    const inputClass = "w-full px-4 py-2.5 rounded-lg bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 text-sm";
+    const inputClass = "w-full px-4 py-2.5 rounded-lg bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-blue-500 text-base md:text-sm";
+    const modalCloseClass = "w-11 h-11 md:w-auto md:h-auto flex items-center justify-center text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors";
+
+    // Phone: the hub lists the sections and only the opened one is shown; desktop shows them all.
+    const mobileShow = (sec: SettingsSection) => (route.sec === sec ? '' : 'hidden md:block');
+
+    const hubSummaries = {
+        meeting: `Bil. ${settings?.meeting_number || '-'} · ${settings?.meeting_date || '-'}`,
+        sebutharga: [`${sebuthargaNumbers.length} nombor`, ...sebuthargaNumbers.slice(0, 1)].join(' · '),
+        template: `${templates.length} template`,
+        pustaka: librarySummary(libraryGroups),
+        company: `${companyOrder.length} syarikat panel`,
+        vote: `${votes.length} vot · ${formatRM(votes.reduce((sum, v) => sum + (v.allocation || 0), 0))}`,
+    };
+
+    const libraryActions: LibraryActions = {
+        isDirty: isLibraryDirty,
+        saveStatus: librarySaveStatus,
+        isExporting: isExportingLibrary,
+        onSave: handleSaveLibrary,
+        onExport: handleExportLibrary,
+        newCategory: { value: newCategoryName, set: setNewCategoryName },
+        onAddCategory: handleAddCategory,
+        renameCategory: { value: editingCategoryName, set: setEditingCategoryName },
+        onStartRename: startRenameCategory,
+        onCommitRename: commitRenameCategory,
+        onCancelRename: () => setEditingCategory(null),
+        onAddGroup: handleAddGroup,
+        onDeleteGroup: group => initiateDelete('PRESET_GROUP', group.id, group.title),
+        onUpdateGroup: handleUpdateGroup,
+        onAddItem: handleAddItem,
+        onUpdateItem: handleUpdateItem,
+        onDeleteItem: handleDeleteItem,
+        onReorderItem: handleReorderItem,
+        onMoveItem: (groupId, item) => setMoveTarget({ groupId, itemId: item.id, description: item.description }),
+        onAddVariant: handleAddVariant,
+        onUpdateVariant: handleUpdateVariant,
+        onDeleteVariant: handleDeleteVariant,
+        selectedItemIds,
+        allSelected: allItemsInGroupSelected,
+        onToggleItem: toggleItemSelection,
+        onToggleAll: toggleSelectAllInGroup,
+        onClearSelection: clearSelection,
+        onBulkEdit: () => setBulkEditOpen(true),
+        onBulkMove: () => setBulkMoveOpen(true),
+        onBulkDelete: handleBulkDelete,
+    };
     const labelClass = "block text-xs font-bold text-slate-500  uppercase tracking-wide mb-1";
 
     return (
-        <div className="space-y-8 animate-fade-in pb-20">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-4 md:space-y-8 animate-fade-in pb-20">
+            {route.sec && route.sec !== 'pustaka' && <MobileBackBar label="Tetapan" onBack={back} />}
+            {route.sec === 'pustaka' && <LibraryMobile route={route} groups={libraryGroups} actions={libraryActions} go={go} replace={replace} back={back} />}
+            <div className={`${route.sec ? 'hidden md:flex' : 'flex'} flex-col md:flex-row justify-between items-start md:items-center gap-6`}>
                 <div>
                     <h1 className="text-3xl font-bold gradient-text">Tetapan Sistem</h1>
                     <p className="text-slate-500  mt-1">Uruskan data utama bagi tahun <span className="font-bold text-emerald-600">{selectedYear}</span>.</p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            {!route.sec && <SettingsHub summaries={hubSummaries} onOpen={sec => go({ sec })} />}
+
+            <div className={`${route.sec && route.sec !== 'pustaka' ? 'grid' : 'hidden'} md:grid grid-cols-1 xl:grid-cols-2 gap-8`}>
                 {/* Row 1: Meeting Settings & No. Sebutharga */}
-                <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl relative overflow-hidden group">
+                <div className={`${mobileShow('meeting')} bg-white/95 border border-white/10 shadow-xl rounded-3xl p-5 md:p-8 border border-white/20 shadow-xl relative overflow-hidden group`}>
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full -mr-16 -mt-16 pointer-events-none opacity-50"></div>
                     <div className="flex items-center gap-4 mb-8 relative z-10">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 shadow-sm border border-orange-100">
@@ -806,7 +877,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 </div>
 
                 {/* No. Sebutharga Manager */}
-                <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
+                <div className={`${mobileShow('sebutharga')} bg-white/95 border border-white/10 shadow-xl rounded-3xl p-5 md:p-8 border border-white/20 shadow-xl`}>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
                             <Award className="w-6 h-6" />
@@ -829,13 +900,13 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                             <Plus className="w-5 h-5" />
                         </button>
                     </div>
-                    <div className="space-y-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-2 md:max-h-[120px] md:overflow-y-auto md:pr-2 custom-scrollbar">
                         {sebuthargaNumbers.length > 0 ? (
                             sebuthargaNumbers.map((sh, idx) => (
                                 <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group">
                                     <span className="font-mono font-bold text-slate-700 truncate pr-2 flex-1">{sh}</span>
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors">
-                                        <button onClick={() => initiateDelete('SEBUTHARGA', sh)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Padam">
+                                    <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-colors">
+                                        <button onClick={() => initiateDelete('SEBUTHARGA', sh)} className="w-11 h-11 md:w-auto md:h-auto flex items-center justify-center p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Padam">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -850,8 +921,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 </div>
 
                 {/* --- BQ TEMPLATE MANAGER --- */}
-                <div className="xl:col-span-2 bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                <div className={`${mobileShow('template')} xl:col-span-2 bg-white/95  border border-white/10 shadow-xl rounded-3xl p-5 md:p-8 border border-white/20  shadow-xl`}>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
                                 <Grid2x2 className="w-7 h-7" />
@@ -861,13 +932,22 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                 <p className="text-sm text-slate-500">Uruskan template BQ untuk projek baru.</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <button onClick={generateEmptyTemplate} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors text-xs"><LayoutTemplate className="w-4 h-4" /> Jana Template Kosong</button>
-                            <button onClick={generateInsuransTemplate} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-200 transition-colors text-xs"><FileText className="w-4 h-4" /> Jana Template Insurans</button>
+                        <div className="flex flex-wrap gap-2">
+                            <button onClick={generateEmptyTemplate} className="min-h-[44px] md:min-h-0 flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors text-xs"><LayoutTemplate className="w-4 h-4" /> Jana Template Kosong</button>
+                            <button onClick={generateInsuransTemplate} className="min-h-[44px] md:min-h-0 flex items-center gap-2 px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-200 transition-colors text-xs"><FileText className="w-4 h-4" /> Jana Template Insurans</button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <TemplateListMobile
+                        templates={templates}
+                        iconFor={icon => ICON_MAP[icon as keyof typeof ICON_MAP]}
+                        colorClassesFor={getColorStyles}
+                        onEdit={openEditTemplateModal}
+                        onMove={moveTemplate}
+                        onDelete={tpl => initiateDelete('TEMPLATE', tpl.id, `${tpl.title} · ${tpl.subtitle}`)}
+                    />
+
+                    <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {templates.map((tpl, idx) => {
                             const IconComp = ICON_MAP[tpl.icon as keyof typeof ICON_MAP] || FileText;
 
@@ -885,7 +965,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                             <button onClick={(e) => { e.stopPropagation(); moveTemplate(idx, 'next'); }} disabled={idx === templates.length - 1} className="p-1.5 hover:bg-slate-100  rounded disabled:opacity-30 text-slate-500"><ArrowRight className="w-3.5 h-3.5" /></button>
                                             <div className="w-px h-4 bg-slate-200  mx-1"></div>
                                             <button onClick={() => openEditTemplateModal(tpl)} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50  rounded-xl transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                            <button onClick={() => initiateDelete('TEMPLATE', tpl.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50  rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                            <button onClick={() => initiateDelete('TEMPLATE', tpl.id, `${tpl.title} · ${tpl.subtitle}`)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50  rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
                                         </div>
                                     </div>
                                     <h4 className="font-bold text-slate-800  text-lg">{tpl.title}</h4>
@@ -901,7 +981,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 </div>
 
                 {/* Existing Pustaka BQ section */}
-                <div className="xl:col-span-2 bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl">
+                <div className="hidden md:block xl:col-span-2 bg-white/95  border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20  shadow-xl">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
@@ -1015,7 +1095,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
 
                                             <span className="text-xs font-bold truncate pr-4">{group.title}</span>
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); initiateDelete('PRESET_GROUP', group.id); }}
+                                                onClick={(e) => { e.stopPropagation(); initiateDelete('PRESET_GROUP', group.id, group.title); }}
                                                 className="opacity-0 group-hover:opacity-100 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50  rounded-lg transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1176,10 +1256,18 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 </div>
 
                 {/* Companies Manager */}
-                <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
+                <div className={`${mobileShow('company')} bg-white/95 border border-white/10 shadow-xl rounded-3xl p-5 md:p-8 border border-white/20 shadow-xl`}>
                     <div className="flex items-center gap-3 mb-6"><div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600"><Building2 className="w-6 h-6" /></div><div><h3 className="text-xl font-bold text-slate-900">Senarai Syarikat ({selectedYear})</h3><p className="text-xs text-slate-500 mt-1">Susun keutamaan paparan syarikat.</p></div></div>
                     <div className="flex gap-2 mb-6"><input type="text" value={newCompany} onChange={(e) => setNewCompany(e.target.value)} className="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tambah Syarikat Baru..." /><button onClick={handleAddCompany} className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"><Plus className="w-5 h-5" /></button></div>
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <CompanyListMobile
+                        companies={companyOrder}
+                        details={settings?.company_details || {}}
+                        onMove={moveCompany}
+                        onJumpToRank={jumpToRank}
+                        onEdit={openCompanyModal}
+                        onDelete={name => initiateDelete('COMPANY', name)}
+                    />
+                    <div className="hidden md:block space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                         {companyOrder.map((company, idx) => (
                             <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -1208,9 +1296,10 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                 </div>
 
                 {/* Vote Numbers Manager */}
-                <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-8 border border-white/20 shadow-xl">
-                    <div className="flex items-center justify-between mb-6"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600"><FileDigit className="w-6 h-6" /></div><h3 className="text-xl font-bold text-slate-900">Senarai No. Vot ({selectedYear})</h3></div><button onClick={() => openVoteModal()} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-bold"><Plus className="w-4 h-4" /> Tambah Vot</button></div>
-                    <div className="overflow-x-auto">
+                <div className={`${mobileShow('vote')} bg-white/95 border border-white/10 shadow-xl rounded-3xl p-5 md:p-8 border border-white/20 shadow-xl`}>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-6"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600"><FileDigit className="w-6 h-6" /></div><h3 className="text-xl font-bold text-slate-900">Senarai No. Vot ({selectedYear})</h3></div><button onClick={() => openVoteModal()} className="min-h-[44px] md:min-h-0 flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-bold"><Plus className="w-4 h-4" /> Tambah Vot</button></div>
+                    <VoteListMobile votes={votes} onEdit={openVoteModal} onDelete={code => initiateDelete('VOTE', code)} />
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-sm"><thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200"><tr><th className="px-4 py-3 text-left">No. Vot</th><th className="px-4 py-3 text-left">Nama Vot</th><th className="px-4 py-3 text-right">Peruntukan (RM)</th><th className="px-4 py-3 w-20"></th></tr></thead>
                             <tbody className="divide-y divide-slate-100">
                                 {votes.map((vote) => (
@@ -1225,9 +1314,9 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             {/* Edit Template Modal */}
             {isEditTemplateModalOpen && editingTemplate && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsEditTemplateModalOpen(false)}>
-                    <div className="bg-white  rounded-3xl shadow-2xl max-w-2xl w-full p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white  rounded-3xl shadow-2xl max-w-2xl w-full p-5 md:p-8 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative overflow-hidden" onClick={e => e.stopPropagation()}>
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-                        <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold text-slate-900  flex items-center gap-2"><Edit3 className="w-7 h-7 text-emerald-600" />Kemaskini Template</h3><button onClick={() => setIsEditTemplateModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors"><X className="w-6 h-6" /></button></div>
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold text-slate-900  flex items-center gap-2"><Edit3 className="w-7 h-7 text-emerald-600" />Kemaskini Template</h3><button onClick={() => setIsEditTemplateModalOpen(false)} className={modalCloseClass} aria-label="Tutup"><X className="w-6 h-6" /></button></div>
 
                         <div className="overflow-y-auto max-h-[70vh] pr-2 custom-scrollbar">
                             <form onSubmit={(e) => { e.preventDefault(); handleSaveTemplate(editingTemplate); }} className="space-y-8">
@@ -1239,7 +1328,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                 {/* Icon Selection */}
                                 <div>
                                     <label className={labelClass}>Pilih Ikon</label>
-                                    <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                    <div className="grid grid-cols-5 sm:grid-cols-8 gap-2 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-100">
                                         {ICON_MAP_KEYS.map((iconKey) => {
                                             const Icon = ICON_MAP[iconKey];
                                             return (
@@ -1259,7 +1348,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                 {/* Color Selection */}
                                 <div>
                                     <label className={labelClass}>Pilih Warna</label>
-                                    <div className="grid grid-cols-6 sm:grid-cols-9 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                    <div className="grid grid-cols-5 sm:grid-cols-9 gap-2 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-100">
                                         {COLOR_LIST.map((color) => (
                                             <button
                                                 key={color}
@@ -1276,7 +1365,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                                     </div>
                                 </div>
 
-                                <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsEditTemplateModalOpen(false)} className="flex-1 py-4 bg-slate-100  text-slate-600  font-bold rounded-2xl hover:bg-slate-200  transition-colors text-lg">Batal</button><button type="submit" className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 text-lg"><Save className="w-5 h-5" /> Simpan Perubahan</button></div>
+                                <div className="sticky bottom-0 bg-white pb-1 md:pb-0 md:static pt-4 flex gap-3"><button type="button" onClick={() => setIsEditTemplateModalOpen(false)} className="flex-1 py-4 bg-slate-100  text-slate-600  font-bold rounded-2xl hover:bg-slate-200  transition-colors text-base md:text-lg">Batal</button><button type="submit" className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 text-base md:text-lg"><Save className="w-5 h-5" /> Simpan Perubahan</button></div>
                             </form>
                         </div>
                     </div>
@@ -1288,8 +1377,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             {deleteConfig.isOpen && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50  animate-fade-in" onClick={() => setDeleteConfig({ ...deleteConfig, isOpen: false })}>
                     <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setDeleteConfig({ ...deleteConfig, isOpen: false })} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
-                        <div className="flex flex-col items-center text-center pt-2"><div className="w-20 h-20 bg-red-50  rounded-full flex items-center justify-center mb-6 text-red-500"><div className="w-14 h-14 bg-red-100  rounded-full flex items-center justify-center"><AlertTriangle className="w-8 h-8 stroke-[1.5]" /></div></div><h3 className="text-xl font-bold text-slate-900  mb-2 font-jakarta">Padam Item?</h3><p className="text-slate-500  mb-8 text-sm leading-relaxed px-4">Adakah anda pasti mahu memadam <br /><span className="font-bold text-slate-900  block mt-1 p-2 bg-slate-50  rounded-lg border border-slate-200  break-all">{deleteConfig.value}</span><span className="mt-2 block text-xs text-red-500 font-medium">Tindakan ini tidak boleh dikembalikan.</span></p><div className="flex gap-3 w-full"><button onClick={() => setDeleteConfig({ ...deleteConfig, isOpen: false })} className="flex-1 py-3.5 px-4 bg-white  text-slate-700  rounded-xl font-bold hover:bg-slate-50  transition-colors border border-slate-200  shadow-sm hover:shadow-md">Batal</button><button onClick={confirmDelete} className="flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg bg-red-600 hover:bg-red-700 shadow-red-600/30 hover:-translate-y-0.5"><Trash2 className="w-4 h-4" /><span>Pasti</span></button></div></div>
+                        <button onClick={() => setDeleteConfig({ ...deleteConfig, isOpen: false })} className="absolute top-4 right-4 w-11 h-11 md:w-auto md:h-auto flex items-center justify-center text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100" aria-label="Tutup"><X className="w-5 h-5" /></button>
+                        <div className="flex flex-col items-center text-center pt-2"><div className="w-20 h-20 bg-red-50  rounded-full flex items-center justify-center mb-6 text-red-500"><div className="w-14 h-14 bg-red-100  rounded-full flex items-center justify-center"><AlertTriangle className="w-8 h-8 stroke-[1.5]" /></div></div><h3 className="text-xl font-bold text-slate-900  mb-2 font-jakarta">Padam Item?</h3><p className="text-slate-500  mb-8 text-sm leading-relaxed px-4">Adakah anda pasti mahu memadam <br /><span className="font-bold text-slate-900  block mt-1 p-2 bg-slate-50  rounded-lg border border-slate-200  break-words">{deleteConfig.label || deleteConfig.value}</span><span className="mt-2 block text-xs text-red-500 font-medium">Tindakan ini tidak boleh dikembalikan.</span></p><div className="flex gap-3 w-full"><button onClick={() => setDeleteConfig({ ...deleteConfig, isOpen: false })} className="flex-1 py-3.5 px-4 bg-white  text-slate-700  rounded-xl font-bold hover:bg-slate-50  transition-colors border border-slate-200  shadow-sm hover:shadow-md">Batal</button><button onClick={confirmDelete} className="flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg bg-red-600 hover:bg-red-700 shadow-red-600/30 hover:-translate-y-0.5"><Trash2 className="w-4 h-4" /><span>Pasti</span></button></div></div>
                     </div>
                 </div>,
                 document.body
@@ -1299,7 +1388,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             {isCompanyModalOpen && companyToEdit && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsCompanyModalOpen(false)}>
                     <div className="bg-white  rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-slate-900  flex items-center gap-2"><Building2 className="w-6 h-6 text-blue-600" />Maklumat Syarikat</h3><button onClick={() => setIsCompanyModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors"><X className="w-6 h-6" /></button></div>
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-slate-900  flex items-center gap-2"><Building2 className="w-6 h-6 text-blue-600" />Maklumat Syarikat</h3><button onClick={() => setIsCompanyModalOpen(false)} className={modalCloseClass} aria-label="Tutup"><X className="w-6 h-6" /></button></div>
                         <form onSubmit={handleSaveCompanyDetails} className="space-y-4">
                             <div><label className={labelClass}>Nama Syarikat</label><input type="text" value={companyToEdit.name} onChange={e => setCompanyToEdit({ ...companyToEdit, name: e.target.value })} className={inputClass} required /></div>
                             <div><label className={labelClass}>Nombor Pendaftaran (MOF/CIDB)</label><input type="text" value={companyToEdit.registrationNumber || ''} onChange={e => setCompanyToEdit({ ...companyToEdit, registrationNumber: e.target.value })} className={inputClass} placeholder="cth: 1961008-SL008245" /></div>
@@ -1319,7 +1408,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
             {isVoteModalOpen && editingVote && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsVoteModalOpen(false)}>
                     <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-slate-900  flex items-center gap-2"><FileDigit className="w-6 h-6 text-indigo-600" />{editingVote.code ? 'Kemaskini Vot' : 'Tambah Vot Baru'}</h3><button onClick={() => setIsVoteModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors"><X className="w-6 h-6" /></button></div>
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-slate-900  flex items-center gap-2"><FileDigit className="w-6 h-6 text-indigo-600" />{editingVote.code ? 'Kemaskini Vot' : 'Tambah Vot Baru'}</h3><button onClick={() => setIsVoteModalOpen(false)} className={modalCloseClass} aria-label="Tutup"><X className="w-6 h-6" /></button></div>
                         <form onSubmit={handleSaveVote} className="space-y-4">
                             <div><label className={labelClass}>No. Vot</label><input type="text" value={editingVote.code} onChange={e => setEditingVote({ ...editingVote, code: e.target.value })} className={inputClass} required placeholder="e.g. P.04.123" /></div>
                             <div><label className={labelClass}>Nama Vot</label><input type="text" value={editingVote.name} onChange={e => setEditingVote({ ...editingVote, name: e.target.value })} className={inputClass} required placeholder="e.g. Penyelenggaraan Jalan" /></div>
