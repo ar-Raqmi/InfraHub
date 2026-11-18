@@ -41,6 +41,7 @@ import StickyActionBar from '../components/report/StickyActionBar';
 import SelectedProjectCard from '../components/report/SelectedProjectCard';
 import LocationCards, { LocationRow } from '../components/report/LocationCards';
 import LayoutToggle from '../components/report/LayoutToggle';
+import EditorModalHeader from '../components/report/EditorModalHeader';
 
 const COLORS = [
   '#ef4444',
@@ -126,6 +127,8 @@ const generateSingleCompressedBlob = async (file: File): Promise<Blob> => {
 
 
 // --- COMPONENTS ---
+
+const ROTATE_BTN = 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 max-md:w-11 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center';
 
 interface CanvasMapEditorProps {
   initialImage: string | null;
@@ -436,7 +439,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
             <div className="flex items-center gap-2 px-2 py-1 bg-white rounded-xl border border-slate-200 shadow-sm">
               <button
                 onClick={() => setRotation(prev => (Number(prev) - 90) % 360)}
-                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 max-md:w-11 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center"
+                className={ROTATE_BTN}
                 title="Rotate -90°"
               >
                 <RotateCw size={18} className="scale-x-[-1]" />
@@ -470,7 +473,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 
               <button
                 onClick={handleRotate90}
-                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 max-md:w-11 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center"
+                className={ROTATE_BTN}
                 title="Rotate +90°"
               >
                 <RotateCw size={18} />
@@ -711,8 +714,11 @@ const GalleryItem = React.memo(({
 
 // --- MAIN PAGE ---
 
-const MODAL_CANCEL = 'px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs max-md:h-11 max-md:px-3 max-md:py-0 max-md:rounded-xl';
-const MODAL_SAVE = 'px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs max-md:h-11 max-md:px-5 max-md:py-0 max-md:rounded-xl';
+const PROJECT_FILTERS = [
+  { value: 'ALL', label: 'Semua' },
+  { value: ProjectStatus.FASA_DRAF, label: 'Draf' },
+  { value: ProjectStatus.MENUNGGU_LANTIKAN, label: 'Lantikan' },
+] as const;
 
 const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ projects, user }) => {
   const { users: allUsers } = useUsers();
@@ -1392,24 +1398,15 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                       />
                     </div>
                     <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
-                      <button
-                        onClick={() => setStatusFilter('ALL')}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all max-md:h-11 max-md:text-xs ${statusFilter === 'ALL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        Semua
-                      </button>
-                      <button
-                        onClick={() => setStatusFilter(ProjectStatus.FASA_DRAF)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all max-md:h-11 max-md:text-xs ${statusFilter === ProjectStatus.FASA_DRAF ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        Draf
-                      </button>
-                      <button
-                        onClick={() => setStatusFilter(ProjectStatus.MENUNGGU_LANTIKAN)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all max-md:h-11 max-md:text-xs ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        Lantikan
-                      </button>
+                      {PROJECT_FILTERS.map(f => (
+                        <button
+                          key={f.value}
+                          onClick={() => setStatusFilter(f.value)}
+                          className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all max-md:h-11 max-md:text-xs ${statusFilter === f.value ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1692,16 +1689,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       {editingImageIndex !== null && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in max-md:p-0">
           <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden max-md:rounded-none max-md:h-full">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 max-md:p-2 max-md:gap-2 max-md:pt-[calc(0.5rem+env(safe-area-inset-top))]">
-              <div className="min-w-0">
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight max-md:text-sm max-md:truncate max-md:pl-2">Edit Gambar Tapak #{editingImageIndex + 1}</h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 max-md:hidden">Gunakan alat suntingan di bawah</p>
-              </div>
-              <div className="flex gap-4 shrink-0 max-md:gap-2">
-                <button onClick={() => setEditingImageIndex(null)} className={MODAL_CANCEL}>Batal</button>
-                <button onClick={saveEditedImage} className={MODAL_SAVE}>Simpan</button>
-              </div>
-            </div>
+            <EditorModalHeader
+              title={`Edit Gambar Tapak #${editingImageIndex + 1}`}
+              subtitle="Gunakan alat suntingan di bawah"
+              className="p-8"
+              titleClassName="text-xl"
+              onCancel={() => setEditingImageIndex(null)}
+              onSave={saveEditedImage}
+            />
             <div className="flex-1 bg-slate-100 p-8 overflow-hidden flex items-center justify-center max-md:p-0">
               <CanvasMapEditor ref={modalEditorRef} initialImage={siteImages[editingImageIndex]} isMobile={false} />
             </div>
@@ -1713,16 +1708,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       {isEditingMap && mapImage && createPortal(
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900 animate-fade-in">
           <div className="bg-white w-full h-full flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 max-md:p-2 max-md:gap-2 max-md:pt-[calc(0.5rem+env(safe-area-inset-top))]">
-              <div className="min-w-0">
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight max-md:text-sm max-md:truncate max-md:pl-2">Edit Pelan Lokasi</h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 max-md:hidden">Laras semula kedudukan atau tambah penanda</p>
-              </div>
-              <div className="flex gap-4 shrink-0 max-md:gap-2">
-                <button onClick={() => setIsEditingMap(false)} className={MODAL_CANCEL}>Batal</button>
-                <button onClick={saveEditedMap} className={MODAL_SAVE}>Simpan</button>
-              </div>
-            </div>
+            <EditorModalHeader
+              title="Edit Pelan Lokasi"
+              subtitle="Laras semula kedudukan atau tambah penanda"
+              className="p-6"
+              titleClassName="text-2xl"
+              onCancel={() => setIsEditingMap(false)}
+              onSave={saveEditedMap}
+            />
             <div className="flex-1 bg-slate-100 p-8 overflow-hidden max-md:p-0">
               <CanvasMapEditor ref={modalEditorRef} initialImage={mapImage} isMobile={false} />
             </div>
