@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Project, User } from '../types';
 import { Download, Loader2, FilePenLine } from 'lucide-react';
 import { AkuJanjiPDFExporter } from '../services/pdf/AkuJanjiPDFExporter';
+import FitToWidth from '../components/detail/FitToWidth';
+
+// 210 mm at 96 dpi: the preview page's CSS width.
+const A4_WIDTH_PX = 794;
 
 interface AkuJanjiEditorProps {
     project: Project;
@@ -71,8 +75,8 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
     return (
         <div className="flex flex-col gap-6">
             {!isPrintView && (
-                <div className={`bg-white/95  border border-white/10 shadow-xl p-6 rounded-2xl border border-slate-200  shadow-sm animate-fade-in ${readOnly ? 'bg-slate-50/50' : ''}`}>
-                    <div className="flex items-center justify-between mb-4">
+                <div className={`bg-white/95  border border-white/10 shadow-xl p-6 max-md:p-4 rounded-2xl border border-slate-200  shadow-sm animate-fade-in ${readOnly ? 'bg-slate-50/50' : ''}`}>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div className="flex items-center gap-2">
                              <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
                                 <FilePenLine className="w-5 h-5" />
@@ -83,7 +87,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                             type="button" 
                             onClick={handleDownloadPDF} 
                             disabled={isGeneratingPdf} 
-                            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 text-sm"
+                            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 text-sm max-md:order-last max-md:w-full max-md:h-12 max-md:justify-center"
                         >
                             {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                             <span>PDF</span>
@@ -92,24 +96,24 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                          <div>
-                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Bulan (Surat)</label>
+                             <label className="block text-[10px] max-md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Bulan (Surat)</label>
                              <select 
                                 value={project.akuJanjiMonth || ''}
                                 onChange={(e) => onUpdate({ akuJanjiMonth: e.target.value })}
                                 disabled={readOnly}
-                                className="w-full p-2 rounded-lg border border-slate-300  bg-white  text-sm disabled:cursor-not-allowed"
+                                className="w-full p-2 rounded-lg border border-slate-300  bg-white  text-sm max-md:text-base max-md:min-h-[48px] disabled:cursor-not-allowed"
                              >
                                  {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                              </select>
                          </div>
                          <div>
-                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Tajuk Panel</label>
+                             <label className="block text-[10px] max-md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Tajuk Panel</label>
                              <input 
                                 type="text"
                                 value={project.akuJanjiPanelTitle || ''}
                                 onChange={(e) => onUpdate({ akuJanjiPanelTitle: e.target.value })}
                                 disabled={readOnly}
-                                className="w-full p-2 rounded-lg border border-slate-300  bg-white  text-sm disabled:cursor-not-allowed"
+                                className="w-full p-2 rounded-lg border border-slate-300  bg-white  text-sm max-md:text-base max-md:min-h-[48px] disabled:cursor-not-allowed"
                                 placeholder="Kontraktor Panel"
                              />
                          </div>
@@ -117,7 +121,8 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                 </div>
             )}
 
-            <div className="flex justify-center bg-gray-100 py-4 overflow-auto rounded-2xl border border-slate-200">
+            <div className="flex justify-center bg-gray-100 py-4 max-md:px-3 overflow-auto rounded-2xl border border-slate-200">
+                <FitToWidth contentWidth={A4_WIDTH_PX}>
                 <div 
                     id="aku-janji-doc" 
                     className="w-[210mm] min-h-[297mm] bg-white text-black  p-[25mm] shadow-xl relative box-border mx-auto font-sans leading-relaxed"
@@ -193,6 +198,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                          </div>
                     </div>
                 </div>
+                </FitToWidth>
             </div>
         </div>
     );
