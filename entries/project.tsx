@@ -24,8 +24,9 @@ const ProjectPage: React.FC = () => {
   const project = id > 0 ? (projects.find(p => p.id === id) ?? ({ id } as Project)) : undefined;
 
   return (
-    <AppShell currentPage="projects" selectedYear={selectedYear} showYearSelector={false} mobileTopBar={false}>
-      <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-4 md:p-6">
+    <AppShell currentPage="projects" selectedYear={selectedYear} showYearSelector={false} mobileTopBar={false} mobileBottomNav={false}>
+      {/* !border-0: global.css borders every [class*="shadow-"], which would frame the page on phones */}
+      <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-4 md:p-6 max-md:p-0 max-md:bg-transparent max-md:!border-0 max-md:rounded-none">
         <ProjectDetail
           key={id || 'new'}
           project={project}
