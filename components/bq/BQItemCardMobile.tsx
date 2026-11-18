@@ -1,9 +1,10 @@
 import React from 'react';
-import { ChevronDown, ChevronUp, Link, List, PlusCircle, Trash2, Type, Unlink } from 'lucide-react';
+import { Link, PlusCircle, Unlink } from 'lucide-react';
 import { BQItem, formatCurrency } from '../../types';
 import { DimensionInput } from '../../lib/bqShared';
 import ClampedTextarea from './ClampedTextarea';
 import TouchIconButton from './TouchIconButton';
+import { CustomCalcFields, CustomCalcToggle, ReorderDeleteButtons } from './ItemControls';
 
 interface BQItemCardMobileProps {
     item: BQItem;
@@ -39,13 +40,7 @@ const BQItemCardMobile: React.FC<BQItemCardMobileProps> = ({ item, autoNumber, r
         </div>
         <div className="mt-2 space-y-2">
             {item.isCustomCalc ? (
-                <div className="flex items-center gap-2">
-                    <input type="text" value={item.customCalc || ''} onChange={(e) => onUpdate({ customCalc: e.target.value })} disabled={readOnly} className="flex-1 min-w-0 h-11 px-3 text-base bg-white border border-slate-200 rounded-lg font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" />
-                    <label className="h-11 w-28 shrink-0 flex items-center gap-1 px-2 bg-white rounded-lg border border-slate-200">
-                        <span className="text-[10px] font-bold text-slate-400">QTY</span>
-                        <DimensionInput value={item.qty} onChange={(val) => onUpdate({ qty: val })} disabled={readOnly} className="w-full min-w-0 text-right text-base font-bold bg-transparent outline-none" />
-                    </label>
-                </div>
+                <CustomCalcFields item={item} readOnly={readOnly} onUpdate={onUpdate} />
             ) : (
                 <>
                     {children}
@@ -68,14 +63,10 @@ const BQItemCardMobile: React.FC<BQItemCardMobileProps> = ({ item, autoNumber, r
             <TouchIconButton label={item.isGlobal ? 'Linked' : 'Manual'} onClick={onToggleGlobal} disabled={readOnly} className={item.isGlobal ? '!bg-emerald-100 !text-emerald-600 !border-emerald-200' : ''}>
                 {item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}
             </TouchIconButton>
-            <TouchIconButton label={item.isCustomCalc ? 'Kiraan' : 'Teks'} onClick={onToggleCustomCalc} disabled={readOnly} className={item.isCustomCalc ? '!bg-indigo-100 !text-indigo-600 !border-indigo-200' : ''}>
-                {item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}
-            </TouchIconButton>
+            <CustomCalcToggle isCustomCalc={!!item.isCustomCalc} disabled={readOnly} onToggle={onToggleCustomCalc} />
             {!readOnly && (
                 <div className="ml-auto flex items-center gap-1.5">
-                    <TouchIconButton label="Naik" onClick={() => onMove('up')} disabled={isFirst}><ChevronUp className="w-5 h-5" /></TouchIconButton>
-                    <TouchIconButton label="Turun" onClick={() => onMove('down')}><ChevronDown className="w-5 h-5" /></TouchIconButton>
-                    <TouchIconButton label="Padam" onClick={onDelete} danger><Trash2 className="w-5 h-5" /></TouchIconButton>
+                    <ReorderDeleteButtons onMove={onMove} onDelete={onDelete} upDisabled={isFirst} />
                 </div>
             )}
         </div>

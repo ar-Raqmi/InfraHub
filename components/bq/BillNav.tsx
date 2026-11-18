@@ -1,7 +1,8 @@
 import React from 'react';
-import { ChevronDown, ChevronUp, MapPin, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, MapPin, Plus } from 'lucide-react';
 import BottomSheet from '../BottomSheet';
 import TouchIconButton from './TouchIconButton';
+import { ReorderDeleteButtons } from './ItemControls';
 
 export type NavTheme = 'emerald' | 'amber';
 
@@ -120,11 +121,7 @@ export const BillNavSheet: React.FC<BillNavSheetProps> = ({ open, onClose, title
                                     <span className={`block mt-0.5 text-[11px] font-mono ${isActive ? 'text-white/80' : 'text-slate-400'}`}>{bill.meta}</span>
                                 </button>
                                 {!readOnly && bill.canEdit && (
-                                    <>
-                                        <TouchIconButton label="Naik" onClick={() => onMoveBill(bill.id, 'up')} disabled={bill.upDisabled}><ChevronUp className="w-4 h-4" /></TouchIconButton>
-                                        <TouchIconButton label="Turun" onClick={() => onMoveBill(bill.id, 'down')} disabled={bill.downDisabled}><ChevronDown className="w-4 h-4" /></TouchIconButton>
-                                        <TouchIconButton label="Padam" onClick={() => onDeleteBill(bill.id)} danger><Trash2 className="w-4 h-4" /></TouchIconButton>
-                                    </>
+                                    <ReorderDeleteButtons onMove={(direction) => onMoveBill(bill.id, direction)} onDelete={() => onDeleteBill(bill.id)} upDisabled={bill.upDisabled} downDisabled={bill.downDisabled} iconClass="w-4 h-4" />
                                 )}
                             </div>
                         );
