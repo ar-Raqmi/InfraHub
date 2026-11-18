@@ -331,6 +331,9 @@ import { Formatter } from './services/Formatter';
 import { StatusHelper } from './services/StatusHelper';
 import { calculateLADDailyRate } from './services/finance';
 
+// An explicit 0 is a real quantity (contractor did no work); only a missing factor means 1.
+export const partMultiplier = (multiplier: number | null | undefined): number => multiplier ?? 1;
+
 export const formatCurrency = Formatter.formatCurrency;
 export const formatDate = Formatter.formatDate;
 export const formatDateMalay = Formatter.formatDateMalay;

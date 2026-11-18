@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
+import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, partMultiplier, GlobalDimensions, CalculationPart, PresetGroup, BQTemplateDefinition, BQTemplateItemRef, Role } from '../types';
 import { apiService } from '../services/apiService';
 import { createItem, createHeader } from '../data/bqPresets';
 import { getColorStyles, toRoman, getItemLevel, getAutoNumber, AutoResizeTextarea, DimensionInput } from '../lib/bqShared';
@@ -356,7 +356,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
             if (part.hasLength) product *= (part.length || 0);
             if (part.hasWidth) product *= (part.width || 0);
             if (part.hasDepth) product *= (part.depth || 0);
-            const res = product * (part.multiplier || 1);
+            const res = product * partMultiplier(part.multiplier);
             return acc + (isNaN(res) ? 0 : res);
         }, 0);
     };
@@ -1132,7 +1132,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                             if (part.hasLength) product *= part.length;
                             if (part.hasWidth) product *= part.width;
                             if (part.hasDepth) product *= part.depth;
-                            const qty = product * (part.multiplier || 1);
+                            const qty = product * partMultiplier(part.multiplier);
                             return qty % 1 === 0 ? qty : qty.toFixed(2);
                         })()}
                     </div>
@@ -1143,7 +1143,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                             if (part.hasLength) product *= part.length;
                             if (part.hasWidth) product *= part.width;
                             if (part.hasDepth) product *= part.depth;
-                            const qty = product * (part.multiplier || 1);
+                            const qty = product * partMultiplier(part.multiplier);
                             return formatCurrency(qty * item.rate);
                         })()}
                     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, GlobalDimensions, CalculationPart, Role, PresetGroup, BQTemplateDefinition, BQTemplateItemRef } from '../types';
+import { BQGroup, BQItem, Project, ProjectLocation, formatCurrency, partMultiplier, GlobalDimensions, CalculationPart, Role, PresetGroup, BQTemplateDefinition, BQTemplateItemRef } from '../types';
 import { apiService } from '../services/apiService';
 import { createItem, createHeader } from '../data/bqPresets';
 import { getColorStyles, toRoman, getItemLevel, getAutoNumber, AutoResizeTextarea, DimensionInput } from '../lib/bqShared';
@@ -142,9 +142,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                 return {
                     ...item,
                     calculationParts: item.calculationParts.map(part => {
-                        const multiplier = part.multiplier == null
-                            ? 1
-                            : (!part.hasLength && !part.hasWidth && !part.hasDepth && !part.multiplier) ? 1 : Number(part.multiplier);
+                        const multiplier = part.multiplier == null ? 1 : Number(part.multiplier);
                         if (multiplier === part.multiplier) return part;
                         needsFix = true;
                         return { ...part, multiplier };
@@ -374,7 +372,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             if (part.hasLength) product *= (part.length || 0);
             if (part.hasWidth) product *= (part.width || 0);
             if (part.hasDepth) product *= (part.depth || 0);
-            const res = product * (part.multiplier || 1);
+            const res = product * partMultiplier(part.multiplier);
             return acc + (isNaN(res) ? 0 : res);
         }, 0);
     };
@@ -890,7 +888,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                     <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
                         {(() => {
                             let product = 1; if (part.hasLength) product *= part.length; if (part.hasWidth) product *= part.width; if (part.hasDepth) product *= part.depth;
-                            const qty = product * (part.multiplier || 1); return qty % 1 === 0 ? qty : qty.toFixed(2);
+                            const qty = product * partMultiplier(part.multiplier); return qty % 1 === 0 ? qty : qty.toFixed(2);
                         })()}
                     </div>
                     {!readOnly && <button onClick={() => removeCalculationPart(bill.id, item.id, part.id)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><MinusCircle className="w-4 h-4" /></button>}
