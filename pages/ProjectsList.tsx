@@ -10,6 +10,14 @@ import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, C
 import StrictDateInput from '../components/StrictDateInput';
 import ImportIndenModal from '../components/ImportIndenModal';
 import { ProjectsListPDFExporter } from '../services/pdf';
+import BottomSheet from '../components/BottomSheet';
+import AddProjectFab from '../components/projects/AddProjectFab';
+import CompanyCard, { CompanyGroupData } from '../components/projects/CompanyCard';
+import MobilePager from '../components/projects/MobilePager';
+import MobileToolbar from '../components/projects/MobileToolbar';
+import PjaAvatar from '../components/projects/PjaAvatar';
+import ProjectActionsSheet from '../components/projects/ProjectActionsSheet';
+import ProjectCard from '../components/projects/ProjectCard';
 
 interface ProjectsListProps {
     projects: Project[];
@@ -18,20 +26,6 @@ interface ProjectsListProps {
     onEditProject: (project: Project) => void;
     onDeleteProject: (project: Project) => void;
     user: User;
-}
-
-interface CompanyGroupData {
-    company: string;
-    projects: Project[];
-    totalCost: number;
-    totalHargaAkhir: number;
-    count: number;
-    // Group projects by Vote Code for display
-    projectsByVote: Record<string, {
-        projects: Project[];
-        subtotalContract: number;
-        subtotalAkhir: number;
-    }>;
 }
 
 // Circular Progress Component
@@ -69,6 +63,11 @@ const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number
     );
 };
 
+const filterSelectClass = "w-full h-11 md:h-auto pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-base md:text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors";
+
+const sortDirectionClass = (active: boolean) =>
+    `w-11 h-11 rounded-[10px] flex items-center justify-center ${active ? 'bg-white text-emerald-700 border border-slate-200' : 'text-slate-500'}`;
+
 const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onAddProject, onEditProject, onDeleteProject, user }) => {
     const { users } = useUsers();
     const { updateProject } = useProjects();
@@ -100,6 +99,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
     const [isSavingFinancials, setIsSavingFinancials] = useState(false);
 
     const [showFilterPanel, setShowFilterPanel] = useState(false);
+    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+    const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+    const [showColumnPicker, setShowColumnPicker] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'ALL'>('ALL');
     const [filterPja, setFilterPja] = useState<string>('ALL');
@@ -635,11 +637,249 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
         }
     };
 
+    const filterBody = (
+        <>
+            <div className="flex items-center justify-end md:justify-between mb-6">
+                <h4 className="hidden md:flex text-sm font-bold text-slate-800  items-center gap-2">
+                    <Settings2 className="w-4 h-4 text-emerald-500" />
+                    Tetapan Data & Paparan
+                </h4>
+                <button
+                    onClick={resetAllFilters}
+                    className="min-h-[44px] md:min-h-0 text-[11px] max-md:text-[13px] font-bold flex items-center gap-1.5 text-slate-500 hover:text-red-500 bg-slate-100  hover:bg-red-50  px-3 py-1.5 rounded-lg transition-colors"
+                >
+                    <RotateCcw className="w-3 h-3" /> Reset Semua
+                </button>
+            </div>
+
+            {viewMode === 'list' && (
+                <div className="md:hidden mb-6">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Susunan</div>
+                    <div className="flex gap-2">
+                        <div className="relative flex-1">
+                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><ArrowUpDown className="w-4 h-4 text-slate-400" /></div>
+                            <select value={sortKey} onChange={(e) => setSortKey(e.target.value)} aria-label="Susunan" className={filterSelectClass}>
+                                {columnDefs.map(col => <option key={col.id} value={col.id}>{col.label}</option>)}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        </div>
+                        <div className="flex bg-slate-100 p-0.5 rounded-xl shrink-0">
+                            <button onClick={() => setSortDirection('asc')} aria-label="Menaik" aria-pressed={sortDirection === 'asc'} className={sortDirectionClass(sortDirection === 'asc')}><ArrowUp className="w-4 h-4" /></button>
+                            <button onClick={() => setSortDirection('desc')} aria-label="Menurun" aria-pressed={sortDirection === 'desc'} className={sortDirectionClass(sortDirection === 'desc')}><ArrowDown className="w-4 h-4" /></button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="mb-6">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tapisan Data (Row Filters)</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <SlidersHorizontal className="w-4 h-4 text-slate-400" />
+                        </div>
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value as any)}
+                            className={filterSelectClass}
+                        >
+                            <option value="ALL">Semua Status</option>
+                            <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
+                            <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
+                            <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
+                            <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Pemeriksaan Tapak</option>
+                            <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
+                            <option value={ProjectStatus.SIAP}>Siap</option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
+                        <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className={filterSelectClass}>
+                            <option value="ALL">Semua PJA</option>
+                            {users.filter(u => u.role === 'PJA').map(u => <option key={u.id} value={u.id}>{u.username.toUpperCase()}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
+                        <select value={filterZon} onChange={(e) => setFilterZon(e.target.value)} className={filterSelectClass}>
+                            <option value="ALL">Semua Zon</option>
+                            {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
+                        <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className={filterSelectClass}>
+                            <option value="ALL">Semua BP</option>
+                            {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
+                        <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className={filterSelectClass}>
+                            <option value="ALL">Semua Mukim</option>
+                            {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
+                        <select
+                            value={filterVote}
+                            onChange={(e) => setFilterVote(e.target.value)}
+                            className={filterSelectClass}
+                        >
+                            <option value="ALL">Semua Vot</option>
+                            {votesList.map(v => (
+                                <option key={v.code} value={v.code}>{v.code} - {v.name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="mb-6 pt-6 border-t border-slate-100">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Penapisan Tarikh (Date Range)</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <Calendar className="w-4 h-4 text-slate-400" />
+                        </div>
+                        <select
+                            value={filterDateType}
+                            onChange={(e) => setFilterDateType(e.target.value)}
+                            className={filterSelectClass}
+                        >
+                            <option value="tarikhBuka">Tarikh Buka</option>
+                            <option value="tarikhLantikan">Tarikh Lantikan</option>
+                            <option value="tarikhMulaKontrak">Tarikh Mula Kontrak</option>
+                            <option value="tarikhTamatKontrak">Tarikh Tamat Kontrak</option>
+                            <option value="tarikhSiapSebenar">Tarikh Siap Sebenar</option>
+                            <option value="tarikhTuntutanBayaran">Tarikh Tuntutan</option>
+                            <option value="tarikhHantarKewangan">Tarikh Hantar Kewangan</option>
+                            <option value="tarikhPadanan">Tarikh Padanan</option>
+                            <option value="tarikhSerahTapak">Tarikh Serah Tapak</option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                            <StrictDateInput
+                                name="filterDateStart"
+                                value={filterDateStart || ''}
+                                onChange={(e) => setFilterDateStart(e.target.value)}
+                                placeholder="Dari (DD/MM/YYYY)"
+                                className="w-full h-11 md:h-auto px-4 py-0 md:py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-base md:text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                        </div>
+                        {(filterDateStart || filterDateEnd) && (
+                            <button
+                                onClick={() => { setFilterDateStart(null); setFilterDateEnd(null); }}
+                                className="w-11 h-11 md:w-auto md:h-auto flex items-center justify-center p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                                title="Kosongkan Tarikh"
+                            >
+                                <CalendarX className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex-1">
+                        <StrictDateInput
+                            name="filterDateEnd"
+                            value={filterDateEnd || ''}
+                            onChange={(e) => setFilterDateEnd(e.target.value)}
+                            placeholder="Hingga (DD/MM/YYYY)"
+                            className="w-full h-11 md:h-auto px-4 py-0 md:py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-base md:text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="border-t border-slate-100  my-6"></div>
+
+            {viewMode === 'list' && (
+                <>
+                <button
+                    onClick={() => setShowColumnPicker(v => !v)}
+                    aria-expanded={showColumnPicker}
+                    className="md:hidden w-full min-h-[44px] px-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-sm font-bold text-slate-600"
+                >
+                    <Layout className="w-4 h-4 text-slate-400" /> Paparan Kolum
+                    <span className="ml-auto px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs">{columnDefs.filter(c => visibleColumns[c.id]).length} / {columnDefs.length}</span>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showColumnPicker ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={showColumnPicker ? 'mt-3' : 'hidden md:block'}>
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kolum</div>
+                        <div className="flex gap-2">
+                            <button onClick={handleSelectAllColumns} className="min-h-[44px] md:min-h-0 text-[10px] max-md:text-xs font-bold px-3 md:px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Eye className="w-3 h-3" /> Semua</button>
+                            <button onClick={handleDeselectAllColumns} className="min-h-[44px] md:min-h-0 text-[10px] max-md:text-xs font-bold px-3 md:px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><EyeOff className="w-3 h-3" /> Kosong</button>
+                            <button onClick={handleResetColumns} className="min-h-[44px] md:min-h-0 text-[10px] max-md:text-xs font-bold px-3 md:px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Layout className="w-3 h-3" /> Asal</button>
+                        </div>
+                    </div>
+                    <div className="bg-slate-50  p-4 rounded-2xl border border-slate-200">
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {columnDefs.map(col => (
+                                <label key={col.id} className="min-h-[44px] md:min-h-0 flex items-center gap-2 cursor-pointer group p-1.5 rounded-lg hover:bg-white  transition-colors select-none">
+                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-emerald-500 border-emerald-500' : 'bg-white  border-slate-300  group-hover:border-emerald-400'}`}>
+                                        {visibleColumns[col.id] && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                                    </div>
+                                    <input type="checkbox" className="hidden" checked={visibleColumns[col.id]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col.id]: !prev[col.id] }))} />
+                                    <span className={`text-[11px] font-bold truncate ${visibleColumns[col.id] ? 'text-slate-700' : 'text-slate-400'}`}>{col.label}</span>
+
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                </>
+            )}
+
+            {viewMode === 'group' && (
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 md:gap-4 items-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kos:</span>
+                        <div className="flex bg-slate-100  rounded-lg p-1">
+                            <button onClick={() => setCostViewMode('contract')} className={`min-h-[44px] md:min-h-0 px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
+                            <button onClick={() => setCostViewMode('actual')} className={`min-h-[44px] md:min-h-0 px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
+                            <button onClick={() => setCostViewMode('both')} className={`min-h-[44px] md:min-h-0 px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 md:gap-4 items-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tapis Projek:</span>
+                        <label className="min-h-[44px] md:min-h-0 flex items-center gap-2 cursor-pointer">
+                            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showSiap ? 'translate-x-5' : ''}`}></div>
+                            </div>
+                            <input type="checkbox" className="hidden" checked={showSiap} onChange={() => setShowSiap(!showSiap)} />
+
+                            <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
+                        </label>
+
+                        <label className="min-h-[44px] md:min-h-0 flex items-center gap-2 cursor-pointer">
+                            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showTuntutan ? 'translate-x-5' : ''}`}></div>
+                            </div>
+                            <input type="checkbox" className="hidden" checked={showTuntutan} onChange={() => setShowTuntutan(!showTuntutan)} />
+
+                            <span className="text-xs font-bold text-slate-600">Tunjuk Tuntutan Bayaran</span>
+                        </label>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+
+    const sortLabel = columnDefs.find(c => c.id === sortKey)?.label;
+
     return (
-        <div className="space-y-6 animate-fade-in pb-40">
+        <div className="space-y-6 animate-fade-in pb-24 md:pb-40">
 
             {/* Header Actions */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h1 className="text-3xl font-bold gradient-text">Senarai Projek</h1>
                     <p className="text-slate-500  mt-1">
@@ -655,8 +895,27 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 </button>
             </div>
 
+            <MobileToolbar
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                activeFilterCount={activeFilterCount}
+                onOpenFilter={() => setIsFilterSheetOpen(true)}
+                onOpenActions={() => setIsActionSheetOpen(true)}
+            />
+
+            <div className="md:hidden !mt-3 flex items-center justify-between gap-3 text-sm text-slate-500">
+                <p><span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai</p>
+                {viewMode === 'list' && sortLabel && (
+                    <span className="flex items-center gap-1 text-xs font-bold text-slate-600">
+                        {sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}{sortLabel}
+                    </span>
+                )}
+            </div>
+
             {/* Advanced Filter Bar */}
-            <div className="bg-white/95  border border-white/10 shadow-xl p-5 rounded-3xl shadow-xl border border-white/20  space-y-4 relative z-30">
+            <div className="hidden md:block bg-white/95  border border-white/10 shadow-xl p-5 rounded-3xl shadow-xl border border-white/20  space-y-4 relative z-30">
                 <div className="flex flex-col lg:flex-row gap-4">
                     {viewMode === 'list' && (
                         <div className="relative flex-1">
@@ -735,214 +994,43 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
                 {showFilterPanel && (
                     <div className="pt-6 border-t border-slate-100  animate-slide-up">
-                        <div className="flex items-center justify-between mb-6">
-                            <h4 className="text-sm font-bold text-slate-800  flex items-center gap-2">
-                                <Settings2 className="w-4 h-4 text-emerald-500" />
-                                Tetapan Data & Paparan
-                            </h4>
-                            <button
-                                onClick={resetAllFilters}
-                                className="text-[11px] font-bold flex items-center gap-1.5 text-slate-500 hover:text-red-500 bg-slate-100  hover:bg-red-50  px-3 py-1.5 rounded-lg transition-colors"
-                            >
-                                <RotateCcw className="w-3 h-3" /> Reset Semua
-                            </button>
-                        </div>
-
-                        <div className="mb-6">
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tapisan Data (Row Filters)</div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                        <SlidersHorizontal className="w-4 h-4 text-slate-400" />
-                                    </div>
-                                    <select
-                                        value={filterStatus}
-                                        onChange={(e) => setFilterStatus(e.target.value as any)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
-                                    >
-                                        <option value="ALL">Semua Status</option>
-                                        <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
-                                        <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
-                                        <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
-                                        <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Pemeriksaan Tapak</option>
-                                        <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
-                                        <option value={ProjectStatus.SIAP}>Siap</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
-                                        <option value="ALL">Semua PJA</option>
-                                        {users.filter(u => u.role === 'PJA').map(u => <option key={u.id} value={u.id}>{u.username.toUpperCase()}</option>)}
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterZon} onChange={(e) => setFilterZon(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
-                                        <option value="ALL">Semua Zon</option>
-                                        {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
-                                        <option value="ALL">Semua BP</option>
-                                        {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors">
-                                        <option value="ALL">Semua Mukim</option>
-                                        {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                                    <select
-                                        value={filterVote}
-                                        onChange={(e) => setFilterVote(e.target.value)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
-                                    >
-                                        <option value="ALL">Semua Vot</option>
-                                        {votesList.map(v => (
-                                            <option key={v.code} value={v.code}>{v.code} - {v.name}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mb-6 pt-6 border-t border-slate-100">
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Penapisan Tarikh (Date Range)</div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                        <Calendar className="w-4 h-4 text-slate-400" />
-                                    </div>
-                                    <select
-                                        value={filterDateType}
-                                        onChange={(e) => setFilterDateType(e.target.value)}
-                                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors"
-                                    >
-                                        <option value="tarikhBuka">Tarikh Buka</option>
-                                        <option value="tarikhLantikan">Tarikh Lantikan</option>
-                                        <option value="tarikhMulaKontrak">Tarikh Mula Kontrak</option>
-                                        <option value="tarikhTamatKontrak">Tarikh Tamat Kontrak</option>
-                                        <option value="tarikhSiapSebenar">Tarikh Siap Sebenar</option>
-                                        <option value="tarikhTuntutanBayaran">Tarikh Tuntutan</option>
-                                        <option value="tarikhHantarKewangan">Tarikh Hantar Kewangan</option>
-                                        <option value="tarikhPadanan">Tarikh Padanan</option>
-                                        <option value="tarikhSerahTapak">Tarikh Serah Tapak</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="flex-1">
-                                        <StrictDateInput
-                                            name="filterDateStart"
-                                            value={filterDateStart || ''}
-                                            onChange={(e) => setFilterDateStart(e.target.value)}
-                                            placeholder="Dari (DD/MM/YYYY)"
-                                            className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
-                                        />
-                                    </div>
-                                    {(filterDateStart || filterDateEnd) && (
-                                        <button
-                                            onClick={() => { setFilterDateStart(null); setFilterDateEnd(null); }}
-                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                                            title="Kosongkan Tarikh"
-                                        >
-                                            <CalendarX className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <StrictDateInput
-                                        name="filterDateEnd"
-                                        value={filterDateEnd || ''}
-                                        onChange={(e) => setFilterDateEnd(e.target.value)}
-                                        placeholder="Hingga (DD/MM/YYYY)"
-                                        className="w-full px-4 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="border-t border-slate-100  my-6"></div>
-
-                        {viewMode === 'list' && (
-                            <div>
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kolum</div>
-                                    <div className="flex gap-2">
-                                        <button onClick={handleSelectAllColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Eye className="w-3 h-3" /> Semua</button>
-                                        <button onClick={handleDeselectAllColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><EyeOff className="w-3 h-3" /> Kosong</button>
-                                        <button onClick={handleResetColumns} className="text-[10px] font-bold px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Layout className="w-3 h-3" /> Asal</button>
-                                    </div>
-                                </div>
-                                <div className="bg-slate-50  p-4 rounded-2xl border border-slate-200">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                        {columnDefs.map(col => (
-                                            <label key={col.id} className="flex items-center gap-2 cursor-pointer group p-1.5 rounded-lg hover:bg-white  transition-colors select-none">
-                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-emerald-500 border-emerald-500' : 'bg-white  border-slate-300  group-hover:border-emerald-400'}`}>
-                                                    {visibleColumns[col.id] && <Check className="w-3 h-3 text-white stroke-[3]" />}
-                                                </div>
-                                                <input type="checkbox" className="hidden" checked={visibleColumns[col.id]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col.id]: !prev[col.id] }))} />
-                                                <span className={`text-[11px] font-bold truncate ${visibleColumns[col.id] ? 'text-slate-700' : 'text-slate-400'}`}>{col.label}</span>
-
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {viewMode === 'group' && (
-                            <div className="flex flex-col gap-4">
-                                <div className="flex gap-4 items-center">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kos:</span>
-                                    <div className="flex bg-slate-100  rounded-lg p-1">
-                                        <button onClick={() => setCostViewMode('contract')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
-                                        <button onClick={() => setCostViewMode('actual')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
-                                        <button onClick={() => setCostViewMode('both')} className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-center">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tapis Projek:</span>
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                            <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showSiap ? 'translate-x-5' : ''}`}></div>
-                                        </div>
-                                        <input type="checkbox" className="hidden" checked={showSiap} onChange={() => setShowSiap(!showSiap)} />
-
-                                        <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                            <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showTuntutan ? 'translate-x-5' : ''}`}></div>
-                                        </div>
-                                        <input type="checkbox" className="hidden" checked={showTuntutan} onChange={() => setShowTuntutan(!showTuntutan)} />
-
-                                        <span className="text-xs font-bold text-slate-600">Tunjuk Tuntutan Bayaran</span>
-                                    </label>
-                                </div>
-                            </div>
-                        )}
+                        {filterBody}
                     </div>
                 )}
             </div>
 
             {/* List View with Pagination */}
             {viewMode === 'list' && (
-                <div className="bg-white/95  border border-white/10 shadow-xl rounded-3xl shadow-xl border border-white/20  overflow-hidden min-h-[400px] flex flex-col">
+                <div className="md:hidden !mt-3 space-y-3">
+                    {paginatedProjects.length > 0 ? paginatedProjects.map(project => (
+                        <ProjectCard
+                            key={project.id}
+                            project={project}
+                            pja={getPjaUser(project.pjaId)}
+                            canDelete={user.role !== 'PJA'}
+                            onOpen={onEditProject}
+                            onDelete={handleDeleteClick}
+                        />
+                    )) : (
+                        <div className="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">Tiada projek dijumpai.</div>
+                    )}
+                    {filteredProjects.length > 0 && (
+                        <MobilePager
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalCount={filteredProjects.length}
+                            itemsPerPage={itemsPerPage}
+                            pageInput={pageInput}
+                            onPageChange={handlePageChange}
+                            onPageInputChange={handlePageInputChange}
+                            onPageInputBlur={handlePageInputBlur}
+                            onPageInputKeyDown={handlePageInputKeyDown}
+                        />
+                    )}
+                </div>
+            )}
+            {viewMode === 'list' && (
+                <div className="hidden md:flex bg-white/95  border border-white/10 shadow-xl rounded-3xl shadow-xl border border-white/20  overflow-hidden min-h-[400px] flex-col">
 
                     {/* Top Pagination Controls */}
                     {filteredProjects.length > 0 && (
@@ -1052,13 +1140,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                                     const pja = getPjaUser(project.pjaId);
                                                     return (
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shrink-0 overflow-hidden shadow-sm">
-                                                                {pja?.avatarUrl ? (
-                                                                    <img src={pja.avatarUrl} alt={pja.username} className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    pja?.username?.charAt(0).toUpperCase() || 'P'
-                                                                )}
-                                                            </div>
+                                                            <PjaAvatar pja={pja} />
                                                             <span className="text-xs font-bold text-slate-600">{pja?.username?.toUpperCase() || '-'}</span>
                                                         </div>
                                                     );
@@ -1121,11 +1203,12 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
 
             {/* Group View */}
             {viewMode === 'group' && (
-                <div className="space-y-6">
+                <div className="!mt-0 md:!mt-6 space-y-3 md:space-y-6">
                     {groupedProjects.map((group, idx) => {
                         const votesInGroup = Object.keys(group.projectsByVote).sort();
                         return (
-                            <div key={group.company} className="relative overflow-hidden rounded-3xl bg-white/60   border border-white/20  shadow-sm transition-colors hover:shadow-md">
+                            <React.Fragment key={group.company}>
+                            <div className="hidden md:block relative overflow-hidden rounded-3xl bg-white/60   border border-white/20  shadow-sm transition-colors hover:shadow-md">
                                 <div className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer hover:bg-slate-50  transition-colors gap-4" onClick={() => toggleCompany(group.company)}>
                                     <div className="flex items-center gap-4 flex-1">
                                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 shrink-0"><Building2 className="w-6 h-6" /></div>
@@ -1264,6 +1347,20 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                 )}
                                 {expandedCompanies[group.company] && group.count === 0 && <div className="p-8 text-center text-slate-400 italic text-sm bg-slate-50/30  border-t border-slate-100">Tiada projek untuk syarikat ini.</div>}
                             </div>
+                            <CompanyCard
+                                index={idx}
+                                group={group}
+                                expanded={!!expandedCompanies[group.company]}
+                                onToggle={() => toggleCompany(group.company)}
+                                costViewMode={costViewMode}
+                                canQuickEdit={canQuickEdit}
+                                getPjaUser={getPjaUser}
+                                getVoteName={getVoteName}
+                                getHargaAkhir={getHargaAkhir}
+                                onOpenProject={onEditProject}
+                                onUpdateProject={(id, updates) => updateProject({ id, updates })}
+                            />
+                            </React.Fragment>
                         );
                     })}
 
@@ -1271,7 +1368,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                     {groupedProjects.length > 0 && (
                         <div className="relative overflow-hidden rounded-3xl bg-white  border border-slate-200  shadow-xl p-6 mt-8 w-full mx-auto">
                             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100"><div className="p-3 bg-slate-100  rounded-xl shadow-sm text-emerald-600"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800  uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
-                            <div className="overflow-hidden rounded-xl border border-slate-200">
+                            <div className="overflow-x-auto md:overflow-hidden rounded-xl border border-slate-200">
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-50">
                                         <tr><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider w-20">Kod Vot</th><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider">Butiran</th><th className="py-3 px-4 text-center font-extrabold text-slate-500  uppercase tracking-wider">Bil. Projek</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Peruntukan</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Belanja</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Baki</th></tr>
@@ -1290,10 +1387,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                                     </tbody>
                                 </table>
                             </div>                            <div className="mt-6 flex flex-col gap-4 border-t border-slate-200  pt-4">
-                                <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
-                                <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-24 text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
+                                <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-28 md:w-24 h-11 md:h-auto text-base md:text-xs text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
+                                <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-28 md:w-24 h-11 md:h-auto text-base md:text-xs text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
                                 <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-emerald-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
-                                    <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="px-4 py-2 bg-slate-800  text-white  rounded-lg text-[10px] font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
+                                    <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="min-h-[44px] md:min-h-0 px-4 py-2 bg-slate-800  text-white  rounded-lg text-[10px] max-md:text-xs font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
                                     <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600  leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
                                 </div>
                             </div>
@@ -1304,6 +1401,34 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
                 </div>
             )}
 
+            <BottomSheet
+                open={isFilterSheetOpen}
+                title="Tetapan Data & Paparan"
+                onClose={() => setIsFilterSheetOpen(false)}
+                footer={
+                    <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm text-slate-500"><span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai</p>
+                        <button onClick={() => setIsFilterSheetOpen(false)} className="h-11 px-6 rounded-xl bg-emerald-600 text-white font-bold active:bg-emerald-700">Tutup</button>
+                    </div>
+                }
+            >
+                {filterBody}
+            </BottomSheet>
+
+            <ProjectActionsSheet
+                open={isActionSheetOpen}
+                onClose={() => setIsActionSheetOpen(false)}
+                isGroupView={viewMode === 'group'}
+                isGeneratingPdf={isGeneratingPdf}
+                canImportInden={canImportInden}
+                onExportCsv={exportToExcel}
+                onOpenReport={() => setIsExportModalOpen(true)}
+                onExportRotasi={handleExportRotasiPDF}
+                onOpenImportInden={() => setIsImportIndenOpen(true)}
+            />
+
+            <AddProjectFab onClick={onAddProject} />
+
             {isImportIndenOpen && canImportInden && (
                 <ImportIndenModal projects={projects} onClose={() => setIsImportIndenOpen(false)} />
             )}
@@ -1312,7 +1437,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onA
             {projectToDelete && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50  animate-fade-in" onClick={cancelDelete}>
                     <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
-                        <button onClick={cancelDelete} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
+                        <button onClick={cancelDelete} aria-label="Tutup" className="absolute top-4 right-4 w-11 h-11 md:w-auto md:h-auto flex items-center justify-center text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
                         <div className="flex flex-col items-center text-center pt-2">
                             <div className="w-20 h-20 bg-red-50  rounded-full flex items-center justify-center mb-6 text-red-500"><div className="w-14 h-14 bg-red-100  rounded-full flex items-center justify-center"><AlertTriangle className="w-8 h-8 stroke-[1.5]" /></div></div>
                             <h3 className="text-xl font-bold text-slate-900  mb-2 font-jakarta">Padam Projek?</h3>
