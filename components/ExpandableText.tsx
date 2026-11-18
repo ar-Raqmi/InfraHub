@@ -23,15 +23,13 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({ text, lines = 3, classN
     return () => observer.disconnect();
   }, [text, expanded, lines]);
 
-  const stop = (e: React.MouseEvent) => e.stopPropagation();
-
   return (
-    <div onClick={stop}>
+    <div>
       <p ref={ref} className={`break-words ${expanded ? '' : `clamp-${lines}`} ${className}`}>{text}</p>
       {(clamped || expanded) && (
         <button
           type="button"
-          onClick={() => setExpanded(v => !v)}
+          onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
           aria-expanded={expanded}
           className="min-h-[44px] pr-4 text-xs font-bold text-emerald-700 active:text-emerald-900"
         >

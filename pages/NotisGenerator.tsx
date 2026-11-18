@@ -131,7 +131,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                             <p className="text-xs text-slate-500">Pilih jenis notis untuk dijana</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100  rounded-full text-slate-500 transition-colors">
+                    <button onClick={onClose} aria-label="Tutup" className="p-2 max-md:p-3 hover:bg-slate-100  rounded-full text-slate-500 transition-colors">
                         <X className="w-5 h-5"/>
                     </button>
                 </div>
