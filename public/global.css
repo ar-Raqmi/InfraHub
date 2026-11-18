@@ -230,3 +230,13 @@ input[type=number] {
 @keyframes infrahub-nav-spin {
   to { transform: rotate(360deg); }
 }
+
+/* Multi-line clamps for long titles (see components/ExpandableText.tsx). */
+.clamp-2, .clamp-3, .clamp-4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.clamp-2 { -webkit-line-clamp: 2; line-clamp: 2; }
+.clamp-3 { -webkit-line-clamp: 3; line-clamp: 3; }
+.clamp-4 { -webkit-line-clamp: 4; line-clamp: 4; }

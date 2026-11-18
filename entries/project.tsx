@@ -24,7 +24,7 @@ const ProjectPage: React.FC = () => {
   const project = id > 0 ? (projects.find(p => p.id === id) ?? ({ id } as Project)) : undefined;
 
   return (
-    <AppShell currentPage="projects" selectedYear={selectedYear} showYearSelector={false}>
+    <AppShell currentPage="projects" selectedYear={selectedYear} showYearSelector={false} mobileTopBar={false}>
       <div className="bg-white/95 border border-white/10 shadow-xl rounded-3xl p-4 md:p-6">
         <ProjectDetail
           key={id || 'new'}

@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import BottomSheet from './BottomSheet';
 
 interface YearSelectorProps {
   selectedYear: number;
   onYearChange: (year: number) => void;
+  variant?: 'dropdown' | 'sheet';
 }
 
-const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange }) => {
+const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange, variant = 'dropdown' }) => {
+  const isSheet = variant === 'sheet';
   const [isOpen, setIsOpen] = useState(false);
   const [viewYear, setViewYear] = useState(selectedYear);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (isSheet) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -20,7 +24,7 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isSheet]);
 
   useEffect(() => {
     if (isOpen) {
@@ -53,28 +57,13 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
     setIsOpen(false);
   };
 
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 bg-white/50 rounded-2xl px-4 py-2 shadow-sm border transition-colors group ${
-          isOpen 
-            ? 'ring-2 ring-emerald-500 border-emerald-500 bg-white' 
-            : 'border-white/20 hover:bg-white'
-        }`}
-      >
-        <Calendar className="w-4 h-4 text-emerald-500 group- transition-transform" />
-        <span className="font-bold text-slate-700  font-manrope">{selectedYear}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-emerald-500' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-72 bg-white  rounded-2xl shadow-2xl border border-slate-200  p-4 z-[100] animate-slide-up ring-1 ring-black/5">
+  const yearPanel = (
+    <>
           
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <button 
               onClick={handlePrevRange}
-              className="p-1.5 hover:bg-slate-100  rounded-lg text-slate-500  transition-colors"
+              className={`${isSheet ? 'w-11 h-11 flex items-center justify-center' : 'p-1.5'} hover:bg-slate-100 rounded-lg text-slate-500 transition-colors`}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -83,7 +72,7 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
             </span>
             <button 
               onClick={handleNextRange}
-              className="p-1.5 hover:bg-slate-100  rounded-lg text-slate-500  transition-colors"
+              className={`${isSheet ? 'w-11 h-11 flex items-center justify-center' : 'p-1.5'} hover:bg-slate-100 rounded-lg text-slate-500 transition-colors`}
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -98,7 +87,7 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
                 <button
                   key={year}
                   onClick={() => handleYearSelect(year)}
-                  className={`py-2 rounded-xl text-sm font-bold transition-colors ${
+                  className={`${isSheet ? 'h-12' : 'py-2'} rounded-xl text-sm font-bold transition-colors ${
                     isSelected
                       ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
                       : 'text-slate-600  hover:bg-slate-100  '
@@ -109,6 +98,33 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYearChange 
               );
             })}
           </div>
+    </>
+  );
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 bg-white/50 rounded-2xl px-4 ${isSheet ? 'h-11' : 'py-2'} shadow-sm border transition-colors group ${
+          isOpen 
+            ? 'ring-2 ring-emerald-500 border-emerald-500 bg-white' 
+            : 'border-white/20 hover:bg-white'
+        }`}
+      >
+        <Calendar className="w-4 h-4 text-emerald-500 group- transition-transform" />
+        <span className="font-bold text-slate-700  font-manrope">{selectedYear}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-emerald-500' : ''}`} />
+      </button>
+
+      {isOpen && isSheet && (
+        <BottomSheet open title="Pilih Tahun" onClose={() => setIsOpen(false)}>
+          {yearPanel}
+        </BottomSheet>
+      )}
+
+      {isOpen && !isSheet && (
+        <div className="absolute top-full left-0 mt-2 w-72 bg-white  rounded-2xl shadow-2xl border border-slate-200  p-4 z-[100] animate-slide-up ring-1 ring-black/5">
+          {yearPanel}
         </div>
       )}
     </div>

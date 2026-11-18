@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Role } from '../types';
 import { apiService } from '../services/apiService';
-import { Camera, Lock, Save, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, X, Info, Trash2, AlertTriangle } from 'lucide-react';
+import { PageUrl } from '../lib/appUrl';
+import { navigateReplace } from '../lib/navigate';
+import { Camera, Lock, Save, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, X, Info, Trash2, AlertTriangle, LogOut } from 'lucide-react';
 
 interface ProfileProps {
   user: User;
@@ -146,6 +148,11 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
     } finally {
         setIsUploading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await apiService.logout();
+    navigateReplace(PageUrl.login);
   };
 
   return (
@@ -371,6 +378,13 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUserUpdate }) =>
         </div>,
         document.body
       )}
+
+      <button
+        onClick={handleLogout}
+        className="md:hidden w-full min-h-[48px] flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white text-red-600 font-bold active:bg-red-50"
+      >
+        <LogOut className="w-5 h-5" /> Log Keluar
+      </button>
     </div>
   );
 };
