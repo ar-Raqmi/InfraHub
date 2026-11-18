@@ -40,7 +40,7 @@ const MobileDetailHeader: React.FC<MobileDetailHeaderProps> = ({
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--bq-sticky-top', `${barRef.current?.offsetHeight ?? 0}px`);
-    return () => root.style.removeProperty('--bq-sticky-top');
+    return () => { root.style.removeProperty('--bq-sticky-top'); };
   }, []);
 
   const selectTab = (id: string) => {
