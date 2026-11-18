@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, BulletinItem, getStatusColor, getStatusLabel } from '../types';
+import { Project, ProjectStatus, User, Role, formatCurrency, formatDate, BulletinItem } from '../types';
 import { apiService } from '../services/apiService';
 import { useBulletins } from '../hooks/useBulletins';
 import { useUsers } from '../hooks/useUsers';
-import { TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Printer, ArrowRight, Activity, Zap, FileClock, Banknote, ClipboardCheck, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart, Loader2 } from 'lucide-react';
+import { TrendingUp, AlertCircle, Plus, Printer, ArrowRight, Activity, Zap, Megaphone, Trash2, PlusCircle, X, Filter, User as UserIcon, Calendar, HelpCircle, AlertTriangle, ChevronLeft, ChevronRight, BarChart3, PieChart, Loader2, Search } from 'lucide-react';
+import StatusTiles from '../components/dash/StatusTiles';
+import ProjectCard from '../components/dash/ProjectCard';
+import MobilePager from '../components/dash/MobilePager';
+import MobileBulletins from '../components/dash/MobileBulletins';
+import { StatusChip, NoticeChip } from '../components/dash/StatusChip';
+import EmptyProjects from '../components/dash/EmptyProjects';
+import { useInView } from '../components/dash/useInView';
 
 const getPendingNotice = (project: Project): string | null => {
   if (project.status === ProjectStatus.SIAP || project.isTiadaNotisDiperlukan || !project.tarikhTamatKontrak) {
@@ -135,13 +142,6 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
 
 
-  const phase1 = displayProjects.filter(p => p.status === ProjectStatus.FASA_DRAF);
-  const phase2 = displayProjects.filter(p => p.status === ProjectStatus.MENUNGGU_LANTIKAN);
-  const phase3 = displayProjects.filter(p => p.status === ProjectStatus.DALAM_PROSES);
-  const phase4 = displayProjects.filter(p => p.status === ProjectStatus.PEMERIKSAAN_TAPAK);
-  const phase5 = displayProjects.filter(p => p.status === ProjectStatus.TUNTUTAN_BAYARAN);
-  const phase6 = displayProjects.filter(p => p.status === ProjectStatus.SIAP);
-
   const filteredProjects = useMemo(() => {
     return displayProjects.filter(p => {
       // 1. Search filter
@@ -171,6 +171,14 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
   }, [filteredProjects, tablePage]);
 
   const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+  const pageFrom = Math.min(filteredProjects.length, (tablePage - 1) * itemsPerPage + 1);
+  const pageTo = Math.min(filteredProjects.length, tablePage * itemsPerPage);
+  const pjaName = (project: Project) => allUsers.find(u => u.id === project.pjaId)?.username.toUpperCase();
+
+  const clearFilters = () => { setSearchQuery(''); setStatusFilter('ALL'); };
+
+  const projectListRef = React.useRef<HTMLDivElement>(null);
+  const isProjectListInView = useInView(projectListRef);
 
   const handleAddBulletin = async () => {
     if (!newBulletinContent.trim()) return;
@@ -358,7 +366,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
               <select
                 value={pjaFilter}
                 onChange={(e) => setPjaFilter(e.target.value)}
-                className="pl-10 pr-10 py-3 rounded-2xl border border-slate-200  bg-white  shadow-lg shadow-slate-200/50  focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-slate-700  appearance-none cursor-pointer min-w-[200px] transition-shadow hover:shadow-xl"
+                className="pl-10 pr-10 py-3 rounded-2xl border border-slate-200  bg-white  shadow-lg shadow-slate-200/50  focus:ring-2 focus:ring-emerald-500 text-sm max-md:text-base font-bold text-slate-700  appearance-none cursor-pointer min-w-[200px] transition-shadow hover:shadow-xl"
               >
                 <option value="ALL">Semua Pegawai (PJA)</option>
                 {allPjas.map(p => (
@@ -397,8 +405,9 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           {isManagement && (
             <button
               onClick={() => setIsAddingBulletin(!isAddingBulletin)}
-              className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+              className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors max-md:w-11 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center"
               title="Tambah Info"
+              aria-label="Tambah Info"
             >
               {isAddingBulletin ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             </button>
@@ -528,7 +537,16 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {bulletins.length > 0 && (
+          <MobileBulletins
+            bulletins={bulletins.slice(0, 3)}
+            userId={user.id}
+            isAdmin={isManagement}
+            onRead={handleMarkAsRead}
+            onDelete={setBulletinToDelete}
+          />
+        )}
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${bulletins.length > 0 ? 'max-md:hidden' : ''}`}>
           {bulletins.length > 0 ? bulletins.slice(0, 3).map((item) => (
             <BulletinCard
               key={item.id}
@@ -558,127 +576,56 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
           {statusFilter !== 'ALL' && (
             <button
               onClick={() => setStatusFilter('ALL')}
-              className="text-xs font-bold text-emerald-600 hover:underline"
+              className="text-xs font-bold text-emerald-600 hover:underline max-md:min-h-[44px]"
             >
               Lihat Semua Projek Aktif
             </button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
-          <div
-            onClick={() => setStatusFilter(statusFilter === ProjectStatus.FASA_DRAF ? 'ALL' : ProjectStatus.FASA_DRAF)}
-            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.FASA_DRAF ? 'border-slate-500 ring-2 ring-slate-500/20' : 'border-slate-100'}`}
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Zap className="w-24 h-24 text-slate-500" />
-            </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-slate-50  text-slate-600  group-hover:bg-slate-500 group-hover:text-white transition-colors duration-200">
-              <Zap className="w-7 h-7" />
-            </div>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase1.length}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.FASA_DRAF)}</p>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter(statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'ALL' : ProjectStatus.MENUNGGU_LANTIKAN)}
-            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'border-yellow-500 ring-2 ring-yellow-500/20' : 'border-slate-100'}`}
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <FileClock className="w-24 h-24 text-slate-500" />
-            </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-slate-100  text-slate-600  group-hover:bg-slate-600 group-hover:text-white transition-colors duration-200">
-              <FileClock className="w-7 h-7" />
-            </div>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase2.length}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.MENUNGGU_LANTIKAN)}</p>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter(statusFilter === ProjectStatus.DALAM_PROSES ? 'ALL' : ProjectStatus.DALAM_PROSES)}
-            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.DALAM_PROSES ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-100'}`}
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Clock className="w-24 h-24 text-blue-500" />
-            </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-blue-50  text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
-              <Clock className="w-7 h-7" />
-            </div>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase3.length}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.DALAM_PROSES)}</p>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter(statusFilter === ProjectStatus.PEMERIKSAAN_TAPAK ? 'ALL' : ProjectStatus.PEMERIKSAAN_TAPAK)}
-            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.PEMERIKSAAN_TAPAK ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-slate-100'}`}
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <ClipboardCheck className="w-24 h-24 text-indigo-500" />
-            </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-indigo-50  text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-200">
-              <ClipboardCheck className="w-7 h-7" />
-            </div>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase4.length}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.PEMERIKSAAN_TAPAK)}</p>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter(statusFilter === ProjectStatus.TUNTUTAN_BAYARAN ? 'ALL' : ProjectStatus.TUNTUTAN_BAYARAN)}
-            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.TUNTUTAN_BAYARAN ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-slate-100'}`}
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Banknote className="w-24 h-24 text-orange-500" />
-            </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-orange-50  text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200">
-              <Banknote className="w-7 h-7" />
-            </div>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase5.length}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.TUNTUTAN_BAYARAN)}</p>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter(statusFilter === ProjectStatus.SIAP ? 'ALL' : ProjectStatus.SIAP)}
-            className={`cursor-pointer bg-white  rounded-[2rem] p-6 shadow-xl shadow-slate-200/50  hover:shadow-2xl transition-all group relative overflow-hidden border ${statusFilter === ProjectStatus.SIAP ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-100'}`}
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <CheckCircle className="w-24 h-24 text-emerald-500" />
-            </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-emerald-50  text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-200">
-              <CheckCircle className="w-7 h-7" />
-            </div>
-            <p className="text-3xl font-black text-slate-900  mb-1">{phase6.length}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{getStatusLabel(ProjectStatus.SIAP)}</p>
-          </div>
-        </div>
+        <StatusTiles
+          projects={displayProjects}
+          statusFilter={statusFilter}
+          onToggle={(status) => setStatusFilter(statusFilter === status ? 'ALL' : status)}
+        />
       </section>
 
       <div className="space-y-8">
 
-        <div className="space-y-6 animate-fade-in">
+        <div ref={projectListRef} className="space-y-6 animate-fade-in">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 className="text-xl font-bold text-slate-800  flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-emerald-500" />
-              {statusFilter === 'ALL' ? 'Projek Aktif' : `Projek: ${statusFilter.replace(/_/g, ' ')}`}
-            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-xl font-bold text-slate-800  flex items-center gap-2 min-w-0">
+                <BarChart3 className="w-5 h-5 text-emerald-500 shrink-0" />
+                {statusFilter === 'ALL' ? 'Projek Aktif' : `Projek: ${statusFilter.replace(/_/g, ' ')}`}
+              </h2>
+              <button
+                onClick={() => onNavigate('projects')}
+                className="md:hidden h-11 shrink-0 flex items-center gap-1.5 text-emerald-700 font-bold text-sm"
+              >
+                Lihat Semua <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="relative w-full sm:w-64">
+              <div className="relative w-full md:w-64">
                 <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                  <BarChart3 className="w-4 h-4 text-slate-400" />
+                  <BarChart3 className="w-4 h-4 text-slate-400 max-md:hidden" />
+                  <Search className="w-5 h-5 text-slate-400 md:hidden" />
                 </div>
                 <input
                   type="text"
                   placeholder="Cari No. Fail / Aduan / Tajuk / Syarikat..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 text-sm outline-none"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 text-sm outline-none max-md:h-12 max-md:text-base max-md:pl-11"
                 />
               </div>
 
               {filteredProjects.length > 0 && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 max-md:hidden">
                   <div className="hidden lg:block text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-                    <span className="text-emerald-600">{Math.min(filteredProjects.length, (tablePage - 1) * itemsPerPage + 1)}</span>-{Math.min(filteredProjects.length, tablePage * itemsPerPage)} <span className="text-slate-400 font-medium mx-1">/</span> {filteredProjects.length}
+                    <span className="text-emerald-600">{pageFrom}</span>-{pageTo} <span className="text-slate-400 font-medium mx-1">/</span> {filteredProjects.length}
                   </div>
 
                   {filteredProjects.length > itemsPerPage && (
@@ -707,14 +654,14 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
               <button
                 onClick={() => onNavigate('projects')}
-                className="text-emerald-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-2 group bg-white  px-4 py-2 rounded-xl transition-shadow hover:shadow-lg border border-transparent hover:border-emerald-100"
+                className="text-emerald-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-2 group bg-white  px-4 py-2 rounded-xl transition-shadow hover:shadow-lg border border-transparent hover:border-emerald-100 max-md:hidden"
               >
                 Lihat Semua <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
                 onClick={onNewProject}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 group"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 group max-md:hidden"
               >
                 <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
                 <span className="text-xs font-bold tracking-tight whitespace-nowrap">Tambah Projek</span>
@@ -722,7 +669,35 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
             </div>
           </div>
 
-          <div className="bg-white  rounded-[2.5rem] shadow-xl shadow-slate-200/50  overflow-hidden border border-slate-100">
+          <div className="md:hidden space-y-3">
+            {paginatedProjects.length > 0 ? paginatedProjects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                pjaName={isManagement && pjaFilter === 'ALL' ? pjaName(project) : undefined}
+                pendingNotice={getPendingNotice(project)}
+                onOpen={() => handleDashboardProjectClick(project)}
+                onProgressCommit={(value) => handleProgressUpdate(project, value)}
+              />
+            )) : (
+              <div className="bg-white rounded-2xl border border-slate-200 px-6 py-12">
+                <EmptyProjects onClear={clearFilters} />
+              </div>
+            )}
+            {filteredProjects.length > 0 && (
+              <MobilePager
+                page={tablePage}
+                totalPages={totalPages}
+                from={pageFrom}
+                to={pageTo}
+                total={filteredProjects.length}
+                onPrev={() => setTablePage(prev => Math.max(1, prev - 1))}
+                onNext={() => setTablePage(prev => Math.min(totalPages, prev + 1))}
+              />
+            )}
+          </div>
+
+          <div className="hidden md:block bg-white  rounded-[2.5rem] shadow-xl shadow-slate-200/50  overflow-hidden border border-slate-100">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px]">
                 <thead className="bg-slate-50/80">
@@ -754,7 +729,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                             <div className="flex items-center gap-2 mt-1.5">
                               <span className="text-[20px] font-black bg-slate-100  px-2 py-0.5 rounded text-slate-500">{project.noFail}</span>
                               {isManagement && pjaFilter === 'ALL' && (
-                                <span className="text-[15px] font-black text-slate-400 px-1.5 py-0.5 rounded border border-slate-200">PJA: {allUsers.find(u => u.id === project.pjaId)?.username.toUpperCase()}</span>
+                                <span className="text-[15px] font-black text-slate-400 px-1.5 py-0.5 rounded border border-slate-200">PJA: {pjaName(project)}</span>
                               )}
                             </div>
                           </div>
@@ -767,20 +742,10 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex flex-col gap-1.5 items-start">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>
-                            {getStatusLabel(project.status)}
-                          </span>
+                          <StatusChip status={project.status} />
                           {(() => {
                             const pendingNotice = getPendingNotice(project);
-                            if (pendingNotice) {
-                              return (
-                                <span className="text-[10px] font-black text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-lg whitespace-nowrap animate-pulse">
-                                  {pendingNotice}
-                                </span>
-                              );
-                            }
-                            return null;
+                            return pendingNotice && <NoticeChip notice={pendingNotice} />;
                           })()}
                         </div>
                       </td>
@@ -810,13 +775,7 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
                   )) : (
                     <tr>
                       <td colSpan={5} className="px-8 py-20 text-center">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-20 h-20 bg-slate-50  rounded-full flex items-center justify-center">
-                            <Activity className="w-8 h-8 text-slate-300" />
-                          </div>
-                          <p className="text-slate-400 font-medium">Tiada projek ditemui dengan kriteria carian.</p>
-                          <button onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }} className="text-emerald-600 font-bold text-sm hover:underline">Kosongkan Tapisan</button>
-                        </div>
+                        <EmptyProjects onClear={clearFilters} />
                       </td>
                     </tr>
                   )}
@@ -829,6 +788,16 @@ const Dashboard: React.FC<DashboardProps> = ({ projects, user, onProjectClick, o
 
 
       </div>
+
+      {isProjectListInView && (
+        <button
+          onClick={onNewProject}
+          className="md:hidden fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 h-14 px-5 flex items-center gap-2 rounded-2xl bg-emerald-600 text-white font-bold text-sm border border-emerald-700 active:bg-emerald-700"
+        >
+          <Plus className="w-5 h-5" />
+          Tambah Projek
+        </button>
+      )}
 
       {
         selectedBulletin && createPortal(
