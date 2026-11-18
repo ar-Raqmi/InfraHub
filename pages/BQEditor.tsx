@@ -48,6 +48,13 @@ const ICON_MAP = {
 //  are imported from ../lib/bqShared)
 
 import MoveItemModal from '../components/MoveItemModal';
+import CalcPartRow, { globalDimLabel } from '../components/bq/CalcPartRow';
+import BQItemCardMobile from '../components/bq/BQItemCardMobile';
+import HeaderRowMobile, { reorderDeleteActions } from '../components/bq/HeaderRowMobile';
+import { BillBar, BillNavSheet, NavGroup } from '../components/bq/BillNav';
+import BillSetupToggle, { globalDimsSummary } from '../components/bq/BillSetupToggle';
+import PinnedAddButton from '../components/bq/PinnedAddButton';
+import { useIsMobile } from '../components/bq/useIsMobile';
 
 
 
@@ -141,6 +148,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
     } | null>(null);
 
     const [moveTarget, setMoveTarget] = useState<{ billId: string, itemId: string, description: string } | null>(null);
+    const [isNavSheetOpen, setIsNavSheetOpen] = useState(false);
+    const [isSetupOpen, setIsSetupOpen] = useState(false);
+    const editorRef = useRef<HTMLDivElement>(null);
+    const isMobile = useIsMobile();
 
     const currentUser = apiService.getCurrentUser();
     const isAdmin = currentUser?.role === Role.ADMIN;
@@ -1095,63 +1106,20 @@ const BQEditor: React.FC<BQEditorProps> = ({
         }));
     };
 
-    const renderCalculationPartRow = (bill: BQGroup, item: BQItem, part: CalculationPart, index: number) => {
-        const isGlobal = part.isGlobal;
-        const inputClassBase = "w-12 outline-none text-right font-bold text-sm transition-colors";
-        const inputClass = isGlobal || readOnly ? `${inputClassBase} bg-transparent text-slate-400 cursor-not-allowed` : `${inputClassBase} bg-emerald-50/50  text-emerald-700  border-b border-emerald-300  rounded-sm`;
-
-        const gDimLabel = isGlobal && part.globalIndex !== undefined ? (localDimsArray[part.globalIndex]?.label || `Kiraan ${part.globalIndex + 1}`) : '';
-
-        return (
-            <div key={part.id} className={`flex flex-wrap items-center gap-2 text-xs p-1.5 rounded-lg border mb-1 last:mb-0 transition-colors ${isGlobal ? 'bg-emerald-50/30 border-emerald-100' : 'bg-white border-slate-200'}`}>
-                {!readOnly && (
-                    <button
-                        onClick={() => setIsGlobalLinkModalOpen({ itemId: item.id, partId: part.id })}
-                        className={`p-1 rounded transition-colors ${isGlobal ? 'text-emerald-600 bg-emerald-100' : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50'}`}
-                        title={isGlobal ? `Terhubung dengan: ${gDimLabel}` : "Hubungkan dengan Global Calculation"}
-                    >
-                        {isGlobal ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}
-                    </button>
-                )}
-                <input type="text" value={part.label || ''} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { label: e.target.value })} disabled={readOnly} className="w-16 bg-transparent border-b border-dashed border-slate-300  focus:border-emerald-500 outline-none text-slate-500 placeholder-slate-400 text-[10px]" placeholder="Label" />
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasLength ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasLength} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasLength: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">P</span>{part.hasLength && (<DimensionInput value={part.length || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { length: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
-                {part.hasLength && (part.hasWidth || part.hasDepth) && <span className="text-slate-300">×</span>}
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasWidth ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasWidth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasWidth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">L</span>{part.hasWidth && (<DimensionInput value={part.width || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { width: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
-                {part.hasWidth && part.hasDepth && <span className="text-slate-300">×</span>}
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border transition-colors ${part.hasDepth ? 'bg-emerald-50 border-emerald-200' : 'bg-transparent border-transparent opacity-60'}`}><input type="checkbox" checked={part.hasDepth} onChange={(e) => updateCalculationPart(bill.id, item.id, part.id, { hasDepth: e.target.checked })} disabled={readOnly} className="w-3 h-3 rounded text-emerald-600" /><span className="text-[10px] font-bold text-slate-500">T</span>{part.hasDepth && (<DimensionInput value={part.depth || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { depth: val })} className={inputClass} placeholder="0" disabled={isGlobal || readOnly} />)}</div>
-                <span className="text-slate-300">×</span>
-                <div className={`flex items-center gap-1 rounded px-1.5 py-0.5 border border-transparent ${part.multiplier !== 1 ? 'bg-orange-50  border-orange-200' : 'opacity-60'}`}><DimensionInput value={part.multiplier || 0} onChange={val => updateCalculationPart(bill.id, item.id, part.id, { multiplier: val })} disabled={readOnly} className="w-8 bg-transparent outline-none text-center font-bold text-slate-700  placeholder-slate-400" placeholder="1" backspaceOnZero emptyValue={1} /></div>
-
-                {/* Individual Row Result with Full Breakdown */}
-                <div className="ml-auto flex items-center gap-2 md:gap-3 pl-2 border-l border-slate-100">
-                    {isGlobal && <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter bg-emerald-50 px-1 rounded">{gDimLabel}</span>}
-                    <span className="hidden md:inline text-[10px] text-slate-400 font-mono">{item.unit}</span>
-                    <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded min-w-[30px] text-center">
-                        {(() => {
-                            let product = 1;
-                            if (part.hasLength) product *= part.length;
-                            if (part.hasWidth) product *= part.width;
-                            if (part.hasDepth) product *= part.depth;
-                            const qty = product * partMultiplier(part.multiplier);
-                            return qty % 1 === 0 ? qty : qty.toFixed(2);
-                        })()}
-                    </div>
-                    <div className="hidden md:block text-[10px] text-slate-400">x {formatCurrency(item.rate)}</div>
-                    <div className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 min-w-[60px] text-right">
-                        {(() => {
-                            let product = 1;
-                            if (part.hasLength) product *= part.length;
-                            if (part.hasWidth) product *= part.width;
-                            if (part.hasDepth) product *= part.depth;
-                            const qty = product * partMultiplier(part.multiplier);
-                            return formatCurrency(qty * item.rate);
-                        })()}
-                    </div>
-                    {!readOnly && <button onClick={() => removeCalculationPart(bill.id, item.id, part.id)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><MinusCircle className="w-4 h-4" /></button>}
-                </div>
-            </div>
-        );
-    };
+    const renderCalculationPartRow = (bill: BQGroup, item: BQItem, part: CalculationPart) => (
+        <CalcPartRow
+            key={part.id}
+            part={part}
+            unit={item.unit}
+            rate={item.rate}
+            theme="emerald"
+            globalLabel={globalDimLabel(part, localDimsArray)}
+            readOnly={readOnly}
+            onUpdate={(updates) => updateCalculationPart(bill.id, item.id, part.id, updates)}
+            onRemove={() => removeCalculationPart(bill.id, item.id, part.id)}
+            onLink={() => setIsGlobalLinkModalOpen({ itemId: item.id, partId: part.id })}
+        />
+    );
 
     const renderItemRow = (bill: BQGroup, item: BQItem, index: number, isHidden: boolean) => {
         if (isHidden) return null;
@@ -1159,6 +1127,23 @@ const BQEditor: React.FC<BQEditorProps> = ({
         const hierarchyLevel = getItemLevel(item);
         if (item.type === 'HEADER') {
             const isLevel0 = hierarchyLevel === 0;
+            if (isMobile) {
+                const relocate = { label: 'Pindah', icon: <FolderOpen className="w-5 h-5" />, onClick: () => setMoveTarget({ billId: bill.id, itemId: item.id, description: item.description }) };
+                return (
+                    <HeaderRowMobile
+                        key={item.id}
+                        autoNumber={autoNumber}
+                        isLevel0={isLevel0}
+                        isCollapsed={!!item.isCollapsed}
+                        onToggleCollapse={() => toggleCollapse(bill.id, item.id)}
+                        description={item.description}
+                        onDescriptionChange={(value) => updateItem(bill.id, item.id, { description: value })}
+                        readOnly={readOnly}
+                        textClass="text-slate-800"
+                        actions={[...(isLevel0 ? [relocate] : []), ...reorderDeleteActions(index === 0, (dir) => moveItem(bill.id, item.id, dir), () => requestDeleteItem(bill.id, item, index))]}
+                    />
+                );
+            }
             return (
                 <div key={item.id} className={`flex items-center gap-2 py-3 border-b border-slate-100 ${isLevel0 ? 'bg-slate-100' : 'bg-slate-50/50'} px-4 -mx-4 group`}>
                     <span className="text-xs font-black text-slate-400 min-w-[30px]">{autoNumber}</span>
@@ -1185,6 +1170,26 @@ const BQEditor: React.FC<BQEditorProps> = ({
         }
         const paddingLeftClass = 'pl-10';
         const isRecentlyAdded = lastAddedItemId === item.id;
+        if (isMobile) {
+            return (
+                <BQItemCardMobile
+                    key={item.id}
+                    item={item}
+                    autoNumber={autoNumber}
+                    readOnly={readOnly}
+                    isRecentlyAdded={isRecentlyAdded}
+                    isFirst={index === 0}
+                    onUpdate={(updates) => updateItem(bill.id, item.id, updates)}
+                    onToggleGlobal={() => toggleGlobal(bill.id, item.id)}
+                    onToggleCustomCalc={() => toggleCustomCalc(bill.id, item.id)}
+                    onAddPart={() => addCalculationPart(bill.id, item.id)}
+                    onMove={(dir) => moveItem(bill.id, item.id, dir)}
+                    onDelete={() => requestDeleteItem(bill.id, item, index)}
+                >
+                    {(item.calculationParts || []).map(part => renderCalculationPartRow(bill, item, part))}
+                </BQItemCardMobile>
+            );
+        }
         return (
             <div key={item.id} id={`bq-item-${item.id}`} className={`py-4 border-b border-slate-100  last:border-0 group hover:bg-slate-50  px-2 rounded-xl transition-colors duration-700 ${isRecentlyAdded ? 'bg-emerald-50/80  ring-2 ring-emerald-500' : ''}`}>
                 <div className="flex justify-between items-start gap-3 mb-2">
@@ -1194,7 +1199,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                 </div>
                 <div className={`flex flex-col sm:flex-row items-start gap-3 bg-slate-50  p-2 rounded-lg ml-12`}>
                     <div className="flex flex-col gap-1 mt-0.5"><button onClick={() => toggleGlobal(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isGlobal ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white  text-slate-400 border-slate-200  hover:border-slate-300'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}</button><button onClick={() => toggleCustomCalc(bill.id, item.id)} disabled={readOnly} className={`p-1.5 rounded-md transition-colors border ${item.isCustomCalc ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white  text-slate-400 border-slate-200  hover:text-indigo-500'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}>{item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}</button></div>
-                    {item.isCustomCalc ? (<div className="flex-1 w-full flex items-center gap-2"><input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white  border border-slate-200  rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" /><div className="flex items-center gap-1 bg-white  rounded px-2 py-1 border border-slate-200"><span className="text-[10px] font-bold text-slate-400">QTY</span><DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" /></div></div>) : (<div className="flex-1 w-full"><div className="space-y-1">{(item.calculationParts || []).map((part, pIdx) => renderCalculationPartRow(bill, item, part, pIdx))}</div>{!readOnly && (<div className="flex items-center justify-between mt-2"><button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-bold px-2 py-1 rounded hover:bg-emerald-50"><PlusCircle className="w-3 h-3" /> Tambah Kiraan</button><div className="font-mono font-bold text-emerald-600 text-sm border-l border-slate-200  pr-2 px-2">= {item.qty}</div></div>)}</div>)}
+                    {item.isCustomCalc ? (<div className="flex-1 w-full flex items-center gap-2"><input type="text" value={item.customCalc || ''} onChange={(e) => updateItem(bill.id, item.id, { customCalc: e.target.value })} disabled={readOnly} className="flex-1 text-xs bg-white  border border-slate-200  rounded px-2 py-1 font-mono text-slate-600" placeholder="e.g. 80 x 0.5 x 2" /><div className="flex items-center gap-1 bg-white  rounded px-2 py-1 border border-slate-200"><span className="text-[10px] font-bold text-slate-400">QTY</span><DimensionInput value={item.qty} onChange={(val) => updateItem(bill.id, item.id, { qty: val })} disabled={readOnly} className="w-16 text-right text-sm font-bold bg-transparent outline-none" /></div></div>) : (<div className="flex-1 w-full"><div className="space-y-1">{(item.calculationParts || []).map(part => renderCalculationPartRow(bill, item, part))}</div>{!readOnly && (<div className="flex items-center justify-between mt-2"><button onClick={() => addCalculationPart(bill.id, item.id)} className="text-[10px] flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-bold px-2 py-1 rounded hover:bg-emerald-50"><PlusCircle className="w-3 h-3" /> Tambah Kiraan</button><div className="font-mono font-bold text-emerald-600 text-sm border-l border-slate-200  pr-2 px-2">= {item.qty}</div></div>)}</div>)}
                     <div className="flex flex-col items-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-200  pt-2 sm:pt-0 pl-2 border-l-0 sm:border-l">
                         <div className="text-right w-24">
                             <div className="text-[10px] text-slate-400 uppercase tracking-wider">Jumlah</div>
@@ -1227,7 +1232,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                         </div>
                     </div>
                     {!readOnly && (
-                        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 bg-white/90 rounded-lg p-0.5 shadow-sm">
+                        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity absolute top-2 right-2 bg-white/90 rounded-lg p-0.5 shadow-sm">
                             <button onClick={(e) => { e.stopPropagation(); moveFn(b.id, 'up'); }} disabled={index === 0} className="p-1 hover:bg-slate-100 rounded disabled:opacity-30 text-slate-500"><ChevronUp className="w-3 h-3" /></button>
                             <button onClick={(e) => { e.stopPropagation(); moveFn(b.id, 'down'); }} disabled={index === total - 1} className="p-1 hover:bg-slate-100 rounded disabled:opacity-30 text-slate-500"><ChevronDown className="w-3 h-3" /></button>
                             <button type="button" onClick={(e) => { e.stopPropagation(); deleteFn(b); }} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors mt-1"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -1266,6 +1271,29 @@ const BQEditor: React.FC<BQEditorProps> = ({
     const sortedLocationIds = Array.from(new Set(bills.filter(b => !isTopBill(b)).flatMap(b => b.locationIds || (b.locationId ? [b.locationId] : [])))) as string[];
     const categories = Array.from(new Set(bqLibrary.map(g => g.category)));
 
+    const billTotal = (b: BQGroup) => b.items.reduce((sum, i) => sum + (i.amount || 0), 0);
+    const toNavBills = (groupBills: BQGroup[]) => groupBills.map((b, idx) => {
+        const { prefix, content } = parseTitle(b.title);
+        return { id: b.id, prefix, content: content || b.title, meta: `${b.items.length} items · ${formatCurrency(billTotal(b))}`, canEdit: true, upDisabled: idx === 0, downDisabled: idx === groupBills.length - 1 };
+    });
+    const locationName = (locId: string) => locationRows.find(l => l.id === locId)?.lokasi || 'Unknown Location';
+    const navGroups: NavGroup[] = [
+        ...(permulaanBills.length > 0 ? [{ key: 'permulaan', label: 'Permulaan', isLocation: false, bills: toNavBills(permulaanBills) }] : []),
+        ...sortedLocationIds.map((locId, index) => ({
+            key: locId,
+            label: locationName(locId),
+            isLocation: true,
+            bills: toNavBills(billsByLocation[locId] || []),
+            onMoveUp: () => moveLocation(locId, 'up'),
+            onMoveDown: () => moveLocation(locId, 'down'),
+            upDisabled: index === 0,
+            downDisabled: index === sortedLocationIds.length - 1,
+        })),
+        ...(otherBills.length > 0 ? [{ key: 'other', label: 'Lain-lain', isLocation: false, bills: toNavBills(otherBills) }] : []),
+    ];
+    const activeBillLocs = activeBill ? activeBill.locationIds || (activeBill.locationId ? [activeBill.locationId] : []) : [];
+    const hasExpandedHeader = !!activeBill?.items.some(item => item.type === 'HEADER' && !item.isCollapsed);
+
     const libraryGroups = (() => {
         const searchLower = librarySearchTerm.toLowerCase();
         const recentGroupIds = Array.from(new Set(recentItems.map(ri => ri.groupId)));
@@ -1296,9 +1324,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
     if (isPrintView) return null;
 
     return (
-        <div className={`flex flex-col md:flex-row gap-4 items-start`}>
+        <div ref={editorRef} className={`flex flex-col md:flex-row gap-4 items-start`}>
             {/* Editor Sidebar */}
-            <div className="w-full md:w-72 flex flex-col gap-2 shrink-0 sticky top-24 max-h-[calc(100vh-8rem)]">
+            <div className="hidden w-full md:w-72 md:flex flex-col gap-2 shrink-0 sticky top-24 max-h-[calc(100vh-8rem)]">
                 <div className="bg-white/80  p-3 rounded-xl border border-slate-200  shadow-sm flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Navigasi BQ</span>
                     {!readOnly && <button onClick={handleAddTemplate} className="p-1 bg-emerald-100 text-emerald-600 rounded hover:bg-emerald-200 transition-colors" title="Tambah Template"><Plus className="w-4 h-4" /></button>}
@@ -1318,7 +1346,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                             <div key={locId} className="space-y-1">
                                 <div className="px-2 text-[10px] font-bold text-slate-400 uppercase flex items-center justify-between group/header mt-4 mb-2">
                                     <div className="flex items-center gap-1 truncate max-w-[70%]" title={locName}><MapPin className="w-3 h-3 shrink-0" /> {locName}</div>
-                                    {!readOnly && (<div className="flex items-center gap-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity"><button onClick={(e) => { e.stopPropagation(); moveLocation(locId, 'up'); }} disabled={index === 0} className="p-1 hover:bg-slate-200  rounded disabled:opacity-30"><ChevronUp className="w-3 h-3" /></button><button onClick={(e) => { e.stopPropagation(); moveLocation(locId, 'down'); }} disabled={index === sortedLocationIds.length - 1} className="p-1 hover:bg-slate-200  rounded disabled:opacity-30"><ChevronDown className="w-3 h-3" /></button></div>)}
+                                    {!readOnly && (<div className="flex items-center gap-0.5 opacity-0 group-hover/header:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity"><button onClick={(e) => { e.stopPropagation(); moveLocation(locId, 'up'); }} disabled={index === 0} className="p-1 hover:bg-slate-200  rounded disabled:opacity-30"><ChevronUp className="w-3 h-3" /></button><button onClick={(e) => { e.stopPropagation(); moveLocation(locId, 'down'); }} disabled={index === sortedLocationIds.length - 1} className="p-1 hover:bg-slate-200  rounded disabled:opacity-30"><ChevronDown className="w-3 h-3" /></button></div>)}
                                 </div>
                                 <div className="space-y-2">{groupBills.map((b, idx) => renderSidebarItem(b, idx, groupBills.length, moveBill, requestDeleteBill))}</div>
                             </div>
@@ -1337,8 +1365,23 @@ const BQEditor: React.FC<BQEditorProps> = ({
             <div className="flex-1 bg-white  rounded-xl shadow-inner flex flex-col w-full min-w-0">
                 {activeBill ? (
                     <>
-                        <div className="p-4 border-b border-slate-100  bg-slate-50/50  sticky top-20 z-20">
-                            <div className="flex items-center justify-between mb-2">
+                        <BillBar
+                            prefix={parseTitle(activeBill.title).prefix}
+                            content={parseTitle(activeBill.title).content || activeBill.title}
+                            locationName={activeBillLocs.length > 0 ? locationName(activeBillLocs[0]) : undefined}
+                            totals={[{ label: 'Total', value: formatCurrency(billTotal(activeBill)), className: 'text-emerald-600' }]}
+                            theme="emerald"
+                            onOpen={() => setIsNavSheetOpen(true)}
+                        />
+                        <div className="md:hidden px-3 pt-3">
+                            <BillSetupToggle open={isSetupOpen} onToggle={() => setIsSetupOpen(v => !v)} locationCount={isTopBill(activeBill) ? undefined : activeBillLocs.length} summary={globalDimsSummary(localDimsArray)} dirty={isDimsDirty} />
+                        </div>
+                        <div className={`${isSetupOpen ? '' : 'hidden'} md:block p-4 border-b border-slate-100  bg-slate-50/50  md:sticky md:top-20 z-20`}>
+                            {/* Mounted on open: AutoResizeTextarea can only measure a visible box. */}
+                            {isSetupOpen && (<div className="md:hidden mb-3">
+                                <AutoResizeTextarea value={activeBill.title} onChange={(e) => updateBillTitle(activeBill.id, e.target.value.replace(/\n/g, ' '))} disabled={readOnly} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-base font-bold uppercase text-slate-800 outline-none focus:border-emerald-500" />
+                            </div>)}
+                            <div className="hidden md:flex items-center justify-between mb-2">
                                 <input value={activeBill.title} onChange={(e) => updateBillTitle(activeBill.id, e.target.value)} disabled={readOnly} className={`text-lg font-bold bg-transparent outline-none w-full text-slate-800  uppercase ${readOnly ? 'cursor-not-allowed' : ''}`} />
                                 <div className="flex items-center gap-3">
                                     {!readOnly && isAdmin && (
@@ -1367,7 +1410,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                     }
                                                 }}
                                                 disabled={readOnly}
-                                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border shrink-0 ${isSelected ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white text-slate-400 border-slate-100 hover:border-emerald-500 hover:text-emerald-600'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}
+                                                className={`px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 max-w-full md:max-w-none text-left md:text-center rounded-lg text-xs font-bold transition-all border shrink-0 ${isSelected ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white text-slate-400 border-slate-100 hover:border-emerald-500 hover:text-emerald-600'} ${readOnly ? 'cursor-not-allowed opacity-50' : ''}`}
                                             >
                                                 {r.lokasi}
                                             </button>
@@ -1384,7 +1427,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                             {activeBill.items.some(i => i.type === 'HEADER') && (
                                                 <button
                                                     onClick={toggleAllCollapse}
-                                                    className="p-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                                                    className="hidden md:inline-block p-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
                                                     title={activeBill.items.some(item => item.type === 'HEADER' && !item.isCollapsed) ? "Collapse All" : "Expand All"}
                                                 >
                                                     {activeBill.items.some(item => item.type === 'HEADER' && !item.isCollapsed) ? (
@@ -1400,14 +1443,14 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                     <button onClick={() => {
                                                         setLocalDimsArray([...localDimsArray, { length: 0, width: 0, depth: 0, label: `Kiraan ${localDimsArray.length + 1}` }]);
                                                         setIsDimsDirty(true);
-                                                    }} className="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Tambah Global Calculation">
+                                                    }} className="p-[15px] md:p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Tambah Global Calculation">
                                                         <PlusCircle className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <button onClick={() => setIsLinkModalOpen(true)} className="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
+                                                    <button onClick={() => setIsLinkModalOpen(true)} className="p-[15px] md:p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors" title="Hubungkan dengan BIL NO. lain">
                                                         <Link className="w-3.5 h-3.5" />
                                                     </button>
                                                     {bills.filter(b => b.calculationId === activeBill.calculationId).length > 1 && (
-                                                        <button onClick={handleUnlinkCalculation} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Asingkan pengiraan ini">
+                                                        <button onClick={handleUnlinkCalculation} className="p-[15px] md:p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Asingkan pengiraan ini">
                                                             <Unlink className="w-3.5 h-3.5" />
                                                         </button>
                                                     )}
@@ -1427,24 +1470,24 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                         }}
                                                         placeholder="Label"
                                                         disabled={readOnly}
-                                                        className="text-[10px] font-bold text-slate-400 bg-transparent border-b border-dashed border-slate-200 outline-none w-20"
+                                                        className="w-full md:w-20 h-11 md:h-auto text-[16px] md:text-[10px] font-bold text-slate-400 bg-transparent border-b border-dashed border-slate-200 outline-none"
                                                     />
-                                                    <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">P</span><DimensionInput value={dims.length || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, length: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                                    <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">L</span><DimensionInput value={dims.width || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, width: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
-                                                    <div className="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">T</span><DimensionInput value={dims.depth || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, depth: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-12 bg-transparent outline-none font-bold text-sm text-center" placeholder="0" /></div>
+                                                    <div className="flex-1 md:flex-none h-12 md:h-auto flex items-center bg-white rounded-lg border border-slate-200 px-2 py-0 md:py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">P</span><DimensionInput value={dims.length || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, length: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-full md:w-12 h-full md:h-auto min-w-0 md:min-w-[auto] bg-transparent outline-none font-bold text-base md:text-sm text-center" placeholder="0" /></div>
+                                                    <div className="flex-1 md:flex-none h-12 md:h-auto flex items-center bg-white rounded-lg border border-slate-200 px-2 py-0 md:py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">L</span><DimensionInput value={dims.width || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, width: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-full md:w-12 h-full md:h-auto min-w-0 md:min-w-[auto] bg-transparent outline-none font-bold text-base md:text-sm text-center" placeholder="0" /></div>
+                                                    <div className="flex-1 md:flex-none h-12 md:h-auto flex items-center bg-white rounded-lg border border-slate-200 px-2 py-0 md:py-1 shadow-sm"><span className="text-[10px] font-bold text-slate-400 mr-1">T</span><DimensionInput value={dims.depth || 0} onChange={val => { const newArray = [...localDimsArray]; newArray[idx] = { ...dims, depth: val }; setLocalDimsArray(newArray); setIsDimsDirty(true); }} disabled={readOnly} className="w-full md:w-12 h-full md:h-auto min-w-0 md:min-w-[auto] bg-transparent outline-none font-bold text-base md:text-sm text-center" placeholder="0" /></div>
                                                     {!readOnly && localDimsArray.length > 1 && (
                                                         <button onClick={() => {
                                                             const newArray = localDimsArray.filter((_, i) => i !== idx);
                                                             setLocalDimsArray(newArray);
                                                             setIsDimsDirty(true);
-                                                        }} className="p-1 text-slate-300 hover:text-red-500">
+                                                        }} className="p-[15px] md:p-1 text-slate-300 hover:text-red-500">
                                                             <MinusCircle className="w-3.5 h-3.5" />
                                                         </button>
                                                     )}
                                                 </div>
                                             ))}
                                             {isDimsDirty && !readOnly && (
-                                                <button onClick={handleSaveGlobalDims} className="mt-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" >
+                                                <button onClick={handleSaveGlobalDims} className="mt-1 px-3 py-1.5 min-h-[48px] md:min-h-0 bg-emerald-600 hover:bg-emerald-700 text-white text-sm md:text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-1 transition-colors" title="Kemaskini Semua Item Terhubung" >
                                                     <Save className="w-3 h-3" /> Kemaskini Semua
                                                 </button>
                                             )}
@@ -1459,9 +1502,22 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                 </div>
                             )}
                         </div>
-                        <div className="flex-1 p-4">
+                        <div className="md:hidden px-3 pt-3 flex flex-wrap gap-2">
+                            {activeBill.items.some(i => i.type === 'HEADER') && (
+                                <button type="button" onClick={toggleAllCollapse} className="min-h-[44px] px-4 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 flex items-center gap-2">
+                                    {hasExpandedHeader ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                    {hasExpandedHeader ? 'Collapse All' : 'Expand All'}
+                                </button>
+                            )}
+                            {!readOnly && isAdmin && (
+                                <button type="button" onClick={() => setIsCaptureModalOpen(true)} className="min-h-[44px] px-4 rounded-xl bg-indigo-50 text-indigo-600 text-sm font-bold flex items-center gap-2">
+                                    <Bookmark className="w-4 h-4" /> Template
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex-1 px-2 py-3 pb-24 md:p-4">
                             {activeBill.items.length === 0 ? (<div className="h-40 flex flex-col items-center justify-center text-slate-400"><FolderPlus className="w-10 h-10 mb-2 opacity-50" /><p className="text-sm">Tiada item dalam senarai ini.</p></div>) : (
-                                <div className="space-y-2">
+                                <div className="space-y-3 md:space-y-2">
                                     {(() => {
                                         let currentLevel0Collapsed = false;
                                         let currentLevel1Collapsed = false;
@@ -1560,33 +1616,49 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                     })()}
                                 </div>
                             )}
-                            {!readOnly && <button onClick={openAddItemModal} className="mt-4 w-full py-3 border-2 border-dashed border-slate-200  rounded-xl text-slate-400 font-bold text-sm hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50  transition-colors flex items-center justify-center gap-2" ><Plus className="w-4 h-4" /> Tambah Item</button>}
+                            {!readOnly && <button onClick={openAddItemModal} className="mt-4 w-full py-3 border-2 border-dashed border-slate-200  rounded-xl text-slate-400 font-bold text-sm hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50  transition-colors hidden md:flex items-center justify-center gap-2" ><Plus className="w-4 h-4" /> Tambah Item</button>}
                         </div>
+                        <PinnedAddButton label="Tambah Item" onClick={openAddItemModal} containerRef={editorRef} hidden={readOnly || isSetupOpen} className="bg-emerald-600 active:bg-emerald-700" />
                     </>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8"><Layers className="w-16 h-16 mb-4 opacity-20" /><h3 className="text-lg font-bold text-slate-600">Tiada Senarai Dipilih</h3><p className="text-sm max-w-xs text-center mt-2">Pilih senarai dari navigasi sebelah kiri atau tambah template baru.</p>{!readOnly && <button onClick={handleAddTemplate} className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg">Tambah Template</button>}</div>
                 )}
             </div>
 
+            <BillNavSheet
+                open={isNavSheetOpen}
+                onClose={() => setIsNavSheetOpen(false)}
+                title="Navigasi BQ"
+                projectTitle={projectData.namaProjek}
+                groups={navGroups}
+                activeBillId={activeBillId}
+                theme="emerald"
+                readOnly={readOnly}
+                onSelect={setActiveBillId}
+                onMoveBill={moveBill}
+                onDeleteBill={(billId) => { const bill = bills.find(b => b.id === billId); if (bill) requestDeleteBill(bill); }}
+                onAddTemplate={handleAddTemplate}
+            />
+
             {/* --- MODALS --- */}
             {isAddItemModalOpen && createPortal(
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
-                    <div className="bg-white  rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden border border-slate-200  transform scale-100 transition-colors animate-slide-up" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-slate-100  flex justify-between items-center bg-white  shrink-0">
-                            <div className="flex items-center gap-3"><div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><Plus className="w-5 h-5" /></div><div><h3 className="font-bold text-slate-900">Pilih Item dari Pustaka</h3><p className="text-xs text-slate-500">Klik butang [+] untuk menambah item ke dalam {activeBill?.title}</p></div></div>
-                            <button onClick={() => setIsAddItemModalOpen(false)} className="p-2 hover:bg-slate-100  rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-black/60 animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
+                    <div className="bg-white rounded-none md:rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-full md:h-[80vh] flex flex-col overflow-hidden border border-slate-200  transform scale-100 transition-colors animate-slide-up" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 md:p-6 gap-3 border-b border-slate-100  flex justify-between items-center bg-white  shrink-0">
+                            <div className="flex items-center gap-3 min-w-0"><div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg shrink-0"><Plus className="w-5 h-5" /></div><div className="min-w-0"><h3 className="font-bold text-slate-900">Pilih Item dari Pustaka</h3><p className="text-xs text-slate-500 truncate md:overflow-visible md:whitespace-normal">Klik butang [+] untuk menambah item ke dalam {activeBill?.title}</p></div></div>
+                            <button onClick={() => setIsAddItemModalOpen(false)} aria-label="Tutup" className="p-2.5 md:p-2 shrink-0 hover:bg-slate-100  rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
                         </div>
-                        <div className="flex-1 flex overflow-hidden">
-                            <div className="w-64 bg-slate-50 border-r border-slate-100 p-4 space-y-1 overflow-y-auto custom-scrollbar shrink-0">
-                                <button onClick={() => setSelectedCategory('HISTORY')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors mb-2 flex items-center gap-2 ${selectedCategory === 'HISTORY' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50'}`}>
+                        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                            <div className="w-full md:w-64 flex md:block gap-2 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-100 p-3 md:p-4 space-y-0 md:space-y-1 overflow-x-auto overflow-y-auto custom-scrollbar shrink-0">
+                                <button onClick={() => setSelectedCategory('HISTORY')} className={`shrink-0 md:w-full min-h-[44px] md:min-h-0 whitespace-nowrap md:whitespace-normal text-left px-4 py-2.5 rounded-xl text-sm md:text-xs font-bold transition-colors md:mb-2 flex items-center gap-2 ${selectedCategory === 'HISTORY' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50 border border-slate-200 md:border-0'}`}>
                                     <History className="w-3.5 h-3.5" />
                                     Sejarah
                                 </button>
-                                <div className="h-px bg-slate-200 my-2 mx-2"></div>
-                                {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50'}`}>{cat}</button>))}
+                                <div className="hidden md:block h-px bg-slate-200 my-2 mx-2"></div>
+                                {categories.map(cat => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`shrink-0 md:w-full min-h-[44px] md:min-h-0 whitespace-nowrap md:whitespace-normal text-left px-4 py-2.5 rounded-xl text-sm md:text-xs font-bold transition-colors ${selectedCategory === cat ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-emerald-50 border border-slate-200 md:border-0'}`}>{cat}</button>))}
                             </div>
 
-                            <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
+                            <div className="flex-1 p-4 md:p-6 overflow-y-auto custom-scrollbar bg-white">
                                 <div className="space-y-6">
                                     {/* Search Bar */}
                                     <div className="sticky top-0 bg-white z-10 pb-4 mb-2 border-b border-slate-50 flex items-center justify-between gap-4">
@@ -1597,12 +1669,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                 placeholder="Cari kumpulan item (cth: Longkang, Cerucuk)..."
                                                 value={librarySearchTerm}
                                                 onChange={(e) => setLibrarySearchTerm(e.target.value)}
-                                                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                                                className="w-full pl-10 pr-10 py-3 md:py-2.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-base md:text-sm focus:border-emerald-500 focus:bg-white outline-none transition-all"
                                             />
                                             {librarySearchTerm && (
                                                 <button
                                                     onClick={() => setLibrarySearchTerm('')}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 rounded-full text-slate-400 transition-colors"
+                                                    className="absolute right-0 md:right-3 top-1/2 -translate-y-1/2 p-4 md:p-1 hover:bg-slate-200 rounded-full text-slate-400 transition-colors"
                                                 >
                                                     <X className="w-3 h-3" />
                                                 </button>
@@ -1611,7 +1683,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                         {!librarySearchTerm && selectedCategory === 'HISTORY' && recentItems.length > 0 && (
                                             <button
                                                 onClick={handleClearHistory}
-                                                className="flex items-center gap-1.5 px-3 py-2 text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors shrink-0 border border-transparent hover:border-red-100"
+                                                className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] md:min-h-0 text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors shrink-0 border border-transparent hover:border-red-100"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" /> Padam Sejarah
                                             </button>
@@ -1634,7 +1706,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                                         {(!(item as any).variants || (item as any).variants.length === 0) ? (
                                                                             <button
                                                                                 onClick={() => handleLibraryAddItem((item as any).sourceGroupId || group.id, item.id)}
-                                                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
+                                                                                className="flex items-center gap-1.5 px-3 py-1.5 min-h-[44px] md:min-h-0 bg-white  border border-slate-200  text-emerald-600 text-[14px] md:text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
                                                                             >
                                                                                 <Plus className="w-3.5 h-3.5" /> Pilih Item
                                                                             </button>
@@ -1643,7 +1715,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                                                                 <button
                                                                                     key={v.id}
                                                                                     onClick={() => handleLibraryAddItem((item as any).sourceGroupId || group.id, item.id, v.id)}
-                                                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white  border border-slate-200  text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
+                                                                                    className="flex items-center gap-1.5 px-3 py-1.5 min-h-[44px] md:min-h-0 bg-white  border border-slate-200  text-emerald-600 text-[14px] md:text-[10px] font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors shadow-sm"
                                                                                 >
                                                                                     <Plus className="w-3.5 h-3.5" /> {v.label}
                                                                                 </button>

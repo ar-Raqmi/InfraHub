@@ -148,7 +148,13 @@ export const AutoResizeTextarea = ({
             textareaRef.current.style.height = `${Math.max(textareaRef.current.scrollHeight, minHeight)}px`;
         }
     };
-    useEffect(() => { adjustHeight(); }, [value]);
+    useEffect(() => {
+        adjustHeight();
+        // The Tailwind runtime styles classes it sees for the first time a frame later
+        // (e.g. padding on a field that just mounted), so measure again once they apply.
+        const frame = requestAnimationFrame(adjustHeight);
+        return () => cancelAnimationFrame(frame);
+    }, [value]);
     return (
         <textarea
             ref={textareaRef}
