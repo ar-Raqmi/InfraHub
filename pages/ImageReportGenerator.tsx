@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Project, User, Role, ProjectStatus, TemporaryImage } from '../types';
 import { apiService } from '../services/apiService';
 import {
@@ -20,9 +21,6 @@ import {
   Briefcase,
   AlertTriangle,
   Pencil,
-  Columns,
-  Rows,
-  LayoutTemplate,
   ImageIcon,
   RefreshCw,
   Maximize2,
@@ -37,6 +35,12 @@ import {
 import { ImageReportPDFExporter } from '../services/pdf';
 import { useUsers } from '../hooks/useUsers';
 import { useTemporaryGallery } from '../hooks/useTemporaryGallery';
+import ExpandableText from '../components/ExpandableText';
+import StepProgress from '../components/report/StepProgress';
+import StickyActionBar from '../components/report/StickyActionBar';
+import SelectedProjectCard from '../components/report/SelectedProjectCard';
+import LocationCards, { LocationRow } from '../components/report/LocationCards';
+import LayoutToggle from '../components/report/LayoutToggle';
 
 const COLORS = [
   '#ef4444',
@@ -47,12 +51,6 @@ const COLORS = [
   '#000000',
   '#ffffff',
 ];
-
-interface ComplaintRow {
-  id: string;
-  location: string;
-  description: string;
-}
 
 interface Shape {
   id: string;
@@ -431,14 +429,14 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
     <div className="flex flex-col h-full bg-white  rounded-3xl overflow-hidden border border-slate-200  shadow-sm relative">
       {!isMobile && (
         <div className="bg-slate-50  p-3 border-b border-slate-200  flex flex-wrap gap-2 items-center justify-between z-10">
-          <div className="flex gap-1 items-center">
+          <div className="flex gap-1 items-center max-md:flex-wrap">
             <ToolBtn active={selectedTool === 'select'} onClick={() => setSelectedTool('select')} icon={<MousePointer2 size={20} />} title="View" />
             <div className="w-px h-5 bg-slate-200  mx-1" />
 
             <div className="flex items-center gap-2 px-2 py-1 bg-white rounded-xl border border-slate-200 shadow-sm">
               <button
                 onClick={() => setRotation(prev => (Number(prev) - 90) % 360)}
-                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 max-md:w-11 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center"
                 title="Rotate -90°"
               >
                 <RotateCw size={18} className="scale-x-[-1]" />
@@ -448,7 +446,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
                 <input
                   type="range" min="-180" max="180" step="1" value={Number(rotation) || 0}
                   onChange={(e) => setRotation(Number(e.target.value))}
-                  className="w-40 accent-emerald-500 cursor-pointer h-1"
+                  className="w-40 accent-emerald-500 cursor-pointer h-1 max-md:w-24 max-md:h-11"
                 />
                 <div className="flex items-center gap-1">
                   <input
@@ -464,7 +462,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
                       if (rotation === '' || rotation === '-') setRotation(0);
                       else setRotation(Number(rotation));
                     }}
-                    className="text-[11px] font-black w-10 text-slate-700 text-center bg-slate-50 border border-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all py-0.5"
+                    className="text-[11px] font-black w-10 text-slate-700 text-center bg-slate-50 border border-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all py-0.5 max-md:text-base max-md:w-14 max-md:h-11"
                   />
                   <span className="text-[11px] font-black text-slate-400">°</span>
                 </div>
@@ -472,7 +470,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
 
               <button
                 onClick={handleRotate90}
-                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 max-md:w-11 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center"
                 title="Rotate +90°"
               >
                 <RotateCw size={18} />
@@ -481,7 +479,7 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
               {Number(rotation) !== 0 && (
                 <button
                   onClick={() => setRotation(0)}
-                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100"
+                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100 max-md:p-3"
                   title="Reset Orientation"
                 >
                   <RefreshCw size={16} />
@@ -498,39 +496,40 @@ const CanvasMapEditor = forwardRef<CanvasMapEditorRef, CanvasMapEditorProps>(({ 
             <ToolBtn active={selectedTool === 'arrow'} onClick={() => setSelectedTool('arrow')} icon={<MoveUpRight size={20} />} title="Arrow" />
           </div>
 
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center max-md:flex-wrap">
             <input
               type="range" min="1" max="15" value={strokeWidth}
               onChange={(e) => setStrokeWidth(Number(e.target.value))}
-              className="w-32 accent-emerald-500 cursor-pointer h-1.5"
+              className="w-32 accent-emerald-500 cursor-pointer h-1.5 max-md:w-24 max-md:h-11"
               title="Saiz Garisan"
             />
-            <div className="flex gap-1">
+            <div className="flex gap-1 max-md:gap-0.5">
               {COLORS.map(c => (
                 <button
                   key={c}
-                  className={`w-5 h-5 rounded-full border border-white/20 transition-transform hover:scale-125 ${selectedColor === c ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+                  aria-label={`Warna ${c}`}
+                  className={`w-5 h-5 rounded-full border border-white/20 transition-transform hover:scale-125 max-md:w-11 max-md:h-11 max-md:border-slate-200 ${selectedColor === c ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
                   style={{ backgroundColor: c }}
                   onClick={() => setSelectedColor(c)}
                 />
               ))}
             </div>
-            <div className="w-px h-5 bg-slate-300  mx-1" />
-            <button onClick={() => setShapes(prev => prev.slice(0, -1))} className="p-2.5 hover:bg-slate-200  rounded-xl transition-colors border border-slate-100"><Undo size={20} /></button>
-            <button onClick={() => setShapes([])} className="p-2.5 hover:bg-red-100 hover:text-red-500 rounded-xl transition-colors border border-slate-100"><Trash2 size={20} /></button>
+            <div className="w-px h-5 bg-slate-300  mx-1 max-md:hidden" />
+            <button onClick={() => setShapes(prev => prev.slice(0, -1))} aria-label="Buat asal" className="p-2.5 hover:bg-slate-200  rounded-xl transition-colors border border-slate-100 max-md:p-3"><Undo size={20} /></button>
+            <button onClick={() => setShapes([])} aria-label="Padam semua tanda" className="p-2.5 hover:bg-red-100 hover:text-red-500 rounded-xl transition-colors border border-slate-100 max-md:p-3"><Trash2 size={20} /></button>
           </div>
         </div>
       )}
 
       {!isMobile && selectedTool === 'crop' && cropRect && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-white  shadow-xl border border-slate-200  p-2 rounded-2xl animate-in fade-in slide-in-from-top-2">
-          <button onClick={applyCrop} className="bg-emerald-500 text-white p-1.5 rounded-xl hover:bg-emerald-600 transition-colors"><Check size={18} /></button>
-          <button onClick={() => { setCropRect(null); setSelectedTool('select'); }} className="bg-red-500 text-white p-1.5 rounded-xl hover:bg-red-600 transition-colors"><X size={18} /></button>
+          <button onClick={applyCrop} aria-label="Guna potongan" className="bg-emerald-500 text-white p-1.5 rounded-xl hover:bg-emerald-600 transition-colors max-md:p-3"><Check size={18} /></button>
+          <button onClick={() => { setCropRect(null); setSelectedTool('select'); }} aria-label="Batal potongan" className="bg-red-500 text-white p-1.5 rounded-xl hover:bg-red-600 transition-colors max-md:p-3"><X size={18} /></button>
         </div>
       )}
 
       <div ref={containerRef} className={`flex-1 relative bg-slate-100  overflow-hidden ${!isMobile ? 'cursor-crosshair' : ''}`}>
-        <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} className="block" />
+        <canvas ref={canvasRef} onPointerDown={handleMouseDown} onPointerMove={handleMouseMove} onPointerUp={handleMouseUp} onPointerLeave={handleMouseUp} className={`block ${!isMobile ? 'touch-none' : ''}`} />
       </div>
     </div>
   );
@@ -638,21 +637,23 @@ const GalleryItem = React.memo(({
         {timeRemaining}
       </div>
 
-      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2 max-lg:opacity-100 max-lg:bg-transparent">
         <button
           onClick={handleItemClick}
           className="w-full h-full absolute inset-0 bg-transparent cursor-pointer z-10"
         />
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(img); }}
-          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors z-20 shadow-sm"
+          aria-label="Padam gambar"
+          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors z-20 shadow-sm max-lg:p-3"
         >
           <Trash2 size={18} />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onDownload(img); }}
-          className="absolute top-2 right-12 p-1.5 bg-white text-slate-700 rounded-lg hover:bg-slate-100 transition-colors z-20 shadow-sm"
+          className="absolute top-2 right-12 p-1.5 bg-white text-slate-700 rounded-lg hover:bg-slate-100 transition-colors z-20 shadow-sm max-lg:p-3 max-lg:right-[60px]"
           title="Muat Turun Imej"
+          aria-label="Muat Turun Imej"
         >
           <Download size={18} />
         </button>
@@ -675,10 +676,10 @@ const GalleryItem = React.memo(({
           </div>
 
           {editingGalleryId === img.id ? (
-            <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-1 mt-1 max-md:flex-wrap" onClick={e => e.stopPropagation()}>
               <input
                 autoFocus
-                className="w-full text-[12px] text-slate-900 px-1.5 py-0.5 rounded bg-white outline-none ring-2 ring-emerald-500"
+                className="w-full text-[12px] text-slate-900 px-1.5 py-0.5 rounded bg-white outline-none ring-2 ring-emerald-500 max-md:text-base max-md:h-11"
                 value={editingLocationTag}
                 onChange={e => onEditingLocationTagChange(e.target.value)}
                 onKeyDown={e => {
@@ -686,8 +687,8 @@ const GalleryItem = React.memo(({
                   if (e.key === 'Escape') onCancelEdit();
                 }}
               />
-              <button onClick={onSaveEdit} className="p-0.5 bg-emerald-500 text-white rounded hover:bg-emerald-600"><Check size={20} /></button>
-              <button onClick={onCancelEdit} className="p-0.5 bg-red-500 text-white rounded hover:bg-red-600"><X size={20} /></button>
+              <button onClick={onSaveEdit} aria-label="Simpan label" className="p-0.5 bg-emerald-500 text-white rounded hover:bg-emerald-600 max-md:flex-1 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center"><Check size={20} /></button>
+              <button onClick={onCancelEdit} aria-label="Batal" className="p-0.5 bg-red-500 text-white rounded hover:bg-red-600 max-md:flex-1 max-md:h-11 max-md:flex max-md:items-center max-md:justify-center"><X size={20} /></button>
             </div>
           ) : (
             img.locationTag ? (
@@ -710,13 +711,16 @@ const GalleryItem = React.memo(({
 
 // --- MAIN PAGE ---
 
+const MODAL_CANCEL = 'px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs max-md:h-11 max-md:px-3 max-md:py-0 max-md:rounded-xl';
+const MODAL_SAVE = 'px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs max-md:h-11 max-md:px-5 max-md:py-0 max-md:rounded-xl';
+
 const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ projects, user }) => {
   const { users: allUsers } = useUsers();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | ProjectStatus.FASA_DRAF | ProjectStatus.MENUNGGU_LANTIKAN>('ALL');
-  const [complaints, setComplaints] = useState<ComplaintRow[]>([{ id: '1', location: '', description: '' }]);
+  const [complaints, setComplaints] = useState<LocationRow[]>([{ id: '1', location: '', description: '' }]);
   const [mapImage, setMapImage] = useState<string | null>(null);
   const [siteImages, setSiteImages] = useState<string[]>([]);
   const [layout, setLayout] = useState<LayoutType>('grid');
@@ -724,6 +728,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   const [isEditingMap, setIsEditingMap] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   // --- TEMPORARY GALLERY STATE (React Query) ---
   const {
@@ -1058,6 +1063,13 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     });
   }, [projects, searchQuery, user, statusFilter]);
 
+  const updateComplaint = (id: string, patch: Partial<LocationRow>) =>
+    setComplaints(complaints.map(c => c.id === id ? { ...c, ...patch } : c));
+  const removeComplaint = (id: string) => setComplaints(complaints.filter(c => c.id !== id));
+  const addComplaint = () => setComplaints([...complaints, { id: Date.now().toString(), location: '', description: '' }]);
+
+  const removeSiteImage = (idx: number) => setSiteImages(siteImages.filter((_, i) => i !== idx));
+
   const selectProject = (proj: Project) => {
     setSelectedProjectId(proj.id.toString());
     if (proj.projectLocations?.length) {
@@ -1149,6 +1161,15 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
     setCurrentStep(3);
   };
 
+  const selectedProject = projects.find(p => p.id.toString() === selectedProjectId);
+  const showPickerOnMobile = !selectedProject || isPickerOpen;
+  const canLeaveStep1 = Boolean(selectedProjectId) || complaints[0].location !== '';
+  const goNext = () => {
+    if (currentStep === 1) setCurrentStep(2);
+    else if (currentStep === 2) handleNextStep2();
+    else setCurrentStep(4);
+  };
+
   const steps = [
     { id: 1, label: 'Maklumat Projek', icon: <Briefcase size={16} /> },
     { id: 2, label: 'Pelan Lokasi', icon: <MapIcon size={16} /> },
@@ -1157,24 +1178,25 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
   ];
 
   return (
-    <div className={`flex flex-col gap-4 md:gap-6 animate-fade-in pb-12`}>
+    <div className={`flex flex-col gap-4 md:gap-6 animate-fade-in pb-12 max-md:pb-24`}>
 
       {/* Header & Gallery Toggle */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 ">Penjana Laporan Bergambar</h1>
-          <p className="text-slate-500 ">Sediakan laporan bergambar dengan mudah dan pantas.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm max-md:flex-row max-md:items-center max-md:p-4 max-md:gap-3 max-md:rounded-2xl">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-slate-900  max-md:text-lg max-md:leading-tight">Penjana Laporan Bergambar</h1>
+          <p className="text-slate-500  max-md:text-xs max-md:truncate">Sediakan laporan bergambar dengan mudah dan pantas.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setShowGallery(!showGallery)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${showGallery
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all max-md:h-11 max-md:px-3 max-md:py-0 max-md:text-sm max-md:rounded-xl ${showGallery
               ? 'bg-slate-900 text-white'
               : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
               }`}
           >
             <History size={20} />
-            {showGallery ? 'Tutup Galeri' : 'Galeri Sementara'}
+            <span className="max-md:hidden">{showGallery ? 'Tutup Galeri' : 'Galeri Sementara'}</span>
+            <span className="md:hidden">{showGallery ? 'Tutup' : 'Galeri'}</span>
             {galleryImages.length > 0 && !showGallery && (
               <span className="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1 animate-pulse">
                 {user.role === Role.PJA
@@ -1216,7 +1238,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               <input
                 type="text"
                 placeholder="Tag Lokasi (cth: Jalan 1/1, Taman Desa)"
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all max-md:text-base"
                 value={tagLocation}
                 onChange={(e) => setTagLocation(e.target.value)}
               />
@@ -1253,7 +1275,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
             )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-sm:grid-cols-1 max-sm:gap-3">
             {filteredGallery.length === 0 ? (
               <div className="col-span-full py-12 text-center text-slate-400">
                 <ImageIcon size={48} className="mx-auto mb-2 opacity-20" />
@@ -1305,7 +1327,8 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
       )}
 
       {/* Step Indicator */}
-      <div className="shrink-0 bg-white  rounded-3xl p-2 shadow-sm border border-slate-100  flex items-center justify-between">
+      <StepProgress currentStep={currentStep} label={steps[currentStep - 1].label} onReset={handleReset} />
+      <div className="shrink-0 bg-white  rounded-3xl p-2 shadow-sm border border-slate-100  flex items-center justify-between max-md:hidden">
         <div className="flex items-center gap-1 md:gap-4 overflow-x-auto no-scrollbar px-2 py-1">
           {steps.map((s, idx) => (
             <React.Fragment key={s.id}>
@@ -1346,45 +1369,51 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         {/* Step 1: Maklumat Projek */}
         {currentStep === 1 && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-md:gap-4">
+              {!showPickerOnMobile && (
+                <div className="md:hidden">
+                  <SelectedProjectCard project={selectedProject!} label="Projek dipilih" onChange={() => setIsPickerOpen(true)} />
+                </div>
+              )}
               {/* Left: Project List */}
-              <div className="lg:col-span-4 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col min-h-[500px]">
-                <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+              <div className={`lg:col-span-4 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col min-h-[500px] max-md:min-h-0 max-md:rounded-2xl ${showPickerOnMobile ? '' : 'max-md:hidden'}`}>
+                <div className="p-5 border-b border-slate-100 bg-slate-50/50 max-md:p-4">
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-4 flex items-center gap-2">
                     <Search size={16} className="text-emerald-500" /> Pilih Projek
+                    <span className="md:hidden ml-auto text-xs font-bold normal-case tracking-normal text-slate-400">{filteredProjects.length} projek</span>
                   </h3>
                   <div className="flex flex-col gap-3">
                     <div className="relative">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                       <input
                         type="text" placeholder="Cari Projek / No Fail..."
-                        className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-200 focus:ring-2 focus:ring-emerald-500 transition-all text-xs font-bold"
+                        className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-200 focus:ring-2 focus:ring-emerald-500 transition-all text-xs font-bold max-md:text-base max-md:font-medium max-md:h-12 max-md:rounded-xl"
                         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                       />
                     </div>
                     <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
                       <button
                         onClick={() => setStatusFilter('ALL')}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === 'ALL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all max-md:h-11 max-md:text-xs ${statusFilter === 'ALL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         Semua
                       </button>
                       <button
                         onClick={() => setStatusFilter(ProjectStatus.FASA_DRAF)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.FASA_DRAF ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all max-md:h-11 max-md:text-xs ${statusFilter === ProjectStatus.FASA_DRAF ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         Draf
                       </button>
                       <button
                         onClick={() => setStatusFilter(ProjectStatus.MENUNGGU_LANTIKAN)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all max-md:h-11 max-md:text-xs ${statusFilter === ProjectStatus.MENUNGGU_LANTIKAN ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         Lantikan
                       </button>
                     </div>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto max-h-[600px] p-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto max-h-[600px] p-2 custom-scrollbar max-md:max-h-none max-md:overflow-visible">
                   <div className="flex flex-col gap-2">
                     {filteredProjects.length === 0 ? (
                       <div className="p-10 text-center">
@@ -1394,14 +1423,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                       filteredProjects.map(p => (
                         <button
                           key={p.id}
-                          onClick={() => selectProject(p)}
-                          className={`p-4 rounded-2xl text-left transition-all border ${selectedProjectId === p.id.toString() ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-50 border-transparent'}`}
+                          onClick={() => { selectProject(p); setIsPickerOpen(false); }}
+                          className={`p-4 rounded-2xl text-left transition-all border max-md:p-3 ${selectedProjectId === p.id.toString() ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-50 border-transparent'}`}
                         >
                           <div className="flex justify-between items-start mb-2">
                             <span className="text-[13px] font-black px-3 py-1 rounded-md bg-white border border-slate-100 text-slate-500">{p.noFail || 'TIADA NO FAIL'}</span>
                             <div className={`w-3 h-3 rounded-full mt-1 ${p.status === ProjectStatus.FASA_DRAF ? 'bg-slate-300' : 'bg-yellow-400'}`} />
                           </div>
-                          <p className={`text-[15px] font-black uppercase leading-tight ${selectedProjectId === p.id.toString() ? 'text-emerald-900' : 'text-slate-800'}`}>
+                          <p className={`text-[15px] font-black uppercase leading-tight max-md:text-sm max-md:line-clamp-2 ${selectedProjectId === p.id.toString() ? 'text-emerald-900' : 'text-slate-800'}`}>
                             {p.namaProjek}
                           </p>
                         </button>
@@ -1412,21 +1441,22 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               </div>
 
               {/* Right: Location Table */}
-              <div className="lg:col-span-8 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col min-h-[500px]">
-                <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <div className="lg:col-span-8 bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col min-h-[500px] max-md:min-h-0 max-md:rounded-2xl">
+                <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between max-md:p-4">
                   <div>
                     <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Senarai Lokasi & Aduan</h3>
                     <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Sahkan lokasi dan aduan untuk laporan</p>
                   </div>
                   <button
-                    onClick={() => setComplaints([...complaints, { id: Date.now().toString(), location: '', description: '' }])}
-                    className="p-2 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all"
+                    onClick={addComplaint}
+                    className="p-2 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all max-md:hidden"
                   >
                     <Plus size={18} />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto max-h-[600px] p-4 custom-scrollbar">
-                  <table className="w-full">
+                <div className="flex-1 overflow-y-auto max-h-[600px] p-4 custom-scrollbar max-md:max-h-none max-md:overflow-visible max-md:p-3">
+                  <LocationCards rows={complaints} onChange={updateComplaint} onRemove={removeComplaint} onAdd={addComplaint} />
+                  <table className="w-full max-md:hidden">
                     <thead className="sticky top-0 bg-white z-10">
                       <tr>
                         <th className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12 text-center">Bil</th>
@@ -1443,7 +1473,7 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                             <input
                               className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase focus:ring-2 focus:ring-emerald-500"
                               value={row.location}
-                              onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, location: e.target.value } : c))}
+                              onChange={e => updateComplaint(row.id, { location: e.target.value })}
                               placeholder="CONTOH: JALAN 1/1, TAMAN DESA"
                             />
                           </td>
@@ -1451,13 +1481,13 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                             <input
                               className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[10px] font-medium uppercase text-slate-600 focus:ring-2 focus:ring-emerald-500"
                               value={row.description}
-                              onChange={e => setComplaints(complaints.map(c => c.id === row.id ? { ...c, description: e.target.value } : c))}
+                              onChange={e => updateComplaint(row.id, { description: e.target.value })}
                               placeholder="CONTOH: KERJA-KERJA MENURAP JALAN"
                             />
                           </td>
                           <td className="px-4 py-3 text-right">
                             {complaints.length > 1 && (
-                              <button onClick={() => setComplaints(complaints.filter(c => c.id !== row.id))} className="text-slate-300 hover:text-red-500 transition-colors">
+                              <button onClick={() => removeComplaint(row.id)} className="text-slate-300 hover:text-red-500 transition-colors">
                                 <Trash2 size={16} />
                               </button>
                             )}
@@ -1467,14 +1497,14 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                     </tbody>
                   </table>
                 </div>
-                <div className="p-6 border-t border-slate-100 flex justify-end items-center gap-4">
+                <div className="p-6 border-t border-slate-100 flex justify-end items-center gap-4 max-md:p-3 max-md:justify-start">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-800 rounded-xl text-[8px] font-black uppercase tracking-widest">
                     <AlertTriangle size={12} /> Data Tidak Akan Simpan
                   </div>
                   <button
                     onClick={() => setCurrentStep(2)}
-                    disabled={!selectedProjectId && complaints[0].location === ''}
-                    className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs disabled:opacity-50"
+                    disabled={!canLeaveStep1}
+                    className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs disabled:opacity-50 max-md:hidden"
                   >
                     Seterusnya
                   </button>
@@ -1486,8 +1516,8 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
         {/* Step 2: Pelan Lokasi */}
         {currentStep === 2 && (
-          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 max-md:rounded-2xl">
+            <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between max-md:p-4 max-md:gap-2">
               <div>
                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Pelan Lokasi</h3>
                 <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Muat naik & lukis tanda pada pelan</p>
@@ -1495,25 +1525,26 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               {!mapImage ? (
                 <button
                   onClick={() => fileInputMapRef.current?.click()}
-                  className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 uppercase tracking-widest"
+                  className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 uppercase tracking-widest max-md:h-11 max-md:px-4 max-md:text-xs"
                 >
                   Muat Naik Imej
                 </button>
               ) : (
                 <div className="flex gap-2">
-                  <button onClick={() => setIsEditingMap(true)} className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all border border-blue-100">
+                  <button onClick={() => setIsEditingMap(true)} aria-label="Sunting pelan" className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all border border-blue-100 max-md:h-11 max-md:px-3 max-md:flex max-md:items-center max-md:gap-1.5">
                     <Maximize2 size={18} />
+                    <span className="md:hidden text-xs font-black whitespace-nowrap">Sunting pelan</span>
                   </button>
-                  <button onClick={() => setMapImage(null)} className="px-6 py-2.5 bg-red-50 text-red-600 rounded-xl text-[10px] font-black hover:bg-red-100 transition-all border border-red-100 uppercase tracking-widest">
+                  <button onClick={() => setMapImage(null)} className="px-6 py-2.5 bg-red-50 text-red-600 rounded-xl text-[10px] font-black hover:bg-red-100 transition-all border border-red-100 uppercase tracking-widest max-md:h-11 max-md:px-4 max-md:text-xs">
                     Padam
                   </button>
                 </div>
               )}
             </div>
-            <div className="h-[600px] p-6 bg-slate-50/30">
+            <div className="h-[600px] p-6 bg-slate-50/30 max-md:h-[55vh] max-md:p-3">
               <CanvasMapEditor ref={editorRef} initialImage={mapImage} isMobile={isMobile} />
             </div>
-            <div className="p-6 border-t border-slate-100 flex justify-between items-center">
+            <div className="p-6 border-t border-slate-100 flex justify-between items-center max-md:hidden">
               <button onClick={() => setCurrentStep(1)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
               <button onClick={handleNextStep2} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
             </div>
@@ -1523,34 +1554,19 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
         {/* Step 3: Gambar Tapak */}
         {currentStep === 3 && (
-          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 max-md:rounded-2xl">
+            <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between max-md:p-4 max-md:flex-col max-md:items-stretch max-md:gap-3">
               <div>
                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Gambar Tapak ({siteImages.length}/4)</h3>
                 <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Pilih sehingga 4 gambar tapak</p>
               </div>
 
-              <div className="flex items-center gap-3">
-                {siteImages.length >= 2 && (
-                  <div className="flex bg-slate-200/50 p-1 rounded-xl gap-1">
-                    {siteImages.length === 2 && (
-                      <>
-                        <button onClick={() => setLayout('horizontal')} className={`p-2 rounded-lg ${layout === 'horizontal' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><Columns size={16} /></button>
-                        <button onClick={() => setLayout('vertical')} className={`p-2 rounded-lg ${layout === 'vertical' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><Rows size={16} /></button>
-                      </>
-                    )}
-                    {siteImages.length === 3 && (
-                      <>
-                        <button onClick={() => setLayout('big-left')} className={`p-2 rounded-lg ${layout === 'big-left' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><LayoutTemplate size={16} className="-rotate-90" /></button>
-                        <button onClick={() => setLayout('big-top')} className={`p-2 rounded-lg ${layout === 'big-top' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}><LayoutTemplate size={16} /></button>
-                      </>
-                    )}
-                  </div>
-                )}
+              <div className="flex items-center gap-3 max-md:flex-col max-md:items-stretch">
+                {siteImages.length >= 2 && <LayoutToggle photoCount={siteImages.length} layout={layout} onChange={setLayout} />}
                 {siteImages.length < 4 && (
                   <button
                     onClick={() => fileInputSiteRef.current?.click()}
-                    className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest"
+                    className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest max-md:h-11 max-md:text-xs max-md:bg-emerald-600"
                   >
                     Tambah Gambar
                   </button>
@@ -1558,11 +1574,11 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
               </div>
             </div>
 
-            <div className="p-8 bg-slate-50/30">
+            <div className="p-8 bg-slate-50/30 max-md:p-3">
               {siteImages.length === 0 ? (
                 <div
                   onClick={() => fileInputSiteRef.current?.click()}
-                  className="w-full h-96 border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-400 gap-4 hover:bg-white hover:border-emerald-300 transition-all cursor-pointer group"
+                  className="w-full h-96 border-4 border-dashed border-slate-200 rounded-[3rem] max-md:h-64 max-md:rounded-2xl flex flex-col items-center justify-center text-slate-400 gap-4 hover:bg-white hover:border-emerald-300 transition-all cursor-pointer group"
                 >
                   <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
                     <ImageIcon size={40} className="opacity-20 group-hover:text-emerald-500 group-hover:opacity-100 transition-all" />
@@ -1570,22 +1586,26 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
                   <p className="font-black uppercase tracking-widest text-xs">Klik untuk muat naik gambar tapak</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-md:gap-3">
                   {siteImages.map((img, idx) => (
-                    <div key={idx} className="relative group aspect-square rounded-[2rem] overflow-hidden bg-white border-4 border-white shadow-md hover:shadow-xl transition-all">
+                    <div key={idx} className="relative group aspect-square rounded-[2rem] overflow-hidden bg-white border-4 border-white shadow-md hover:shadow-xl transition-all max-md:rounded-2xl max-md:border-slate-200 max-md:border">
                       <img src={img} decoding="async" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-emerald-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
+                      <div className="absolute inset-0 bg-emerald-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3 max-lg:hidden">
                         <button onClick={() => setEditingImageIndex(idx)} className="p-3 bg-white text-emerald-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Pencil size={20} /></button>
-                        <button onClick={() => setSiteImages(siteImages.filter((_, i) => i !== idx))} className="p-3 bg-white text-red-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Trash2 size={20} /></button>
+                        <button onClick={() => removeSiteImage(idx)} className="p-3 bg-white text-red-600 rounded-2xl hover:scale-110 transition-transform shadow-xl"><Trash2 size={20} /></button>
                       </div>
-                      <div className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-lg shadow-lg">#{idx + 1}</div>
+                      <div className="lg:hidden absolute inset-x-0 bottom-0 grid grid-cols-2 bg-white border-t border-slate-200 divide-x divide-slate-200">
+                        <button onClick={() => setEditingImageIndex(idx)} className="h-11 flex items-center justify-center gap-1.5 text-sm font-bold text-emerald-700 active:bg-emerald-50"><Pencil size={16} /> Sunting</button>
+                        <button onClick={() => removeSiteImage(idx)} className="h-11 flex items-center justify-center gap-1.5 text-sm font-bold text-red-600 active:bg-red-50"><Trash2 size={16} /> Padam</button>
+                      </div>
+                      <div className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-lg shadow-lg max-md:top-2 max-md:left-2">#{idx + 1}</div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="p-6 border-t border-slate-100 flex justify-between items-center">
+            <div className="p-6 border-t border-slate-100 flex justify-between items-center max-md:hidden">
               <button onClick={() => setCurrentStep(2)} className="px-8 py-3 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs">Kembali</button>
               <button onClick={() => setCurrentStep(4)} className="px-10 py-3 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Seterusnya</button>
             </div>
@@ -1595,64 +1615,62 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
 
         {/* Step 4: Eksport */}
         {currentStep === 4 && (
-          <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-500 py-8">
-            <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden">
-              <div className="bg-emerald-600 p-12 text-center text-white relative">
+          <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-500 py-8 max-md:py-0">
+            <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden max-md:rounded-2xl">
+              <div className="bg-emerald-600 p-12 text-center text-white relative max-md:p-6">
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
                   <FileText className="absolute -top-10 -right-10 w-64 h-64 rotate-12" />
                 </div>
-                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md">
-                  <Check size={48} strokeWidth={3} />
-                  <h3 className="text-3xl font-black uppercase tracking-tight mb-2">Laporan Sedia Dihasilkan</h3>
-                  <p className="text-emerald-100 font-bold uppercase tracking-widest text-xs opacity-80">Sila semak maklumat di bawah sebelum eksport</p>
+                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md max-md:w-14 max-md:h-14 max-md:mb-3">
+                  <Check size={48} strokeWidth={3} className="max-md:w-7 max-md:h-7" />
                 </div>
-                <div className="p-10 flex flex-col gap-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
-                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Status Projek</p>
-                      <p className="text-sm font-black text-slate-800 uppercase truncate">
-                        {projects.find(p => p.id.toString() === selectedProjectId)?.namaProjek || 'TIADA PROJEK DIPILIH'}
-                      </p>
-                    </div>
-                    <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
-                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Jumlah Lokasi</p>
-                      <p className="text-sm font-black text-slate-800">{complaints.length} LOKASI</p>
-                    </div>
+                <h3 className="text-3xl font-black uppercase tracking-tight mb-2 max-md:text-xl">Laporan Sedia Dihasilkan</h3>
+                <p className="text-emerald-100 font-bold uppercase tracking-widest text-xs opacity-80">Sila semak maklumat di bawah sebelum eksport</p>
+              </div>
+              <div className="p-10 flex flex-col gap-6 max-md:p-4 max-md:gap-4">
+                <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1 max-md:gap-3">
+                  <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100 min-w-0 max-md:p-4 max-md:rounded-2xl">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 max-md:text-[10px]">Projek</p>
+                    <ExpandableText text={selectedProject?.namaProjek || 'TIADA PROJEK DIPILIH'} lines={3} className="text-sm font-black text-slate-800 uppercase [overflow-wrap:anywhere]" />
                   </div>
+                  <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100 max-md:p-4 max-md:rounded-2xl">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 max-md:text-[10px]">Jumlah Lokasi</p>
+                    <p className="text-sm font-black text-slate-800">{complaints.length} LOKASI</p>
+                  </div>
+                </div>
 
-                  <div className="flex items-center gap-4 p-5 bg-emerald-50 rounded-[2rem] border border-emerald-100">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${mapImage ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
-                      <MapIcon size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Pelan Lokasi</p>
-                      <p className="text-[10px] font-bold text-emerald-700/60 uppercase">{mapImage ? 'IMEJ SEDIA' : 'TIADA IMEJ'}</p>
-                    </div>
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${siteImages.length > 0 ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
-                      <ImageIcon size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Gambar Tapak</p>
-                      <p className="text-[10px] font-bold text-blue-700/60 uppercase">{siteImages.length} IMEJ SEDIA</p>
-                    </div>
+                <div className="flex items-center gap-4 p-5 bg-emerald-50 rounded-[2rem] border border-emerald-100 max-md:grid max-md:grid-cols-[auto_1fr] max-md:gap-3 max-md:p-4 max-md:rounded-2xl">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${mapImage ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                    <MapIcon size={24} />
                   </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Pelan Lokasi</p>
+                    <p className="text-[10px] font-bold text-emerald-700/60 uppercase">{mapImage ? 'IMEJ SEDIA' : 'TIADA IMEJ'}</p>
+                  </div>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${siteImages.length > 0 ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                    <ImageIcon size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Gambar Tapak</p>
+                    <p className="text-[10px] font-bold text-blue-700/60 uppercase">{siteImages.length} IMEJ SEDIA</p>
+                  </div>
+                </div>
 
-                  <div className="flex flex-col gap-3 mt-4">
-                    <button
-                      onClick={handleExportPDF}
-                      disabled={isExporting}
-                      className="w-full py-6 bg-emerald-600 text-white font-black rounded-[2rem] shadow-2xl shadow-emerald-600/40 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-4"
-                    >
-                      {isExporting ? <RefreshCw className="w-6 h-6 animate-spin" /> : <FileDown className="w-6 h-6" />}
-                      Eksport PDF Laporan
-                    </button>
-                    <button
-                      onClick={() => setCurrentStep(3)}
-                      className="w-full py-4 text-slate-400 font-black hover:text-slate-600 transition-colors uppercase tracking-widest text-[10px]"
-                    >
-                      Kembali Untuk Suntingan
-                    </button>
-                  </div>
+                <div className="flex flex-col gap-3 mt-4 max-md:hidden">
+                  <button
+                    onClick={handleExportPDF}
+                    disabled={isExporting}
+                    className="w-full py-6 bg-emerald-600 text-white font-black rounded-[2rem] shadow-2xl shadow-emerald-600/40 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-4"
+                  >
+                    {isExporting ? <RefreshCw className="w-6 h-6 animate-spin" /> : <FileDown className="w-6 h-6" />}
+                    Eksport PDF Laporan
+                  </button>
+                  <button
+                    onClick={() => setCurrentStep(3)}
+                    className="w-full py-4 text-slate-400 font-black hover:text-slate-600 transition-colors uppercase tracking-widest text-[10px]"
+                  >
+                    Kembali Untuk Suntingan
+                  </button>
                 </div>
               </div>
             </div>
@@ -1660,46 +1678,57 @@ const ImageReportGenerator: React.FC<{ projects: Project[], user: User }> = ({ p
         )}
       </div>
 
-      {/* Edit Image Modal */}
-      {editingImageIndex !== null && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Edit Gambar Tapak #{editingImageIndex + 1}</h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan alat suntingan di bawah</p>
+      <StickyActionBar
+        currentStep={currentStep}
+        canProceed={currentStep !== 1 || canLeaveStep1}
+        isExporting={isExporting}
+        onBack={() => setCurrentStep(prev => prev - 1)}
+        onReset={handleReset}
+        onNext={goNext}
+        onExport={handleExportPDF}
+      />
+
+      {/* Portalled so the modals sit above the shell's fixed bars instead of inside <main>'s stacking context. */}
+      {editingImageIndex !== null && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in max-md:p-0">
+          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden max-md:rounded-none max-md:h-full">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 max-md:p-2 max-md:gap-2 max-md:pt-[calc(0.5rem+env(safe-area-inset-top))]">
+              <div className="min-w-0">
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight max-md:text-sm max-md:truncate max-md:pl-2">Edit Gambar Tapak #{editingImageIndex + 1}</h3>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 max-md:hidden">Gunakan alat suntingan di bawah</p>
               </div>
-              <div className="flex gap-4">
-                <button onClick={() => setEditingImageIndex(null)} className="px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs">Batal</button>
-                <button onClick={saveEditedImage} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
+              <div className="flex gap-4 shrink-0 max-md:gap-2">
+                <button onClick={() => setEditingImageIndex(null)} className={MODAL_CANCEL}>Batal</button>
+                <button onClick={saveEditedImage} className={MODAL_SAVE}>Simpan</button>
               </div>
             </div>
-            <div className="flex-1 bg-slate-100 p-8 overflow-hidden flex items-center justify-center">
+            <div className="flex-1 bg-slate-100 p-8 overflow-hidden flex items-center justify-center max-md:p-0">
               <CanvasMapEditor ref={modalEditorRef} initialImage={siteImages[editingImageIndex]} isMobile={false} />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Edit Map Modal */}
-      {isEditingMap && mapImage && (
+      {isEditingMap && mapImage && createPortal(
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900 animate-fade-in">
           <div className="bg-white w-full h-full flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Edit Pelan Lokasi</h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Laras semula kedudukan atau tambah penanda</p>
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 max-md:p-2 max-md:gap-2 max-md:pt-[calc(0.5rem+env(safe-area-inset-top))]">
+              <div className="min-w-0">
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight max-md:text-sm max-md:truncate max-md:pl-2">Edit Pelan Lokasi</h3>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 max-md:hidden">Laras semula kedudukan atau tambah penanda</p>
               </div>
-              <div className="flex gap-4">
-                <button onClick={() => setIsEditingMap(false)} className="px-8 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition-all uppercase tracking-widest text-xs">Batal</button>
-                <button onClick={saveEditedMap} className="px-10 py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all uppercase tracking-widest text-xs">Simpan</button>
+              <div className="flex gap-4 shrink-0 max-md:gap-2">
+                <button onClick={() => setIsEditingMap(false)} className={MODAL_CANCEL}>Batal</button>
+                <button onClick={saveEditedMap} className={MODAL_SAVE}>Simpan</button>
               </div>
             </div>
-            <div className="flex-1 bg-slate-100 p-8 overflow-hidden">
+            <div className="flex-1 bg-slate-100 p-8 overflow-hidden max-md:p-0">
               <CanvasMapEditor ref={modalEditorRef} initialImage={mapImage} isMobile={false} />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
