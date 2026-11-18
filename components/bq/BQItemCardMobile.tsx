@@ -64,7 +64,7 @@ const BQItemCardMobile: React.FC<BQItemCardMobileProps> = ({ item, autoNumber, r
                 <div className="font-bold text-slate-900 text-lg">{formatCurrency(item.amount)}</div>
             </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5">
             <TouchIconButton label={item.isGlobal ? 'Linked' : 'Manual'} onClick={onToggleGlobal} disabled={readOnly} className={item.isGlobal ? '!bg-emerald-100 !text-emerald-600 !border-emerald-200' : ''}>
                 {item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}
             </TouchIconButton>
@@ -72,7 +72,7 @@ const BQItemCardMobile: React.FC<BQItemCardMobileProps> = ({ item, autoNumber, r
                 {item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}
             </TouchIconButton>
             {!readOnly && (
-                <div className="ml-auto flex items-center gap-2">
+                <div className="ml-auto flex items-center gap-1.5">
                     <TouchIconButton label="Naik" onClick={() => onMove('up')} disabled={isFirst}><ChevronUp className="w-5 h-5" /></TouchIconButton>
                     <TouchIconButton label="Turun" onClick={() => onMove('down')}><ChevronDown className="w-5 h-5" /></TouchIconButton>
                     <TouchIconButton label="Padam" onClick={onDelete} danger><Trash2 className="w-5 h-5" /></TouchIconButton>

@@ -122,8 +122,9 @@ const MobileRow: React.FC<CalcPartRowProps> = ({ part, unit, rate, theme, global
     const isGlobal = part.isGlobal;
     const dimLocked = isGlobal || readOnly;
     const qty = partQty(part);
-    const cellBase = 'h-12 min-w-0 flex items-center gap-1 px-2 rounded-lg border';
-    const inputBase = 'w-full min-w-0 bg-transparent outline-none text-right font-mono font-bold text-base';
+    const cellBase = 'relative h-12 min-w-0 flex items-center rounded-lg border';
+    const cellLetter = 'absolute left-1.5 top-1 text-[9px] leading-none font-bold text-slate-400';
+    const inputBase = 'w-full h-full min-w-0 px-1.5 pt-2 bg-transparent outline-none text-right font-mono font-bold text-base';
     return (
         <div className={`rounded-xl border p-2 space-y-2 ${isGlobal ? t.linkedRow : 'bg-white border-slate-200'}`}>
             <div className="flex flex-wrap items-center gap-1.5">
@@ -141,17 +142,18 @@ const MobileRow: React.FC<CalcPartRowProps> = ({ part, unit, rate, theme, global
                     ))}
                 </div>
             </div>
-            <div className="grid grid-cols-4 gap-1.5">
+            {/* Cells wrap to a new line before a value would be cut. */}
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(3.5rem,1fr))] gap-1">
                 {DIMS.map(dim => part[dim.flag] ? (
                     <label key={dim.letter} className={`${cellBase} ${dimLocked ? 'bg-slate-50 border-slate-200 text-slate-400' : `bg-white text-slate-800 ${t.cell}`}`}>
-                        <span className="text-[10px] font-bold text-slate-400">{dim.letter}</span>
+                        <span className={cellLetter}>{dim.letter}</span>
                         <DimensionInput value={part[dim.value] || 0} onChange={val => onUpdate({ [dim.value]: val })} disabled={dimLocked} placeholder="0" className={`${inputBase} ${dimLocked ? 'cursor-not-allowed' : ''}`} />
                     </label>
                 ) : (
-                    <div key={dim.letter} className={`${cellBase} border-dashed border-slate-200 text-[10px] font-bold text-slate-300`}>{dim.letter} –</div>
+                    <div key={dim.letter} className={`${cellBase} px-2 border-dashed border-slate-200 text-[10px] font-bold text-slate-300`}>{dim.letter} –</div>
                 ))}
                 <label className={`${cellBase} ${part.multiplier !== 1 ? 'bg-orange-50 border-orange-300 text-orange-700' : 'bg-white border-slate-200 text-slate-700'}`}>
-                    <span className="text-[10px] font-bold text-slate-400">×</span>
+                    <span className={cellLetter}>×</span>
                     <DimensionInput value={part.multiplier || 0} onChange={val => onUpdate({ multiplier: val })} disabled={readOnly} placeholder="1" backspaceOnZero emptyValue={1} className={`${inputBase} placeholder-slate-400`} />
                 </label>
             </div>

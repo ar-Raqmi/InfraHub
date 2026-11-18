@@ -75,16 +75,18 @@ const PelarasanItemCardMobile: React.FC<PelarasanItemCardMobileProps> = ({ item,
                 <StripCell label="Beza (RM)" amount={`${diff > 0 ? '+' : ''}${formatCurrency(diff)}`} className={`${bezaBg} flex flex-col justify-center`} amountClass={`!text-sm ${diffTextClass}`} />
             </div>
             <div className={`mt-3 p-2 rounded-xl border space-y-2 ${tone.block}`}>
-                <div className="flex items-center gap-2">
-                    <div className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 min-w-0 ${tone.title}`}>
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${tone.title}`}>
                         <Calculator className="w-3.5 h-3.5 shrink-0" /> {isAdded ? 'Penambahan (New)' : 'Pelarasan (Adjusted)'}
                     </div>
-                    <button type="button" onClick={onToggleGlobal} disabled={readOnly} className={`ml-auto h-11 px-3 shrink-0 rounded-xl border text-sm font-bold flex items-center gap-1.5 ${item.isGlobal ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white text-slate-400 border-slate-200'}`}>
-                        {item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}{item.isGlobal ? 'Linked' : 'Manual'}
-                    </button>
-                    <TouchIconButton label={item.isCustomCalc ? 'Kiraan' : 'Teks'} onClick={onToggleCustomCalc} disabled={readOnly} className={item.isCustomCalc ? '!bg-indigo-100 !text-indigo-600 !border-indigo-200' : ''}>
-                        {item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}
-                    </TouchIconButton>
+                    <div className="ml-auto flex items-center gap-2">
+                        <button type="button" onClick={onToggleGlobal} disabled={readOnly} className={`h-11 px-3 shrink-0 rounded-xl border text-sm font-bold flex items-center gap-1.5 ${item.isGlobal ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white text-slate-400 border-slate-200'}`}>
+                            {item.isGlobal ? <Link className="w-4 h-4" /> : <Unlink className="w-4 h-4" />}{item.isGlobal ? 'Linked' : 'Manual'}
+                        </button>
+                        <TouchIconButton label={item.isCustomCalc ? 'Kiraan' : 'Teks'} onClick={onToggleCustomCalc} disabled={readOnly} className={item.isCustomCalc ? '!bg-indigo-100 !text-indigo-600 !border-indigo-200' : ''}>
+                            {item.isCustomCalc ? <List className="w-4 h-4" /> : <Type className="w-4 h-4" />}
+                        </TouchIconButton>
+                    </div>
                 </div>
                 {item.isCustomCalc ? (
                     <div className="flex items-center gap-2">

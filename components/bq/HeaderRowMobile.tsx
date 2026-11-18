@@ -53,7 +53,7 @@ const HeaderRowMobile: React.FC<HeaderRowMobileProps> = ({ id, autoNumber, isLev
     };
 
     return (
-        <div id={id} className={`flex items-start gap-1 py-1 border-b border-slate-100 ${isLevel0 ? 'bg-slate-100' : 'bg-slate-50/50'} -mx-2 px-1 rounded-xl ${highlightClass}`}>
+        <div id={id} className={`flex items-start gap-1 py-1 border-b border-slate-100 ${isLevel0 ? 'bg-slate-100' : 'bg-slate-50/50'} px-1 rounded-xl ${highlightClass}`}>
             <span className="text-xs font-black text-slate-400 min-w-[28px] pt-[14px]">{autoNumber}</span>
             <button type="button" onClick={onToggleCollapse} aria-label={isCollapsed ? 'Expand' : 'Collapse'} aria-expanded={!isCollapsed} className="w-11 h-11 shrink-0 flex items-center justify-center rounded-lg text-slate-400 active:bg-slate-200">
                 {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
