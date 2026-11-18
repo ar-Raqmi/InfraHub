@@ -223,6 +223,7 @@ Jabatan Kejuruteraan` }],
 
         let hideMainValues = activeParts.length > 0;
         let showSubRows = true;
+        let showZero = false;
 
         if (activeParts.length === 1) {
           const p = activeParts[0];
@@ -231,6 +232,7 @@ Jabatan Kejuruteraan` }],
           if (!hasDimensions) {
             showSubRows = false;
             hideMainValues = false;
+            showZero = true;
 
             let inlineText = '';
             if (p.label) inlineText += ` - ${p.label}`;
@@ -243,9 +245,9 @@ Jabatan Kejuruteraan` }],
           { content: autoNum, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
           { content: descText, styles: { fontStyle: isHeader ? 'bold' : 'normal', lineWidth: sideOnlyBorder } },
           { content: hideMainValues ? '' : item.unit, styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
-          { content: hideMainValues ? '' : (item.qty || ''), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
+          { content: hideMainValues ? '' : (showZero ? (item.qty ?? 0) : (item.qty || '')), styles: { halign: 'center', valign: 'top', lineWidth: sideOnlyBorder } },
           { content: hideMainValues ? '' : (item.rate ? formatCurrency(item.rate).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } },
-          { content: hideMainValues ? '' : (item.amount ? formatCurrency(item.amount).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }
+          { content: hideMainValues ? '' : ((item.amount || showZero) ? formatCurrency(item.amount || 0).replace('RM', '') : ''), styles: { halign: 'right', valign: 'top', lineWidth: sideOnlyBorder } }
         ]);
 
         if (showSubRows && activeParts.length > 0) {
