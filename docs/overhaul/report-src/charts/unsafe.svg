@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-unsafe" viewBox="0 0 578.72 228.00" role="img" aria-label="The two unsafe moves" style="display:block;width:100%;height:auto">
+<rect x="0.00" y="0.00" width="277.36" height="24.00" fill="#D97706" />
+<text x="8.00" y="16.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.8" >MOVE 1</text>
+<text x="64.00" y="16.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#F6F4EE" text-anchor="start" >Type the new rates over the old ones</text>
+<rect x="301.36" y="0.00" width="277.36" height="24.00" fill="#D97706" />
+<text x="309.36" y="16.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.8" >MOVE 2</text>
+<text x="365.36" y="16.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#F6F4EE" text-anchor="start" >Add the new items next to the old</text>
+<rect x="0.00" y="36.00" width="108.00" height="116.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="8.00" y="52.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#0F1E1C" text-anchor="start" letter-spacing="0.6" >PUSTAKA</text>
+<text x="8.00" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >item 1</text>
+<text x="100.00" y="70.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#3B2E8C" text-anchor="end" >NEW</text>
+<text x="66.00" y="70.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="middle" >old</text>
+<line x1="56.00" y1="67.00" x2="76.00" y2="67.00" stroke="#64748B" stroke-width="1" />
+<text x="8.00" y="90.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >item 2</text>
+<text x="100.00" y="90.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#3B2E8C" text-anchor="end" >NEW</text>
+<text x="66.00" y="90.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="middle" >old</text>
+<line x1="56.00" y1="87.00" x2="76.00" y2="87.00" stroke="#64748B" stroke-width="1" />
+<text x="8.00" y="110.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >item 3</text>
+<text x="100.00" y="110.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#3B2E8C" text-anchor="end" >NEW</text>
+<text x="66.00" y="110.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="middle" >old</text>
+<line x1="56.00" y1="107.00" x2="76.00" y2="107.00" stroke="#64748B" stroke-width="1" />
+<text x="8.00" y="130.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >item 4</text>
+<text x="100.00" y="130.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#64748B" text-anchor="end" >old</text>
+<text x="8.00" y="166.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#D97706" text-anchor="start" >2026 schedule gone</text>
+<rect x="120.00" y="36.00" width="157.36" height="116.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="128.00" y="52.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#0F1E1C" text-anchor="start" letter-spacing="0.3" >OPEN 2026 PROJECT BQ</text>
+<rect x="126.00" y="59.00" width="145.36" height="15.00" fill="#D4EBDE" />
+<text x="130.00" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >row 1 (copy)</text>
+<text x="267.36" y="70.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#059669" text-anchor="end" >old rate</text>
+<rect x="126.00" y="79.00" width="145.36" height="15.00" fill="#D4EBDE" />
+<text x="130.00" y="90.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >row 2 (copy)</text>
+<text x="267.36" y="90.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#059669" text-anchor="end" >old rate</text>
+<rect x="126.00" y="99.00" width="145.36" height="15.00" fill="#D4EBDE" />
+<text x="130.00" y="110.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >row 3 (copy)</text>
+<text x="267.36" y="110.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#059669" text-anchor="end" >old rate</text>
+<rect x="126.00" y="119.00" width="145.36" height="15.00" fill="#EFD5B4" />
+<text x="130.00" y="130.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >row added today</text>
+<text x="267.36" y="130.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#D97706" text-anchor="end" >NEW rate</text>
+<text x="120.00" y="166.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#D97706" text-anchor="start" >two schedules mixed, no warning</text>
+<rect x="301.36" y="36.00" width="140.00" height="116.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="309.36" y="52.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#0F1E1C" text-anchor="start" letter-spacing="0.3" >PUSTAKA (DOUBLED)</text>
+<rect x="309.36" y="59.00" width="4.00" height="15.00" fill="#64748B" />
+<text x="318.36" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Longkang 225mm · 2026</text>
+<rect x="309.36" y="79.00" width="4.00" height="15.00" fill="#3B2E8C" />
+<text x="318.36" y="90.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Longkang 225mm · 2027</text>
+<rect x="309.36" y="99.00" width="4.00" height="15.00" fill="#64748B" />
+<text x="318.36" y="110.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Konkrit 100mm · 2026</text>
+<rect x="309.36" y="119.00" width="4.00" height="15.00" fill="#3B2E8C" />
+<text x="318.36" y="130.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Konkrit 100mm · 2027</text>
+<text x="309.36" y="166.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#D97706" text-anchor="start" >the library grows every year</text>
+<rect x="453.36" y="36.00" width="125.36" height="116.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="461.36" y="52.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#0F1E1C" text-anchor="start" letter-spacing="0.3" >PJA&#x27;S PICKER</text>
+<text x="461.36" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Shows both. Nothing</text>
+<text x="461.36" y="83.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >stops the wrong</text>
+<text x="461.36" y="96.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >year&#x27;s item.</text>
+<rect x="461.36" y="122.00" width="20.00" height="20.00" fill="#D97706" />
+<text x="471.36" y="137.00" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="800" fill="#F6F4EE" text-anchor="middle" >?</text>
+<text x="487.36" y="136.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#D97706" text-anchor="start" >which one?</text>
+<text x="0.00" y="196.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Both moves: a project priced under the old schedule but awarded under the new one has to be re-priced row by</text>
+<text x="0.00" y="210.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >row, by hand. No re-price function exists.</text>
+</svg>

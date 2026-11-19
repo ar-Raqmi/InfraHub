@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-analogy" viewBox="0 0 565.57 236.00" role="img" aria-label="Menu and receipt analogy" style="display:block;width:100%;height:auto">
+<defs><marker id="analogy-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#0F1E1C"/></marker></defs>
+<defs><marker id="analogy-am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#D97706"/></marker></defs>
+<rect x="0.00" y="0.00" width="172.00" height="200.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="0.00" y="0.00" width="172.00" height="34.00" fill="#0F1E1C" />
+<text x="10.00" y="15.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.8" >THE MENU</text>
+<text x="10.00" y="28.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#9ADCC2" text-anchor="start" >= Pustaka BQ (library_groups)</text>
+<text x="10.00" y="58.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Konkrit 100mm tebal</text>
+<text x="162.00" y="58.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="end" >50.61</text>
+<line x1="10.00" y1="65.00" x2="162.00" y2="65.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="10.00" y="82.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Longkang 225mm</text>
+<text x="162.00" y="82.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="end" >23.04</text>
+<line x1="10.00" y1="89.00" x2="162.00" y2="89.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="10.00" y="106.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Insurans RM25k+</text>
+<text x="162.00" y="106.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="end" >510.00</text>
+<line x1="10.00" y1="113.00" x2="162.00" y2="113.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="10.00" y="140.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >… 499 priced points in all</text>
+<rect x="10.00" y="154.00" width="80.00" height="18.00" fill="#D97706" />
+<text x="16.00" y="167.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >NO DATE</text>
+<rect x="94.00" y="154.00" width="74.00" height="18.00" fill="#D97706" />
+<text x="99.00" y="167.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="start" >NO CONTRACT</text>
+<text x="10.00" y="190.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >one menu for the whole site</text>
+<rect x="196.79" y="0.00" width="172.00" height="200.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="196.79" y="0.00" width="172.00" height="34.00" fill="#059669" />
+<text x="206.79" y="15.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.8" >THE RECEIPT</text>
+<text x="206.79" y="28.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#B1E2CD" text-anchor="start" >= project BQ (bq_data)</text>
+<text x="206.79" y="58.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Konkrit 100mm tebal</text>
+<text x="358.79" y="58.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#059669" text-anchor="end" >50.61</text>
+<line x1="206.79" y1="65.00" x2="358.79" y2="65.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="206.79" y="82.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Longkang 225mm</text>
+<text x="358.79" y="82.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#059669" text-anchor="end" >23.04</text>
+<line x1="206.79" y1="89.00" x2="358.79" y2="89.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="206.79" y="106.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Insurans RM25k+</text>
+<text x="358.79" y="106.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#059669" text-anchor="end" >510.00</text>
+<line x1="206.79" y1="113.00" x2="358.79" y2="113.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="206.79" y="140.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >prices copied when ordered</text>
+<rect x="206.79" y="154.00" width="152.00" height="18.00" fill="#059669" />
+<text x="212.79" y="167.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >KEEPS ITS PRICES</text>
+<text x="206.79" y="190.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >95.95% still equal today&#x27;s menu</text>
+<rect x="393.57" y="0.00" width="172.00" height="200.00" fill="#FFFFFF" stroke="#D97706" stroke-width="1.5" />
+<rect x="393.57" y="0.00" width="172.00" height="34.00" fill="#D97706" />
+<text x="403.57" y="15.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" >ORDER MORE ON AN OLD BILL</text>
+<text x="403.57" y="28.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#F6F4EE" text-anchor="start" >= add item, template, pelarasan</text>
+<rect x="403.57" y="48.00" width="14.00" height="14.00" fill="#D97706" />
+<text x="410.57" y="59.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="middle" >1</text>
+<text x="423.57" y="58.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Tambah Item</text>
+<rect x="403.57" y="72.00" width="14.00" height="14.00" fill="#D97706" />
+<text x="410.57" y="83.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="middle" >2</text>
+<text x="423.57" y="82.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Apply a template</text>
+<rect x="403.57" y="96.00" width="14.00" height="14.00" fill="#D97706" />
+<text x="410.57" y="107.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="middle" >3</text>
+<text x="423.57" y="106.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Add a BQ Pelarasan item</text>
+<text x="403.57" y="138.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Each one reads TODAY&#x27;S menu.</text>
+<text x="403.57" y="150.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Change the menu and an open</text>
+<text x="403.57" y="163.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >2026 bill quietly mixes two</text>
+<text x="403.57" y="175.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >price lists.</text>
+<text x="403.57" y="190.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#D97706" text-anchor="start" >the danger is here</text>
+<path d="M174.0,100.0 L193.8,100.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#analogy-a)"/>
+<text x="184.39" y="92.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="middle" >copy</text>
+<path d="M370.8,100.0 L390.6,100.0" stroke="#D97706" stroke-width="1.2" fill="none" marker-end="url(#analogy-am)"/>
+<text x="381.18" y="92.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#D97706" text-anchor="middle" >later</text>
+<text x="0.00" y="226.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#64748B" text-anchor="start" >Rates shown are real library rates today (FINDINGS-bq M5); the rest is analogy.</text>
+</svg>

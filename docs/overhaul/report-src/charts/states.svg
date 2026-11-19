@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-states" viewBox="0 0 657.64 360.00" role="img" aria-label="Six statuses and what moves a project between them" style="display:block;width:100%;height:auto">
+<defs><marker id="states-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#0F1E1C"/></marker></defs>
+<defs><marker id="states-am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#D97706"/></marker></defs>
+<defs><marker id="states-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker></defs>
+<rect x="0.00" y="86.00" width="92.00" height="84.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="0.00" y="86.00" width="92.00" height="6.00" fill="#ADB4BC" />
+<text x="7.00" y="108.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >FASA</text>
+<text x="7.00" y="120.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >DRAF</text>
+<text x="7.00" y="136.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >PJA opens the</text>
+<text x="7.00" y="147.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >file and prices</text>
+<text x="7.00" y="158.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >the BQ</text>
+<rect x="113.13" y="86.00" width="92.00" height="84.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="113.13" y="86.00" width="92.00" height="6.00" fill="#64748B" />
+<text x="120.13" y="108.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >MENUNGGU</text>
+<text x="120.13" y="120.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >LANTIKAN</text>
+<text x="120.13" y="136.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >file opened, no</text>
+<text x="120.13" y="147.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >company yet</text>
+<rect x="226.26" y="86.00" width="92.00" height="84.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="226.26" y="86.00" width="92.00" height="6.00" fill="#7AD3C6" />
+<text x="233.26" y="108.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >DALAM</text>
+<text x="233.26" y="120.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >PROSES</text>
+<text x="233.26" y="136.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >company</text>
+<text x="233.26" y="147.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >appointed, work</text>
+<text x="233.26" y="158.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >running</text>
+<rect x="339.38" y="86.00" width="92.00" height="84.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="339.38" y="86.00" width="92.00" height="6.00" fill="#14B8A6" />
+<text x="346.38" y="108.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >PEMERIKSAAN</text>
+<text x="346.38" y="120.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >TAPAK</text>
+<text x="346.38" y="136.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >site finished,</text>
+<text x="346.38" y="147.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >inspected</text>
+<rect x="452.51" y="86.00" width="92.00" height="84.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="452.51" y="86.00" width="92.00" height="6.00" fill="#10B981" />
+<text x="459.51" y="108.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >TUNTUTAN</text>
+<text x="459.51" y="120.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >BAYARAN</text>
+<text x="459.51" y="136.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >claim lodged</text>
+<rect x="565.64" y="86.00" width="92.00" height="84.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="565.64" y="86.00" width="92.00" height="6.00" fill="#059669" />
+<text x="572.64" y="108.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#0F1E1C" text-anchor="start" >SIAP</text>
+<text x="572.64" y="124.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >matched with</text>
+<text x="572.64" y="135.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >Kewangan</text>
+<path d="M93.0,122.0 L111.1,122.0" stroke="#0F1E1C" stroke-width="1.6" fill="none" marker-end="url(#states-a)"/>
+<path d="M206.1,122.0 L224.3,122.0" stroke="#0F1E1C" stroke-width="1.6" fill="none" marker-end="url(#states-a)"/>
+<path d="M319.3,122.0 L337.4,122.0" stroke="#0F1E1C" stroke-width="1.6" fill="none" marker-end="url(#states-a)"/>
+<path d="M432.4,122.0 L450.5,122.0" stroke="#0F1E1C" stroke-width="1.6" fill="none" marker-end="url(#states-a)"/>
+<path d="M545.5,122.0 L563.6,122.0" stroke="#0F1E1C" stroke-width="1.6" fill="none" marker-end="url(#states-a)"/>
+<path d="M46.0,85.0 L46.0,70.0 L249.3,70.0 L249.3,83.0" stroke="#059669" stroke-width="1.2" fill="none" marker-end="url(#states-a)"/>
+<rect x="56.95" y="63.00" width="181.36" height="13.00" fill="#F6F4EE" />
+<text x="147.63" y="73.50" font-family="'General Sans', sans-serif" font-size="9" font-weight="600" fill="#059669" text-anchor="middle" >company chosen straight from draft</text>
+<path d="M276.9,85.0 L276.9,70.0 L489.3,70.0 L489.3,83.0" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#states-s)" stroke-dasharray="4 3"/>
+<rect x="264.68" y="63.00" width="236.80" height="13.00" fill="#F6F4EE" />
+<text x="383.08" y="73.50" font-family="'General Sans', sans-serif" font-size="9" font-weight="600" fill="#64748B" text-anchor="middle" >dates typed out of order (seen in 2 projects)</text>
+<path d="M611.6,85.0 L611.6,44.0 L299.9,44.0 L299.9,83.0" stroke="#D97706" stroke-width="1.2" fill="none" marker-end="url(#states-am)" stroke-dasharray="4 3"/>
+<rect x="279.39" y="37.00" width="352.72" height="13.00" fill="#F6F4EE" />
+<text x="455.75" y="47.50" font-family="'General Sans', sans-serif" font-size="9" font-weight="600" fill="#D97706" text-anchor="middle" >SIAP back to DALAM PROSES if the company field is edited (code path)</text>
+<line x1="102.56" y1="126.00" x2="102.56" y2="194.00" stroke="#495450" stroke-width="0.8" stroke-dasharray="2 2"/>
+<rect x="49.56" y="194.00" width="106.00" height="16.00" fill="#D97706" />
+<text x="55.56" y="205.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >MANUAL</text>
+<rect x="49.56" y="210.00" width="106.00" height="70.00" fill="#FFFFFF" stroke="#D97706" stroke-width="1" />
+<text x="55.56" y="225.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Status drop-down</text>
+<text x="55.56" y="237.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >in the header or</text>
+<text x="55.56" y="249.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >card quick-edit.</text>
+<text x="55.56" y="261.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >The only way in.</text>
+<line x1="215.69" y1="126.00" x2="215.69" y2="194.00" stroke="#495450" stroke-width="0.8" stroke-dasharray="2 2"/>
+<rect x="162.69" y="194.00" width="106.00" height="16.00" fill="#059669" />
+<text x="168.69" y="205.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >AUTOMATIC</text>
+<rect x="162.69" y="210.00" width="106.00" height="70.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<text x="168.69" y="225.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Nama Syarikat</text>
+<text x="168.69" y="237.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >chosen</text>
+<line x1="328.82" y1="126.00" x2="328.82" y2="194.00" stroke="#495450" stroke-width="0.8" stroke-dasharray="2 2"/>
+<rect x="275.82" y="194.00" width="106.00" height="16.00" fill="#059669" />
+<text x="281.82" y="205.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >AUTOMATIC</text>
+<rect x="275.82" y="210.00" width="106.00" height="70.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<text x="281.82" y="225.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Tarikh</text>
+<text x="281.82" y="237.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Pemeriksaan</text>
+<text x="281.82" y="249.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >entered</text>
+<text x="281.82" y="263.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="start" >+ Peratus Siap = 100</text>
+<line x1="441.95" y1="126.00" x2="441.95" y2="194.00" stroke="#495450" stroke-width="0.8" stroke-dasharray="2 2"/>
+<rect x="388.95" y="194.00" width="106.00" height="16.00" fill="#059669" />
+<text x="394.95" y="205.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >AUTOMATIC</text>
+<rect x="388.95" y="210.00" width="106.00" height="70.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<text x="394.95" y="225.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Tarikh Tuntutan</text>
+<text x="394.95" y="237.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Bayaran entered</text>
+<text x="394.95" y="251.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="start" >+ Peratus Siap = 100</text>
+<line x1="555.08" y1="126.00" x2="555.08" y2="194.00" stroke="#495450" stroke-width="0.8" stroke-dasharray="2 2"/>
+<rect x="502.08" y="194.00" width="106.00" height="16.00" fill="#059669" />
+<text x="508.08" y="205.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >AUTOMATIC</text>
+<rect x="502.08" y="210.00" width="106.00" height="70.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<text x="508.08" y="225.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Tarikh Padanan</text>
+<text x="508.08" y="237.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >entered</text>
+<text x="508.08" y="251.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="start" >+ Peratus Siap = 100</text>
+<text x="0.00" y="292.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#64748B" text-anchor="start" letter-spacing="0.4" >WHICH TAB OF THE PROJECT FORM DOES THE WORK</text>
+<rect x="0.00" y="298.00" width="92.00" height="30.00" fill="#8ED9BD" />
+<text x="6.00" y="311.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >1 · BQ Building</text>
+<text x="6.00" y="323.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >PJA</text>
+<rect x="113.13" y="298.00" width="205.13" height="30.00" fill="#BFC3C8" />
+<text x="119.13" y="311.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >2 · File Creation</text>
+<text x="119.13" y="323.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >PT</text>
+<rect x="339.38" y="298.00" width="205.13" height="30.00" fill="#8ED9BD" />
+<text x="345.38" y="311.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >3 · Pelarasan</text>
+<text x="345.38" y="323.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >PJA</text>
+<rect x="565.64" y="298.00" width="92.00" height="30.00" fill="#BFC3C8" />
+<text x="571.64" y="311.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >4 · Penutup</text>
+<text x="571.64" y="323.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >PT</text>
+</svg>

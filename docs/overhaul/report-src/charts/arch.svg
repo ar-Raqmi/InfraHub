@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-arch" viewBox="0 0 657.64 404.00" role="img" aria-label="InfraHub architecture" style="display:block;width:100%;height:auto">
+<defs><marker id="arch-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#0F1E1C"/></marker></defs>
+<rect x="0.00" y="0.00" width="657.64" height="236.00" fill="#DAEDE1" />
+<text x="8.00" y="16.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#059669" text-anchor="start" letter-spacing="0.4" >IN THE BROWSER  ·  React 19 + Vite, multi-page</text>
+<rect x="0.00" y="250.00" width="657.64" height="154.00" fill="#D6ECE4" />
+<text x="8.00" y="266.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#127A6F" text-anchor="start" letter-spacing="0.4" >ON CLOUDFLARE  ·  Pages Functions + Hono, D1 (SQLite), R2</text>
+<rect x="8.00" y="28.00" width="141.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="16.00" y="44.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >8 HTML entry pages</text>
+<text x="16.00" y="58.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >dashboard, projects,</text>
+<text x="16.00" y="70.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >project, settings…</text>
+<rect x="169.41" y="28.00" width="149.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="177.41" y="44.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >entries/*.tsx</text>
+<text x="177.41" y="58.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >mountPage(): React root +</text>
+<text x="177.41" y="70.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >query client</text>
+<rect x="338.82" y="28.00" width="149.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="338.82" y="28.00" width="4.00" height="64.00" fill="#D97706" />
+<text x="348.82" y="44.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >pages/*.tsx (16)</text>
+<text x="348.82" y="58.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >ProjectDetail = the</text>
+<text x="348.82" y="70.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >4-phase form</text>
+<rect x="508.23" y="28.00" width="141.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="516.23" y="44.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >components/ (~80)</text>
+<text x="516.23" y="58.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >AppShell, mobile cards,</text>
+<text x="516.23" y="70.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >BQ helpers</text>
+<rect x="8.00" y="114.00" width="141.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="16.00" y="130.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >apiService.ts</text>
+<text x="16.00" y="144.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >one class, ~50 methods,</text>
+<text x="16.00" y="156.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >fetch(&#x27;/api/…&#x27;)</text>
+<rect x="169.41" y="114.00" width="149.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="177.41" y="130.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >hooks/ react-query</text>
+<text x="177.41" y="144.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >useProjects,</text>
+<text x="177.41" y="156.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >useSettings(year)</text>
+<rect x="338.82" y="114.00" width="149.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="346.82" y="130.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >services/finance.ts</text>
+<text x="346.82" y="144.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >LAD constants (re-typed</text>
+<text x="346.82" y="156.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >in the form too)</text>
+<rect x="508.23" y="114.00" width="141.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="516.23" y="130.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >services/pdf/ (11)</text>
+<text x="516.23" y="144.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >jsPDF + autotable from</text>
+<text x="516.23" y="156.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >a CDN</text>
+<rect x="508.23" y="192.00" width="141.41" height="32.00" fill="none" stroke="#0F1E1C" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="516.23" y="208.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >PDF files to user</text>
+<path d="M150.4,60.0 L167.4,60.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M319.8,60.0 L336.8,60.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M489.2,60.0 L506.2,60.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M383.6,92.0 L383.6,103.0 L244.1,103.0 L244.1,112.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M428.5,92.0 L428.5,112.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M169.4,146.0 L151.4,146.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M465.8,92.0 L465.8,99.0 L582.9,99.0 L582.9,112.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M582.9,178.0 L582.9,190.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)" stroke-dasharray="4 3"/>
+<path d="M74.7,178.0 L74.7,280.0" stroke="#0F1E1C" stroke-width="1.6" fill="none" marker-end="url(#arch-a)"/>
+<rect x="82.70" y="200.00" width="118.00" height="30.00" fill="#F6F4EE" />
+<text x="88.70" y="212.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="start" >fetch /api/*</text>
+<text x="88.70" y="225.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >JSON over HTTPS</text>
+<rect x="8.00" y="282.00" width="141.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="16.00" y="298.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Hono app at /api</text>
+<text x="16.00" y="312.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >functions/api/[[route]].ts</text>
+<rect x="169.41" y="282.00" width="149.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="177.41" y="298.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >routes/ (6 routers)</text>
+<text x="177.41" y="312.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >projects, users, system,</text>
+<text x="177.41" y="324.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >storage…</text>
+<rect x="338.82" y="282.00" width="149.41" height="64.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="346.82" y="298.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >repositories/ (7)</text>
+<text x="346.82" y="312.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >ProjectRepository maps</text>
+<text x="346.82" y="324.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >~66 fields</text>
+<rect x="508.23" y="282.00" width="141.41" height="64.00" fill="#059669" stroke="#059669" stroke-width="1" />
+<text x="516.23" y="298.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#F6F4EE" text-anchor="start" >D1 · infrahub-db</text>
+<text x="516.23" y="312.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#B1E2CD" text-anchor="start" >8 tables · BQs as JSON</text>
+<text x="516.23" y="324.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#B1E2CD" text-anchor="start" >in projects</text>
+<rect x="508.23" y="354.00" width="141.41" height="44.00" fill="#128A7D" stroke="#128A7D" stroke-width="1" />
+<text x="516.23" y="370.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#F6F4EE" text-anchor="start" >R2 bucket</text>
+<text x="516.23" y="384.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#B2E2D8" text-anchor="start" >staged photos, 24 h</text>
+<path d="M150.4,314.0 L167.4,314.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M319.8,314.0 L336.8,314.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M489.2,314.0 L506.2,314.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+<path d="M443.4,346.0 L443.4,376.0 L506.2,376.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#arch-a)"/>
+</svg>

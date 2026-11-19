@@ -1,0 +1,143 @@
+<!-- chapter: 08 | Four ways to fix it -->
+<section class="page">
+  <header class="opener contract">
+    <div class="no">08</div>
+    <div>
+      <p class="kicker">Four ways to fix it</p>
+      <h1>From seat belts to a full price catalogue</h1>
+      <p class="dek">Four designs, from the smallest change to the biggest. Effort is a rough size, not a quote:
+        S = days, M = one to two weeks, L = a month or more.</p>
+    </div>
+  </header>
+
+  <div class="cols-2" style="row-gap:5mm">
+    <div class="card" style="--c:var(--slate)">
+      <p class="kicker">Option A · effort <span class="tag s">S</span></p>
+      <h3>One library, with seat belts</h3>
+      <p class="small">Keep one library; snapshot it on every <i>Simpan Pustaka</i>
+        (<code>library_snapshots</code>), stamp each project with the sebutharga it was priced under
+        (<code>rate_label</code>), mark rows whose rate was typed by hand.</p>
+      <p class="small sp-1"><b>UI:</b> a “Kadar: MPS/SH/302/25” chip, a picker warning “projek ini di bawah
+        kontrak lama”, a Sejarah Pustaka list.</p>
+      <p class="small sp-1 amber"><b>Risk:</b> it warns but does not prevent. Two contracts at once is
+        impossible.</p>
+    </div>
+    <div class="card fill-contract">
+      <p class="kicker" style="color:#C9C3EA">Option B · effort <span class="tag s">M</span> · recommended</p>
+      <h3>A rate book per contract</h3>
+      <p class="small">Make the contract a record (<code>contracts</code>) and give each one its own copy of the
+        library (<code>rate_book_groups</code>, with ids kept identical across copies). Add
+        <code>projects.contract_id</code>. Both editors read only the project’s own book.</p>
+      <p class="small sp-1"><b>UI:</b> a Kontrak list in Settings with the Pustaka inside each contract; the
+        contract shown on the project header and in the picker title.</p>
+      <p class="small sp-1"><b>Risk:</b> a wording fix must be made per book; the PT must remember to close old
+        contracts; ids must stay stable.</p>
+    </div>
+    <div class="card" style="--c:var(--slate)">
+      <p class="kicker">Option C · effort <span class="tag s">L</span></p>
+      <h3>Catalogue + price lists</h3>
+      <p class="small">Split “what the item is” (<code>catalogue_items</code>, never priced) from “what it
+        costs” (<code>price_lists</code> + <code>price_list_rates</code>). Explode the 107 JSON groups into about
+        500 catalogue rows and 499 rate rows.</p>
+      <p class="small sp-1"><b>UI:</b> the Pustaka rebuilt as a grid, one column per contract, with side-by-side
+        comparison and percentage uplift.</p>
+      <p class="small sp-1 amber"><b>Risk:</b> the biggest rewrite: settings, API, both editors, templates. The 331
+        orphan rows need manual mapping.</p>
+    </div>
+    <div class="card contract">
+      <p class="kicker">Option D · effort <span class="tag s">M–L</span></p>
+      <h3>Option B + immutable versions</h3>
+      <p class="small">As B, but a book is never edited in place: each publish creates a numbered version
+        (<code>rate_book_versions</code>). A project is pinned to a version at lantikan; a correction becomes
+        version 2 and old work orders stay on version 1.</p>
+      <p class="small sp-1"><b>UI:</b> as B, plus <i>Terbitkan versi</i> and a version history with
+        differences.</p>
+      <p class="small sp-1 amber"><b>Risk:</b> more concepts for staff. Only worth it if rates really change
+        inside a contract period.</p>
+    </div>
+  </div>
+  <div class="push">
+    <h4>Pick this one if…</h4>
+    <div class="cols-4" style="border-top:1.2pt solid var(--ink);padding-top:2.4mm">
+      <p class="small"><b>A</b> · you need protection within days and accept that it only warns.</p>
+      <p class="small"><b class="purple">B</b> · each sebutharga has its own schedule and you want the system to
+        enforce it. <b class="purple">Recommended.</b></p>
+      <p class="small"><b>C</b> · you want year-on-year rate comparison built in and can afford a rebuild.</p>
+      <p class="small"><b>D</b> · rates really change inside a contract period (question 5, chapter 90).</p>
+    </div>
+    <p class="src sp-2">FINDINGS-bq “Options” A–D and “Recommendation” · schema and behaviour are proposals
+      <span class="tag i">Inference</span></p>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">Side by side</p>
+  <h2 class="big">Only B, C and D let two contracts live together</h2>
+  <p class="measure" style="margin-bottom:4mm">Each row is a situation the owner will meet. The purple column is
+    the recommendation. Amber cells are where an option fails or depends on people noticing a warning.</p>
+  <table class="cmp">
+    <colgroup><col style="width:36mm"><col><col><col><col></colgroup>
+    <thead><tr><th></th><th>A · Seat belts</th><th class="rec">B · Rate book per contract</th>
+      <th>C · Catalogue + price lists</th><th>D · B + versions</th></tr></thead>
+    <tbody>
+      <tr><td>New tables</td><td>1</td><td class="rec">2</td><td>3</td><td>3</td></tr>
+      <tr><td>Existing BQ rows rewritten</td><td>none</td><td class="rec">none</td><td>mapped by id</td><td>none</td></tr>
+      <tr><td>New contract next year</td><td class="bad">PT overwrites rates; old ones kept only as a snapshot
+        file</td><td class="rec"><i>Salin ke kontrak baharu</i>, edit, activate</td><td>add a price-list
+        column</td><td>as B</td></tr>
+      <tr><td>Two contracts at once</td><td class="bad">no</td><td class="rec">yes (project picks)</td>
+        <td>yes</td><td>yes</td></tr>
+      <tr><td>Project straddles a rate change</td><td class="bad">wrong rate offered, warning only</td>
+        <td class="rec">stays on its own book; explicit re-price with a preview</td><td>same as B</td>
+        <td>as B, also safe against corrections inside a contract</td></tr>
+      <tr><td>Pelarasan after the contract ends</td><td class="bad">new items get the new rates unless
+        retyped</td><td class="rec">priced from the project’s own closed book</td><td>same as B</td>
+        <td>same as B</td></tr>
+      <tr><td>Old schedule retrievable</td><td>as a snapshot</td><td class="rec">yes, live and read-only</td>
+        <td>yes</td><td>yes, every version</td></tr>
+      <tr><td>Compare rates between years</td><td>manual</td><td class="rec">by id, simple report</td>
+        <td>built in</td><td>by id</td></tr>
+      <tr><td>Screens to change</td><td>small</td><td class="rec">Settings (contract list), project header,
+        two pickers</td><td class="bad">Settings rebuilt, both editors, templates</td><td>as B + version
+        screens</td></tr>
+      <tr><td>Effort</td><td>S</td><td class="rec"><b>M</b></td><td>L</td><td>M–L</td></tr>
+      <tr><td>Main risk</td><td class="bad">relies on people noticing a warning</td><td class="rec">discipline
+        in closing contracts</td><td class="bad">size of rewrite</td><td>complexity for users</td></tr>
+    </tbody>
+  </table>
+  <p class="src sp-1">FINDINGS-bq “Comparison” <span class="tag i">Inference</span></p>
+
+  <div class="cols-2 sp-4 push">
+    <div class="callout contract">
+      <h3>Migration for B, in one breath</h3>
+      <p class="small">Create contract 1 = <code>MPS/SH/302/25</code>; attach the 107 groups to it; set
+        <code>contract_id</code> on the 485 projects of 2026 (420 already carry the code; the 63 un-awarded and 2
+        SIAP blanks get it by default). The 331 orphan rows and 20 differing rows stay exactly as stored.</p>
+    </div>
+    <div class="callout">
+      <h3>The 4 projects of 2025</h3>
+      <p class="small">They carry two other sebutharga numbers and look like early trial records. Put them on a
+        “legacy” contract or on the same one: your call. <span class="tag q">Needs your answer</span></p>
+      <p class="small sp-1">Templates need no change: they already resolve ids against whichever library the
+        editor loaded.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">Option B in detail</p>
+  <figure class="fig">
+    <p class="fig-title lg">The contract becomes a thing that owns its rates</p>
+    <p class="fig-sub">Proposed tables. Purple = contract things; green = the existing projects table with one new
+      column; slate = unchanged.</p>
+    {{svg:er_b}}
+  </figure>
+  <figure class="fig sp-4">
+    <p class="fig-title lg">A contract’s life: draft, active, closed</p>
+    <p class="fig-sub">How the PT starts next year’s contract without touching this year’s projects.</p>
+    {{svg:lifecycle}}
+    <figcaption><b>Source</b> FINDINGS-bq “Option B”, “Proposed flow” · editors would load
+      <code>GET /api/system/library_groups?contract=&lt;project.contract_id&gt;</code> instead of the global list
+      <span class="tag i">Proposal</span></figcaption>
+  </figure>
+</section>

@@ -1,0 +1,50 @@
+<!-- chapter: 12 | Direction B · Lejar -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">12</div>
+    <div>
+      <p class="kicker">UI/UX direction B · ledger-first</p>
+      <h1>Lejar</h1>
+      <p class="dek">InfraHub is a register of contracts and money, so it should read like one: calm paper, a serif masthead, dense ruled tables, and a BQ that is a real sheet.</p>
+    </div>
+  </header>
+  <figure class="fig">
+    <img class="board-head" src="img/ux/B-board-head.png" alt="">
+    <figcaption><b>As rendered on direction board B:</b> Fraunces (headlines) + IBM Plex Sans (text) + IBM Plex Mono (all figures), and its palette swatches. Static HTML mockups; fictional data as in chapter 11.</figcaption>
+  </figure>
+  <div class="cols-3 sp-2">
+    <div><h4>The idea</h4><p class="small">Footnote-style “perlu perhatian” notes replace cards. The BQ editor becomes a sheet with column letters, row numbers and a formula bar that shows <i>where the rate came from</i>, plus a rate-book side panel: pick the book to compare against, see the item’s rate history across versions, decide <i>kekal</i> or <i>guna baharu</i>, write a reason.</p></div>
+    <div><h4>Type and colour</h4><p class="small">Paper <code>#F6F3EC</code>, ink and ruled lines. MPS purple <code>#3B2E8C</code> marks anything contractual, green means kekal / ok, brick red a rate difference, pale yellow a highlighted row. MPS purple becomes the institutional anchor, as in the KIK report.</p></div>
+    <div><h4>What to look at</h4><ol class="num small"><li>The <b>contract/version tag</b> on every register row, with <code>SH/302/25·v2</code> flagged against v3.</li><li>The <b>BQ sheet</b>: Kadar projek / Kadar buku / Beza columns and the rate-history side panel.</li><li>The <b>contract register</b> with the version diff and the <b>Klon kontrak</b> form.</li></ol></div>
+  </div>
+  <div class="cols-2 sp-3 push">
+    <div class="card sys"><p class="kicker">Pros</p><ul class="list pc"><li>Strongest answer to “where does this rate come from”: every number has a source and a history.</li><li>Matches the documents InfraHub prints (BQ, CPC): screen and paper look like the same thing.</li><li>Highest information density on a desk; fewer clicks for the PT.</li></ul></div>
+    <div class="card risk"><p class="kicker">Cons</p><ul class="list l-amber pc"><li>Weakest on a phone: the sheet needs a separate mobile measuring view (could borrow C’s).</li><li>Spreadsheet behaviour (keyboard navigation, frozen rows, fill-down) is the most engineering work of any screen in the three.</li><li>Serif and ledger may feel “old” to younger PJA if pushed into their screens.</li></ul></div>
+  </div>
+  <div class="cols-3 sp-1">
+    <div class="card flat"><p class="kicker">Serves best</p><p class="small">The PT and the Jurutera at a desk: checking, signing, reconciling BQ against Pelarasan and claims, printing.</p></div>
+    <div class="card flat"><p class="kicker">Effort · Yiyi’s estimate, not measured</p><p class="small">About <b>7–9 developer-weeks</b> of UI. The BQ sheet is the big item: it replaces the wizard/accordion editor in <code>pages/BQEditor.tsx</code> (~2,000 lines).</p></div>
+    <div class="card flat"><p class="kicker">Answers audit issues</p><p class="small"><b>1</b>, <b>2</b>, <b>3</b>, <b>4</b> (source, history and diff on every row) and <b>10</b> (a real sheet instead of a wizard).</p></div>
+  </div>
+</section>
+<section class="page tight">
+  <p class="kicker" style="margin-bottom:2mm">Direction B · the four required screens</p>
+  <figure class="screen">
+    <img class="shot" src="img/ux/B-01-daftar-utama.png" alt="">
+    <figcaption><span class="k">i</span><span><b>Daftar, the register.</b> A one-sentence summary headline, a proportional status bar, the register grouped by status with group totals, a contract/version tag on each row (<code>SH/302/25·v2</code> flagged against v3) and notes in the margin. Fictional data except the status counts.</span></figcaption>
+  </figure>
+  <figure class="screen">
+    <img class="shot" src="img/ux/B-02-fail-projek.png" alt="">
+    <figcaption><span class="k">ii</span><span><b>Fail projek.</b> A vertical file journey on the left; the purple “Kontrak terikat” box (<i>MPS/SH/302/25 · Kadar 2026 v3 · 01.01–31.12.26 · aktif · dikunci 12.03.26 oleh PT</i>); BQ kontrak against Pelarasan per Bil with the variance, the account settlement and lampiran A–H.</span></figcaption>
+  </figure>
+</section>
+<section class="page tight">
+  <figure class="screen">
+    <img class="shot" src="img/ux/B-03-helaian-bq.png" alt="">
+    <figcaption><span class="k">iii</span><span><b>Helaian BQ, the sheet.</b> Columns <i>Kadar projek / Kadar buku / Beza</i>, changed rows highlighted, a formula bar citing the rate book. Side panel: rate books (semasa / dibanding / ditutup), the rate history v1 to 2027, <i>Kekal kadar kontrak RM 420 / Guna kadar baharu RM 455</i>, a note, total impact +RM 192.80.</span></figcaption>
+  </figure>
+  <figure class="screen">
+    <img class="shot" src="img/ux/B-04-daftar-kontrak.png" alt="">
+    <figcaption><span class="k">iv</span><span><b>Daftar kontrak.</b> Contracts with dates, status, items, projects and bound value; the version diff 2026 v3 to 2027 draft (41 of 196 items changed, % and affected drafts); the <b>Klon kontrak</b> form.</span></figcaption>
+  </figure>
+</section>

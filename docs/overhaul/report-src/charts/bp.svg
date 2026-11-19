@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-bp" viewBox="0 0 313.70 216.00" role="img" aria-label="Projects per BP" style="display:block;width:100%;height:auto">
+<text x="0.00" y="13.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 4 Selayang-Gombak Barat</text>
+<rect x="150.00" y="4.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="4.00" width="129.77" height="12.00" fill="#059669" />
+<text x="313.70" y="13.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >165</text>
+<text x="0.00" y="32.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 5 Kepong-Sungai Buloh</text>
+<rect x="150.00" y="23.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="23.00" width="75.50" height="12.00" fill="#059669" />
+<text x="313.70" y="32.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >96</text>
+<text x="0.00" y="51.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 7 Rawang Utara</text>
+<rect x="150.00" y="42.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="42.00" width="59.77" height="12.00" fill="#6ED0C3" />
+<text x="313.70" y="51.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >76</text>
+<text x="0.00" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 6 Rawang Timur</text>
+<rect x="150.00" y="61.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="61.00" width="37.75" height="12.00" fill="#6ED0C3" />
+<text x="313.70" y="70.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >48</text>
+<text x="0.00" y="89.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 8 Rawang Barat</text>
+<rect x="150.00" y="80.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="80.00" width="23.59" height="12.00" fill="#6ED0C3" />
+<text x="313.70" y="89.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >30</text>
+<text x="0.00" y="108.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 1 Gombak Utara</text>
+<rect x="150.00" y="99.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="99.00" width="23.59" height="12.00" fill="#6ED0C3" />
+<text x="313.70" y="108.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >30</text>
+<text x="0.00" y="127.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 3 Gombak Selatan</text>
+<rect x="150.00" y="118.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="118.00" width="14.94" height="12.00" fill="#6ED0C3" />
+<text x="313.70" y="127.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >19</text>
+<text x="0.00" y="146.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 9 Rawang Selatan</text>
+<rect x="150.00" y="137.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="137.00" width="10.22" height="12.00" fill="#6ED0C3" />
+<text x="313.70" y="146.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >13</text>
+<text x="0.00" y="165.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >BP 2 Permatang Kuarza</text>
+<rect x="150.00" y="156.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="156.00" width="1.57" height="12.00" fill="#6ED0C3" />
+<text x="313.70" y="165.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >2</text>
+<text x="0.00" y="184.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >blank or &#x27;-&#x27;</text>
+<rect x="150.00" y="175.00" width="133.70" height="12.00" fill="#EAE9E4" />
+<rect x="150.00" y="175.00" width="7.86" height="12.00" fill="#ADB4BC" />
+<text x="313.70" y="184.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >10</text>
+<text x="0.00" y="210.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >n = 489 PROJECTS</text>
+</svg>

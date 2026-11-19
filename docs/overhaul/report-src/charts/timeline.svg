@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-timeline" viewBox="0 0 657.64 500.00" role="img" aria-label="Median journey of a finished project" style="display:block;width:100%;height:auto">
+<defs><pattern id="timeline-gap" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="#F6F4EE"/><line x1="0" y1="0" x2="0" y2="4" stroke="#E29C4C" stroke-width="1.4"/></pattern></defs>
+<rect x="0.00" y="3.00" width="10.00" height="10.00" fill="#64748B" />
+<text x="15.00" y="12.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >BEFORE THE SITE</text>
+<rect x="111.00" y="3.00" width="10.00" height="10.00" fill="#10B981" />
+<text x="126.00" y="12.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >ON SITE: hand-over to completion</text>
+<rect x="313.80" y="3.00" width="10.00" height="10.00" fill="#D97706" />
+<text x="328.80" y="12.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >AFTER THE SITE: completion to Pemadanan</text>
+<rect x="2.00" y="46.00" width="67.72" height="76.00" fill="#64748B" />
+<text x="9.00" y="96.00" font-family="'Zodiak', serif" font-size="40" font-weight="800" fill="#F6F4EE" text-anchor="start" >16</text>
+<rect x="71.72" y="46.00" width="163.59" height="76.00" fill="#10B981" />
+<text x="78.72" y="96.00" font-family="'Zodiak', serif" font-size="40" font-weight="800" fill="#F6F4EE" text-anchor="start" >38</text>
+<text x="134.92" y="95.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#F6F4EE" text-anchor="start" >days on site</text>
+<rect x="237.31" y="46.00" width="268.17" height="76.00" fill="#D97706" />
+<text x="244.31" y="96.00" font-family="'Zodiak', serif" font-size="40" font-weight="800" fill="#F6F4EE" text-anchor="start" >62</text>
+<text x="300.51" y="95.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#F6F4EE" text-anchor="start" >days of paperwork</text>
+<line x1="516.20" y1="34.00" x2="516.20" y2="144.00" stroke="#0F1E1C" stroke-width="2.2" />
+<text x="510.20" y="28.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#0F1E1C" text-anchor="end" >118 DAYS · MEDIAN OF THE WHOLE JOURNEY</text>
+<line x1="442.12" y1="138.00" x2="616.42" y2="138.00" stroke="#0F1E1C" stroke-width="1.2" />
+<line x1="442.12" y1="133.00" x2="442.12" y2="143.00" stroke="#0F1E1C" stroke-width="1.2" />
+<line x1="616.42" y1="133.00" x2="616.42" y2="143.00" stroke="#0F1E1C" stroke-width="1.2" />
+<text x="616.42" y="155.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >half of all projects: 101–141 days</text>
+<path d="M237.3,122 L237.3,174" stroke="#D97706" stroke-width="0.9" fill="none" stroke-dasharray="2 2"/>
+<text x="229.31" y="195.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#D97706" text-anchor="end" >62 days =</text>
+<rect x="237.31" y="174.00" width="85.65" height="32.00" fill="#DF9034" />
+<text x="241.31" y="196.00" font-family="'Zodiak', serif" font-size="17" font-weight="800" fill="#0F1E1C" text-anchor="start" >20</text>
+<line x1="238.31" y1="206.00" x2="238.31" y2="214.00" stroke="#D97706" stroke-width="0.8" />
+<text x="242.31" y="222.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >lodge the claim</text>
+<rect x="324.46" y="174.00" width="142.30" height="32.00" fill="#D97706" />
+<text x="328.46" y="196.00" font-family="'Zodiak', serif" font-size="17" font-weight="800" fill="#F6F4EE" text-anchor="start" >33</text>
+<line x1="325.46" y1="206.00" x2="325.46" y2="228.00" stroke="#D97706" stroke-width="0.8" />
+<text x="329.46" y="236.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >claim reaches Kewangan</text>
+<rect x="468.26" y="174.00" width="15.93" height="32.00" fill="#92580E" />
+<text x="472.26" y="196.00" font-family="'Zodiak', serif" font-size="17" font-weight="800" fill="#F6F4EE" text-anchor="start" >4</text>
+<line x1="469.26" y1="206.00" x2="469.26" y2="242.00" stroke="#D97706" stroke-width="0.8" />
+<text x="473.26" y="250.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >matched</text>
+<rect x="485.69" y="174.00" width="21.79" height="32.00" fill="url(#timeline-gap)" />
+<text x="512.48" y="187.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >+5: medians</text>
+<text x="512.48" y="199.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >don&#x27;t add up</text>
+<line x1="2.00" y1="278.00" x2="655.64" y2="278.00" stroke="#0F1E1C" stroke-width="1" />
+<line x1="2.00" y1="278.00" x2="2.00" y2="284.00" stroke="#0F1E1C" stroke-width="0.8" />
+<text x="2.00" y="296.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="start" >0</text>
+<line x1="45.58" y1="278.00" x2="45.58" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="89.15" y1="278.00" x2="89.15" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="132.73" y1="278.00" x2="132.73" y2="284.00" stroke="#0F1E1C" stroke-width="0.8" />
+<text x="132.73" y="296.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="middle" >30</text>
+<line x1="176.30" y1="278.00" x2="176.30" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="219.88" y1="278.00" x2="219.88" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="263.46" y1="278.00" x2="263.46" y2="284.00" stroke="#0F1E1C" stroke-width="0.8" />
+<text x="263.46" y="296.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="middle" >60</text>
+<line x1="307.03" y1="278.00" x2="307.03" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="350.61" y1="278.00" x2="350.61" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="394.18" y1="278.00" x2="394.18" y2="284.00" stroke="#0F1E1C" stroke-width="0.8" />
+<text x="394.18" y="296.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="middle" >90</text>
+<line x1="437.76" y1="278.00" x2="437.76" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="481.34" y1="278.00" x2="481.34" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="524.91" y1="278.00" x2="524.91" y2="284.00" stroke="#0F1E1C" stroke-width="0.8" />
+<text x="524.91" y="296.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="middle" >120</text>
+<line x1="568.49" y1="278.00" x2="568.49" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="612.06" y1="278.00" x2="612.06" y2="281.00" stroke="#0F1E1C" stroke-width="0.8" />
+<line x1="655.64" y1="278.00" x2="655.64" y2="284.00" stroke="#0F1E1C" stroke-width="0.8" />
+<text x="655.64" y="296.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="end" >150</text>
+<text x="655.64" y="270.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="end" >DAYS FROM OPENING THE FILE</text>
+<text x="0.00" y="330.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >HOW MUCH DOES EACH PHASE VARY?  bar = middle half of projects (p25–p75), tick = median</text>
+<rect x="2.00" y="350.00" width="653.64" height="4.00" fill="#E6E5DF" />
+<rect x="54.29" y="346.00" width="43.58" height="12.00" fill="#64748B" />
+<rect x="70.22" y="342.00" width="3.00" height="20.00" fill="#0F1E1C" />
+<text x="107.87" y="356.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Before the site  12–22 d · median 16</text>
+<rect x="2.00" y="375.00" width="653.64" height="4.00" fill="#E6E5DF" />
+<rect x="124.01" y="371.00" width="91.51" height="12.00" fill="#10B981" />
+<rect x="166.09" y="367.00" width="3.00" height="20.00" fill="#0F1E1C" />
+<text x="225.52" y="381.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >On site  28–49 d · median 38</text>
+<rect x="2.00" y="400.00" width="653.64" height="4.00" fill="#E6E5DF" />
+<rect x="211.16" y="396.00" width="114.39" height="12.00" fill="#D97706" />
+<rect x="270.67" y="392.00" width="3.00" height="20.00" fill="#0F1E1C" />
+<text x="335.55" y="406.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >After the site  48–74.25 d · median 62</text>
+<rect x="2.00" y="425.00" width="653.64" height="4.00" fill="#E6E5DF" />
+<rect x="442.12" y="421.00" width="174.30" height="12.00" fill="#8894A4" />
+<rect x="514.70" y="417.00" width="3.00" height="20.00" fill="#0F1E1C" />
+<text x="432.12" y="431.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >Whole journey  101–141 d · median 118</text>
+</svg>

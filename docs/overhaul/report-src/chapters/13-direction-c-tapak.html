@@ -1,0 +1,53 @@
+<!-- chapter: 13 | Direction C · Tapak -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">13</div>
+    <div>
+      <p class="kicker">UI/UX direction C · field-first</p>
+      <h1>Tapak</h1>
+      <p class="dek">The PJA standing at a drain in the sun is the primary user. The phone becomes a short run of big single-purpose steps; the desk becomes a command centre for the PT.</p>
+    </div>
+  </header>
+  <figure class="fig">
+    <img class="board-head" src="img/ux/C-board-head.png" alt="">
+    <figcaption><b>As rendered on direction board C:</b> Bricolage Grotesque (display) + Atkinson Hyperlegible (text and numbers; low-vision legibility, slashed zero) and its palette. Static HTML mockups; fictional data as in chapter 11.</figcaption>
+  </figure>
+  <div class="cols-3 sp-2">
+    <div><h4>The idea</h4><p class="small">Today’s sites, measure, photo, confirm: one thumb, a keypad and a visible “saved on the phone, sent when there is signal” state. A rate-book change reaches the PJA as a bottom sheet with two big choices. The desk shows live field activity per PJA on a time track and a queue of decisions for the PT.</p></div>
+    <div><h4>Type and colour</h4><p class="small">Phone: a light, high-contrast “siang” palette with lime <code>#B7F34D</code> for the one primary action and amber for rate warnings. Desk: a dark “malam” palette (<code>#0B1513</code>) so the command centre reads as a different tool from the field app.</p></div>
+    <div><h4>What to look at</h4><ol class="num small"><li>The <b>contract chip</b> on the phone project page, above the 6-step stepper.</li><li>The <b>“kadar berubah” bottom sheet</b>: contract rate against new rate, two large choices, “PT akan sahkan”.</li><li>The desk <b>contract timeline</b> with the version history and the <b>Klon kontrak</b> form.</li></ol></div>
+  </div>
+  <div class="cols-2 sp-3 push">
+    <div class="card sys"><p class="kicker">Pros</p><ul class="list pc"><li>Biggest change for the largest group: 12 of the 16 local accounts are PJA. Measuring stops being a desktop form on a phone.</li><li>Splits decisions cleanly: the PJA proposes, the PT approves, every rate choice is logged.</li><li>The command centre gives the PT live awareness without opening projects.</li></ul></div>
+    <div class="card risk"><p class="kicker">Cons</p><ul class="list l-amber pc"><li>Real offline support (service worker, queue, conflicts) is a big engineering step; the mockup shows only the experience.</li><li>Two visual systems to maintain: light field app, dark desk app.</li><li>The desk BQ editing is not reinvented: the PT still needs B-style tables for checking.</li></ul></div>
+  </div>
+  <div class="cols-3 sp-1">
+    <div class="card flat"><p class="kicker">Serves best</p><p class="small">PJA site officers on phones; the PT gets an at-a-glance view of what came in from site.</p></div>
+    <div class="card flat"><p class="kicker">Effort · Yiyi’s estimate, not measured</p><p class="small">About <b>8–11 developer-weeks</b>: phone flows 4–5, offline queue 2–3, command centre and contract timeline 2–3. Highest effort, highest impact for the PJA.</p></div>
+    <div class="card flat"><p class="kicker">Answers audit issues</p><p class="small"><b>11</b>, <b>12</b> (a real phone flow, short navigation), <b>1</b>, <b>2</b> (contract chip, rate-change sheet) and <b>4</b> (contract timeline).</p></div>
+  </div>
+</section>
+<section class="page tight">
+  <p class="kicker" style="margin-bottom:2mm">Direction C · the phone, 430 wide</p>
+  <div class="phones">
+    <figure class="screen"><img class="phone" src="img/ux/C-m01-hari-ini.png" alt=""><figcaption style="display:block"><span class="k">i</span> <b>Hari ini.</b> Offline queue banner, next site with “Mula ukur”, other visits, counters including “2 kadar berubah perlu keputusan”.</figcaption></figure>
+    <figure class="screen"><img class="phone" src="img/ux/C-m02-projek.png" alt=""><figcaption style="display:block"><span class="k">ii</span> <b>Projek.</b> Contract chip <i>Kontrak MPS/SH/302/25 · Kadar 2026 · aktif, dikunci 12 Mac</i>; a vertical 6-step stepper with an inline “giliran anda” card.</figcaption></figure>
+    <figure class="screen"><img class="phone" src="img/ux/C-m03-ukur-item.png" alt=""><figcaption style="display:block"><span class="k">iii</span> <b>Ukur item.</b> Item 3 of 6: big dimension tiles against the BQ asal, live quantity and RM, photo slots, a large keypad.</figcaption></figure>
+    <figure class="screen"><img class="phone" src="img/ux/C-m04-kadar-berubah.png" alt=""><figcaption style="display:block"><span class="k">iii</span> <b>Kadar berubah.</b> Bottom sheet: contract rate RM 420 against new RM 455 (+8.3%), <i>Kekal kadar kontrak</i> / <i>Guna kadar baharu</i> as large choices.</figcaption></figure>
+  </div>
+  <p class="kicker sp-3" style="margin-bottom:2mm">Direction C · the desk</p>
+  <figure class="screen">
+    <img class="shot" src="img/ux/C-d01-pusat-kawalan.png" alt="">
+    <figcaption><span class="k">i</span><span><b>Pusat kawalan.</b> Status counters, the field activity track per PJA, and the “Menunggu keputusan PT” queue. Fictional data except the status counts.</span></figcaption>
+  </figure>
+</section>
+<section class="page tight">
+  <figure class="screen">
+    <img class="shot" src="img/ux/C-d02-bq-kontrak.png" alt="">
+    <figcaption><span class="k">iii</span><span><b>BQ: pilih buku kadar.</b> Three rate-book cards (aktif sekarang / aktif 01.01.27 / ditutup), a diff table with a toggle and the impact per item, and three next steps: PJA pilih, PT sahkan, dikunci pada lantikan.</span></figcaption>
+  </figure>
+  <figure class="screen">
+    <img class="shot" src="img/ux/C-d03-kontrak.png" alt="">
+    <figcaption><span class="k">iv</span><span><b>Kontrak dan buku kadar.</b> A contract timeline 2025–2027 with a “hari ini” marker, the version history of Kadar 2026 (v1 / v2 / v3 with project counts) and the <b>Klon kontrak</b> form.</span></figcaption>
+  </figure>
+</section>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-votes" viewBox="0 0 657.64 288.00" role="img" aria-label="Vote allocation vs committed, 2026" style="display:block;width:100%;height:auto">
+<text x="262.00" y="12.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="middle" >0%</text>
+<text x="373.65" y="12.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="middle" >50%</text>
+<text x="485.31" y="12.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="middle" >100%</text>
+<text x="0.00" y="33.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >267010</text>
+<text x="52.00" y="33.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Bahan Pengecat</text>
+<rect x="262.00" y="22.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="22.00" width="80.66" height="15.00" fill="#059669" />
+<text x="657.64" y="33.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >36.1% of RM 104,840</text>
+<text x="0.00" y="57.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >272040</text>
+<text x="52.00" y="57.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Bekalan Papan Tanda</text>
+<rect x="262.00" y="46.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="46.00" width="204.63" height="15.00" fill="#059669" />
+<text x="657.64" y="57.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >91.6% of RM 550,100</text>
+<text x="0.00" y="81.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >282010</text>
+<text x="52.00" y="81.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Kemudahan Perkhidmatan Infrastru…</text>
+<rect x="262.00" y="70.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="70.00" width="223.31" height="15.00" fill="#059669" />
+<rect x="485.31" y="70.00" width="10.92" height="15.00" fill="#D97706" />
+<text x="657.64" y="81.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#D97706" text-anchor="end" >104.9% of RM 540,000</text>
+<text x="0.00" y="105.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >282030</text>
+<text x="52.00" y="105.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Penyelenggaraan Longkang Besar</text>
+<rect x="262.00" y="94.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="94.00" width="223.11" height="15.00" fill="#059669" />
+<text x="657.64" y="105.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >99.9% of RM 750,000</text>
+<text x="0.00" y="129.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >282050</text>
+<text x="52.00" y="129.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Penyelenggaraan Jalan &amp; Lorong</text>
+<rect x="262.00" y="118.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="118.00" width="221.82" height="15.00" fill="#059669" />
+<text x="657.64" y="129.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >99.3% of RM 492,500</text>
+<text x="0.00" y="153.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >282090</text>
+<text x="52.00" y="153.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Pembinaan Longkang</text>
+<rect x="262.00" y="142.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="142.00" width="223.31" height="15.00" fill="#059669" />
+<rect x="485.31" y="142.00" width="1.24" height="15.00" fill="#D97706" />
+<text x="657.64" y="153.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#D97706" text-anchor="end" >100.6% of RM 8,176,500</text>
+<text x="0.00" y="177.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >282130</text>
+<text x="52.00" y="177.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Infra dan Kemudahan Awam</text>
+<rect x="262.00" y="166.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="166.00" width="223.31" height="15.00" fill="#059669" />
+<rect x="485.31" y="166.00" width="1.15" height="15.00" fill="#D97706" />
+<text x="657.64" y="177.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#D97706" text-anchor="end" >100.5% of RM 600,000</text>
+<text x="0.00" y="201.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >282180</text>
+<text x="52.00" y="201.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Penyelenggaraan Perhentian Bas</text>
+<rect x="262.00" y="190.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="190.00" width="223.30" height="15.00" fill="#059669" />
+<text x="657.64" y="201.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >100.0% of RM 127,050</text>
+<text x="0.00" y="225.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >331100</text>
+<text x="52.00" y="225.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Membina Pondok Bas</text>
+<rect x="262.00" y="214.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="214.00" width="222.86" height="15.00" fill="#059669" />
+<text x="657.64" y="225.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >99.8% of RM 97,900</text>
+<text x="0.00" y="249.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >948060</text>
+<text x="52.00" y="249.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Wang Amanah (ISF)</text>
+<rect x="262.00" y="238.00" width="245.64" height="15.00" fill="#EAE9E4" />
+<rect x="262.00" y="238.00" width="223.31" height="15.00" fill="#059669" />
+<text x="657.64" y="249.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >100.0% of RM 629,898</text>
+<line x1="485.31" y1="18.00" x2="485.31" y2="266.00" stroke="#0F1E1C" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="0.00" y="282.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >Bar = committed Kos Projek ÷ allocation (2026 settings). AMBER = committed above allocation.</text>
+</svg>

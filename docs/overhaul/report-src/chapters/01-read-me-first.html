@@ -1,0 +1,133 @@
+<!-- chapter: 01 | Read me first -->
+<section class="page">
+  <header class="opener">
+    <div class="no">01</div>
+    <div>
+      <p class="kicker">Read me first</p>
+      <h1>Six numbers and one decision</h1>
+      <p class="dek">If you only read two pages, read these. Everything else in the report explains, measures or
+        argues for what is on them.</p>
+    </div>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat s-deep">
+      <div class="n">489</div>
+      <div class="l"><b>projects in the snapshot</b>293 are SIAP. Every number here comes from a read-only copy of
+        live D1 taken 20 Nov 2026, 06:46. <span class="tag v">Verified</span></div>
+    </div>
+    <div class="stat">
+      <div class="n">118<span class="u">days</span></div>
+      <div class="l"><b>median, opening to Pemadanan</b>for finished projects (n = 292). The site itself takes a
+        median of only 38 days, about a third. <span class="tag v">Verified</span></div>
+    </div>
+    <div class="stat s-amber">
+      <div class="n">62<span class="u">days</span></div>
+      <div class="l"><b>of paperwork after the site is done</b>20 days to lodge the claim, 33 to reach Kewangan, 4
+        to match. No screen or reminder owns this wait. <span class="tag v">Verified</span></div>
+    </div>
+    <div class="stat s-purple">
+      <div class="n">1</div>
+      <div class="l"><b>global master BQ, with no contract</b>107 groups, 499 priced points. No year, no
+        sebutharga, no history. Saving it deletes the old version. <span class="tag v">Verified</span></div>
+    </div>
+    <div class="stat s-deep">
+      <div class="n">95.95<span class="u">%</span></div>
+      <div class="l"><b>of 8,672 copied BQ rows match today’s rate</b>Projects keep their own copy, and those
+        copies are consistent. That is the good news: leave them alone. <span class="tag v">Verified</span></div>
+    </div>
+    <div class="stat s-amber">
+      <div class="n">5.72<span class="u">RM M</span></div>
+      <div class="l"><b>of open 2026 work meets the next rate change</b>194 projects; 128 have not started
+        pelarasan. Excludes one draft typing slip. <span class="tag v">Verified</span></div>
+    </div>
+  </div>
+
+  <div class="card fill-contract sp-4 push">
+    <p class="kicker" style="color:#C9C3EA">The one decision this report is about</p>
+    <h2 class="big" style="margin:1mm 0 3mm">How should InfraHub represent a contract?</h2>
+    <div class="cols-2">
+      <p>Today a contract is only a <b>text label</b> (<code>no_sebutharga</code>) chosen in phase 2, after the
+        BQ was already priced from one global price list. Nothing connects the label to any rate. It has not
+        hurt yet because InfraHub has only ever lived under one contract: 420 of the 422 projects with a number
+        carry <code>MPS/SH/302/25</code>.</p>
+      <p>The recommendation is to make the contract a <b>real record that owns its own rate book</b> (Option B,
+        chapter 08), so a project’s rates come from the contract its work order was issued under, never from
+        today’s date. Two cheap safety steps should come first (chapter 09). Your answers in chapter 90 decide
+        the details.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">In one paragraph</p>
+  <p class="lede sp-1" style="max-width:150mm">InfraHub is a tidy React app over a small API and one SQLite
+    database. The workflow is a status label that a company field and three dates move forward. The money rules
+    work, but live inside one 1,790-line form. The slow part of a project is
+    the paperwork after the site, not the site. And the BQ library is a single undated price list: project BQs
+    are safe copies of it, but every new item, template or pelarasan addition reads <i>today’s</i> list. The day
+    the next sebutharga arrives with new rates, open projects will start mixing two contracts without anyone
+    noticing.</p>
+
+  <div class="cols-2 sp-4 fill">
+    <div>
+      <h2>How to read this report</h2>
+      <h4 class="sp-2">How sure we are</h4>
+      <table class="data compact">
+        <tr><td style="width:36mm"><span class="tag v">Verified</span></td><td>Proven by a file and line in the
+          code or by a query on the data copy. The source is cited in small mono type.</td></tr>
+        <tr><td><span class="tag i">Inference</span></td><td>Our reading of what the facts mean, or how panel
+          contracts normally work. Treat as a proposal.</td></tr>
+        <tr><td><span class="tag q">Needs your answer</span></td><td>Only you (or the PT, Jurutera, Kewangan)
+          can settle it. Collected as a checklist in chapter 90.</td></tr>
+      </table>
+      <h4 class="sp-3">What the colours mean</h4>
+      <table class="data compact">
+        <tr><td style="width:36mm"><span class="swatch" style="background:var(--purple)"></span><b class="purple">Purple</b></td>
+          <td>Anything that <b>is</b> a contract: sebutharga, rate book, Jadual Kadar Harga.</td></tr>
+        <tr><td><span class="swatch" style="background:var(--deep)"></span><b class="deep">Emerald, teal</b></td>
+          <td>InfraHub itself: code, tables, statuses, the system doing its job.</td></tr>
+        <tr><td><span class="swatch" style="background:var(--amber)"></span><b class="amber">Amber</b></td>
+          <td>A risk, a warning or a place where things can go wrong.</td></tr>
+        <tr><td><span class="swatch" style="background:var(--slate)"></span><b class="muted">Slate</b></td>
+          <td>Secondary information and still-open drafts.</td></tr>
+      </table>
+      <h4 class="sp-3">About the numbers</h4>
+      <ul class="list small">
+        <li>Every number is copied from the two findings files and their CSVs; derived figures were computed by
+          script (<code>charts.py</code>).</li>
+        <li>One FASA_DRAF project has a stored rate of RM 1,484,384.57 for an item whose library rate is
+          RM 120.70. Money totals by status leave it out and say so.</li>
+        <li>Names of staff and companies are replaced by “PJA 1…” and “Syarikat A…”. The repo is public.</li>
+        <li>This round is for understanding only: no code was changed. Security is out of scope.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Contents</h2>
+      <ol class="toc sp-2">
+        <li><span class="k">01</span><span>Read me first</span><span class="p">{{page:01}}</span></li>
+        <li><span class="k">02</span><span>The system at a glance</span><span class="p">{{page:02}}</span></li>
+        <li><span class="k">03</span><span>The pipeline</span><span class="p">{{page:03}}</span></li>
+        <li><span class="k">04</span><span>The pipeline in numbers</span><span class="p">{{page:04}}</span></li>
+        <li><span class="k">05</span><span>Money rules</span><span class="p">{{page:05}}</span></li>
+        <li><span class="k purple">06</span><span>The BQ question, explained</span><span class="p">{{page:06}}</span></li>
+        <li><span class="k purple">07</span><span>What a master BQ really is</span><span class="p">{{page:07}}</span></li>
+        <li><span class="k purple">08</span><span>Four ways to fix it</span><span class="p">{{page:08}}</span></li>
+        <li><span class="k purple">09</span><span>Recommendation and roadmap</span><span class="p">{{page:09}}</span></li>
+        <li><span class="k deep">10</span><span>Today’s UI, honestly</span><span class="p">{{page:10}}</span></li>
+        <li><span class="k deep">11</span><span>Direction A · Saluran (pipeline-first)</span><span class="p">{{page:11}}</span></li>
+        <li><span class="k deep">12</span><span>Direction B · Lejar (ledger-first)</span><span class="p">{{page:12}}</span></li>
+        <li><span class="k deep">13</span><span>Direction C · Tapak (field-first)</span><span class="p">{{page:13}}</span></li>
+        <li><span class="k deep">14</span><span>Choosing a direction</span><span class="p">{{page:14}}</span></li>
+        <li><span class="k">90</span><span>Decisions for you</span><span class="p">{{page:90}}</span></li>
+        <li><span class="k">99</span><span>Appendix: method, privacy, sources</span><span class="p">{{page:99}}</span></li>
+      </ol>
+      <div class="callout sys sp-4">
+        <h3>Where to start</h3>
+        <p class="small">Short on time: this page, then the timeline on page {{at:timeline}} is the single most
+          useful chart, and chapter 06 explains the BQ problem with a restaurant analogy. Chapter 90 is the part
+          to annotate.</p>
+      </div>
+    </div>
+  </div>
+</section>

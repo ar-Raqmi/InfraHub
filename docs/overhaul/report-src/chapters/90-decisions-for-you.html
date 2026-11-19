@@ -1,0 +1,143 @@
+<!-- chapter: 90 | Decisions for you -->
+<section class="page">
+  <header class="opener">
+    <div class="no">90</div>
+    <div>
+      <p class="kicker">Decisions for you</p>
+      <h1>31 questions only you can answer</h1>
+      <p class="dek">The open questions from both findings (16 BQ, 12 system), merged. Tick, strike out,
+        scribble. Each says why it matters and where it came from.</p>
+    </div>
+  </header>
+
+  <div class="group-head contract"><h3>Contract and rates</h3><span class="kicker">7 questions · decide first</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Does each year’s panel sebutharga come with its
+      own Jadual Kadar Harga, or do the rates carry over for several years? Is today’s Pustaka a faithful copy of
+      the schedule in MPS/SH/302/25?</p><p class="why">Decides whether “one rate book per contract” (Option B)
+      matches reality. <span class="src">BQ Q1</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Is the schedule the same for all ~60 panel
+      contractors, with no per-contractor percentage or discount?</p><p class="why">The data says one rate per
+      item for everyone; a discount would need its own field. <span class="src">BQ Q2</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Can two contracts be in force at once, e.g. an
+      extension of the old panel while the new one starts, or a special sebutharga?</p><p class="why">Only
+      Options B, C and D can handle it; A cannot. <span class="src">BQ Q3 · SYS Q8</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Do some work categories (longkang, jalan,
+      hentian bas, road marking) ever have their own sebutharga with their own rates?</p><p class="why">That
+      would mean several active rate books in one year. <span class="src">BQ Q4</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Can rates change in the middle of a contract
+      (addendum, correction, price adjustment)?</p><p class="why">If yes, Option D (numbered versions) becomes
+      worth its extra complexity. <span class="src">BQ Q5</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">When is the next sebutharga expected, and will
+      its rates differ from this year’s?</p><p class="why">Sets the deadline for the two seat belts in step 1.
+      The 2026 panel was approved on 9 Dec 2025. <span class="src">BQ Q6</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Who may create, activate and close a contract:
+      the PT alone, or with a Jurutera’s approval?</p><p class="why">Sets who sees the Kontrak screen and
+      whether activation needs a second person. <span class="src">BQ Q16</span></p></div></div>
+  </div>
+  <div class="group-head contract"><h3>Projects that cross a contract change</h3><span class="kicker">8 questions</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">A project opened and priced in late 2026 but
+      awarded (lantikan, inden) in 2027: which contract’s rates apply? Must its BQ be re-priced?</p>
+      <p class="why">63 projects are priced but not yet awarded today. <span class="src">BQ Q7 · SYS Q8</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">A 2026 work order measured and claimed in 2027:
+      are its pelarasan additions priced at the 2026 schedule?</p><p class="why">Today they take the library of
+      that day; 128 open projects have not started pelarasan. <span class="src">BQ Q8 · SYS Q8</span></p></div></div>
+  </div>
+</section>
+
+<section class="page">
+  <div class="group-head contract"><h3>Projects that cross a contract change, continued</h3><span class="kicker">6 more</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Which date decides a project’s contract: Tarikh
+      Buka, Tarikh Lantikan, or the inden date?</p><p class="why">Becomes the rule that sets
+      <code>contract_id</code> automatically. <span class="src">BQ Q9</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Which year’s vote pays for a project that crosses
+      the year end?</p><p class="why">Votes are chosen through the settings year, which follows Tarikh Buka.
+      <span class="src">BQ Q10</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Should the contract BQ be locked after lantikan,
+      or after the inden is issued?</p><p class="why">4 + 7 rows show contract BQs edited after pelarasan had
+      begun; nothing locks it today. <span class="src">BQ Q12</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">May a PJA type a rate that is not in the
+      schedule (kadar baru, lump sum)? If yes, who approves it, and should the BQ show it?</p>
+      <p class="why">20 rows differ from the library today and nothing records why. <span class="src">BQ Q11</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">The 331 rows that point to deleted library
+      groups: re-link them, or leave them as they are?</p><p class="why">They print and total fine; it only
+      matters if a re-price by id must reach them. <span class="src">BQ Q15</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">The 4 projects dated 2025 and their two
+      sebutharga numbers: real work or trial records?</p><p class="why">Decides whether they get a “legacy”
+      contract during migration. <span class="src">BQ Q14</span></p></div></div>
+  </div>
+  <div class="group-head sys"><h3>Workflow and statuses</h3><span class="kicker">6 questions</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Should MENUNGGU_LANTIKAN follow automatically
+      when the PT enters No. Fail?</p><p class="why">It is the only manual step; 27 of 35 waiting projects
+      already have a No. Fail. <span class="src">SYS Q1</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Pemeriksaan and Siap Sebenar: one event, or
+      should the app really ask for both?</p><p class="why">They are the same date in 94% of finished projects.
+      <span class="src">SYS Q2</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Serah Tapak before Mula Kontrak (71 rows): is
+      early hand-over allowed, or is it a typing or ISO-count habit?</p><p class="why">Decides whether the new
+      form should warn about it. <span class="src">SYS Q3</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">After Tuntutan (33 days to Kewangan, then 4 to
+      Padanan): is the wait inside MPS, inside Kewangan, or for documents? Who should be reminded?</p>
+      <p class="why">It is the longest unowned stretch of the journey. <span class="src">SYS Q7</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">65 projects have no company. Are all genuinely
+      waiting for appointment, or are some cancelled?</p><p class="why">There is no “Dibatalkan” status, so
+      cancelled work cannot be told apart. <span class="src">SYS Q12</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">The old notice-deadline notifications
+      (Peringatan 1–3) are no longer shown anywhere. Do you want them back?</p><p class="why">The table and API
+      still exist (242 rows); only the screen is gone. <span class="src">SYS Q10</span></p></div></div>
+  </div>
+</section>
+
+<section class="page">
+  <div class="group-head risk"><h3>Money</h3><span class="kicker">4 questions</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Seven projects per company at about RM 200k
+      looks planned. Is it a fixed rota, and should the app enforce or suggest it?</p><p class="why">59 of 63
+      companies have exactly seven; the cap is reported but not enforced. <span class="src">SYS Q4</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Is the RM 200,000 cap per contract or per
+      calendar year? Is the panel company list tied to the contract or to the year?</p><p class="why">Decides
+      whether companies move from the settings year to the contract record. <span class="src">BQ Q13</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">LoC: the switch is off on every row, yet one
+      project carries RM 2,100. Is LoC in use? Wang Tahanan is used by none: keep, hide or remove?</p>
+      <p class="why">Each kept rule must be rebuilt and tested. <span class="src">SYS Q5</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Votes 282010, 282090 and 282130 are committed
+      above their allocation. Is that acceptable reallocation, and who approves it?</p><p class="why">The
+      findings named two; the CSV shows three (page {{at:votes}}). <span class="src">SYS Q6</span></p></div></div>
+  </div>
+  <div class="group-head"><h3>Documents</h3><span class="kicker">2 questions</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Which documents must keep their exact government
+      layout (BQ, Pelarasan, Aku Janji, 5 notice letters, CPC, LAD, LoC, Prestasi, image report,
+      Senarai / Rotasi), and which may be redesigned?</p><p class="why">Sets the scope of the PDF work in the
+      overhaul. <span class="src">SYS Q11</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Photos are deleted after 24 hours. Intended, or
+      should Laporan Bergambar photos be kept with the project?</p><p class="why">Keeping them needs storage
+      rules and a link from project to photos. <span class="src">SYS Q9</span></p></div></div>
+  </div>
+  <div class="group-head sys"><h3>UI/UX</h3><span class="kicker">4 questions · from chapter 14</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Which UI base: A Saluran, B Lejar, C Tapak, or
+      the merge of A’s home, B’s BQ sheet and register, C’s phone flow?</p><p class="why">Sets what is built
+      first; about 5 to 11 weeks of UI (estimate, not measured). <span class="src">UX ch. 14</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Is the phone measuring flow, with its offline
+      queue, in the first release or a later one?</p><p class="why">Offline is the largest single step (about
+      2–3 weeks, estimate); 12 of 16 accounts are PJA.
+      <span class="src">UX ch. 13</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Who chooses kekal kadar kontrak or guna kadar
+      baharu: the PT alone, or the PJA proposes and the PT confirms?</p><p class="why">Sets roles, the decision
+      log and what a PJA sees. <span class="src">UX ch. 11–13</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">One visual system: one type family, MPS purple
+      only for contract things, Malay-only labels?</p><p class="why">Today three similar fonts load, colours mean
+      nothing twice, labels mix languages.
+      <span class="src">UX audit 13–15</span></p></div></div>
+  </div>
+  <div class="notes-box fill sp-4" style="min-height:20mm"><p class="kicker">Your notes</p></div>
+  <div class="callout sp-3">
+    <p class="small"><b>Merged:</b> SYS Q8 (“when a new sebutharga starts, do old projects keep their rates, and
+      may two contracts run in one year?”) is covered by BQ Q3, Q7 and Q8 above. 16 + 12 = 28 questions, 27
+      after merging, plus 4 UI/UX choices from chapter 14. <span class="tag q">Needs your answer</span> applies to every item on these pages.</p>
+  </div>
+</section>

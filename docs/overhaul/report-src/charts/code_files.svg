@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-code_files" viewBox="0 0 657.64 215.00" role="img" aria-label="Largest source files by line count" style="display:block;width:100%;height:auto">
+<text x="0.00" y="14.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >pages/BQEditor.tsx</text>
+<rect x="215.00" y="4.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="4.00" width="383.93" height="13.00" fill="#D97706" />
+<text x="657.64" y="14.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >2,043</text>
+<text x="0.00" y="35.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >pages/ProjectDetail.tsx</text>
+<rect x="215.00" y="25.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="25.00" width="336.38" height="13.00" fill="#D97706" />
+<text x="657.64" y="35.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >1,790</text>
+<text x="0.00" y="56.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >pages/BQPelarasanEditor.tsx</text>
+<rect x="215.00" y="46.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="46.00" width="331.87" height="13.00" fill="#D97706" />
+<text x="657.64" y="56.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >1,766</text>
+<text x="0.00" y="77.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >pages/ImageReportGenerator.tsx</text>
+<rect x="215.00" y="67.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="67.00" width="324.92" height="13.00" fill="#059669" />
+<text x="657.64" y="77.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >1,729</text>
+<text x="0.00" y="98.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >pages/ProjectsList.tsx</text>
+<rect x="215.00" y="88.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="88.00" width="285.27" height="13.00" fill="#059669" />
+<text x="657.64" y="98.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >1,518</text>
+<text x="0.00" y="119.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >pages/AdminSettings.tsx</text>
+<rect x="215.00" y="109.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="109.00" width="275.68" height="13.00" fill="#059669" />
+<text x="657.64" y="119.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >1,467</text>
+<text x="0.00" y="140.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >pages/Dashboard.tsx</text>
+<rect x="215.00" y="130.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="130.00" width="175.14" height="13.00" fill="#059669" />
+<text x="657.64" y="140.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >932</text>
+<text x="0.00" y="161.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >services/pdf/NotisPDFExporter.ts</text>
+<rect x="215.00" y="151.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="151.00" width="164.43" height="13.00" fill="#059669" />
+<text x="657.64" y="161.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >875</text>
+<text x="0.00" y="182.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >services/pdf/BQPDFExporter.ts</text>
+<rect x="215.00" y="172.00" width="394.64" height="13.00" fill="#EAE9E4" />
+<rect x="215.00" y="172.00" width="154.85" height="13.00" fill="#059669" />
+<text x="657.64" y="182.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >824</text>
+<text x="0.00" y="209.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >AMBER = the two near-duplicate BQ editors (54% shared lines) and the form that holds the money rules</text>
+</svg>

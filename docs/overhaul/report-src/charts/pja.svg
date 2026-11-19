@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-pja" viewBox="0 0 313.70 230.00" role="img" aria-label="Projects per PJA" style="display:block;width:100%;height:auto">
+<text x="0.00" y="12.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 1</text>
+<rect x="52.00" y="4.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="4.00" width="120.06" height="11.00" fill="#059669" />
+<rect x="172.06" y="4.00" width="105.32" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="12.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >107</text>
+<text x="0.00" y="29.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 2</text>
+<rect x="52.00" y="21.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="21.00" width="96.89" height="11.00" fill="#059669" />
+<rect x="148.89" y="21.00" width="67.40" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="29.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >78</text>
+<text x="0.00" y="46.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 3</text>
+<rect x="52.00" y="38.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="38.00" width="103.21" height="11.00" fill="#059669" />
+<rect x="155.21" y="38.00" width="33.70" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="46.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >65</text>
+<text x="0.00" y="63.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 4</text>
+<rect x="52.00" y="55.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="55.00" width="96.89" height="11.00" fill="#059669" />
+<rect x="148.89" y="55.00" width="31.60" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="63.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >61</text>
+<text x="0.00" y="80.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 5</text>
+<rect x="52.00" y="72.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="72.00" width="109.53" height="11.00" fill="#059669" />
+<rect x="161.53" y="72.00" width="6.32" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="80.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >55</text>
+<text x="0.00" y="97.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 6</text>
+<rect x="52.00" y="89.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="89.00" width="84.25" height="11.00" fill="#059669" />
+<rect x="136.25" y="89.00" width="16.85" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="97.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >48</text>
+<text x="0.00" y="114.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 7</text>
+<rect x="52.00" y="106.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="106.00" width="4.21" height="11.00" fill="#059669" />
+<rect x="56.21" y="106.00" width="54.77" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="114.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >28</text>
+<text x="0.00" y="131.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 8</text>
+<rect x="52.00" y="123.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="123.00" width="0.00" height="11.00" fill="#059669" />
+<rect x="52.00" y="123.00" width="44.23" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="131.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >21</text>
+<text x="0.00" y="148.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 9</text>
+<rect x="52.00" y="140.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="140.00" width="2.11" height="11.00" fill="#059669" />
+<rect x="54.11" y="140.00" width="35.81" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="148.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >18</text>
+<text x="0.00" y="165.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 10</text>
+<rect x="52.00" y="157.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="157.00" width="0.00" height="11.00" fill="#059669" />
+<rect x="52.00" y="157.00" width="10.53" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="165.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >5</text>
+<text x="0.00" y="182.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 11</text>
+<rect x="52.00" y="174.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="174.00" width="0.00" height="11.00" fill="#059669" />
+<rect x="52.00" y="174.00" width="4.21" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="182.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >2</text>
+<text x="0.00" y="199.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >PJA 12</text>
+<rect x="52.00" y="191.00" width="231.70" height="11.00" fill="#EAE9E4" />
+<rect x="52.00" y="191.00" width="0.00" height="11.00" fill="#059669" />
+<rect x="52.00" y="191.00" width="2.11" height="11.00" fill="#7AD3C6" />
+<text x="313.70" y="199.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >1</text>
+<text x="0.00" y="224.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >DARK = SIAP · PALE = still open</text>
+</svg>

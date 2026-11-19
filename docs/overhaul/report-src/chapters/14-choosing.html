@@ -1,0 +1,91 @@
+<!-- chapter: 14 | Choosing a direction -->
+<section class="page">
+  <header class="opener">
+    <div class="no">14</div>
+    <div>
+      <p class="kicker">UI/UX · choosing</p>
+      <h1>No direction wins everything</h1>
+      <p class="dek">Each of A, B and C is best for one group of users. They share one contract model, so the
+        strongest answer is to merge their best parts.</p>
+    </div>
+  </header>
+  <figure class="fig">
+    <p class="fig-title">Saluran leads for the PT, Lejar for the rates, Tapak for the site</p>
+    <p class="fig-sub">Scores 1–5, 5 is best; green marks the leader of a row. These are design judgements, not
+      measurements. <span class="tag i">Inference</span></p>
+    <table class="matrix">
+      <tr><th style="width:40mm">Criterion</th><th>Direction A<span class="nm">Saluran</span></th><th>Direction B<span class="nm">Lejar</span></th><th>Direction C<span class="nm">Tapak</span></th></tr>
+<tr><td>PJA speed on site</td><td><span class="dots"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span> <b class="mono" style="margin-left:1mm">2</b><span class="why">phone needs a separate list layout</span></td><td><span class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></span> <b class="mono" style="margin-left:1mm">1</b><span class="why">desk-oriented</span></td><td><span class="dots best"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span> <b class="mono" style="margin-left:1mm">5</b><span class="why">built for it</span></td></tr>
+<tr><td>Admin (PT) oversight</td><td><span class="dots best"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span> <b class="mono" style="margin-left:1mm">5</b><span class="why">pipeline and stage ages are the home</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">register and notes</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">live track and decision queue</span></td></tr>
+<tr><td>Contract and rate clarity</td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">chip on every card, change queue</span></td><td><span class="dots best"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span> <b class="mono" style="margin-left:1mm">5</b><span class="why">source, history and diff on every row</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">clear choice, less history</span></td></tr>
+<tr><td>Learning curve (easier scores higher)</td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">familiar board metaphor</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span> <b class="mono" style="margin-left:1mm">3</b><span class="why">sheet conventions to learn</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">guided steps on phone, new desk tool</span></td></tr>
+<tr><td>Build effort (less work scores higher)</td><td><span class="dots best"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">about 5–7 weeks</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span> <b class="mono" style="margin-left:1mm">3</b><span class="why">about 7–9 weeks</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span> <b class="mono" style="margin-left:1mm">2</b><span class="why">about 8–11 weeks</span></td></tr>
+<tr><td>Fit with current codebase</td><td><span class="dots best"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> <b class="mono" style="margin-left:1mm">4</b><span class="why">dashboard counts, tabs and BQ internals reused</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span> <b class="mono" style="margin-left:1mm">3</b><span class="why">replaces the BQ editor UI</span></td><td><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span> <b class="mono" style="margin-left:1mm">3</b><span class="why">new mobile flows; reuses the stepper idea</span></td></tr>
+    </table>
+    <figcaption>Source: CONCEPTS-ux.md, comparison table and its csv block. No weights and no totals: the rows
+      matter differently to different users.</figcaption>
+  </figure>
+  <figure class="fig sp-3 push">
+    <p class="fig-title">C costs about twice the UI work of A</p>
+    <p class="fig-sub">Developer-weeks of UI per direction, low to high, on top of the shared contract groundwork
+      (not estimated). <b>Yiyi’s estimate, not measured.</b></p>
+    <div class="effort">
+      <span><b>A · Saluran</b></span><div class="track"><div class="bar" style="left:calc(5/12*100%);width:calc(2/12*100%)"></div></div><span class="w">5–7 wk</span>
+      <span><b>B · Lejar</b></span><div class="track"><div class="bar" style="left:calc(7/12*100%);width:calc(2/12*100%)"></div></div><span class="w">7–9 wk</span>
+      <span><b>C · Tapak</b></span><div class="track"><div class="bar" style="left:calc(8/12*100%);width:calc(3/12*100%)"></div></div><span class="w">8–11 wk</span>
+      <div class="axis"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12 wk</span></div>
+    </div>
+    <figcaption>C splits as phone flows 4–5, offline queue 2–3, command centre and contract timeline 2–3. B’s
+      big item is the BQ sheet replacing <code>pages/BQEditor.tsx</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="page">
+  <h2 class="big">The suggested merge</h2>
+  <p class="measure">A’s pipeline as the home, B’s BQ sheet and contract register on the desk, C’s measuring flow
+    on the phone, all on one contract and rate-book model. <span class="tag i">Inference</span></p>
+  <div class="merge-rail sp-2"><span>Who: PT, Jurutera · desk</span><span>Who: PT, Jurutera · desk</span><span>Who: PJA · phone</span></div>
+  <div class="merge" style="margin-bottom:4.5mm">
+    <div class="part"><p class="from">From A · Saluran</p><h3>Home: the pipeline</h3>
+      <img src="img/ux/A-01-saluran-utama.png" alt=""><img src="img/ux/A-02-projek-butiran.png" alt="">
+      <p>Six statuses with stage ages and a contract chip on every card; the project page repeats the steps.</p></div>
+    <div class="part contract"><p class="from">From B · Lejar</p><h3>Desk: BQ sheet and contract register</h3>
+      <img src="img/ux/B-03-helaian-bq.png" alt=""><img src="img/ux/B-04-daftar-kontrak.png" alt="">
+      <p>Every rate shows its source and history; contracts are dated records with a version diff.</p></div>
+    <div class="part field"><p class="from">From C · Tapak</p><h3>Phone: measure on site</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:2mm">
+        <img src="img/ux/C-m03-ukur-item.png" alt=""><img src="img/ux/C-m04-kadar-berubah.png" alt=""></div>
+      <p>Big steps, a keypad, an offline queue; a rate change arrives as a two-choice sheet.</p></div>
+    <div class="stem"><i></i><i></i><i></i></div>
+    <div class="core"><div class="head"><h3>One contract model under all three</h3><p class="kicker" style="color:#C9C3EA">data · needed by any choice</p></div>
+      <ol class="num">
+        <li>A <b>contract</b> record per sebutharga: number, rate book, valid from–to, draf / aktif / ditutup.</li>
+        <li>Rate-book <b>versions</b>; “Klon kontrak” copies one into a new draft contract.</li>
+        <li>Each project bound to a contract, version and lock date; each item keeps its contract rate and the
+          <i>kekal / baharu</i> decision.</li>
+        <li>A <b>comparison step</b> that feeds A’s queue, B’s diff column and C’s bottom sheet.</li>
+      </ol></div>
+  </div>
+
+  <div class="cols-7-5 sp-4 push">
+    <div>
+      <h2>Four UI decisions for you</h2>
+      <ol class="num">
+        <li><b>Which base?</b> A, B, C, or the merge above. It sets which screens are built first.</li>
+        <li><b>Phone flow in release one?</b> The offline queue is the largest single step (about 2–3 weeks of
+          C’s 8–11, estimate).</li>
+        <li><b>Who makes the rate choice?</b> The PT alone in a queue (A, B), or the PJA proposes and the PT
+          confirms (C).</li>
+        <li><b>One visual system?</b> One type family with real numerals, MPS purple only for contract things,
+          Malay-only labels (audit 13–15).</li>
+      </ol>
+      <p class="small muted sp-1">Also in chapter 90, group “UI/UX”, to tick there.</p>
+    </div>
+    <div class="callout contract">
+      <h3>Whatever you pick</h3>
+      <p class="small">The contract model at the foot of the diagram is a data change, not a skin. It is the
+        contract record of Option B in chapter 08 with the numbered versions of Option D, and every direction
+        needs it before its contract screens can show anything real.</p>
+    </div>
+  </div>
+</section>

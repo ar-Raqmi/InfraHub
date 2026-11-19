@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-life" viewBox="0 0 657.64 300.00" role="img" aria-label="Contract lifecycle" style="display:block;width:100%;height:auto">
+<defs><marker id="life-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<defs><marker id="life-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#0F1E1C"/></marker></defs>
+<rect x="68.00" y="0.00" width="189.88" height="20.00" fill="#ABA5C7" />
+<text x="76.00" y="14.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.8" >DRAFT</text>
+<rect x="265.88" y="0.00" width="189.88" height="20.00" fill="#3B2E8C" />
+<text x="273.88" y="14.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.8" >ACTIVE</text>
+<rect x="463.76" y="0.00" width="189.88" height="20.00" fill="#27275A" />
+<text x="471.76" y="14.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.8" >CLOSED</text>
+<text x="0.00" y="14.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#64748B" text-anchor="start" >STATUS ›</text>
+<text x="0.00" y="66.00" font-family="'Zodiak', serif" font-size="13" font-weight="800" fill="#3B2E8C" text-anchor="start" >2026</text>
+<text x="0.00" y="158.00" font-family="'Zodiak', serif" font-size="13" font-weight="800" fill="#3B2E8C" text-anchor="start" >2027</text>
+<rect x="265.88" y="40.00" width="189.88" height="62.00" fill="#3B2E8C" stroke="#3B2E8C" stroke-width="1" />
+<text x="273.88" y="57.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#F6F4EE" text-anchor="start" >MPS/SH/302/25</text>
+<text x="273.88" y="73.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#F6F4EE" text-anchor="start" >rate book 2026, served to new</text>
+<text x="273.88" y="85.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#F6F4EE" text-anchor="start" >projects</text>
+<rect x="463.76" y="40.00" width="189.88" height="62.00" fill="#D4D0DC" stroke="#3B2E8C" stroke-width="1" />
+<text x="471.76" y="57.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#3B2E8C" text-anchor="start" >MPS/SH/302/25</text>
+<text x="471.76" y="73.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#3B2E8C" text-anchor="start" >read-only book, still served to</text>
+<text x="471.76" y="85.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#3B2E8C" text-anchor="start" >its own projects</text>
+<rect x="68.00" y="132.00" width="189.88" height="62.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<text x="76.00" y="149.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#3B2E8C" text-anchor="start" >next sebutharga</text>
+<text x="76.00" y="165.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#3B2E8C" text-anchor="start" >a full copy of the 2026 book; PT</text>
+<text x="76.00" y="177.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#3B2E8C" text-anchor="start" >edits the rates</text>
+<rect x="265.88" y="132.00" width="189.88" height="62.00" fill="#3B2E8C" stroke="#3B2E8C" stroke-width="1" />
+<text x="273.88" y="149.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#F6F4EE" text-anchor="start" >next sebutharga</text>
+<text x="273.88" y="165.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#F6F4EE" text-anchor="start" >rate book 2027, served to new</text>
+<text x="273.88" y="177.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#F6F4EE" text-anchor="start" >projects</text>
+<path d="M456.8,71.0 L461.8,71.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#life-p)"/>
+<text x="459.76" y="34.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="middle" >Tutup kontrak</text>
+<path d="M258.9,163.0 L263.9,163.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#life-p)"/>
+<text x="261.88" y="208.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="middle" >edit rates, then Aktifkan</text>
+<path d="M291.9,102.0 L291.9,117.0 L162.9,117.0 L162.9,130.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#life-p)"/>
+<text x="156.94" y="113.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="end" >Salin ke kontrak baharu</text>
+<rect x="0.00" y="224.00" width="657.64" height="40.00" fill="#D4EBDE" />
+<rect x="0.00" y="224.00" width="4.00" height="40.00" fill="#059669" />
+<text x="12.00" y="240.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#059669" text-anchor="start" letter-spacing="0.5" >A PROJECT</text>
+<text x="12.00" y="255.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >binds to the ACTIVE contract (choose if two are active); PT confirms at lantikan; locked once inden exists.</text>
+<text x="0.00" y="282.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Tukar kontrak &amp; harga semula: re-price one project against another book by matching ids, showing old rate, new rate and</text>
+<text x="0.00" y="295.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >difference per row before anything is applied.</text>
+</svg>

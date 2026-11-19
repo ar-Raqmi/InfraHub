@@ -1,0 +1,76 @@
+{
+ "cover": {
+  "total": 489,
+  "counts": {
+   "FASA_DRAF": 29,
+   "MENUNGGU_LANTIKAN": 35,
+   "DALAM_PROSES": 54,
+   "PEMERIKSAAN_TAPAK": 32,
+   "TUNTUTAN_BAYARAN": 46,
+   "SIAP": 293
+  },
+  "sebutharga_main": 420,
+  "blank": 67,
+  "other": 2
+ },
+ "code_total_lines": 25055,
+ "pages_share_pct": 53.2,
+ "siap_pct_all": 59.9,
+ "open_all": 196,
+ "timeline": {
+  "pre": 16.0,
+  "site": 38.0,
+  "paper": 62.0,
+  "whole": 118.0,
+  "sum_of_medians": 116.0,
+  "site_share_pct": 32.2,
+  "paper_share_pct": 52.5,
+  "paper_parts": [
+   20.0,
+   33.0,
+   4.0
+  ],
+  "paper_rest": 5.0
+ },
+ "bp_top2_pct": 53.4,
+ "kos_band_20_50_pct": 84.7,
+ "kos_band_total": 489,
+ "pja_top4": {
+  "n": 311,
+  "pct": 63.6,
+  "total": 489
+ },
+ "votes_over": [
+  [
+   "282010",
+   26408.44
+  ],
+  [
+   "282090",
+   45321.14
+  ],
+  [
+   "282130",
+   3083.23
+  ]
+ ],
+ "overflow": {
+  "n_all": 339,
+  "n_over": 223,
+  "pct": 65.8,
+  "sum": 238756.84,
+  "median": 583.34
+ },
+ "bq_rows": {
+  "total": 8672,
+  "same": 8321,
+  "diff": 20,
+  "orphan": 331,
+  "points": 337
+ },
+ "exposure": {
+  "projects": 194,
+  "value_excl_outlier": 5716861.1,
+  "not_started": 128
+ }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-code_area" viewBox="0 0 657.64 72.00" role="img" aria-label="Lines of code by area" style="display:block;width:100%;height:auto">
+<rect x="0.00" y="0.00" width="349.02" height="26.00" fill="#059669" />
+<text x="6.00" y="17.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#F6F4EE" text-anchor="start" >pages · 13,335 lines · 53%</text>
+<rect x="350.02" y="0.00" width="90.47" height="26.00" fill="#14B8A6" />
+<text x="356.02" y="17.50" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#F6F4EE" text-anchor="start" >services/pdf · 3,485 lines · 14%</text>
+<rect x="441.49" y="0.00" width="38.24" height="26.00" fill="#90D9CE" />
+<rect x="480.73" y="0.00" width="27.77" height="26.00" fill="#AAE0D6" />
+<rect x="509.50" y="0.00" width="21.97" height="26.00" fill="#90D9CE" />
+<rect x="532.46" y="0.00" width="21.49" height="26.00" fill="#AAE0D6" />
+<rect x="554.96" y="0.00" width="18.06" height="26.00" fill="#90D9CE" />
+<rect x="574.01" y="0.00" width="17.66" height="26.00" fill="#AAE0D6" />
+<rect x="592.68" y="0.00" width="12.49" height="26.00" fill="#90D9CE" />
+<rect x="606.17" y="0.00" width="10.44" height="26.00" fill="#AAE0D6" />
+<rect x="617.61" y="0.00" width="10.00" height="26.00" fill="#90D9CE" />
+<rect x="628.61" y="0.00" width="7.85" height="26.00" fill="#AAE0D6" />
+<rect x="637.46" y="0.00" width="6.45" height="26.00" fill="#90D9CE" />
+<rect x="644.91" y="0.00" width="5.69" height="26.00" fill="#AAE0D6" />
+<rect x="651.60" y="0.00" width="5.04" height="26.00" fill="#90D9CE" />
+<text x="0.00" y="46.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" letter-spacing="0.4" >15 AREAS · 25,055 LINES OF TYPESCRIPT · NO TEST FILES</text>
+<text x="0.00" y="64.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >pale blocks = 13 smaller areas (components, hooks, lib, API...)</text>
+</svg>

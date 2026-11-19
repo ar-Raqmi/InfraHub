@@ -1,0 +1,160 @@
+<!-- chapter: 02 | The system at a glance -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">02</div>
+    <div>
+      <p class="kicker">The system at a glance</p>
+      <h1>One site, eight pages, one big form</h1>
+      <p class="dek">How the parts of InfraHub connect, from the page in your browser to the row in the
+        database, and where the weight of the code sits.</p>
+    </div>
+  </header>
+
+  <div class="cols-rail">
+    <div>
+      <p class="kicker">Stack</p>
+      <p class="small sp-1">React 19 + Vite, Hono on Cloudflare Pages, D1 and R2.
+        ~25,500 lines of TypeScript, no tests. <span class="tag v">Verified</span></p>
+      <p class="src sp-1">vite.config.ts:31-41 · wrangler.toml</p>
+    </div>
+    <div>
+      <p class="measure">Think of InfraHub as two halves joined by one cable. In the <b>browser</b>, each HTML
+        page boots a React app that asks <code>apiService</code> for data and draws the screens; it also builds
+        every PDF itself. On <b>Cloudflare</b>, a small Hono API reads and writes eight tables. The heavy
+        things, such as each project’s BQ, are stored as JSON documents inside a single <code>projects</code>
+        row, not as tables of their own.</p>
+    </div>
+  </div>
+
+  <figure class="fig sp-3">
+    <p class="fig-title">Everything runs in the browser except storage</p>
+    <p class="fig-sub">Read top to bottom: the page you open, the code it loads, one HTTP hop, then the API and
+      the database.</p>
+    {{svg:arch}}
+    <figcaption><b>Source</b> FINDINGS-system §2.1, §2.5 · lib/mountPage.tsx · services/apiService.ts:1-385 ·
+      functions/api/repositories/ProjectRepository.ts:11-189 · index.html:61-67 (jsPDF from CDN). Every page
+      load fetches all projects of all years; the project page fetches one full record with its JSON.</figcaption>
+  </figure>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout sys">
+      <h3>The “year” is a URL setting, not a field</h3>
+      <p class="small">Projects are not stored with a year. Each page filters the full list by the year of
+        Tarikh Buka, and that year also picks the settings row (companies, votes, sebutharga). Four projects
+        opened in Dec 2025 therefore sit in the 2025 bucket. <span class="tag v">Verified</span></p>
+    </div>
+    <div class="callout risk">
+      <h3>Things that look alive but are not</h3>
+      <p class="small">No offline/PWA (the service worker removes itself), no realtime (a mock that always says
+        “subscribed”), a notifications table nobody reads, and 8 unused dependencies.
+        <span class="tag v">Verified</span></p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">Where the code lives</p>
+  <h2>Half the code is in sixteen page files</h2>
+  <p class="measure">The <code>pages/</code> folder holds 13,335 lines, more than everything else combined.
+    Five files are over 1,500 lines. The form that runs the whole workflow, <code>ProjectDetail.tsx</code>, is
+    one of them, and the two BQ editors are near-copies of each other: 588 of the 1,085 non-trivial lines of the
+    first appear word for word in the second. <span class="tag v">Verified</span></p>
+
+  <figure class="fig sp-3">
+    {{svg:code_area}}
+  </figure>
+  <figure class="fig sp-2">
+    <p class="fig-title">The largest files are the ones an overhaul must touch</p>
+    {{svg:code_files}}
+    <figcaption><b>Source</b> wc -l, FINDINGS-system §2.3 and code_size_by_area.csv. The 15 charted areas sum
+      to 25,055 lines; root files such as <code>types.ts</code> make up the rest of the ~25,500.</figcaption>
+  </figure>
+
+  <h2 class="sp-4">Eight tables, one of them does the work</h2>
+  <table class="data">
+    <thead><tr><th style="width:44mm">Table</th><th class="num" style="width:16mm">Rows</th><th>What it holds</th></tr></thead>
+    <tbody>
+      <tr><td class="code">projects</td><td class="num">489</td><td>One row per work order, 69 columns, 12 date
+        columns, money columns, and the BQs as JSON documents.</td></tr>
+      <tr class="hl"><td class="code">library_groups</td><td class="num">107</td><td><b class="purple">The global
+        master BQ (Pustaka):</b> 196 items, 499 priced points, 17 categories. No year, no contract field.</td></tr>
+      <tr><td class="code">system_settings</td><td class="num">3</td><td>One row per year (2024 empty, 2025,
+        2026): companies, vote numbers, sebutharga numbers, meeting date and number.</td></tr>
+      <tr><td class="code">templates</td><td class="num">9</td><td>Starter bills for a new BQ (1 empty, 3
+        insurance bands, 5 custom such as LONGKANG and HENTIAN BAS).</td></tr>
+      <tr><td class="code">app_users</td><td class="num">16</td><td>Staff accounts: 2 ADMIN, 2 JURUTERA, 12 PJA.</td></tr>
+      <tr><td class="code">user_notification_states</td><td class="num">242</td><td>Read flags for an old
+        notification feature; no screen uses them any more.</td></tr>
+      <tr><td class="code">temporary_gallery</td><td class="num">7</td><td>Photos staged for the image report;
+        deleted after 24 hours.</td></tr>
+      <tr><td class="code">bulletins</td><td class="num">3</td><td>Dashboard notice board.</td></tr>
+    </tbody>
+  </table>
+  <p class="src sp-1">schema.sql · sqlite_master and row-count queries on the local copy. No foreign keys, no
+    secondary indexes, no migration history.</p>
+</section>
+
+<section class="page">
+  <p class="kicker">Inside the projects row</p>
+  <h2>The BQ is a document, not a table</h2>
+  <div class="cols-7-5">
+    <div>
+      <p>Each project keeps its BQ as one JSON document: a list of bills (groups), each with header, item and
+        note rows. Every item row carries its own copy of description, unit and rate, plus three ids pointing
+        back to the library item it came from. That id is the <b>only</b> link to the Pustaka.
+        <span class="tag v">Verified</span></p>
+      <p>This is why a cross-project question such as “how many metres of longkang did we build this year” is
+        hard today: the answer is spread across 489 documents that must each be opened and parsed.
+        <span class="tag i">Inference</span></p>
+    </div>
+    <div class="stat-grid" style="grid-template-columns:1fr 1fr;row-gap:5mm">
+      <div class="stat"><div class="n" style="font-size:30pt">13.4<span class="u">MB</span></div>
+        <div class="l">of BQ JSON across the two BQ columns</div></div>
+      <div class="stat"><div class="n" style="font-size:30pt">22,417</div>
+        <div class="l">contract BQ rows inside 489 documents</div></div>
+      <div class="stat"><div class="n" style="font-size:30pt">8,672</div>
+        <div class="l">of them are priced ITEM rows</div></div>
+      <div class="stat"><div class="n" style="font-size:30pt">38<span class="u">KB</span></div>
+        <div class="l">largest pelarasan document</div></div>
+    </div>
+  </div>
+
+  <table class="data sp-4">
+    <thead><tr><th style="width:52mm">JSON column</th><th>What it holds</th><th style="width:48mm">Live state</th></tr></thead>
+    <tbody>
+      <tr><td class="code">bq_data</td><td>The contract BQ: bills of rows with description, unit, rate, qty,
+        amount, calculation parts and the 3 source ids</td><td>7.46 MB; median 14.8 KB per project</td></tr>
+      <tr><td class="code">bq_data_pelarasan</td><td>A deep copy of <code>bq_data</code> made by <i>Mulakan
+        Pelarasan</i>, then re-measured; added rows flagged <code>isAdjustment</code></td><td>5.96 MB; 358
+        projects; 6,991 item rows</td></tr>
+      <tr><td class="code">project_locations</td><td>Lokasi and aduan rows (1–7 per project), the structured
+        replacement for the old text columns</td><td>filled in 489 of 489</td></tr>
+      <tr><td class="code">global_calculations(_pelarasan)</td><td>Shared dimensions (length, width, depth) used
+        by BQ rows</td><td>487 / 358 non-empty</td></tr>
+      <tr><td class="code">prestasi_scores</td><td>Six scores (1–10) for the Prestasi certificate</td><td>tiny</td></tr>
+      <tr><td class="code">global_dimensions, location_dimensions</td><td>Legacy dimension stores</td>
+        <td class="amber"><b>dead:</b> all zeros / 1 of 489</td></tr>
+    </tbody>
+  </table>
+  <p class="src sp-1">types.ts · FINDINGS-system §3.2 json_blob_stats.csv · ProjectDetail.tsx:594-614</p>
+
+  <div class="cols-2 sp-4 push">
+    <div>
+      <h3>Settings are one blob per year</h3>
+      <p class="small">The 2026 row holds 60 panel companies (each with a RM 200,000 cap), 10 vote codes and one
+        sebutharga number, <code>MPS/SH/302/25</code>. Projects refer to companies and votes by their
+        <b>name text</b>, so renaming a company in Settings would orphan its projects.
+        <span class="tag i">Inference</span></p>
+      <p class="src sp-1">schema.sql · hooks/useSettings.ts:5-66</p>
+    </div>
+    <div>
+      <h3>Legacy that the overhaul must decide on</h3>
+      <ul class="list l-amber small">
+        <li><code>aduan</code> text column empty in all 489 rows; <code>lokasi</code> still duplicated in 487.</li>
+        <li>318 contract and 357 pelarasan groups still use the old single <code>locationId</code>.</li>
+        <li><code>templates.group_refs</code> is <code>[]</code> in all 9 templates.</li>
+      </ul>
+      <p class="src sp-1">FINDINGS-system §3.3 · <span class="tag v">Verified</span></p>
+    </div>
+  </div>
+</section>

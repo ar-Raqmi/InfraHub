@@ -1,0 +1,122 @@
+<!-- chapter: 05 | Money rules -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">05</div>
+    <div>
+      <p class="kicker">Money rules</p>
+      <h1>Six formulas, all living inside the form</h1>
+      <p class="dek">Every ringgit figure InfraHub shows comes from one of these rules. They work, and the stored
+        numbers reconcile, but they are computed in the browser while the project page is open, and some are
+        typed in more than one place.</p>
+    </div>
+  </header>
+
+  <div class="cols-2 gap-y" style="row-gap:4mm">
+    <div class="formula">
+      <h3>Kos Projek <span class="muted small">(Harga Kontrak)</span></h3>
+      <div class="eq">kos_projek = sum(amount of every row in bq_data)</div>
+      <p>The contract price is simply the BQ total. It is rewritten whenever the BQ changes, in any status.</p>
+      <p class="src sp-1">ProjectDetail.tsx:944-955 · matches in 488 of 488 projects <span class="tag v">Verified</span></p>
+    </div>
+    <div class="formula risk">
+      <h3>LAD <span class="muted small">(late finish)</span></h3>
+      <div class="eq">days = max(0, Siap Sebenar − Tamat Kontrak)<br>rate = sum &lt; 20,000 ? RM 20 / day<br>
+        <span class="op">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</span> sum × 6.4% ÷ 365</div>
+      <p>The constants exist in <code>services/finance.ts</code>, but the form types <code>0.064</code> and
+        <code>20000</code> again inline. Two copies of one rule.</p>
+      <p class="src sp-1">finance.ts:5-22 vs ProjectDetail.tsx:765-777, :773 <span class="tag v">Verified</span></p>
+    </div>
+    <div class="formula risk">
+      <h3>LoC <span class="muted small">(late claim)</span></h3>
+      <div class="eq">LoC = max(0, (Tuntutan − Siap) − 14) × RM 100</div>
+      <p>Active unless the switch is off. RM 100 and 14 days are hard-coded in three files. The switch is 0 on
+        every row, yet one project carries a RM 2,100 LoC.</p>
+      <p class="src sp-1">ProjectDetail.tsx:779-798 · LoCCertificate.tsx:17 · LoCPDFExporter.ts:8 <span class="tag v">Verified</span></p>
+    </div>
+    <div class="formula">
+      <h3>Kos Sebenar <span class="muted small">(the cap)</span></h3>
+      <div class="eq">kos_sebenar = max(0, min(Pelarasan, Kos Projek)<br>
+        <span class="op">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>− LAD − LoC − Wang Tahanan)</div>
+      <p>Payment never exceeds the ordered amount. Pelarasan is the sum of <code>bq_data_pelarasan</code>, or Kos
+        Projek if there is none yet.</p>
+      <p class="src sp-1">ProjectDetail.tsx:818-847 · matches in 358 of 358 <span class="tag v">Verified</span></p>
+    </div>
+    <div class="formula risk">
+      <h3>Overflow <span class="muted small">(bq_pelarasan_extra)</span></h3>
+      <div class="eq">extra = max(0, Pelarasan − Kos Projek)</div>
+      <p>What the re-measurement found above the contract price. It is stored, then removed from payment by the
+        cap. Nobody is told.</p>
+      <p class="src sp-1">ProjectDetail.tsx:835, :847 <span class="tag v">Verified</span></p>
+    </div>
+    <div class="formula">
+      <h3>Harga Akhir <span class="muted small">(in lists and totals)</span></h3>
+      <div class="eq">status in {TUNTUTAN, SIAP} ? kos_sebenar : kos_projek</div>
+      <p>Used for table columns, company totals and “used” vote money. Re-implemented in the list page rather
+        than shared.</p>
+      <p class="src sp-1">ProjectsList.tsx:323-343 <span class="tag v">Verified</span></p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">The cap in practice</p>
+  <h2 class="big">Two in three claims are trimmed by the cap</h2>
+  <p class="measure">When the PJA re-measures the site, the total is often higher than the contract price. The
+    cap keeps the payment at the contract price and stores the difference as an overflow that nobody pays.
+    Across the 339 claimed or finished projects that overflow adds up to <b>RM 238,757</b>.
+    <span class="tag v">Verified</span></p>
+
+  <div class="cols-2 sp-3">
+    <figure class="fig">
+      <p class="fig-title">223 of 339 carry an overflow</p>
+      <p class="fig-sub">Each square is one TUNTUTAN_BAYARAN or SIAP project.</p>
+      {{svg:overflow}}
+    </figure>
+    <div>
+      <div class="stat-grid" style="grid-template-columns:1fr 1fr;row-gap:5mm">
+        <div class="stat s-amber"><div class="n" style="font-size:30pt">238,757</div>
+          <div class="l"><b>RM of unpaid overflow</b>in 223 projects</div></div>
+        <div class="stat"><div class="n" style="font-size:30pt">583</div>
+          <div class="l"><b>RM median overflow</b>p75 RM 1,360, max RM 12,323</div></div>
+        <div class="stat"><div class="n" style="font-size:30pt">31</div>
+          <div class="l"><b>projects with LAD</b>RM 4,181 in total, median 15 days late</div></div>
+        <div class="stat"><div class="n" style="font-size:30pt">0</div>
+          <div class="l"><b>projects use Wang Tahanan</b>LoC on 1 project (RM 2,100)</div></div>
+      </div>
+      <figure class="fig sp-4">
+        <p class="fig-title" style="font-size:11pt">Pelarasan total vs contract price, all 358</p>
+        {{svg:pel_outcome}}
+      </figure>
+    </div>
+  </div>
+  <p class="cap">Source money_post_pelarasan.csv (TUNTUTAN + SIAP only), pelarasan_vs_contract.csv. Counting
+    every status, the BQ findings find 242 projects above the contract and a stored overflow of RM 251,467.52 in
+    233 projects; 9 SIAP rows hold a stale 0 in that column (it does not change Kos Sebenar).
+    <span class="tag v">Verified</span></p>
+
+  <h2 class="sp-4">Where the rules live, and why it matters</h2>
+  <div class="cols-3">
+    <div>
+      <h3>Inside React effects</h3>
+      <p class="small">The form has 26 <code>useState</code> and 20 <code>useEffect</code>. Results are written
+        back into the record and saved. With no tests, a change to LAD or the cap can only be checked by
+        reading code. <span class="tag v">Verified</span></p>
+    </div>
+    <div>
+      <h3>In more than one place</h3>
+      <p class="small">LAD constants twice, LoC constants in three files, Harga Akhir re-written in the list
+        page. Two screens can disagree after a policy change. <span class="tag v">Verified</span></p>
+    </div>
+    <div>
+      <h3>Some are only reported</h3>
+      <p class="small">The RM 200,000 company cap is printed on the Senarai PDF but not enforced; one company is
+        RM 50.67 over. The vote balance changes with the on-screen filters. <span class="tag v">Verified</span></p>
+    </div>
+  </div>
+  <div class="callout sp-3 push">
+    <p class="small"><b>Vote balance on the Projek page:</b> <code>Baki Bersih = allocation − sum(Kos Projek or
+      Harga Akhir) − “Lain-lain (Sebutharga)” − “Lantikan YDP/TYDP”</code>. The last two are typed by hand in
+      Settings and are 0 in 2026. <span class="src">ProjectsList.tsx:583-607, 1374-1394</span>
+      <span class="tag v">Verified</span></p>
+  </div>
+</section>

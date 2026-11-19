@@ -1,0 +1,107 @@
+<!-- chapter: 06 | The BQ question, explained -->
+<section class="page">
+  <header class="opener contract">
+    <div class="no">06</div>
+    <div>
+      <p class="kicker">The BQ question, explained</p>
+      <h1>One menu, no date on it</h1>
+      <p class="dek">Why “what happens when a new contract comes?” has no good answer in InfraHub today, told
+        first as a restaurant story and then as the real data flow.</p>
+    </div>
+  </header>
+
+  <div class="cols-rail">
+    <div>
+      <p class="kicker">The analogy</p>
+      <p class="small sp-1 muted">Pustaka = the menu. Project BQ = the receipt. Contract = the dated price list
+        the menu should belong to.</p>
+    </div>
+    <div>
+      <p class="lede">A receipt keeps the price you paid, even if the menu changes tomorrow. That part of
+        InfraHub works.</p>
+      <p class="sp-2">The trouble is that the restaurant has only <b>one menu</b>, with <b>no date</b> on it. If
+        you order one more dish on an old bill, the waiter reads today’s menu. And when the owner reprints the
+        menu, the old one goes in the bin: nobody can later prove what last year’s prices were.</p>
+    </div>
+  </div>
+
+  <figure class="fig sp-4">
+    {{svg:analogy}}
+  </figure>
+
+  <div class="cols-3 sp-4 push">
+    <div class="card contract">
+      <p class="kicker">The menu</p>
+      <p class="small"><code>library_groups</code> has four columns: id, title, category, items. No year, no
+        sebutharga, no date, no version. <span class="tag v">Verified</span></p>
+      <p class="src sp-1">schema.sql:28-33 · PRAGMA table_info</p>
+    </div>
+    <div class="card sys">
+      <p class="kicker">The receipt</p>
+      <p class="small">Picking an item copies description, unit and rate into <code>bq_data</code>. Nothing
+        re-reads the library for rows that already exist. <span class="tag v">Verified</span></p>
+      <p class="src sp-1">BQEditor.tsx:375-441 · data/bqPresets.ts:3-113</p>
+    </div>
+    <div class="card risk">
+      <p class="kicker">Reprinting the menu</p>
+      <p class="small"><i>Simpan Pustaka</i> deletes every group and re-inserts 107 rows, one by one, with no
+        transaction. No copy is kept and no date recorded. <span class="tag v">Verified</span></p>
+      <p class="src sp-1">SystemRepository.ts:48-56</p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">The real flow</p>
+  <h2 class="big">How a rate travels today, and the three places it is re-read</h2>
+  <p class="measure">Follow a rate from the PT’s Pustaka screen into a project. Green arrows are copies, which are
+    safe. The three <b class="amber">amber squares</b> are the moments the editor reaches back into the library
+    and takes <i>today’s</i> rate, whatever contract the project belongs to.</p>
+  <figure class="fig sp-3">
+    {{svg:bq_flow}}
+    <figcaption><b>Source</b> FINDINGS-bq “Current flow” · BQEditor.tsx:171-184, :375-441, :598-613 ·
+      BQPelarasanEditor.tsx:181-252, :596-613 · ProjectDetail.tsx:594-611, :942-954 · system.ts:27-39
+      <span class="tag v">Verified</span></figcaption>
+  </figure>
+  <div class="cols-3 sp-3 push">
+    <p class="small"><b class="amber">1 · Tambah Item.</b> There is no blank-item button: every row starts
+      from the library, which is why 100% of rows carry a link. The PJA can still type over the rate.</p>
+    <p class="small"><b class="amber">2 · Apply a template.</b> Rate and unit are overwritten with the library’s
+      current values; if the link is dead, the template’s old stored rate is used silently.</p>
+    <p class="small"><b class="amber">3 · Pelarasan addition.</b> New rows (<code>isAdjustment</code>) take the
+      library rate of that day, not the project’s contract rate. 489 such rows exist today.</p>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">What the data says</p>
+  <h2 class="big">The copies are safe. The next click is not.</h2>
+  <figure class="fig sp-2">
+    <p class="fig-title">8,321 of 8,672 copied rows still match today’s Pustaka</p>
+    {{svg:bq_rows}}
+    <figcaption><b>Source</b> contract_item_link_share.csv, distinct_rates_per_library_point.csv. 18 of the 20
+      differing rows sit in projects created in March 2026, the bulk-entry month; two look like a lump sum
+      typed into the rate box. <span class="tag v">Verified</span> · cause <span class="tag i">Inference</span></figcaption>
+  </figure>
+
+  <div class="stat-grid sp-4">
+    <div class="stat s-purple"><div class="n">420<span class="u">of 422</span></div>
+      <div class="l"><b>projects with a sebutharga number carry MPS/SH/302/25</b>InfraHub has only lived under
+        one contract, so the problem has not bitten yet.</div></div>
+    <div class="stat"><div class="n">1<span class="u">rate</span></div>
+      <div class="l"><b>per item for everyone</b>324 of 337 used points have exactly one rate across every
+        project and all ~60 companies: no per-contractor rates.</div></div>
+    <div class="stat s-amber"><div class="n">63</div>
+      <div class="l"><b>priced, but no company and no sebutharga</b>The open 2026 Fasa Draf and Menunggu
+        projects: the BQ is priced before the contract is chosen.</div></div>
+  </div>
+
+  <figure class="fig sp-4">
+    <p class="fig-title lg">RM 5.72 million of open work will meet the next rate change</p>
+    <p class="fig-sub">Open 2026 projects. Every Tambah Item, template or pelarasan addition they still need will
+      be priced from whatever the library says on that day. 128 have not started their pelarasan.</p>
+    {{svg:exposure}}
+    <figcaption><b>Source</b> exposure_by_status.csv; outlier subtracted by charts.py (matches the findings’ RM
+      5,716,861.10). <span class="tag v">Verified</span></figcaption>
+  </figure>
+</section>

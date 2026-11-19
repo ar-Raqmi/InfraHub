@@ -1,0 +1,124 @@
+<!-- chapter: 09 | Recommendation and roadmap -->
+<section class="page">
+  <header class="opener">
+    <div class="no">09</div>
+    <div>
+      <p class="kicker">Recommendation and roadmap</p>
+      <h1>Build Option B, in three steps</h1>
+      <p class="dek">Make the contract real, keep every existing project BQ exactly as it is, and keep the door
+        open to the full catalogue (Option C) later.</p>
+    </div>
+  </header>
+
+  <div class="steps">
+    <div class="step now">
+      <p class="when">Now · before any rate changes</p>
+      <div class="big">1</div>
+      <h3>Two seat belts <span class="tag s">S</span></h3>
+      <ul class="list l-amber sp-1">
+        <li>Archive the current Pustaka, labelled with its sebutharga number (Excel export by hand today; an
+          automatic snapshot on save later).</li>
+        <li>Stamp every project with the contract its BQ was priced under.</li>
+      </ul>
+    </div>
+    <div class="step">
+      <p class="when">Next</p>
+      <div class="big">2</div>
+      <h3>Contract + rate book <span class="tag s">M</span></h3>
+      <ul class="list l-purple sp-1">
+        <li>A contract list in Settings.</li>
+        <li><i>Salin ke kontrak baharu</i> to start next year’s book.</li>
+        <li>Both editors read the project’s own book; closed books become read-only.</li>
+      </ul>
+    </div>
+    <div class="step">
+      <p class="when">Then</p>
+      <div class="big">3</div>
+      <h3>Re-price, and show hand-typed rates</h3>
+      <ul class="list l-purple sp-1">
+        <li><i>Tukar kontrak &amp; harga semula</i> with an old / new / difference preview, for projects that
+          straddle a change.</li>
+        <li>A badge on rows whose rate was typed by hand.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="src sp-1">FINDINGS-bq “Recommendation” · steps and sizes <span class="tag i">Inference</span></p>
+
+  <div class="cols-2 sp-4">
+    <div>
+      <h2>Why B</h2>
+      <ul class="list l-purple small">
+        <li><b>It matches the real object.</b> One sebutharga has one Jadual Kadar Harga, and the data already
+          behaves that way: one rate per item for everyone, one sebutharga number per year.</li>
+        <li><b>It fixes all four situations</b>: a new year, two contracts at once, a straddling project, a
+          pelarasan after the contract ends. The editors already take “a library” as input; only which library
+          changes.</li>
+        <li><b>No project is rewritten.</b> 99.76% agreement and reconciling cost columns say the stored copies
+          should be left alone.</li>
+        <li><b>Stable ids</b> give most of Option C’s benefit and make a later move to C a data conversion, not a
+          redesign.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Settle these too</h2>
+      <ul class="list l-amber small">
+        <li><b>Lock the contract BQ once the inden exists.</b> 4 + 7 rows show contract BQs edited after
+          pelarasan began.</li>
+        <li><b>Record when a rate was typed by hand.</b> 20 rows differ today and the cause is unknown.</li>
+        <li><b>Move the meeting number and date</b> from the year to the contract.</li>
+        <li><b>Option D</b> only if you confirm rates change inside a contract period.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card fill-ink sp-4 push">
+    <p class="kicker" style="color:#9AA5A2">If the next contract arrives before anything is built</p>
+    <h3 style="font:800 14pt/1.15 Zodiak,serif;margin:1mm 0 2.5mm">The safe manual routine</h3>
+    <ol class="num" style="font-size:9.2pt">
+      <li><b>Export the Pustaka to Excel first</b> and file it as the old schedule.</li>
+      <li><b>Finish</b> adding items and pelarasan additions on old-contract projects where possible.</li>
+      <li><b>Only then</b> change the rates in the Pustaka.</li>
+      <li><b>Treat any later addition</b> to an old-contract project as a hand-typed rate that must be checked
+        against the filed schedule.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">Beyond the BQ</p>
+  <h2 class="big">Fifteen debts, ranked by impact</h2>
+  <p class="measure" style="margin-bottom:3mm">The system findings rank the non-security problems an overhaul
+    will run into. The bar shows the rank, not a measured score. <span class="tag v">Evidence verified</span>
+    <span class="tag i">Ranking is judgement</span></p>
+  <table class="rank">
+    <colgroup><col style="width:8mm"><col style="width:58mm"><col><col style="width:26mm"></colgroup>
+    <thead><tr><th>#</th><th>Pain point</th><th>Why it matters for the overhaul</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td class="r">1</td><td><b class="purple">One global BQ master; rates copied into JSON</b></td><td>A new or different contract cannot be represented; old rates cannot be traced to a contract.</td><td><div class="impact" style="width:100%"></div></td></tr>
+      <tr><td class="r">2</td><td><b>Workflow implicit and unaudited</b></td><td>No “who moved this, when”; no true waiting times; approvals need a form rewrite.</td><td><div class="impact" style="width:93%"></div></td></tr>
+      <tr><td class="r">3</td><td><b>Money and date rules inside a 1,790-line form</b></td><td>Untestable (no tests exist), easy to break, two screens can disagree.</td><td><div class="impact" style="width:87%"></div></td></tr>
+      <tr><td class="r">4</td><td><b>Two near-copies of the BQ editor</b></td><td>54% shared lines: every BQ rule changed twice; highest regression risk in a UI rebuild.</td><td><div class="impact" style="width:80%"></div></td></tr>
+      <tr><td class="r">5</td><td><b>Large JSON blobs instead of tables</b></td><td>22,417 BQ rows in 489 blobs: no cross-project questions; whole-blob rewrites on each save.</td><td><div class="impact" style="width:73%"></div></td></tr>
+      <tr><td class="r">6</td><td><b>Per-year settings blob; companies and votes by text</b></td><td>Renaming orphans projects; last write wins; company cap not enforced.</td><td><div class="impact lo" style="width:67%"></div></td></tr>
+      <tr><td class="r">7</td><td><b>Money views depend on UI filters</b></td><td>The vote “balance” changes when a user filters the table.</td><td><div class="impact lo" style="width:60%"></div></td></tr>
+      <tr><td class="r">8</td><td><b>Code and data disagree; dead legacy</b></td><td>Dead columns still shape the ~66-field API mapper; migrate or delete them deliberately.</td><td><div class="impact lo" style="width:53%"></div></td></tr>
+      <tr><td class="r">9</td><td><b>Half-removed features that look alive</b></td><td>Notifications, mocked realtime, PWA, 8 unused dependencies mislead maintainers.</td><td><div class="impact lo" style="width:47%"></div></td></tr>
+      <tr><td class="r">10</td><td><b>Waiting time is invisible</b></td><td>The 62-day post-site stretch has no owner, no reminder, no screen.</td><td><div class="impact lo" style="width:40%"></div></td></tr>
+      <tr><td class="r">11</td><td><b>Free-text classification</b></td><td>“Zon 7, Zon 10” in one field (49 rows); BP and zon reports are approximate.</td><td><div class="impact lo" style="width:33%"></div></td></tr>
+      <tr><td class="r">12</td><td><b>CDN dependencies, 407 KB Tailwind runtime</b></td><td>PDFs need a CDN copy of jsPDF at runtime; builds are not self-contained.</td><td><div class="impact lo" style="width:27%"></div></td></tr>
+      <tr><td class="r">13</td><td><b>Duplicated mobile components and hooks</b></td><td><code>useIsMobile</code> ×3, <code>ProjectCard</code> ×2: a mobile-first redesign must pick one set.</td><td><div class="impact lo" style="width:20%"></div></td></tr>
+      <tr><td class="r">14</td><td><b>No concurrency guard on saves</b></td><td>A stale tab could overwrite another role’s fields. <span class="tag i">Inference</span></td><td><div class="impact lo" style="width:13%"></div></td></tr>
+      <tr><td class="r">15</td><td><b>Hard-coded document constants</b></td><td>A new pekeliling (LAD rate, 14-day grace) needs a code release.</td><td><div class="impact lo" style="width:7%"></div></td></tr>
+    </tbody>
+  </table>
+  <p class="src sp-1">FINDINGS-system §6 (evidence column there cites file:line for each row)</p>
+
+  <div class="callout sys sp-3 push">
+    <h3>What the overhaul should NOT touch</h3>
+    <p class="small"><b>The stored BQ copies.</b> Every project’s <code>bq_data</code> and
+      <code>bq_data_pelarasan</code> are consistent: Kos Projek matches the BQ in 488 of 488 projects, Kos
+      Sebenar its formula in 358 of 358, and 0 of 6,498 carried pelarasan rows has a rate different from the
+      contract BQ. Leave them exactly as stored, including the 331 orphan and 20 differing rows; new structure
+      goes <i>around</i> them, not into them. <span class="tag v">Verified</span></p>
+  </div>
+</section>

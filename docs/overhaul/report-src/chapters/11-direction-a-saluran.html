@@ -1,0 +1,50 @@
+<!-- chapter: 11 | Direction A · Saluran -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">11</div>
+    <div>
+      <p class="kicker">UI/UX direction A · pipeline-first</p>
+      <h1>Saluran</h1>
+      <p class="dek">The six-status pipeline becomes the home screen. Every project is a card moving left to right, carrying its contract chip and its age in the stage.</p>
+    </div>
+  </header>
+  <figure class="fig">
+    <img class="board-head" src="img/ux/A-board-head.png" alt="">
+    <figcaption><b>As rendered on direction board A:</b> Clash Grotesk (display) + General Sans (text) + JetBrains Mono (money, file numbers), and its palette swatches. Static HTML mockups. Fictional data: names, companies, titles and amounts are invented; only the status counts (29 / 34 / 53 / 32 / 46 / 291), “60 syarikat panel” and RM 200,000 are real 2026 aggregates.</figcaption>
+  </figure>
+  <div class="cols-3 sp-2">
+    <div><h4>The idea</h4><p class="small">A strip on top shows the median wait per stage, so bottlenecks such as Menunggu Lantikan and Tuntutan Bayaran show without a report. The project page repeats the six steps as a stepper and puts the contract binding right under the title. The four “phases” become “who acts” inside each status: one vocabulary.</p></div>
+    <div><h4>Type and colour</h4><p class="small">Brand emerald and teal on a cool off-white. Stages are one sequential green ramp (deeper means further along). Amber is reserved for “kadar berubah” and slow stages; MPS purple for “kontrak baharu”.</p></div>
+    <div><h4>What to look at</h4><ol class="num small"><li>The <b>contract chip</b> on every card (<code>SH/302/25 · K2026</code>).</li><li>The <b>rate-change queue</b> in the BQ editor: old and new rate, %, RM effect, a choice per item.</li><li>The <b>contract lanes</b> Draf / Aktif / Ditutup and the inline <b>Klon kontrak</b> form.</li></ol></div>
+  </div>
+  <div class="cols-2 sp-3 push">
+    <div class="card sys"><p class="kicker">Pros</p><ul class="list pc"><li>The pipeline becomes the navigation, so status is never hidden in a dropdown again.</li><li>A contract chip on every card shows a project on the wrong rate book across the whole list.</li><li>Closest to what the PT already does in his head: “which pile is this file in”.</li></ul></div>
+    <div class="card risk"><p class="kicker">Cons</p><ul class="list l-amber pc"><li>With ~485 projects a year, columns need virtual scrolling and filters; Siap must collapse into a summary (as drawn).</li><li>A BQ is still a table: kanban adds little to the BQ editor itself.</li><li>On a phone a 6-column board must become a stage picker plus a list: a second layout to build.</li></ul></div>
+  </div>
+  <div class="cols-3 sp-1">
+    <div class="card flat"><p class="kicker">Serves best</p><p class="small">The PT admin and the Jurutera, who move projects between stages and chase the slow ones.</p></div>
+    <div class="card flat"><p class="kicker">Effort · Yiyi’s estimate, not measured</p><p class="small">About <b>5–7 developer-weeks</b> of UI on top of the shared contract groundwork. Reuses most of the existing BQ editor internals.</p></div>
+    <div class="card flat"><p class="kicker">Answers audit issues</p><p class="small"><b>5</b>, <b>6</b> (one pipeline, visible ages) and <b>1</b>, <b>2</b>, <b>4</b> (contract chip, change queue, contract lanes).</p></div>
+  </div>
+</section>
+<section class="page tight">
+  <p class="kicker" style="margin-bottom:2mm">Direction A · the four required screens</p>
+  <figure class="screen">
+    <img class="shot" src="img/ux/A-01-saluran-utama.png" alt="">
+    <figcaption><span class="k">i</span><span><b>Utama, the pipeline.</b> Six statuses as columns with the median wait per stage on top; every card carries its contract chip, and a draft flags “2 kadar berubah”. Fictional data except the status counts.</span></figcaption>
+  </figure>
+  <figure class="screen">
+    <img class="shot" src="img/ux/A-02-projek-butiran.png" alt="">
+    <figcaption><span class="k">ii</span><span><b>Project page.</b> The binding bar under the title reads <i>Kontrak MPS/SH/302/25 · Kadar 2026 v3 · sah 01.01–31.12.26 · aktif, kadar dikunci 12 Mac</i>; below it a 6-step stepper with dates and who acts, tasks, documents that inherit the contract, and a log.</span></figcaption>
+  </figure>
+</section>
+<section class="page tight">
+  <figure class="screen">
+    <img class="shot" src="img/ux/A-03-bq-kontrak-baharu.png" alt="">
+    <figcaption><span class="k">iii</span><span><b>BQ editor when a new contract arrives.</b> Purple banner “Buku kadar projek ini: Kadar 2026 v3 / Kontrak baharu tersedia: Kadar 2027”. Changed rows are highlighted with the old rate struck through; the “3 kadar berubah” queue lists old and new rate, % and RM effect, with <i>Kekal kadar kontrak</i> / <i>Guna kadar baharu</i> per item and in bulk.</span></figcaption>
+  </figure>
+  <figure class="screen">
+    <img class="shot" src="img/ux/A-04-kontrak-buku-kadar.png" alt="">
+    <figcaption><span class="k">iv</span><span><b>Contracts and rate books.</b> Lifecycle lanes Draf / Aktif / Ditutup with validity dates, item and project counts, average use of the RM 200,000 cap and “23 projek guna versi lama”; the inline <b>Klon kontrak</b> form starts next year from this year’s book.</span></figcaption>
+  </figure>
+</section>

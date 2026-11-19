@@ -1,0 +1,104 @@
+<!-- chapter: 07 | What a master BQ really is -->
+<section class="page">
+  <header class="opener contract">
+    <div class="no">07</div>
+    <div>
+      <p class="kicker">What a master BQ really is</p>
+      <h1>The menu belongs to a contract, not to the site</h1>
+      <p class="dek">How panel-contract maintenance work normally runs, mapped onto what InfraHub stores. Once
+        the real object is clear, the fix almost designs itself.</p>
+    </div>
+  </header>
+
+  <div class="cols-rail">
+    <div>
+      <p class="kicker">How it normally works</p>
+      <p class="sp-1"><span class="tag i">Inference</span></p>
+      <p class="small sp-1 muted">Our reading of usual council practice. Please correct anything that differs at
+        MPS (questions 1–6 in chapter 90).</p>
+    </div>
+    <div>
+      <p>Once a period, normally a year, the council runs <b class="purple">one sebutharga</b> to appoint a panel
+        of contractors. The sebutharga document carries a <b class="purple">Jadual Kadar Harga</b>: a long list of
+        work items, each with a unit and a fixed rate. Every panel contractor accepts that same schedule for the
+        life of the contract.</p>
+      <p>After that, each complaint or job becomes a <b>work order</b> under the contract. The PJA measures the
+        site and multiplies quantities by the schedule’s rates (the BQ). The PT appoints a panel contractor by
+        rotation and raises the inden and BPP. The work is done, the quantities are re-measured (BQ Pelarasan),
+        and payment is made at the <b>same</b> rates, never above the ordered amount.</p>
+    </div>
+  </div>
+
+  <table class="cmp sp-4">
+    <colgroup><col style="width:52mm"><col></colgroup>
+    <thead><tr><th class="rec">The real-world thing</th><th>What InfraHub has today</th></tr></thead>
+    <tbody>
+      <tr><td class="purple">Sebutharga / panel contract: number, period, approving meeting, panel list, cap</td>
+        <td>Scattered across the year’s settings row: a text in <code>sebutharga_numbers</code>,
+          <code>meeting_date</code> / <code>meeting_number</code>, <code>companies</code>. <b>No contract
+          record.</b></td></tr>
+      <tr><td class="purple">The Jadual Kadar Harga of that contract</td>
+        <td><code>library_groups</code>, but with <b class="amber">no tie to any contract</b></td></tr>
+      <tr><td>A work order (inden) priced at that contract’s rates</td>
+        <td>A project; its BQ rows are copies of the rates</td></tr>
+      <tr><td>Final measurement at the same contract’s rates</td>
+        <td><code>bq_data_pelarasan</code>: carried rows keep the rates; <b class="amber">added rows take
+          today’s library</b></td></tr>
+    </tbody>
+  </table>
+  <p class="src sp-1">FINDINGS-bq “What a master BQ really is”</p>
+
+  <div class="pull xl sp-4 push">
+    <p>A project’s rates are decided by the contract its work order was issued under, not by today’s date.</p>
+    <p class="by kicker">The rule this report rests on · a 2026 work order measured and paid in March 2027 still
+      uses the 2026 schedule, including items added during pelarasan</p>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">The first contract change</p>
+  <h2 class="big">The PT has two moves today, and both are unsafe</h2>
+  <p class="measure">“The site’s master BQ” and “this contract’s schedule” have been the same thing because there
+    has only ever been one contract. They stop being the same thing on the first day of the second contract.
+    Here is what the PT could do that day. <span class="tag v">Verified mechanics</span>
+    <span class="tag i">Hypothetical scenario</span></p>
+
+  <figure class="fig sp-3">
+    {{svg:unsafe}}
+  </figure>
+
+  <div class="cols-2 sp-3">
+    <div>
+      <h3 class="amber">Move 1 · overwrite</h3>
+      <ul class="list l-amber small">
+        <li>Closed projects are fine: their rows are copies.</li>
+        <li>Every open project that gets one more item, a template or a pelarasan addition now mixes old and new
+          rates, with no warning.</li>
+        <li>The 2026 schedule no longer exists anywhere in the system. Re-adding an item at the old rate means
+          typing the rate by hand.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="amber">Move 2 · duplicate</h3>
+      <ul class="list l-amber small">
+        <li>A second set of groups for the new contract sits next to the old one.</li>
+        <li>The picker shows both; nothing stops a PJA choosing the wrong year’s item.</li>
+        <li>The library doubles every year.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout contract sp-4">
+    <h3>What the code and data already support <span class="tag v">Verified</span></h3>
+    <ul class="list l-purple small sp-1">
+      <li>The BQ PDF cites the Jawatankuasa Sebutharga meeting and says the company was chosen “dengan rotasi”
+        (<span class="src">BQPDFExporter.ts:191</span>).</li>
+      <li>Each year has its own list of sebutharga numbers, panel companies and votes; 2026 has exactly one
+        number and 60 companies.</li>
+      <li>One rate per item across all companies. Pelarasan is capped at the contract price, and the standard
+        opening bill says “ALL QUANTITY ARE PROVISIONAL” (<span class="src">BQEditor.tsx:583</span>).</li>
+      <li>The 2026 panel was approved at a meeting dated 9 Disember 2025. The next panel contract may be only
+        weeks away. <span class="tag i">Inference on timing</span></li>
+    </ul>
+  </div>
+</section>

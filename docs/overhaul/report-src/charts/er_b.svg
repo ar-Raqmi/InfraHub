@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-erb" viewBox="0 0 657.64 330.00" role="img" aria-label="Option B data model" style="display:block;width:100%;height:auto">
+<defs><marker id="erb-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<defs><marker id="erb-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker></defs>
+<rect x="0.00" y="0.00" width="196.00" height="24.00" fill="#3B2E8C" />
+<text x="8.00" y="16.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.3" >contracts</text>
+<rect x="0.00" y="24.00" width="196.00" height="128.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<text x="8.00" y="39.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >id</text>
+<text x="188.00" y="39.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >PK</text>
+<text x="8.00" y="54.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="start" >code</text>
+<text x="188.00" y="54.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >No. Sebutharga</text>
+<text x="8.00" y="69.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >title</text>
+<text x="188.00" y="69.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<text x="8.00" y="84.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >valid_from / valid_to</text>
+<text x="188.00" y="84.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<text x="8.00" y="99.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="start" >status</text>
+<text x="188.00" y="99.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >DRAFT|ACTIVE|CLOSED</text>
+<text x="8.00" y="114.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >meeting_number / date</text>
+<text x="188.00" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<text x="8.00" y="129.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="start" >cloned_from</text>
+<text x="188.00" y="129.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >FK</text>
+<text x="8.00" y="144.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >created / activated / closed_at</text>
+<text x="188.00" y="144.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<rect x="262.00" y="0.00" width="200.00" height="24.00" fill="#6A60A4" />
+<text x="270.00" y="16.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.3" >rate_book_groups</text>
+<rect x="262.00" y="24.00" width="200.00" height="83.00" fill="#FFFFFF" stroke="#6A60A4" stroke-width="1" />
+<text x="270.00" y="39.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="start" >contract_id</text>
+<text x="454.00" y="39.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >PK, FK</text>
+<text x="270.00" y="54.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >id</text>
+<text x="454.00" y="54.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >PK, same id in clones</text>
+<text x="270.00" y="69.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >title, category</text>
+<text x="454.00" y="69.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<text x="270.00" y="84.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >items</text>
+<text x="454.00" y="84.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >JSON rates</text>
+<text x="270.00" y="99.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >sort_index</text>
+<text x="454.00" y="99.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<rect x="522.00" y="0.00" width="135.64" height="24.00" fill="#64748B" />
+<text x="530.00" y="16.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.3" >templates</text>
+<rect x="522.00" y="24.00" width="135.64" height="38.00" fill="#FFFFFF" stroke="#64748B" stroke-width="1" />
+<text x="530.00" y="39.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >id</text>
+<text x="649.64" y="39.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >PK</text>
+<text x="530.00" y="54.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >bills</text>
+<text x="649.64" y="54.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >ids</text>
+<rect x="262.00" y="170.00" width="200.00" height="24.00" fill="#059669" />
+<text x="270.00" y="186.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.3" >projects</text>
+<rect x="262.00" y="194.00" width="200.00" height="83.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<text x="270.00" y="209.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >id</text>
+<text x="454.00" y="209.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >PK</text>
+<text x="270.00" y="224.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="start" >contract_id</text>
+<text x="454.00" y="224.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >FK · NEW</text>
+<text x="270.00" y="239.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >no_sebutharga</text>
+<text x="454.00" y="239.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >printed value</text>
+<text x="270.00" y="254.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >bq_data</text>
+<text x="454.00" y="254.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >JSON copy</text>
+<text x="270.00" y="269.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >bq_data_pelarasan</text>
+<text x="454.00" y="269.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >JSON copy</text>
+<rect x="522.00" y="170.00" width="135.64" height="24.00" fill="#64748B" />
+<text x="530.00" y="186.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.3" >system_settings</text>
+<rect x="522.00" y="194.00" width="135.64" height="53.00" fill="#FFFFFF" stroke="#64748B" stroke-width="1" />
+<text x="530.00" y="209.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >year</text>
+<text x="649.64" y="209.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" >PK</text>
+<text x="530.00" y="224.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >companies</text>
+<text x="649.64" y="224.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<text x="530.00" y="239.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >vote_numbers</text>
+<text x="649.64" y="239.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="end" ></text>
+<path d="M197.0,40.0 L259.0,40.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#erb-p)"/>
+<text x="229.00" y="33.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="middle" >owns</text>
+<text x="229.00" y="54.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#3B2E8C" text-anchor="middle" >1 to many</text>
+<path d="M150.0,153.0 L150.0,214.0 L259.0,214.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#erb-p)"/>
+<text x="158.00" y="178.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#3B2E8C" text-anchor="start" >prices</text>
+<text x="158.00" y="190.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#3B2E8C" text-anchor="start" >1 to many</text>
+<path d="M40.0,153.0 L40.0,178.0 L10.0,178.0 L10.0,155.0" stroke="#3B2E8C" stroke-width="1.2" fill="none" marker-end="url(#erb-p)" stroke-dasharray="4 3"/>
+<text x="48.00" y="182.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#3B2E8C" text-anchor="start" >cloned from</text>
+<path d="M463.0,45.0 L519.0,45.0" stroke="#64748B" stroke-width="1" fill="none" marker-end="url(#erb-s)" stroke-dasharray="4 3"/>
+<text x="492.00" y="70.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="middle" >stable ids</text>
+<path d="M522.0,214.0 L466.0,214.0" stroke="#64748B" stroke-width="1" fill="none" marker-end="url(#erb-s)" stroke-dasharray="4 3"/>
+<text x="492.00" y="236.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="middle" >votes by</text>
+<text x="492.00" y="247.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="500" fill="#64748B" text-anchor="middle" >year</text>
+<text x="0.00" y="308.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >PURPLE = contract things. projects.contract_id is the one new column on an existing table; no BQ JSON</text>
+<text x="0.00" y="322.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >is rewritten. Group, item and variant ids stay identical when a book is cloned.</text>
+</svg>

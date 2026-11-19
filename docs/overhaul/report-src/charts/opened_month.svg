@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-opened_month" viewBox="0 0 313.70 232.00" role="img" aria-label="Projects opened and matched per month" style="display:block;width:100%;height:auto">
+<line x1="26.00" y1="192.00" x2="311.70" y2="192.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="21.00" y="195.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#64748B" text-anchor="end" >0</text>
+<line x1="26.00" y1="148.50" x2="311.70" y2="148.50" stroke="#DADAD5" stroke-width="0.8" />
+<text x="21.00" y="152.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#64748B" text-anchor="end" >25</text>
+<line x1="26.00" y1="105.00" x2="311.70" y2="105.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="21.00" y="108.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#64748B" text-anchor="end" >50</text>
+<line x1="26.00" y1="61.50" x2="311.70" y2="61.50" stroke="#DADAD5" stroke-width="0.8" />
+<text x="21.00" y="65.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#64748B" text-anchor="end" >75</text>
+<line x1="26.00" y1="18.00" x2="311.70" y2="18.00" stroke="#DADAD5" stroke-width="0.8" />
+<text x="21.00" y="21.50" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#64748B" text-anchor="end" >100</text>
+<rect x="29.00" y="185.04" width="17.81" height="6.96" fill="#14B8A6" />
+<text x="37.90" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >D</text>
+<rect x="52.81" y="35.40" width="17.81" height="156.60" fill="#059669" />
+<text x="61.71" y="30.40" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="middle" >90</text>
+<text x="61.71" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >J</text>
+<rect x="76.62" y="108.48" width="17.81" height="83.52" fill="#14B8A6" />
+<text x="85.52" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >F</text>
+<rect x="100.42" y="134.58" width="17.81" height="57.42" fill="#14B8A6" />
+<text x="109.33" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >M</text>
+<rect x="124.23" y="103.26" width="17.81" height="88.74" fill="#14B8A6" />
+<text x="133.14" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >A</text>
+<rect x="148.04" y="124.14" width="17.81" height="67.86" fill="#14B8A6" />
+<text x="156.95" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >M</text>
+<rect x="171.85" y="138.06" width="17.81" height="53.94" fill="#14B8A6" />
+<text x="180.75" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >J</text>
+<rect x="195.66" y="91.08" width="17.81" height="100.92" fill="#14B8A6" />
+<text x="204.56" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >J</text>
+<rect x="219.47" y="108.48" width="17.81" height="83.52" fill="#14B8A6" />
+<text x="228.37" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >A</text>
+<rect x="243.28" y="143.28" width="17.81" height="48.72" fill="#14B8A6" />
+<text x="252.18" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >S</text>
+<rect x="267.08" y="132.84" width="17.81" height="59.16" fill="#14B8A6" />
+<text x="275.99" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >O</text>
+<rect x="290.89" y="148.50" width="17.81" height="43.50" fill="#14B8A6" />
+<text x="299.80" y="205.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="middle" >N</text>
+<path d="M37.9,190.3 L61.7,192.0 L85.5,192.0 L109.3,160.7 L133.1,139.8 L156.9,139.8 L180.8,98.0 L204.6,162.4 L228.4,99.8 L252.2,134.6 L276.0,143.3 L299.8,143.3" stroke="#0F1E1C" stroke-width="1.6" fill="none" />
+<rect x="35.40" y="187.76" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="59.21" y="189.50" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="83.02" y="189.50" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="106.83" y="158.18" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="130.64" y="137.30" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="154.45" y="137.30" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="178.25" y="95.54" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="202.06" y="159.92" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="225.87" y="97.28" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="249.68" y="132.08" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="273.49" y="140.78" width="5.00" height="5.00" fill="#0F1E1C" />
+<rect x="297.30" y="140.78" width="5.00" height="5.00" fill="#0F1E1C" />
+<text x="26.00" y="222.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >DEC 2025 – NOV 2026</text>
+<rect x="159.70" y="214.00" width="9.00" height="9.00" fill="#14B8A6" />
+<text x="172.70" y="222.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >OPENED</text>
+<rect x="219.70" y="217.00" width="9.00" height="3.00" fill="#0F1E1C" />
+<text x="311.70" y="222.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="end" >MATCHED (SIAP)</text>
+</svg>

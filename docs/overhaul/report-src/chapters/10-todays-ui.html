@@ -1,0 +1,177 @@
+<!-- chapter: 10 | Today’s UI, honestly -->
+<section class="page">
+  <header class="opener">
+    <div class="no">10</div>
+    <div>
+      <p class="kicker">UI/UX · the app as it is today</p>
+      <h1>Today’s UI, honestly</h1>
+      <p class="dek">Sixteen issues from a walk through the live build, ranked by harm. The worst four share one
+        cause: no screen shows which contract a price belongs to.</p>
+    </div>
+  </header>
+
+  <div class="cols-3">
+    <div class="stat s-amber" style="border-top:1.4pt solid var(--ink);padding-top:2.4mm"><div class="n">4</div>
+      <div class="l"><b><span class="sev">S1</span>wrong money or contract</b>Leads to a wrong money or contract
+        decision, or blocks a core task. Issues 1–4.</div></div>
+    <div class="stat" style="border-top:1.4pt solid var(--ink);padding-top:2.4mm"><div class="n">8</div>
+      <div class="l"><b><span class="sev s2">S2</span>slows every user, every day</b>Workflow, navigation,
+        phone versus desktop. Issues 5–12.</div></div>
+    <div class="stat" style="border-top:1.4pt solid var(--ink);padding-top:2.4mm"><div class="n">4</div>
+      <div class="l"><b><span class="sev s3">S3</span>polish and consistency</b>Type, colour, language, one very
+        long settings page. Issues 13–16.</div></div>
+  </div>
+
+  <div class="cols-7-5 sp-3">
+    <figure class="fig">
+      <p class="fig-title">A price with no source</p>
+      <p class="fig-sub">BQ editor, contract BQ of a finished 2026 project. Markers carry the issue number.</p>
+      <div class="shotbox">
+        <img class="shot" src="img/ux/cur-bq-editor.png" alt="">
+        <span class="mk" style="left:97.6%;top:61%">1</span>
+        <span class="mk" style="left:97.6%;top:71.5%">2</span>
+      </div>
+      <figcaption>Desktop 1440 wide, cropped. <b>Anonymised</b> capture of the local data copy.</figcaption>
+    </figure>
+    <div>
+      <div class="issue">
+        <h3><span class="mk-ref">1</span><span class="sev">S1</span>Nothing says where a rate comes from</h3>
+        <p>“Kadar 510” stands alone: no rate book, no contract, no year. Inserting a template re-reads the library
+          at that moment; after that the project keeps a frozen copy that records only source ids, never the
+          rate book, the date or the original rate. <span class="src">pages/BQEditor.tsx:598-615</span>
+          <span class="tag v">Verified</span></p>
+      </div>
+      <div class="issue">
+        <h3><span class="mk-ref">2</span><span class="sev">S1</span>No warning when the library moves</h3>
+        <p>The amount has no “changed since” badge. When the PT edits a rate in Pustaka for a new contract, old
+          projects silently keep the old rate and newly inserted templates silently take the new one. Two
+          projects in the same month can price the same item differently, and nothing on screen shows it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="push">
+    <h4>The order the screens impose today</h4>
+    <div class="steps sp-1">
+      <div class="step now"><p class="when">Tab 1 · PJA</p><p class="big">1</p><h3>Price the BQ</h3>
+        <p>Rates are read from the one global library, as it is today.</p></div>
+      <div class="step"><p class="when">Tab 2 · PT</p><p class="big">2</p><h3>Pick No. Sebutharga</h3>
+        <p>A dropdown deep in “File Creation”, after the pricing is done.</p></div>
+      <div class="step"><p class="when">Certificate</p><p class="big">3</p><h3>CPC prints the number</h3>
+        <p>The only other place the contract appears: “No. Sebutharga : MPS/SH/302/25”.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <figure class="fig">
+    <p class="fig-title">Price first, choose the contract later</p>
+    <p class="fig-sub">Tab 2 “File Creation (PT)”. The contract is the last field of the grid, chosen after tab 1
+      has already priced every item.</p>
+    <div class="shotbox">
+      <img class="shot" src="img/ux/cur-file-tab2.png" alt="">
+      <span class="mk" style="left:96.5%;top:91%">1</span>
+      <span class="mk ink" style="left:49%;top:72%">9</span>
+    </div>
+    <figcaption>Desktop, tab 2 of the same project. <b>1</b> No. Sebutharga, a plain list of strings.
+      <b>9</b> a computed date (“AUTO”) dressed exactly like a field you must type.</figcaption>
+  </figure>
+
+  <div class="cols-7-5 sp-3 fill">
+    <div>
+      <p class="fig-title">The year that is not there</p>
+      <p class="fig-sub">Settings, top of page, and the Pustaka BQ further down the same page.</p>
+      <div class="shotbox">
+        <img class="shot" src="img/ux/cur-settings.png" alt="">
+        <span class="mk" style="left:27%;top:18%">3</span>
+        <span class="mk contract" style="left:79%;top:80%">4</span>
+      </div>
+      <div class="shotbox sp-1">
+        <img class="shot" src="img/ux/cur-pustaka.png" alt="">
+        <span class="mk" style="left:35%;top:6.5%">3</span>
+        <span class="mk ink" style="left:70%;top:62%">16</span>
+      </div>
+      <p class="cap">Desktop, cropped. <b>3</b> “tahun 2026” above; no year on Pustaka. <b>16</b> the empty
+        right pane takes about 60% of the width until a group is picked.</p>
+    </div>
+    <div>
+      <div class="issue">
+        <h3><span class="mk-ref">3</span><span class="sev">S1</span>Settings says “tahun 2026”; Pustaka has no
+          year</h3>
+        <p>Meetings, sebutharga, companies and votes are kept per year. The Pustaka BQ on the same page is one
+          global list: <code>library_groups</code> has no year or contract column, so the year picker cannot
+          change it. <span class="tag v">Verified</span> (schema) <span class="tag i">Inference</span> (not
+          clicked through). The framing misleads about the most money-sensitive data in the app.</p>
+      </div>
+      <div class="issue">
+        <h3><span class="mk-ref contract">4</span><span class="sev">S1</span>A contract is only a string</h3>
+        <p>One text row, <code>MPS/SH/302/25</code>: no start or end date, no status, no linked rate book, no
+          RM 200,000 cap beside it, no count of the projects that use it. Same on the phone:</p>
+      </div>
+      <figure class="fig sp-1" style="display:grid;grid-template-columns:46mm 1fr;column-gap:3mm;align-items:end">
+        <div class="shotbox"><img class="phone" src="img/ux/cur-m-sebutharga.png" alt="">
+          <span class="mk contract" style="left:85%;top:85%">4</span></div>
+        <figcaption style="margin:0">Phone 430 wide, settings › sebutharga, top of screen.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="callout risk sp-3">
+    <h3>Why the four S1 issues matter together</h3>
+    <p class="small">The day the PT edits Pustaka for a new sebutharga, no screen will tell a PJA which projects
+      are priced on which rates, or that the next template they insert reads the new ones. Chapter 06 measured
+      what sits in that gap today: 194 open 2026 projects, about RM 5.72 million. <span class="tag v">Verified</span></p>
+  </div>
+</section>
+
+<section class="page">
+  <h2>S2 and S3 · the daily friction</h2>
+  <div style="display:grid;grid-template-columns:76mm 1fr;column-gap:7mm">
+    <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:3.6mm">
+      <div class="shotbox"><img class="phone" src="img/ux/cur-m-project.png" alt="">
+        <span class="mk" style="left:93%;top:9.2%">11</span>
+        <span class="mk ink" style="left:13%;top:90.5%">8</span></div>
+      <div class="shotbox"><img class="phone" src="img/ux/cur-m-dashboard.png" alt="">
+        <span class="mk ink" style="left:50%;top:89.6%">12</span>
+        <span class="mk ink" style="left:93%;top:66%">6</span></div>
+      <p class="cap span-all">Phone 430 wide: project page and dashboard, first screen. Avatar pixelated.</p>
+    </div>
+    <div>
+      <div class="shotbox"><img class="shot" src="img/ux/cur-topbar.png" alt="">
+        <span class="mk ink" style="left:12%;top:17%">6</span>
+        <span class="mk ink" style="left:40.5%;top:17%">8</span>
+        <span class="mk ink" style="left:28.5%;top:88.5%">5</span></div>
+      <div class="shotbox sp-1"><img class="shot" src="img/ux/cur-projects.png" alt="">
+        <span class="mk ink" style="left:9.5%;top:59.4%">7</span>
+        <span class="mk ink" style="left:77%;top:46.7%">7</span></div>
+      <p class="cap">Desktop: project top bar and tabs; projects list. PJA avatars pixelated.</p>
+    </div>
+  </div>
+
+  <table class="data compact sp-3" style="table-layout:fixed">
+    <tr><th style="width:9mm">#</th><th style="width:54mm">Issue</th><th>What you see, and why it costs</th></tr>
+    <tr><td><span class="mk-ref ink">5</span></td><td><b>Two pipelines that do not line up</b></td><td>6 statuses in a dropdown, 4 phase tabs; nothing maps one to the other.</td></tr>
+    <tr><td><span class="mk-ref ink">6</span></td><td><b>Status is a dropdown, not a pipeline</b></td><td>Six equal tiles (29 / 34 / 53 / 32 / 46 / 291): no flow, no ageing.</td></tr>
+    <tr><td><span class="mk-ref ink">7</span></td><td><b>485 rows, 10 per page</b></td><td>49 pages; 4–5 lines of capitals per title, ~3.5 projects a screen.</td></tr>
+    <tr><td><span class="mk-ref ink">8</span></td><td><b>The top bar cries wolf</b></td><td>“BELUM DISIMPAN” overlaps a label and shows even with no edits.</td></tr>
+    <tr><td><span class="mk-ref ink">9</span></td><td><b>Long forms, flat hierarchy</b></td><td>~20 same-weight fields; money results sit as grey read-only inputs.</td></tr>
+    <tr><td><span class="mk-ref ink">10</span></td><td><b>A wizard for a spreadsheet task</b></td><td>One Bil at a time in accordions; the BQ is never seen as a sheet.</td></tr>
+    <tr><td><span class="mk-ref ink">11</span></td><td><b>Phone page is a stacked desktop form</b></td><td>The first screen is header, circles, title, status; no on-site flow.</td></tr>
+    <tr><td><span class="mk-ref ink">12</span></td><td><b>Six-item bottom navigation</b></td><td>A PJA never needs Pengguna or Tetapan; six narrow 10 px targets.</td></tr>
+    <tr><td><span class="sev s3" style="margin:0">13</span></td><td><b>Typography has no voice</b></td><td>Manrope, Plus Jakarta Sans and Inter all load. <span class="src">global.css:5</span></td></tr>
+    <tr><td><span class="sev s3" style="margin:0">14</span></td><td><b>Colour is decorative</b></td><td>Seven hues, none meaning the same thing twice; purple only in reports.</td></tr>
+    <tr><td><span class="sev s3" style="margin:0">15</span></td><td><b>Mixed English and Malay</b></td><td>“BQ Building (PJA)”, “Wizard Mode”, “Collapse All” beside Malay.</td></tr>
+    <tr><td><span class="mk-ref ink">16</span></td><td><b>Settings is one long page</b></td><td>3,397 px at 1440 wide: six admin lists, three card styles, one scroll.</td></tr>
+  </table>
+
+  <div class="callout sys push">
+    <h3>Keep these: they already work</h3>
+    <div class="cols-2 small" style="column-gap:6mm">
+      <ul class="list"><li>Status counts on the dashboard and the numbered phone stepper: right ideas, under-powered.</li>
+        <li>Top-bar totals that pair the contract price (struck through) with Harga Akhir on Pelarasan: the exact
+          pattern the rate-book problem needs.</li></ul>
+      <ul class="list"><li>The CPC preview is a faithful render of the real document.</li>
+        <li>Phone settings already give each admin list its own screen (#pustaka, #company, #vote, #sebutharga).</li></ul>
+    </div>
+  </div>
+</section>

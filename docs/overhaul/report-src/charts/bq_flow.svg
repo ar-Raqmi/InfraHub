@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-bqflow" viewBox="0 0 657.64 552.00" role="img" aria-label="How a rate travels today" style="display:block;width:100%;height:auto">
+<defs><marker id="bqflow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#0F1E1C"/></marker></defs>
+<defs><marker id="bqflow-e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker></defs>
+<defs><marker id="bqflow-am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#D97706"/></marker></defs>
+<defs><marker id="bqflow-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<rect x="0.00" y="8.00" width="150.00" height="58.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="0.00" y="8.00" width="4.00" height="58.00" fill="#64748B" />
+<text x="10.00" y="25.00" font-family="'General Sans', sans-serif" font-size="11" font-weight="600" fill="#0F1E1C" text-anchor="start" >PT / Admin</text>
+<text x="10.00" y="39.20" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >Tetapan › Pustaka BQ,</text>
+<text x="10.00" y="51.55" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >button Simpan Pustaka</text>
+<rect x="236.00" y="0.00" width="214.00" height="78.00" fill="#0F1E1C" />
+<text x="246.00" y="18.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="#F6F4EE" text-anchor="start" >library_groups</text>
+<text x="246.00" y="33.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#9ADCC2" text-anchor="start" >the one global master BQ</text>
+<text x="246.00" y="49.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#F6F4EE" text-anchor="start" >107 groups · 499 priced points</text>
+<text x="246.00" y="66.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#D97706" text-anchor="start" letter-spacing="0.3" >NO YEAR · NO CONTRACT · NO HISTORY</text>
+<rect x="500.00" y="8.00" width="157.64" height="58.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="500.00" y="8.00" width="4.00" height="58.00" fill="#64748B" />
+<text x="510.00" y="25.00" font-family="'General Sans', sans-serif" font-size="11" font-weight="600" fill="#0F1E1C" text-anchor="start" >templates (9)</text>
+<text x="510.00" y="39.20" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >rows re-priced from the</text>
+<text x="510.00" y="51.55" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >library when applied</text>
+<path d="M151.0,30.0 L233.0,30.0" stroke="#D97706" stroke-width="1.6" fill="none" marker-end="url(#bqflow-am)"/>
+<text x="0.00" y="84.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="800" fill="#D97706" text-anchor="start" >SIMPAN = DELETE ALL + RE-INSERT</text>
+<text x="0.00" y="96.00" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="600" fill="#D97706" text-anchor="start" >no copy kept, no date recorded</text>
+<rect x="236.00" y="128.00" width="214.00" height="54.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="236.00" y="128.00" width="4.00" height="54.00" fill="#10B981" />
+<text x="246.00" y="145.00" font-family="'General Sans', sans-serif" font-size="11" font-weight="600" fill="#0F1E1C" text-anchor="start" >BQ Editor · PJA, phase 1</text>
+<text x="246.00" y="159.20" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >loads library + templates once, when</text>
+<text x="246.00" y="171.55" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >the page opens</text>
+<path d="M343.0,79.0 L343.0,126.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#bqflow-a)"/>
+<text x="349.00" y="104.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="start" >loaded once</text>
+<path d="M578.0,67.0 L578.0,155.0 L453.0,155.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#bqflow-a)"/>
+<rect x="236.00" y="256.00" width="214.00" height="58.00" fill="#059669" />
+<text x="246.00" y="276.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="#F6F4EE" text-anchor="start" >projects.bq_data</text>
+<text x="246.00" y="292.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#B1E2CD" text-anchor="start" >the contract BQ: copied rows</text>
+<text x="246.00" y="306.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#B1E2CD" text-anchor="start" >+ sourceGroupId / ItemId / VariantId</text>
+<path d="M296.0,183.0 L296.0,254.0" stroke="#059669" stroke-width="1.6" fill="none" marker-end="url(#bqflow-e)"/>
+<rect x="287.00" y="211.00" width="18.00" height="18.00" fill="#D97706" />
+<text x="296.00" y="224.50" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#F6F4EE" text-anchor="middle" >1</text>
+<text x="230.00" y="202.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >Tambah Item: COPY</text>
+<text x="230.00" y="214.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >description + unit +</text>
+<text x="230.00" y="226.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >rate + the 3 ids</text>
+<text x="230.00" y="238.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="700" fill="#D97706" text-anchor="end" >(reads TODAY&#x27;s rate)</text>
+<path d="M400.0,183.0 L400.0,254.0" stroke="#059669" stroke-width="1.6" fill="none" marker-end="url(#bqflow-e)"/>
+<rect x="391.00" y="211.00" width="18.00" height="18.00" fill="#D97706" />
+<text x="400.00" y="224.50" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#F6F4EE" text-anchor="middle" >2</text>
+<text x="418.00" y="202.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Apply template:</text>
+<text x="418.00" y="214.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#D97706" text-anchor="start" >rate + unit re-read</text>
+<text x="418.00" y="226.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#D97706" text-anchor="start" >from the library</text>
+<rect x="500.00" y="262.00" width="157.64" height="46.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="500.00" y="262.00" width="4.00" height="46.00" fill="#059669" />
+<text x="510.00" y="278.50" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >kos_projek</text>
+<text x="510.00" y="292.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >= sum of row amounts</text>
+<path d="M451.0,285.0 L497.0,285.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#bqflow-a)"/>
+<rect x="236.00" y="392.00" width="214.00" height="58.00" fill="#139284" />
+<text x="246.00" y="412.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#F6F4EE" text-anchor="start" >projects.bq_data_pelarasan</text>
+<text x="246.00" y="428.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#B2E2D8" text-anchor="start" >the adjusted BQ: a deep copy</text>
+<text x="246.00" y="442.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#B2E2D8" text-anchor="start" >+ isAdjustment rows</text>
+<path d="M343.0,315.0 L343.0,390.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#bqflow-a)"/>
+<text x="349.00" y="342.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Mulakan Pelarasan:</text>
+<text x="349.00" y="354.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >deep copy (JSON)</text>
+<path d="M235.0,60.0 L200.0,60.0 L200.0,414.0 L233.0,414.0" stroke="#D97706" stroke-width="1.6" fill="none" marker-end="url(#bqflow-am)"/>
+<rect x="191.00" y="353.00" width="18.00" height="18.00" fill="#D97706" />
+<text x="200.00" y="366.50" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#F6F4EE" text-anchor="middle" >3</text>
+<text x="184.00" y="358.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >Tambah Item in</text>
+<text x="184.00" y="370.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#0F1E1C" text-anchor="end" >BQ Pelarasan:</text>
+<text x="184.00" y="382.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#D97706" text-anchor="end" >TODAY&#x27;s rate,</text>
+<text x="184.00" y="394.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="600" fill="#D97706" text-anchor="end" >isAdjustment = true</text>
+<rect x="470.00" y="370.00" width="187.64" height="50.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="470.00" y="370.00" width="4.00" height="50.00" fill="#059669" />
+<text x="480.00" y="386.50" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >kos_sebenar</text>
+<text x="480.00" y="400.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >= min(sum, kos_projek) − LAD −</text>
+<text x="480.00" y="412.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >LoC − wang tahanan</text>
+<rect x="470.00" y="430.00" width="187.64" height="50.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="470.00" y="430.00" width="4.00" height="50.00" fill="#D97706" />
+<text x="480.00" y="446.50" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >bq_pelarasan_extra</text>
+<text x="480.00" y="460.10" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >= max(0, sum − kos_projek): the</text>
+<text x="480.00" y="472.45" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >unpaid overflow</text>
+<path d="M451.0,410.0 L467.0,395.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#bqflow-a)"/>
+<path d="M451.0,434.0 L467.0,452.0" stroke="#0F1E1C" stroke-width="1.2" fill="none" marker-end="url(#bqflow-a)"/>
+<rect x="0.00" y="498.00" width="196.00" height="48.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<rect x="0.00" y="498.00" width="4.00" height="48.00" fill="#64748B" />
+<text x="10.00" y="515.00" font-family="'General Sans', sans-serif" font-size="11" font-weight="600" fill="#0F1E1C" text-anchor="start" >system_settings</text>
+<text x="10.00" y="529.20" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >one row per YEAR ·</text>
+<text x="10.00" y="541.55" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#495450" text-anchor="start" >sebutharga_numbers</text>
+<rect x="236.00" y="498.00" width="214.00" height="48.00" fill="#E0DCE2" stroke="#3B2E8C" stroke-width="1" />
+<text x="246.00" y="516.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#3B2E8C" text-anchor="start" >projects.no_sebutharga</text>
+<text x="246.00" y="532.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#3B2E8C" text-anchor="start" >a text label chosen in phase 2</text>
+<path d="M197.0,522.0 L233.0,522.0" stroke="#3B2E8C" stroke-width="1.2" fill="none" marker-end="url(#bqflow-p)"/>
+<rect x="470.00" y="502.00" width="187.64" height="40.00" fill="#F6F4EE" stroke="#D97706" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="480.00" y="519.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#D97706" text-anchor="start" letter-spacing="0.3" >NOT CONNECTED TO ANY RATE</text>
+<text x="480.00" y="533.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >printed on CPC and notices only</text>
+<path d="M451.0,522.0 L467.0,522.0" stroke="#D97706" stroke-width="1" fill="none"  stroke-dasharray="4 3"/>
+</svg>

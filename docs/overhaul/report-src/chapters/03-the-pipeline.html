@@ -1,0 +1,127 @@
+<!-- chapter: 03 | The pipeline -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">03</div>
+    <div>
+      <p class="kicker">The pipeline</p>
+      <h1>Six statuses, moved by four fields</h1>
+      <p class="dek">A project’s status is a stored label, not a process engine. Typing a company name or one of
+        three dates moves it forward. Only the very first step needs a person to change it by hand.</p>
+    </div>
+  </header>
+
+  <figure class="fig">
+    <p class="fig-title">One manual step, four automatic ones</p>
+    <p class="fig-sub">Boxes are the six statuses in <code>types.ts</code>. Cards below each arrow name the
+      trigger. Arcs above show the side doors the code also allows.</p>
+    {{svg:states}}
+    <figcaption><b>Source</b> pages/ProjectDetail.tsx:870-891, :1012, :326, :497 · CompanyCard.tsx:56 ·
+      tabs at ProjectDetail.tsx:388-393 · out-of-order cases from data_quality_checks.csv
+      <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="cols-3 sp-3">
+    <div>
+      <h3>Rules fire only in the form</h3>
+      <p class="small">The automatic moves run when a field changes in the project form. Values set by
+        <i>Import Inden</i> or the card’s quick-edit bypass them. Clearing a date never moves the status
+        back. <span class="tag v">Verified</span></p>
+    </div>
+    <div>
+      <h3>Nothing remembers who or when</h3>
+      <p class="small">There is no history table. The only trace is one <code>updated_at</code> per project, so
+        “who moved this, and when?” cannot be answered. The date fields are the only clock.
+        <span class="tag v">Verified</span></p>
+    </div>
+    <div>
+      <h3>Three roles</h3>
+      <p class="small"><b>PJA</b> (12): build the BQ and the pelarasan. <b>ADMIN / PT</b> (2): open the file,
+        appoint, close. <b>JURUTERA</b> (2): sign letters and certificates. PJAs see only their own projects.
+        <span class="tag v">Verified</span></p>
+    </div>
+  </div>
+
+  <div class="callout risk sp-3 push">
+    <p class="small"><b>A trap in the code:</b> choosing or editing <i>Nama Syarikat</i> sets DALAM_PROSES even
+      on a project that is already SIAP. No project in the data shows it, but nothing prevents it.
+      <span class="tag i">Inference from code reading</span></p>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">Who does what, at each step</p>
+  <h2>The workflow on one page</h2>
+  <p class="measure small" style="margin-bottom:4mm">Read across a row to see what each status means, who is
+    working, what they fill in, and which documents come out. <span class="auto deep"><b>Green</b></span> = the
+    field that triggers the next status or is calculated automatically.</p>
+  <table class="swim">
+    <colgroup><col style="width:33mm"><col style="width:19mm"><col style="width:70mm"><col></colgroup>
+    <thead><tr><th>Status</th><th>Who</th><th>Fields filled here</th><th>Documents produced</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="st" style="--c:#B1B9C2"><b>FASA_DRAF</b><span>PJA opens the file</span></td>
+        <td class="who">PJA<br><span class="muted">tab 1</span></td>
+        <td>Nama Projek (forced to capitals), Lokasi + Aduan rows, No. Aduan, BP, Zon, Mukim, Tarikh Buka, PJA.
+          BQ built from a template and the library into <code>bq_data</code>.
+          <span class="auto">Kos Projek = sum of item amounts.</span></td>
+        <td>BQ PDF: cover letter (uses the cover jawatan / bahagian / unit / sebut harga text) + the bills.
+          Laporan Bergambar (image report).</td>
+      </tr>
+      <tr>
+        <td class="st" style="--c:var(--slate)"><b>MENUNGGU_<br>LANTIKAN</b><span>file opened, no company yet</span></td>
+        <td class="who">PT<br><span class="muted">tab 2</span></td>
+        <td>No. Fail (27 of 35 waiting projects already have one), No. Vot, No. Sebutharga.
+          <span class="man">Status set by hand.</span></td>
+        <td>Image report still available.</td>
+      </tr>
+      <tr>
+        <td class="st" style="--c:#86D8CD"><b>DALAM_PROSES</b><span>company appointed, work running</span></td>
+        <td class="who">PT<br><span class="muted">tab 2</span></td>
+        <td><span class="auto">Nama Syarikat (trigger)</span>, Bulan, Tarikh Lantikan, No. BPP, Tarikh Cetakan
+          BPP, No. Inden (or <i>Import Inden</i> from the PO PDF), Tempoh Kontrak (8 weeks in 420 rows), Tarikh
+          Serah Tapak. <span class="auto">Mula Kontrak = BPP + 2 working days; Tamat = Mula + tempoh; ISO =
+          working days BPP to Serah Tapak; Mula Kerja = Serah Tapak + 2 working days.</span></td>
+        <td>Notis Pemberitahuan, Aku Janji. Notice tracker: Peringatan 1 at Tamat − 7 d, Perakuan Kerja Tidak
+          Siap at Tamat, Peringatan 2 at + 7 d, Peringatan 3 at + 14 d (each PENDING / SENT / NOT_REQUIRED).</td>
+      </tr>
+      <tr>
+        <td class="st" style="--c:var(--teal)"><b>PEMERIKSAAN_<br>TAPAK</b><span>site finished, being inspected</span></td>
+        <td class="who">PJA<br><span class="muted">tab 3</span></td>
+        <td><span class="auto">Tarikh Pemeriksaan (trigger)</span>, Tarikh Siap Sebenar, Prestasi %, BQ
+          Pelarasan (<i>Mulakan Pelarasan</i> copies <code>bq_data</code>), Wang Tahanan.</td>
+        <td>BQ Pelarasan PDF. CPC (Siap Kerja), blocked while any due notice is still PENDING. Perakuan LAD.
+          LoC. Prestasi certificate.</td>
+      </tr>
+      <tr>
+        <td class="st" style="--c:var(--em)"><b>TUNTUTAN_<br>BAYARAN</b><span>claim lodged</span></td>
+        <td class="who">PJA / PT</td>
+        <td><span class="auto">Tarikh Tuntutan Bayaran (trigger). Kos Sebenar and the overflow are
+          calculated.</span></td>
+        <td>CPC, LAD, LoC, Prestasi can be re-printed. Senarai and Rotasi PDFs from the Projek page.</td>
+      </tr>
+      <tr>
+        <td class="st" style="--c:var(--deep)"><b>SIAP</b><span>matched with Kewangan</span></td>
+        <td class="who">PT<br><span class="muted">tab 4</span></td>
+        <td>Tarikh Hantar Kewangan, <span class="auto">Tarikh Padanan (trigger)</span>.</td>
+        <td>Nothing new. The project leaves the Dashboard worklist.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="src sp-1">FINDINGS-system §4.3 · ProjectDetail.tsx:536-576 (isCPCBlocked), :594-614 · Dashboard.tsx:158
+    <span class="tag v">Verified</span></p>
+
+  <div class="cols-2 sp-4 push">
+    <div class="card sys">
+      <p class="kicker">The data mostly agrees with the rules</p>
+      <p class="small">1 SIAP project has no Tarikh Padanan; no project has a Padanan date outside SIAP; 2
+        projects hold a Tuntutan date while still in an earlier status. In 275 of 293 finished projects
+        Tarikh Pemeriksaan equals Tarikh Siap Sebenar: one event typed twice. <span class="tag v">Verified</span></p>
+    </div>
+    <div class="card risk">
+      <p class="kicker">The notice tracker is used for the exceptions</p>
+      <p class="small">Peringatan 1 is SENT on 66 projects (52 of them now SIAP), Perakuan Kerja Tidak Siap on
+        28, Peringatan 2 on 22, Peringatan 3 on 15. Most projects leave all four at PENDING (417, 447, 466 and
+        472 projects); 3 are marked “Tiada notis diperlukan”. <span class="tag v">Verified</span></p>
+    </div>
+  </div>
+</section>
