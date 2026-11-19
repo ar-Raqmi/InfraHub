@@ -23,7 +23,7 @@ const PagerButton: React.FC<{ label: string; disabled: boolean; onClick: () => v
 );
 
 const MobilePager: React.FC<MobilePagerProps> = ({ page, totalPages, from, to, total, onPrev, onNext }) => (
-  <div className="flex items-center justify-between gap-3">
+  <div className="flex items-center justify-between gap-3 pb-24">
     <span className="text-xs font-bold text-slate-500">
       <span className="text-emerald-600">{from}</span>-{to} <span className="text-slate-400 font-medium mx-0.5">/</span> {total}
     </span>
