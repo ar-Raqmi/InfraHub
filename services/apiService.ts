@@ -1,4 +1,43 @@
-import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, CompanyDetail, VoteDefinition, TemporaryImage } from '../types';
+import { User, Project, PresetGroup, BQTemplateDefinition, BulletinItem, CompanyDetail, VoteDefinition, TemporaryImage, Contract, ContractCompany, ContractStatus, RateBookVersion, RateBookMatchRow, MatchDecision, ChangeLogEntry, LookupValue, PolicyRuleRecord } from '../types';
+import type { ParsedBook } from '../domain/rateBook/types';
+import type { BookDiff } from '../domain/rateBook/diffBooks';
+import type { BookRow } from '../domain/rateBook/rows';
+import type { RowMatch, MatchStats } from '../domain/rateBook/matchItems';
+import type { RepricePlan } from '../domain/reprice';
+
+/** Error from an /api call; `message` stays the caller's text, the server's reason rides along. */
+export class ApiError extends Error {
+    constructor(message: string, public status: number, public serverMessage?: string, public detail?: unknown) {
+        super(message);
+    }
+}
+
+export type ContractInputBody = {
+    code?: string; title?: string; kind?: 'PANEL' | 'STANDALONE'; valid_from?: string | null; valid_to?: string | null;
+    company_cap?: number | null; meeting_number?: string | null; meeting_date?: string | null; notes?: string | null;
+};
+
+export interface ImportResult {
+    version: RateBookVersion;
+    stats: { parse: ParsedBook['stats']; warnings: ParsedBook['warnings']; match: MatchStats; baseVersionId: string | null };
+    matches: RowMatch[];
+    removed: BookRow[];
+}
+
+export interface VersionDetail {
+    version: RateBookVersion;
+    groups: PresetGroup[];
+    matches: RateBookMatchRow[];
+    removed: BookRow[];
+}
+
+export interface MatchDecisionBody {
+    new_ref: string; decision: MatchDecision; old_group_id?: string; old_item_id?: string; old_variant_id?: string | null;
+}
+
+export type RepriceResult =
+    | { dryRun: true; contract: { id: string; code: string }; rateBookVersionId: string; plan: RepricePlan }
+    | { dryRun: false; plan: RepricePlan; project: Project };
 import { sanitizeProject, sanitizeLibraryGroups, sanitizeTemplates, sanitizeUser } from '../lib/text';
 
 class CloudflareService {
@@ -27,10 +66,13 @@ class CloudflareService {
         let url = `${this.baseUrl}${path}`;
         if (query) url += `?${new URLSearchParams(query).toString()}`;
 
-        const init: RequestInit = { method };
+        const headers: Record<string, string> = {};
+        // The acting user for the server's change log (CONTRACT §5).
+        if (this.currentUser?.id) headers['X-InfraHub-User'] = String(this.currentUser.id);
+        const init: RequestInit = { method, headers };
         if (body !== undefined) {
             if (json) {
-                init.headers = { 'Content-Type': 'application/json' };
+                headers['Content-Type'] = 'application/json';
                 init.body = JSON.stringify(body);
             } else {
                 init.body = body as BodyInit;
@@ -38,7 +80,10 @@ class CloudflareService {
         }
 
         const response = await fetch(url, init);
-        if (!response.ok) throw new Error(errorMessage);
+        if (!response.ok) {
+            const payload: any = await response.json().catch(() => null);
+            throw new ApiError(errorMessage, response.status, payload?.message, payload?.detail);
+        }
         return expectJson ? response.json() : (undefined as T);
     }
 
@@ -369,7 +414,114 @@ class CloudflareService {
     async deleteNotificationPermanently(id: string, userId: number) {
         await this.request({ path: `/notifications/${id}`, method: 'DELETE', query: { userId: String(userId) }, expectJson: false, errorMessage: 'Failed to delete notification permanently' });
     }
+    // --- v2: CONTRACTS (SEBUTHARGA) ---
+    async getContracts(): Promise<Contract[]> {
+        return this.request<Contract[]>({ path: '/contracts', errorMessage: 'Gagal memuat senarai kontrak' });
+    }
+
+    async getContract(id: string): Promise<Contract> {
+        return this.request<Contract>({ path: `/contracts/${enc(id)}`, errorMessage: 'Gagal memuat kontrak' });
+    }
+
+    async createContract(body: ContractInputBody & { clone_from?: string }): Promise<Contract> {
+        return this.request<Contract>({ path: '/contracts', method: 'POST', body, errorMessage: 'Gagal mencipta kontrak' });
+    }
+
+    async updateContract(id: string, body: ContractInputBody): Promise<Contract> {
+        return this.request<Contract>({ path: `/contracts/${enc(id)}`, method: 'PATCH', body, errorMessage: 'Gagal mengemas kini kontrak' });
+    }
+
+    async setContractStatus(id: string, status: ContractStatus): Promise<Contract> {
+        return this.request<Contract>({ path: `/contracts/${enc(id)}/status`, method: 'POST', body: { status }, errorMessage: 'Gagal menukar status kontrak' });
+    }
+
+    async getContractCompanies(id: string): Promise<ContractCompany[]> {
+        return this.request<ContractCompany[]>({ path: `/contracts/${enc(id)}/companies`, errorMessage: 'Gagal memuat panel' });
+    }
+
+    async saveContractCompanies(id: string, companies: { name: string; cap?: number | null; details?: CompanyDetail | null }[]): Promise<ContractCompany[]> {
+        return this.request<ContractCompany[]>({ path: `/contracts/${enc(id)}/companies`, method: 'PUT', body: companies, errorMessage: 'Gagal menyimpan panel' });
+    }
+
+    // --- v2: RATE BOOKS ---
+    async getContractBook(id: string, version?: string | number): Promise<PresetGroup[]> {
+        const query = version !== undefined ? { version: String(version) } : undefined;
+        return this.request<PresetGroup[]>({ path: `/contracts/${enc(id)}/book`, query, errorMessage: 'Gagal memuat buku kadar' });
+    }
+
+    async getContractVersions(id: string): Promise<RateBookVersion[]> {
+        return this.request<RateBookVersion[]>({ path: `/contracts/${enc(id)}/versions`, errorMessage: 'Gagal memuat versi' });
+    }
+
+    async importRateBook(id: string, body: { fileName: string; rateColumn: string; book: ParsedBook }): Promise<ImportResult> {
+        return this.request<ImportResult>({ path: `/contracts/${enc(id)}/versions/import`, method: 'POST', body, errorMessage: 'Gagal mengimport buku kadar' });
+    }
+
+    async getRateBookVersion(versionId: string): Promise<VersionDetail> {
+        return this.request<VersionDetail>({ path: `/rate-book/versions/${enc(versionId)}`, errorMessage: 'Gagal memuat versi' });
+    }
+
+    async decideMatches(versionId: string, decisions: MatchDecisionBody[]): Promise<RateBookMatchRow[]> {
+        return this.request<RateBookMatchRow[]>({ path: `/rate-book/versions/${enc(versionId)}/matches`, method: 'PATCH', body: { decisions }, errorMessage: 'Gagal menyimpan keputusan padanan' });
+    }
+
+    async publishRateBook(versionId: string, message: string): Promise<{ version: RateBookVersion; diff: BookDiff['stats'] }> {
+        return this.request({ path: `/rate-book/versions/${enc(versionId)}/publish`, method: 'POST', body: { message }, errorMessage: 'Gagal menerbitkan buku kadar' });
+    }
+
+    async diffRateBooks(fromVersionId: string, toVersionId: string): Promise<BookDiff> {
+        return this.request<BookDiff>({ path: '/rate-book/diff', query: { from: fromVersionId, to: toVersionId }, errorMessage: 'Gagal membanding versi' });
+    }
+
+    // --- v2: PROJECT <-> CONTRACT ---
+    async swapProjectContract(projectId: number, contractId: string, unlock = false): Promise<Project> {
+        return this.request<Project>({ path: `/projects/${projectId}/contract`, method: 'POST', body: { contractId, unlock }, errorMessage: 'Gagal menukar kontrak projek' });
+    }
+
+    async repriceProject(projectId: number, toContractId: string, dryRun: boolean, unlock = false): Promise<RepriceResult> {
+        return this.request<RepriceResult>({ path: `/projects/${projectId}/reprice`, method: 'POST', body: { toContractId, dryRun, unlock }, errorMessage: 'Gagal menghitung harga semula' });
+    }
+
+    // --- v2: CHANGE LOG ---
+    async getChangeLog(filter: { entity?: string; entityId?: string; limit?: number } = {}): Promise<ChangeLogEntry[]> {
+        const query: Record<string, string> = {};
+        if (filter.entity) query.entity = filter.entity;
+        if (filter.entityId) query.entityId = filter.entityId;
+        if (filter.limit) query.limit = String(filter.limit);
+        return this.request<ChangeLogEntry[]>({ path: '/changelog', query, errorMessage: 'Gagal memuat log perubahan' });
+    }
+
+    // --- v2: ORGANISATION CONFIG, LOOKUPS, POLICIES ---
+    async getOrgConfig(): Promise<Record<string, unknown>> {
+        return this.request<Record<string, unknown>>({ path: '/config', errorMessage: 'Gagal memuat tetapan' });
+    }
+
+    async setOrgConfig(key: string, value: unknown): Promise<{ key: string; value: unknown }> {
+        return this.request({ path: `/config/${enc(key)}`, method: 'PUT', body: { value }, errorMessage: 'Gagal menyimpan tetapan' });
+    }
+
+    async getLookups(list: string): Promise<LookupValue[]> {
+        return this.request<LookupValue[]>({ path: `/lookups/${enc(list)}`, errorMessage: 'Gagal memuat senarai' });
+    }
+
+    async saveLookups(list: string, values: LookupValue[]): Promise<LookupValue[]> {
+        return this.request<LookupValue[]>({ path: `/lookups/${enc(list)}`, method: 'PUT', body: values, errorMessage: 'Gagal menyimpan senarai' });
+    }
+
+    async getPolicies(): Promise<PolicyRuleRecord[]> {
+        return this.request<PolicyRuleRecord[]>({ path: '/policies', errorMessage: 'Gagal memuat peraturan' });
+    }
+
+    async addPolicy(rule: { key: string; effective_from: string; value: unknown; note?: string }): Promise<PolicyRuleRecord[]> {
+        return this.request<PolicyRuleRecord[]>({ path: '/policies', method: 'POST', body: rule, errorMessage: 'Gagal menyimpan peraturan' });
+    }
+
+    async runLegacyMigration(): Promise<Record<string, unknown>> {
+        return this.request({ path: '/v2/admin/migrate-legacy', method: 'POST', errorMessage: 'Migrasi gagal' });
+    }
 }
+
+const enc = encodeURIComponent;
 
 // Export a singleton instance
 export const apiService = new CloudflareService();

@@ -41,6 +41,7 @@ export type PresetVariant = {
   label: string; // e.g. "Dengan tangan"
   rate: number;
   unit: string;
+  code?: string; // official item number from the master BQ, e.g. "2.1(ii)"
 };
 
 export type PresetItem = {
@@ -49,6 +50,8 @@ export type PresetItem = {
   rate?: number; // Optional: If the item itself has a rate (no variants)
   unit?: string;
   variants?: PresetVariant[];
+  code?: string; // official item number, e.g. "2.1"
+  notes?: string[];
 };
 
 export type PresetGroup = {
@@ -56,7 +59,102 @@ export type PresetGroup = {
   title: string; // Header Title (e.g. KERJA PENGOREKAN)
   category: string; // Main Group Category
   items: PresetItem[];
+  code?: string; // heading number inside its bill, e.g. "8"
+  bill?: string; // bill number from the master BQ, e.g. "2"
 };
+
+// --- v2: CONTRACTS (SEBUTHARGA) AND VERSIONED RATE BOOKS ---
+export type ContractKind = 'PANEL' | 'STANDALONE';
+export type ContractStatus = 'DRAF' | 'AKTIF' | 'DITUTUP';
+
+export interface Contract {
+  id: string;
+  code: string;
+  title: string;
+  kind: ContractKind;
+  status: ContractStatus;
+  validFrom?: string | null;
+  validTo?: string | null;
+  companyCap?: number | null;
+  meetingNumber?: string | null;
+  meetingDate?: string | null;
+  notes?: string | null;
+  clonedFrom?: string | null;
+  createdAt?: string | null;
+  createdBy?: number | null;
+  activatedAt?: string | null;
+  closedAt?: string | null;
+  stats?: { projects: number; versions: number; currentVersion: number | null; panelSize: number };
+}
+
+export interface ContractCompany {
+  name: string;
+  sortIndex: number;
+  cap: number | null;
+  details?: CompanyDetail | null;
+}
+
+export type RateBookVersionStatus = 'DRAF' | 'TERBIT';
+export type RateBookSource = 'LEGACY' | 'IMPORT' | 'CLONE' | 'EDIT';
+
+export interface RateBookVersion {
+  id: string;
+  contractId: string;
+  versionNo: number;
+  status: RateBookVersionStatus;
+  message?: string | null;
+  source?: RateBookSource | null;
+  sourceFile?: string | null;
+  rateColumn?: string | null;
+  stats?: Record<string, unknown> | null;
+  createdAt?: string | null;
+  createdBy?: number | null;
+  publishedAt?: string | null;
+  publishedBy?: number | null;
+}
+
+export type MatchMethod = 'EXACT' | 'CODE' | 'FUZZY' | 'AI' | 'MANUAL' | 'NEW';
+export type MatchDecision = 'PENDING' | 'ACCEPT' | 'REJECT';
+
+export interface RateBookMatchRow {
+  newRef: string;
+  oldGroupId: string | null;
+  oldItemId: string | null;
+  oldVariantId: string | null;
+  method: MatchMethod;
+  score: number;
+  decision: MatchDecision;
+}
+
+export interface ChangeLogEntry {
+  id: number;
+  at: string;
+  userId: number | null;
+  userName: string | null;
+  entity: 'contract' | 'rate_book' | 'project' | 'config' | 'policy' | 'lookup';
+  entityId: string | null;
+  action: string;
+  message: string | null;
+  diff: unknown;
+}
+
+export interface LookupValue {
+  code: string;
+  label: string;
+  sortIndex: number;
+  active: boolean;
+}
+
+export interface PolicyRuleRecord {
+  key: string;
+  effectiveFrom: string;
+  value: unknown;
+  note?: string | null;
+  createdAt?: string | null;
+  createdBy?: number | null;
+}
+
+export type BQRowStatus = 'OK' | 'KADAR_BERUBAH' | 'PERKATAAN_BERUBAH' | 'TIADA';
 
 // --- DYNAMIC TEMPLATES ---
 export type BQTemplateType = 'PERMULAAN_BASIC' | 'PERMULAAN_EMPTY' | 'LONGKANG' | 'EMPTY' | 'CUSTOM';
@@ -252,6 +350,8 @@ export interface Project {
   // --- PHASE 2: FILE CREATION (Blue - Admin/PT) ---
   noFail: string;
   noSebutharga?: string; // NEW: No. Sebutharga (e.g. MPS/SH/192/23)
+  contractId?: string | null; // v2: the sebutharga whose rate book prices this project
+  rateBookVersionId?: string | null; // v2: the rate book version the BQ was priced from
   noInden?: string; // NEW: No. Inden / Pesanan Rasmi
   noBpp?: string; // NEW: No. BPP
   namaSyarikat?: string;
