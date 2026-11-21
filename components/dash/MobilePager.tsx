@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { IconButton } from '../ui';
 
 interface MobilePagerProps {
   page: number;
@@ -11,27 +12,17 @@ interface MobilePagerProps {
   onNext: () => void;
 }
 
-const PagerButton: React.FC<{ label: string; disabled: boolean; onClick: () => void; children: React.ReactNode }> = ({ label, disabled, onClick, children }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    aria-label={label}
-    className="w-11 h-11 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 disabled:text-slate-300 active:bg-slate-100"
-  >
-    {children}
-  </button>
-);
-
+// pb-24: the floating Tambah Projek button sits above the tab bar and would cover the pager at scroll end.
 const MobilePager: React.FC<MobilePagerProps> = ({ page, totalPages, from, to, total, onPrev, onNext }) => (
-  <div className="flex items-center justify-between gap-3 pb-24">
-    <span className="text-xs font-bold text-slate-500">
-      <span className="text-emerald-600">{from}</span>-{to} <span className="text-slate-400 font-medium mx-0.5">/</span> {total}
+  <div className="flex items-center justify-between gap-3 pb-24" data-testid="dash-pager">
+    <span className="text-sm font-bold text-muted ih-num">
+      <span className="text-ink">{from}–{to}</span> daripada {total}
     </span>
     {totalPages > 1 && (
       <div className="flex items-center gap-2">
-        <PagerButton label="Halaman sebelum" disabled={page === 1} onClick={onPrev}><ChevronLeft className="w-5 h-5" /></PagerButton>
-        <span className="text-xs font-black text-slate-700 min-w-[48px] text-center">{page} / {totalPages}</span>
-        <PagerButton label="Halaman seterusnya" disabled={page === totalPages} onClick={onNext}><ChevronRight className="w-5 h-5" /></PagerButton>
+        <IconButton icon={ChevronLeft} label="Halaman sebelum" variant="outline" disabled={page === 1} onClick={onPrev} />
+        <span className="text-sm font-bold text-ink min-w-[48px] text-center ih-num">{page} / {totalPages}</span>
+        <IconButton icon={ChevronRight} label="Halaman seterusnya" variant="outline" disabled={page === totalPages} onClick={onNext} />
       </div>
     )}
   </div>

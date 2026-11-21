@@ -14,7 +14,7 @@ interface ProjectActionsSheetProps {
     onOpenImportInden: () => void;
 }
 
-const rowClass = "w-full min-h-[52px] px-3 rounded-xl flex items-center gap-3 text-left text-[15px] font-bold disabled:opacity-60";
+const rowClass = "w-full min-h-[52px] px-3 rounded-ih-md flex items-center gap-3 text-left text-[15px] font-bold text-ink active:bg-paper-deep disabled:opacity-60";
 
 const ProjectActionsSheet: React.FC<ProjectActionsSheetProps> = ({ open, onClose, isGroupView, isGeneratingPdf, canImportInden, onExportCsv, onOpenReport, onExportRotasi, onOpenImportInden }) => {
     const thenClose = (action: () => void) => () => { onClose(); action(); };
@@ -29,19 +29,19 @@ const ProjectActionsSheet: React.FC<ProjectActionsSheetProps> = ({ open, onClose
         <BottomSheet open={open} title="Tindakan" onClose={onClose}>
             <div className="flex flex-col gap-1 pb-[env(safe-area-inset-bottom)]">
                 {isGroupView ? (
-                    <button onClick={thenClose(onOpenReport)} className={`${rowClass} text-emerald-700 active:bg-emerald-50`}>
-                        <FileText className="w-5 h-5" /> Jana Laporan Panel
+                    <button onClick={thenClose(onOpenReport)} className={rowClass}>
+                        <FileText className="w-5 h-5" /> Jana laporan panel (PDF)
                     </button>
                 ) : (
-                    <button onClick={thenClose(onExportCsv)} className={`${rowClass} text-emerald-700 active:bg-emerald-50`}>
-                        <Download className="w-5 h-5" /> Export CSV
+                    <button onClick={thenClose(onExportCsv)} className={rowClass}>
+                        <Download className="w-5 h-5" /> Eksport CSV
                     </button>
                 )}
-                <button onClick={exportRotasi} disabled={isGeneratingPdf} className={`${rowClass} text-indigo-700 active:bg-indigo-50`}>
-                    {isGeneratingPdf ? <Loader2 className="w-5 h-5 animate-spin" /> : <Recycle className="w-5 h-5" />} Rotasi
+                <button onClick={exportRotasi} disabled={isGeneratingPdf} className={rowClass}>
+                    {isGeneratingPdf ? <Loader2 className="w-5 h-5 animate-spin" /> : <Recycle className="w-5 h-5" />} Jadual rotasi (PDF)
                 </button>
                 {canImportInden && (
-                    <button onClick={thenClose(onOpenImportInden)} className={`${rowClass} text-amber-700 active:bg-amber-50`}>
+                    <button onClick={thenClose(onOpenImportInden)} className={rowClass}>
                         <FileUp className="w-5 h-5" /> Import No. Inden
                     </button>
                 )}
