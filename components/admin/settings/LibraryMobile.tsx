@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { PresetGroup } from '../../../types';
 import MobileBackBar from './MobileBackBar';
+import KontrakMovedBanner from './KontrakMovedBanner';
 import LibraryCategoryList from './LibraryCategoryList';
 import LibraryGroupList from './LibraryGroupList';
 import LibraryGroupEditor from './LibraryGroupEditor';
@@ -60,6 +61,7 @@ const LibraryMobile: React.FC<LibraryMobileProps> = ({ route, groups, actions, g
   return (
     <div className="md:hidden pb-36 space-y-4">
       <MobileBackBar label={backLabel} onBack={back} />
+      {!cat && <KontrakMovedBanner variant="pustaka" />}
       {screen}
       {actions.selectedItemIds.size === 0 && <LibrarySaveBar isDirty={actions.isDirty} status={actions.saveStatus} onSave={actions.onSave} />}
     </div>

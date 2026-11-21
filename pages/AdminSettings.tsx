@@ -11,6 +11,7 @@ import LibraryMoveModal from '../components/LibraryMoveModal';
 import BulkEditModal from '../components/BulkEditModal';
 import CategoryEdit from '../components/CategoryEdit';
 import { useSettingsRoute, SettingsSection } from '../components/admin/settings/useSettingsRoute';
+import KontrakMovedBanner from '../components/admin/settings/KontrakMovedBanner';
 import SettingsHub from '../components/admin/settings/SettingsHub';
 import MobileBackBar from '../components/admin/settings/MobileBackBar';
 import CompanyListMobile from '../components/admin/settings/CompanyListMobile';
@@ -887,6 +888,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                             <p className="text-xs text-slate-500 mt-1">Uruskan nombor sebutharga sedia ada.</p>
                         </div>
                     </div>
+                    <KontrakMovedBanner variant="sebutharga" className="mb-6" />
                     <div className="flex gap-2 mb-6">
                         <input
                             type="text"
@@ -1023,6 +1025,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ user, selectedYear }) => 
                         </div>
                     </div>
 
+                    <KontrakMovedBanner variant="pustaka" className="mb-6" />
                     <div className="flex flex-col lg:flex-row gap-8 min-h-[600px]">
                         {/* Left: Category & Group List */}
                         <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
