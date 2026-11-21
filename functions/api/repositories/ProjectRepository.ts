@@ -1,6 +1,7 @@
 import { BaseRepository } from './BaseRepository'
 
-type FieldType = 'direct' | 'number' | 'bool' | 'jsonArray' | 'jsonArrayOpt' | 'jsonObjectOpt'
+// 'readonly' columns are returned but only changed through the logged v2 routes (swap / reprice).
+type FieldType = 'direct' | 'number' | 'bool' | 'jsonArray' | 'jsonArrayOpt' | 'jsonObjectOpt' | 'readonly'
 
 interface ProjectField {
   camel: string
@@ -26,6 +27,8 @@ const PROJECT_FIELDS: ProjectField[] = [
   { camel: 'tarikhBuka', col: 'tarikh_buka', type: 'direct' },
   { camel: 'noFail', col: 'no_fail', type: 'direct' },
   { camel: 'noSebutharga', col: 'no_sebutharga', type: 'direct' },
+  { camel: 'contractId', col: 'contract_id', type: 'readonly' },
+  { camel: 'rateBookVersionId', col: 'rate_book_version_id', type: 'readonly' },
   { camel: 'noInden', col: 'no_inden', type: 'direct' },
   { camel: 'noBpp', col: 'no_bpp', type: 'direct' },
   { camel: 'namaSyarikat', col: 'nama_syarikat', type: 'direct' },
@@ -123,6 +126,7 @@ export class ProjectRepository extends BaseRepository {
   private mapProjectBodyToDbRecord(body: any, id: number): Record<string, any> {
     const rec: Record<string, any> = { id }
     for (const f of PROJECT_FIELDS) {
+      if (f.type === 'readonly') continue
       rec[f.col] = this.encodeField(f, body[f.camel], true)
     }
     rec.updated_at = new Date().toISOString()
@@ -132,6 +136,7 @@ export class ProjectRepository extends BaseRepository {
   private mapUpdatesToSnakeCase(body: any): Record<string, any> {
     const updates: Record<string, any> = {}
     for (const f of PROJECT_FIELDS) {
+      if (f.type === 'readonly') continue
       if (body[f.camel] !== undefined) {
         updates[f.col] = this.encodeField(f, body[f.camel], false)
       }
@@ -154,9 +159,14 @@ export class ProjectRepository extends BaseRepository {
     return this.mapProjectFromRow(results[0])
   }
 
-  public async create(body: any): Promise<any> {
+  // contractBinding: the sebutharga + rate book version a new project is priced from (CONTRACT §0 decision 3).
+  public async create(body: any, contractBinding: { contractId: string; versionId: string | null } | null = null): Promise<any> {
     const newId = Date.now()
     const dbRecord = this.mapProjectBodyToDbRecord(body, newId)
+    if (contractBinding) {
+      dbRecord.contract_id = contractBinding.contractId
+      dbRecord.rate_book_version_id = contractBinding.versionId
+    }
     const { keys, values, placeholders } = this.buildInsert(dbRecord)
 
     await this.db.prepare(`INSERT INTO projects (${keys.join(', ')}) VALUES (${placeholders})`)

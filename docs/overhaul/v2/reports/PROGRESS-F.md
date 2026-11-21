@@ -1,0 +1,7 @@
+- 2026-11-21 22:20 setup done: npm install, xlsx 0.20.3 (SheetJS CDN), vitest 4; seed imported into state-F; migrations 0001/0002 applied. Next: domain tests.
+- 2026-11-21 22:36 domain tests written first (8 files) and red run recorded (all 8 fail: modules missing). Next: domain implementation.
+- 2026-11-21 22:41 domain green (66 tests); parser run on the real workbook: KESELURUHAN 465/465 priced rows, category sheets 508/508, 0 warnings. Next: API.
+- 2026-11-21 23:05 migrations reworked (rate_book_groups.code/bill), API routes + services + legacy migration written; tsc still 3. Next: run against local server.
+- 2026-11-21 23:20 lead message: refreshed anonymised seed; state wiped and rebuilt. Legacy migration idempotent (run 2: 0 changed rows); compat PUT makes an EDIT version. Fixed: migration re-created contracts for codes already owned by v2 contracts; diff followed moved variants (red test first). Next: client layer.
+- 2026-11-21 23:35 client layer done: apiService v2 methods + X-InfraHub-User header, hooks useContracts/useRateBook/useChangeLog/useOrgConfig, lib/excel/readWorkbook (+test). Next: final API capture, API.md, report.
+- 2026-11-21 23:55 final: state rebuilt on refreshed seed, 42 API calls captured, API.md (FOUNDATION READY) and REPORT-F.md written; vitest 70 green, tsc 3, build green; server on 8791 stopped. Next: lead review.

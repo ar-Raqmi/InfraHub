@@ -8,6 +8,10 @@ import { bulletinApp } from './routes/bulletins'
 import { systemApp } from './routes/system'
 import { storageApp } from './routes/storage'
 import { notificationApp } from './routes/notifications'
+import { contractApp } from './routes/contracts'
+import { rateBookApp, changeLogApp } from './routes/rateBook'
+import { configApp, lookupApp, policyApp, adminApp, aiApp } from './routes/orgConfig'
+import { HttpError } from './actor'
 
 import { UserRepository } from './repositories/UserRepository'
 import { AppBindings } from './types'
@@ -17,6 +21,9 @@ const app = new Hono<{ Bindings: AppBindings }>().basePath('/api')
 app.use('*', cors())
 
 app.onError((err, c) => {
+  if (err instanceof HttpError) {
+    return c.json({ error: err.name, message: err.message, detail: err.detail }, err.status)
+  }
   console.error(err)
   return c.json({
     error: err.name || 'Error',
@@ -36,6 +43,9 @@ const cacheControl = (value: string) => async (c: any, next: any) => {
 // Disable caching for DATA routes (Projects & System) - GET ONLY
 app.use('/projects/*', cacheControl('no-cache, no-store, must-revalidate'))
 app.use('/system/*', cacheControl('no-cache, no-store, must-revalidate'))
+for (const p of ['/contracts/*', '/rate-book/*', '/changelog/*', '/config/*', '/lookups/*', '/policies/*']) {
+  app.use(p, cacheControl('no-cache, no-store, must-revalidate'))
+}
 
 // Allow caching for STORAGE FILES (Images) - GET ONLY
 app.use('/storage/file/*', cacheControl('public, max-age=3600')) // Cache for 1 hour
@@ -50,6 +60,14 @@ app.route('/bulletins', bulletinApp)
 app.route('/system', systemApp)
 app.route('/storage', storageApp)
 app.route('/notifications', notificationApp)
+app.route('/contracts', contractApp)
+app.route('/rate-book', rateBookApp)
+app.route('/changelog', changeLogApp)
+app.route('/config', configApp)
+app.route('/lookups', lookupApp)
+app.route('/policies', policyApp)
+app.route('/v2/admin', adminApp)
+app.route('/ai', aiApp)
 
 app.get('/health', (c) => {
   return c.json({ status: 'ok', message: 'InfraHub API is running on Cloudflare Pages!' })

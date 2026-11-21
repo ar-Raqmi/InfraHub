@@ -45,16 +45,6 @@ export class SystemRepository extends BaseRepository {
     }));
   }
 
-  public async saveLibraryGroups(groups: any[]): Promise<boolean> {
-    await this.db.prepare('DELETE FROM library_groups').run();
-    for (const g of groups) {
-      await this.db.prepare('INSERT INTO library_groups (id, title, category, items) VALUES (?, ?, ?, ?)')
-        .bind(g.id, g.title, g.category, JSON.stringify(g.items))
-        .run();
-    }
-    return true;
-  }
-
   public async getTemplates(): Promise<any[]> {
     const { results } = await this.db.prepare('SELECT * FROM templates ORDER BY order_index ASC').all();
     return results.map(row => ({
