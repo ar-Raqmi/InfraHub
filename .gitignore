@@ -49,3 +49,6 @@ scripts/
 *.bak
 .eslintcache
 vite.config.ts.timestamp-*
+# Python caches (e2e specs)
+__pycache__/
+*.pyc
