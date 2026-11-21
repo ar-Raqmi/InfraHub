@@ -321,7 +321,9 @@ class Scenario:
             tid = self.test_contract['id']
             if self.api.ok('GET', f'/contracts/{tid}')['status'] == 'AKTIF':
                 self.api.call('POST', f'/contracts/{tid}/status', {'status': 'DITUTUP'})
-            print(f"cleanup: test contract {self.test_contract['code']} left DITUTUP (contracts have no delete route)")
+            # Allowed once the test project is gone (the API refuses AKTIF or used contracts with 409).
+            status, _ = self.api.call('DELETE', f'/contracts/{tid}')
+            check('cleanup: test contract deleted', status == 200, f"{self.test_contract['code']} -> {status}")
 
 
 def run(base: str, shots: Path | None) -> None:
