@@ -31,10 +31,11 @@ export const CONFIG_KEYS = { profile: 'org.profile', logo: 'org.logo' } as const
 export const DEFAULT_PROFILE: OrgProfile = defaults.config['org.profile'];
 export const DEFAULT_LOGO: OrgLogo = defaults.config['org.logo'];
 
-export const EXTRA_POLICY_KEYS = { dlpMonths: 'DLP_MONTHS', tempohDefaultWeeks: 'TEMPOH_KONTRAK_DEFAULT_WEEKS' } as const;
+// The two contract policies O introduced now live in domain/policy (POLICY_KEYS); kept as an alias for callers.
+export const EXTRA_POLICY_KEYS = { dlpMonths: POLICY_KEYS.dlpMonths, tempohDefaultWeeks: POLICY_KEYS.tempohDefaultWeeks } as const;
 
 /** Every rule the app knows, with today's values: the server's rules win key by key. */
-export const ALL_DEFAULT_POLICY_RULES: PolicyRule[] = [...DEFAULT_POLICY_RULES, ...(defaults.policies as PolicyRule[])];
+export const ALL_DEFAULT_POLICY_RULES: PolicyRule[] = DEFAULT_POLICY_RULES;
 
 export interface DocTextField {
   id: string;
@@ -104,6 +105,12 @@ export const DOC_TEXT_GROUPS: DocTextGroup[] = [
     fields: [f('title', 'Tajuk'), f('heading', 'Tajuk pengiraan'), f('rule1', 'Peraturan 1', true), f('rule2', 'Peraturan 2', true), f('rule3', 'Peraturan 3', true)],
   },
   {
+    key: 'doc.bq', title: 'BQ: surat cadangan kerja', description: 'Kepala surat dan ulasan pada muka hadapan BQ.',
+    placeholders: [...ORG_SLOTS, 'bil_mesyuarat', 'tarikh_mesyuarat'],
+    fields: [f('heading1', 'Kepala 1'), f('heading2', 'Kepala 2'), f('address1', 'Alamat baris 1'), f('address2', 'Alamat baris 2'),
+      f('contactLine', 'Baris telefon / faks'), f('recipient', 'Kepada', true), f('logoRight', 'Logo kanan (URL)'), f('ulasanPengarah', 'Ulasan Pengarah', true)],
+  },
+  {
     key: 'doc.prestasi', title: 'Borang Prestasi', description: 'Borang penilaian prestasi kontraktor.',
     placeholders: [...ORG_SLOTS],
     fields: [f('title', 'Tajuk'), ...[1, 2, 3, 4, 5, 6].map((i) => f(`criterion${i}`, `Kriteria ${i}`, true)),
@@ -121,7 +128,7 @@ export const PLACEHOLDER_HELP: Record<string, string> = {
   unit_perolehan: 'Unit perolehan', gred: 'Gred CIDB syarikat', tarikh_siap: 'Tarikh siap sebenar',
   tarikh_mula_dlp: 'Tarikh mula tempoh kecacatan', tarikh_tamat_dlp: 'Tarikh tamat tempoh kecacatan', tarikh_serah_tapak: 'Tarikh serah tapak',
   tahun: 'Tahun surat', pja: 'Nama pengguna PJA', tarikh_mula: 'Tarikh mula', tarikh_tamat: 'Tarikh tamat', tarikh_sst: 'Tarikh SST',
-  kadar_lad: 'Kadar LAD sehari (RM)', tarikh_siap_kontrak: 'Tarikh tamat kontrak', had_lad: 'Had kontrak kecil (RM)',
+  kadar_lad: 'Kadar LAD sehari (RM)', bil_mesyuarat: 'Bil. mesyuarat Jawatankuasa Sebutharga', tarikh_mesyuarat: 'Tarikh mesyuarat', tarikh_siap_kontrak: 'Tarikh tamat kontrak', had_lad: 'Had kontrak kecil (RM)',
   kadar_lad_rata: 'Kadar LAD rata (RM)', blr: 'BLR (%)', hari_tangguh: 'Hari tangguh LoC', hari_mula_denda: 'Hari denda bermula',
   kadar_loc: 'Kadar LoC sehari (RM)', nama_syarikat: 'Nama syarikat projek', no_sebutharga: 'No. sebutharga projek',
   no_fail: 'No. fail projek', nama_projek: 'Tajuk projek, huruf besar',

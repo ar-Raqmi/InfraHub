@@ -520,6 +520,10 @@ class CloudflareService {
         return this.request<PolicyRuleRecord[]>({ path: '/policies', errorMessage: 'Gagal memuat peraturan' });
     }
 
+    async withdrawPolicy(key: string, effectiveFrom: string): Promise<void> {
+        await this.request({ path: `/policies/${encodeURIComponent(key)}/${effectiveFrom}`, method: 'DELETE', errorMessage: 'Gagal membatalkan nilai peraturan' });
+    }
+
     async addPolicy(rule: { key: string; effective_from: string; value: unknown; note?: string }): Promise<PolicyRuleRecord[]> {
         return this.request<PolicyRuleRecord[]>({ path: '/policies', method: 'POST', body: rule, errorMessage: 'Gagal menyimpan peraturan' });
     }

@@ -1,6 +1,7 @@
 import { Project, User, ProjectLocation, BQItem, formatCurrency, partMultiplier } from '../../types';
 import { apiService } from '../apiService';
 import { PDFBaseHelper } from './PDFBaseHelper';
+import { loadOrgDocs } from '../../components/org/orgDocs';
 
 const toRoman = (num: number): string => {
   const lookup: { [key: string]: number } = { m: 1000, cm: 900, d: 500, cd: 400, c: 100, xc: 90, l: 50, xl: 40, x: 10, ix: 9, v: 5, iv: 4, i: 1 };
@@ -71,8 +72,11 @@ export class BQPDFExporter {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const sealsLogo = await PDFBaseHelper.getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
-    const mpsLogo = await PDFBaseHelper.getBase64ImageFromURL("https://i.imgur.com/ZB7DFaV.png");
+    const org = (await loadOrgDocs()).forProject(formData);
+    const bqText = (field: string, vars: Record<string, string> = {}) => org.text('doc.bq', field, vars);
+    const sealsLogo = org.logo?.src ? await PDFBaseHelper.getBase64ImageFromURL(org.logo.src) : null;
+    const rightLogoUrl = bqText('logoRight');
+    const mpsLogo = rightLogoUrl ? await PDFBaseHelper.getBase64ImageFromURL(rightLogoUrl) : null;
     const pjaUser = users.find(u => u.id === formData.pjaId);
     const year = formData.tarikhBuka ? new Date(formData.tarikhBuka).getFullYear() : new Date().getFullYear();
     const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
@@ -87,14 +91,14 @@ export class BQPDFExporter {
     if (sealsLogo) doc.addImage(sealsLogo, 'PNG', 15, 15, 25, 20);
     if (mpsLogo) doc.addImage(mpsLogo, 'PNG', 170, 15, 25, 20);
 
-    doc.setFontSize(12); doc.text("JABATAN KEJURUTERAAN", pageWidth / 2, 20, { align: "center" });
+    doc.setFontSize(12); doc.text(bqText('heading1'), pageWidth / 2, 20, { align: "center" });
 
-    doc.setFontSize(14); doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, 25, { align: "center" });
+    doc.setFontSize(14); doc.text(bqText('heading2'), pageWidth / 2, 25, { align: "center" });
 
     doc.setFontSize(9); doc.setFont("helvetica", "normal");
-    doc.text("Persiaran 3, Bandar Baru Selayang", pageWidth / 2, 30, { align: "center" });
-    doc.text("68100 Batu Caves, Selangor.", pageWidth / 2, 33.5, { align: "center" });
-    doc.text("Tel. : 03-61204897/61311426 Fax. : 03-61204879", pageWidth / 2, 37, { align: "center" });
+    doc.text(bqText('address1'), pageWidth / 2, 30, { align: "center" });
+    doc.text(bqText('address2'), pageWidth / 2, 33.5, { align: "center" });
+    doc.text(bqText('contactLine'), pageWidth / 2, 37, { align: "center" });
 
     doc.setFontSize(13); doc.setFont("helvetica", "bold"); doc.text("CADANGAN KERJA", pageWidth / 2, 46, { align: "center" });
     doc.setLineWidth(0.5); doc.line(pageWidth / 2 - 20, 47, pageWidth / 2 + 20, 47);
@@ -109,8 +113,7 @@ ${pjaUser?.bahagian || ''}
 ${pjaUser?.unit || ''}`
       }],
       [{ content: 'Kepada', styles: { fontStyle: 'bold' } }, {
-        content: `Pengarah
-Jabatan Kejuruteraan` }],
+        content: bqText('recipient') }],
       [{ content: 'Tajuk', styles: { fontStyle: 'bold' } }, { content: formData.namaProjek?.toUpperCase() || '', styles: { fontStyle: 'bold' } }],
       [{ content: 'Blok Perancangan', styles: { fontStyle: 'bold' } }, { content: formData.bp || '' }],
       [{ content: 'Zon', styles: { fontStyle: 'bold' } }, { content: formData.zon || '' }],
@@ -148,7 +151,7 @@ Jabatan Kejuruteraan` }],
     doc.text("Sekian, terima kasih.", 20, y);
     y += 8;
 
-    y = PDFBaseHelper.drawGovernmentSlogans(doc, 20, y, 4, 10);
+    y = PDFBaseHelper.drawGovernmentSlogans(doc, 20, y, 4, 10, org.profile.slogans);
 
     if (y + 40 > pageHeight - marginBottom) {
       doc.addPage();
@@ -188,7 +191,7 @@ Jabatan Kejuruteraan` }],
     doc.text("________________________________________________________________________________", 25, y); y += 8;
     y = 125; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);
     y = 155; doc.setFontSize(11); doc.text("ULASAN PENGARAH", 25, y); y += 10; doc.setFontSize(10.5); doc.setFont("helvetica", "normal");
-    const ulasanText = `Rujuk kelulusan Jawatankuasa Sebutharga Majlis Perbandaran Selayang (MPS) Bil. ${meetingNumber} yang bersidang pada ${meetingDate} dengan rotasi bagi syarikat :-`;
+    const ulasanText = bqText('ulasanPengarah', { bil_mesyuarat: meetingNumber, tarikh_mesyuarat: meetingDate });
     const splitUlasan = doc.splitTextToSize(ulasanText, 160); doc.text(splitUlasan, 25, y);
     y += 40; doc.line(25, y, 185, y); y += 15; doc.line(25, y, 185, y);
     y = 250; doc.text("Tandatangan :", 25, y); y += 10; doc.text("Tarikh             :", 25, y);

@@ -31,7 +31,7 @@ import { useAutosize } from '../components/detail/useAutosize';
 import CostHUD from '../components/detail/CostHUD';
 import ContractPanel from '../components/detail/ContractPanel';
 import { PhaseStepperDesktop, PhaseStepperPhone } from '../components/detail/PhaseStepper';
-import { useOrgConfig } from '../hooks/useOrgConfig';
+import { useLookupOptions, useOrgConfig } from '../hooks/useOrgConfig';
 import { useContracts } from '../hooks/useContracts';
 import { useRateBookVersions } from '../hooks/useRateBook';
 import { rateSourceLabel } from '../components/bq/useProjectBook';
@@ -93,6 +93,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], o
   const projectYear = project?.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : selectedYear;
   const { companies, votes: voteNumbers, sebuthargaNumbers, settings } = useSettings(projectYear);
   const { policies } = useOrgConfig();
+  const bpOptions = useLookupOptions('BP', BP_OPTIONS);
+  const zonOptions = useLookupOptions('ZON', ZON_OPTIONS);
+  const mukimOptions = useLookupOptions('MUKIM', MUKIM_OPTIONS);
   const { contracts, activeContract } = useContracts();
   const policyRules = useMemo(() => toPolicyRules(policies), [policies]);
 
@@ -1229,7 +1232,7 @@ const CACHE_VERSION = 'v126';
                   )}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 max-md:grid-cols-1 gap-4">
-                  <div className="group"> <label className={labelClass}>BP</label> <select name="bp" value={formData.bp || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold max-md:min-h-[48px]`}> <option value="">Pilih...</option> {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)} </select> </div>
+                  <div className="group"> <label className={labelClass}>BP</label> <select name="bp" value={formData.bp || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold max-md:min-h-[48px]`}> <option value="">Pilih...</option> {bpOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)} </select> </div>
                   <div className="group" ref={zonDropdownRef}>
                     <label className={labelClass}>Zon</label>
                     <div className="relative">
@@ -1253,7 +1256,7 @@ const CACHE_VERSION = 'v126';
                             width: isMobile && zonDropdownRef.current ? zonDropdownRef.current.getBoundingClientRect().width : undefined
                           }}
                         >
-                          {ZON_OPTIONS.map(z => {
+                          {zonOptions.map(({ code: z, label: zLabel }) => {
                             const currentZons = formData.zon ? formData.zon.split(', ').filter(Boolean) : [];
                             const isChecked = currentZons.includes(z);
 
@@ -1266,18 +1269,16 @@ const CACHE_VERSION = 'v126';
                                   if (isChecked) {
                                     nextZons = currentZons.filter(item => item !== z);
                                   } else {
-                                    nextZons = [...currentZons, z].sort((a, b) => {
-                                      const numA = parseInt(a.replace('Zon ', ''));
-                                      const numB = parseInt(b.replace('Zon ', ''));
-                                      return numA - numB;
-                                    });
+                                    // Keep the list's own order (Senarai -> Zon), not a parse of the "Zon N" text.
+                                    const rank = (code: string) => zonOptions.findIndex(o => o.code === code);
+                                    nextZons = [...currentZons, z].sort((a, b) => rank(a) - rank(b));
                                   }
                                   setFormData(prev => ({ ...prev, zon: nextZons.join(', ') }));
                                   setHasUnsavedChanges(true);
                                 }}
                                 className={`flex items-center justify-between p-2 max-md:p-1 max-md:h-11 max-md:justify-center max-md:gap-1 rounded-lg cursor-pointer ${isChecked ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
                               >
-                                <span className="text-[11px] max-md:text-[13px] font-bold select-none">{z}</span>
+                                <span className="text-[11px] max-md:text-[13px] font-bold select-none">{zLabel}</span>
                                 {isChecked && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                               </div>
                             );
@@ -1288,7 +1289,7 @@ const CACHE_VERSION = 'v126';
                     </div>
                   </div>
                   <div className={`${pairClass} md:contents`}>
-                    <div className="group"> <label className={labelClass}>Mukim</label> <select name="mukim" value={formData.mukim || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold max-md:min-h-[48px]`}> <option value="">Pilih...</option> {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)} </select> </div>
+                    <div className="group"> <label className={labelClass}>Mukim</label> <select name="mukim" value={formData.mukim || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold max-md:min-h-[48px]`}> <option value="">Pilih...</option> {mukimOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)} </select> </div>
                     <div className="group"> <label className={labelClass}>Tarikh Buka</label> <StrictDateInput name="tarikhBuka" value={formData.tarikhBuka || ''} onChange={handleInputChange} disabled={isGlobalReadOnly} className={`${inputClass} py-2 font-bold max-md:min-h-[48px] max-md:px-3`} /> </div>
                   </div>
 

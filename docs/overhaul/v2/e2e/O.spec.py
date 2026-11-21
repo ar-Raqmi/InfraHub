@@ -194,11 +194,12 @@ def snapshot(api):
 def restore(api, st):
     api.call('/config/org.profile', 'PUT', {'value': st['profile']})
     api.call(f'/config/{P1}', 'PUT', {'value': st['p1']})
-    # No DELETE route for policies (history is append-only): neutralise the test value instead.
-    api.call('/policies', 'POST', {'key': BLR, 'effective_from': st['tomorrow'], 'value': st['old_blr'], 'note': 'Ujian e2e O: dipulihkan'})
+    # A value not yet in force may be withdrawn (DELETE /policies/:key/:date); values in force are history.
+    api.call(f"/policies/{BLR}/{st['tomorrow']}", 'DELETE')
     _, config = api.call('/config')
     _, rules = api.call('/policies')
     restored = (config['org.profile'] == st['profile'] and config[P1] == st['p1']
+                and not any(r['key'] == BLR and r['effectiveFrom'] == st['tomorrow'] for r in rules)
                 and policy_at(rules, BLR, st['tomorrow']) == st['old_blr'])
     print(('PASS ' if restored else 'FAIL ') + 'originals restored')
 

@@ -30,6 +30,8 @@ export const POLICY_KEYS = {
   notice2Days: 'NOTIS_PERINGATAN_2_DAYS',
   notice3Days: 'NOTIS_PERINGATAN_3_DAYS',
   companyCap: 'COMPANY_CAP',
+  dlpMonths: 'DLP_MONTHS',
+  tempohDefaultWeeks: 'TEMPOH_KONTRAK_DEFAULT_WEEKS',
 } as const;
 
 const SEED_DATE = '2020-01-01';
@@ -47,6 +49,8 @@ export const DEFAULT_POLICY_RULES: PolicyRule[] = [
   seed(POLICY_KEYS.notice2Days, 7, 'Notis Peringatan 2: hari relatif kepada tarikh tamat kontrak'),
   seed(POLICY_KEYS.notice3Days, 14, 'Notis Peringatan 3: hari relatif kepada tarikh tamat kontrak'),
   seed(POLICY_KEYS.companyCap, 200000, 'Had nilai kerja setiap syarikat panel (RM), amaran sahaja'),
+  seed(POLICY_KEYS.dlpMonths, 6, 'CPC: Tempoh Tanggungan Kecacatan (bulan)'),
+  seed(POLICY_KEYS.tempohDefaultWeeks, 0, 'Tempoh kontrak lalai untuk projek baharu (minggu; 0 = kosong)'),
 ];
 
 export function policyAt(rules: PolicyRule[], key: string, isoDate: string): unknown {
@@ -82,3 +86,22 @@ export function locPolicyAt(rules: PolicyRule[], isoDate: string): LocPolicy {
 
 export const DEFAULT_LAD_POLICY: LadPolicy = ladPolicyAt(DEFAULT_POLICY_RULES, SEED_DATE);
 export const DEFAULT_LOC_POLICY: LocPolicy = locPolicyAt(DEFAULT_POLICY_RULES, SEED_DATE);
+
+// Which date decides a project's rule. ONE definition: the in-form amounts (ProjectDetail) and the printed
+// certificates must never read different rules. LAD terms are fixed by the contract (Lampiran kepada
+// Syarat-Syarat Kontrak), so the contract start wins; LoC punishes a late claim after completion.
+type PolicyDates = Partial<Record<'tarikhMulaKontrak' | 'tarikhLantikan' | 'tarikhSerahTapak' | 'tarikhTamatKontrak' | 'tarikhBuka' | 'tarikhSiapSebenar' | 'tarikhTuntutanBayaran', string>>;
+
+const todayKL = (): string => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+
+export const ladPolicyDate = (p: PolicyDates): string =>
+  p.tarikhMulaKontrak || p.tarikhLantikan || p.tarikhSerahTapak || p.tarikhTamatKontrak || p.tarikhBuka || todayKL();
+
+export const locPolicyDate = (p: PolicyDates): string => p.tarikhSiapSebenar || p.tarikhTuntutanBayaran || todayKL();
+
+/** A date older than the first recorded rule is judged by that first rule, never left without a policy. */
+export function clampToRules(rules: PolicyRule[], isoDate: string): string {
+  const earliest = rules.reduce<string | null>((min, r) => (!min || r.effective_from < min ? r.effective_from : min), null);
+  const day = (isoDate || todayKL()).slice(0, 10);
+  return earliest && day < earliest ? earliest : day;
+}

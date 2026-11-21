@@ -15,17 +15,17 @@ export const useOrgConfig = () => {
 
   const setConfig = useMutation({
     mutationFn: ({ key, value }: { key: string; value: unknown }) => apiService.setOrgConfig(key, value),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['org-config'] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['org-config'] }); queryClient.invalidateQueries({ queryKey: ['changelog'] }); },
   });
 
   const addPolicy = useMutation({
     mutationFn: (rule: { key: string; effective_from: string; value: unknown; note?: string }) => apiService.addPolicy(rule),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['policies'] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['policies'] }); queryClient.invalidateQueries({ queryKey: ['changelog'] }); },
   });
 
   const saveLookups = useMutation({
     mutationFn: ({ list, values }: { list: string; values: LookupValue[] }) => apiService.saveLookups(list, values),
-    onSuccess: (_data, { list }) => queryClient.invalidateQueries({ queryKey: ['lookups', list.toUpperCase()] }),
+    onSuccess: (_data, { list }) => { queryClient.invalidateQueries({ queryKey: ['lookups', list.toUpperCase()] }); queryClient.invalidateQueries({ queryKey: ['changelog'] }); },
   });
 
   const rules = toRules(policies.data ?? []);
@@ -41,6 +41,12 @@ export const useOrgConfig = () => {
     addPolicy,
     saveLookups,
   };
+};
+
+/** Options for a select: the list's active values, or the pre-v2 constants while it loads or if it is empty. */
+export const useLookupOptions = (list: string, fallback: readonly string[]): { code: string; label: string }[] => {
+  const { active } = useLookups(list);
+  return active.length ? active.map((v) => ({ code: v.code, label: v.label || v.code })) : fallback.map((code) => ({ code, label: code }));
 };
 
 /** Active values of one lookup list (BP, ZON, MUKIM, ...). */

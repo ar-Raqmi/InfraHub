@@ -3,26 +3,13 @@
 // saved project recomputes to the same numbers (proved by docs/overhaul/v2/e2e/P2-money-parity.ts).
 import { kosSebenar, ladAmount, locAmount, pelarasanExtra } from '../../domain/money';
 import { sameMoney } from '../../domain/rateBook/rows';
-import { ladPolicyAt, locPolicyAt, type LadPolicy, type LocPolicy, type PolicyRule } from '../../domain/policy';
+import { clampToRules, ladPolicyAt, ladPolicyDate, locPolicyAt, locPolicyDate, type LadPolicy, type LocPolicy, type PolicyRule } from '../../domain/policy';
 import type { Project, PolicyRuleRecord } from '../../types';
 
 type Form = Partial<Project>;
 
 export const toPolicyRules = (records: PolicyRuleRecord[]): PolicyRule[] =>
   records.map((r) => ({ key: r.key, effective_from: r.effectiveFrom, value: r.value, note: r.note }));
-
-const today = (): string => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-
-// A project older than the first recorded rule is priced by that first rule, not left without a policy.
-function clampToRules(rules: PolicyRule[], isoDate: string): string {
-  const earliest = rules.reduce<string | null>((min, r) => (!min || r.effective_from < min ? r.effective_from : min), null);
-  const day = (isoDate || today()).slice(0, 10);
-  return earliest && day < earliest ? earliest : day;
-}
-
-/** LAD terms are fixed when the contract starts; LoC is a penalty on the completion that triggers it. */
-export const ladPolicyDate = (p: Form): string => p.tarikhMulaKontrak || p.tarikhLantikan || p.tarikhBuka || today();
-export const locPolicyDate = (p: Form): string => p.tarikhSiapSebenar || today();
 
 export const ladPolicyFor = (rules: PolicyRule[], p: Form): LadPolicy => ladPolicyAt(rules, clampToRules(rules, ladPolicyDate(p)));
 export const locPolicyFor = (rules: PolicyRule[], p: Form): LocPolicy => locPolicyAt(rules, clampToRules(rules, locPolicyDate(p)));
