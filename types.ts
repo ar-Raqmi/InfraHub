@@ -84,7 +84,8 @@ export interface Contract {
   createdBy?: number | null;
   activatedAt?: string | null;
   closedAt?: string | null;
-  stats?: { projects: number; versions: number; currentVersion: number | null; panelSize: number };
+  /** repriceableProjects: not appointed, no inden (domain/repricing) - they move to the next sebutharga on close. */
+  stats?: { projects: number; versions: number; currentVersion: number | null; panelSize: number; repriceableProjects?: number };
 }
 
 export interface ContractCompany {

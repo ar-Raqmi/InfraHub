@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { Button, ContractChip } from '../ui';
 import { useContracts } from '../../hooks/useContracts';
-import { ProjectStatus, type Project } from '../../types';
+import type { Project } from '../../types';
+import { needsRepricing } from '../../domain/repricing';
 import ContractSwapSheet from './ContractSwapSheet';
 
 interface ContractPanelProps {
@@ -32,7 +33,7 @@ const ContractPanel: React.FC<ContractPanelProps> = ({ project, savedId, readOnl
 
   const locked = !!(project.noInden ?? '').trim();
   const version = contract.stats?.currentVersion;
-  const needsReprice = contract.status === 'DITUTUP' && project.status === ProjectStatus.FASA_DRAF;
+  const needsReprice = needsRepricing(project, contract.status);
   const canSwap = !!savedId && !readOnly;
   const startSwap = async () => {
     if (hasUnsavedChanges) await onSaveFirst();

@@ -36,7 +36,7 @@ function activateLines(c: Contract, others: Contract[]): React.ReactNode[] {
 function closeLines(c: Contract, others: Contract[], draf: number): React.ReactNode[] {
   const total = c.stats?.projects ?? 0;
   const lines: React.ReactNode[] = [
-    <Bullet key="draf" tone={draf ? 'amber' : 'ink'}>{draf ? <><b>{plural(draf, 'projek draf')}</b> di bawah kontrak ini akan ditanda <b>Perlu harga semula</b>. Kadar mereka tidak diubah secara senyap; PJA memilih kontrak baharu dan menyemak harga.</> : 'Tiada projek draf di bawah kontrak ini.'}</Bullet>,
+    <Bullet key="draf" tone={draf ? 'amber' : 'ink'}>{draf ? <><b>{plural(draf, 'projek belum dilantik')}</b> di bawah kontrak ini akan ditanda <b>Perlu harga semula</b>. Kadar mereka tidak diubah secara senyap; PJA memilih kontrak baharu dan menyemak harga.</> : 'Tiada projek draf di bawah kontrak ini.'}</Bullet>,
     <Bullet key="kept">{plural(Math.max(0, total - draf), 'projek')} yang sudah dilantik kekal dengan kadar asal dan dokumen mereka tidak berubah.</Bullet>,
     <Bullet key="final">Kontrak yang ditutup tidak boleh dipilih untuk projek baharu dan tidak boleh dibuka semula. Buku kadarnya kekal boleh dibaca.</Bullet>,
   ];

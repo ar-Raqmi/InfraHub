@@ -1,4 +1,5 @@
 import type { CompanyDetail, Contract, ContractCompany, ContractStatus } from '../../../types'
+import { REPRICEABLE_STATUSES } from '../../../domain/repricing'
 import { BaseRepository } from './BaseRepository'
 
 // Request bodies use the snake_case column names (CONTRACT §5); responses are camelCase.
@@ -15,7 +16,9 @@ const STATS_SQL = `SELECT c.*,
   (SELECT COUNT(*) FROM projects p WHERE p.contract_id = c.id) AS n_projects,
   (SELECT COUNT(*) FROM rate_book_versions v WHERE v.contract_id = c.id) AS n_versions,
   (SELECT MAX(version_no) FROM rate_book_versions v WHERE v.contract_id = c.id AND v.status = 'TERBIT') AS current_version,
-  (SELECT COUNT(*) FROM contract_companies cc WHERE cc.contract_id = c.id) AS panel_size
+  (SELECT COUNT(*) FROM contract_companies cc WHERE cc.contract_id = c.id) AS panel_size,
+  (SELECT COUNT(*) FROM projects p WHERE p.contract_id = c.id AND p.status IN (${REPRICEABLE_STATUSES.map((s) => `'${s}'`).join(',')})
+     AND TRIM(COALESCE(p.no_inden, '')) = '') AS n_repriceable
   FROM contracts c`
 
 export function mapContract(r: any): Contract {
@@ -25,7 +28,7 @@ export function mapContract(r: any): Contract {
     clonedFrom: r.cloned_from, createdAt: r.created_at, createdBy: r.created_by, activatedAt: r.activated_at, closedAt: r.closed_at,
   }
   if (r.n_projects !== undefined) {
-    out.stats = { projects: r.n_projects, versions: r.n_versions, currentVersion: r.current_version ?? null, panelSize: r.panel_size }
+    out.stats = { projects: r.n_projects, versions: r.n_versions, currentVersion: r.current_version ?? null, panelSize: r.panel_size, repriceableProjects: r.n_repriceable ?? 0 }
   }
   return out
 }

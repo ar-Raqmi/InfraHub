@@ -41,7 +41,12 @@ export const useContracts = () => {
 
   const activeContract = contracts.find((c) => c.status === 'AKTIF' && c.kind === 'PANEL') ?? contracts.find((c) => c.status === 'AKTIF');
 
-  return { contracts, activeContract, isLoading, error, createContract, updateContract, setStatus, savePanel };
+  // Server refuses (409) an AKTIF contract or one any project uses; the UI only offers it when neither holds.
+  const deleteContract = useMutation({
+    mutationFn: (id: string) => apiService.deleteContract(id),
+    onSuccess: () => { invalidate(); queryClient.invalidateQueries({ queryKey: ['changelog'] }); },
+  });
+  return { contracts, activeContract, isLoading, error, createContract, updateContract, setStatus, savePanel, deleteContract };
 };
 
 export const useContract = (id: string | null | undefined) =>

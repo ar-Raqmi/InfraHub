@@ -34,7 +34,7 @@ const NAV_ENTRIES: NavEntry[] = [
   { page: 'report', label: 'Laporan Bergambar', tabLabel: 'Laporan', title: 'Laporan Bergambar', Icon: ImageIcon, desktop: true },
   { page: 'users', label: 'Pengguna', tabLabel: 'Pengguna', title: 'Pengguna', Icon: Users, desktop: true },
   { page: 'profile', label: 'Profil Pengguna', tabLabel: 'Profil', title: 'Profil Pengguna', Icon: UserIcon, desktop: false },
-  { page: 'kontrak', label: 'Kontrak', tabLabel: 'Kontrak', title: 'Kontrak & Buku Kadar', Icon: FileSignature, desktop: true, mobile: false },
+  { page: 'kontrak', label: 'Kontrak', tabLabel: 'Kontrak', title: 'Kontrak & Buku Kadar', Icon: FileSignature, desktop: true },
   { page: 'organisasi', label: 'Organisasi', tabLabel: 'Organisasi', title: 'Tetapan Organisasi', Icon: Building2, desktop: true, mobile: false, adminOnly: true },
   { page: 'settings', label: 'Tetapan', tabLabel: 'Tetapan', title: 'Tetapan', Icon: Settings, desktop: true, adminOnly: true },
 ];

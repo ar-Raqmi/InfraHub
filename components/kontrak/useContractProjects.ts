@@ -1,9 +1,10 @@
 // Read-only project figures the Kontrak screens need (draf count per contract, work value per panel company).
-// LOCAL ADAPTER (see NEEDS-lead.md): GET /contracts stats has no "draf projects" count, so it is derived here.
+// The "draf" count uses domain/repricing (same rule as GET /contracts stats.repriceableProjects).
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../../services/apiService';
-import { ProjectStatus, type Project } from '../../types';
+import type { Project } from '../../types';
+import { isRepriceable } from '../../domain/repricing';
 
 export interface ContractProjectStats {
   total: number;
@@ -20,7 +21,7 @@ export function useContractProjects(contractId: string | null | undefined) {
     mine.forEach(p => {
       if (p.namaSyarikat) valueByCompany.set(p.namaSyarikat, (valueByCompany.get(p.namaSyarikat) ?? 0) + (Number(p.kosProjek) || 0));
     });
-    return { total: mine.length, draf: mine.filter(p => p.status === ProjectStatus.FASA_DRAF).length, valueByCompany };
+    return { total: mine.length, draf: mine.filter(isRepriceable).length, valueByCompany };
   }, [query.data, contractId]);
   return { ...stats, isLoading: query.isLoading };
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, CheckCircle2, FileSpreadsheet, Lock } from 'lucide-react';
-import { Button, ContractChip, StatTile, Tabs } from '../ui';
+import { ArrowLeft, CheckCircle2, FileSpreadsheet, Lock, Trash2 } from 'lucide-react';
+import { Button, ContractChip, Sheet, StatTile, Tabs } from '../ui';
 import { useContracts } from '../../hooks/useContracts';
 import type { Contract, ContractStatus } from '../../types';
 import BookBrowser from './BookBrowser';
@@ -37,7 +37,7 @@ const ContractHeader: React.FC<{ c: Contract; draf: number; onBack: () => void; 
       meta={`${validity(c)} · had syarikat ${money(c.companyCap)}${c.meetingNumber ? ` · mesyuarat ${c.meetingNumber}` : ''}`} className="bg-surface" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <StatTile value={c.stats?.projects ?? 0} label="Projek" tone="kontrak" />
-      <StatTile value={draf} label="Projek draf" tone={draf ? 'amber' : 'neutral'} />
+      <StatTile value={draf} label="Belum dilantik" tone={draf ? 'amber' : 'neutral'} />
       <StatTile value={c.stats?.panelSize ?? 0} label="Syarikat panel" />
       <StatTile value={c.stats?.currentVersion ? `v${c.stats.currentVersion}` : '—'} label={`${c.stats?.versions ?? 0} versi`} tone="kontrak" />
     </div>
@@ -45,18 +45,21 @@ const ContractHeader: React.FC<{ c: Contract; draf: number; onBack: () => void; 
 );
 
 const ContractDetail: React.FC<Props> = ({ contract, tab, onTab, onBack, onImport }) => {
-  const { contracts, setStatus } = useContracts();
+  const { contracts, setStatus, deleteContract } = useContracts();
   const { draf, valueByCompany } = useContractProjects(contract.id);
   const [statusTarget, setStatusTarget] = useState<ContractStatus | null>(null);
   const [browseVersion, setBrowseVersion] = useState<{ id: string; no: number } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const closed = contract.status === 'DITUTUP';
   const next = NEXT_STATUS[contract.status];
+  const deletable = contract.status !== 'AKTIF' && (contract.stats?.projects ?? 0) === 0;
 
   const actions = (
     <>
       {!closed && <Button variant="kontrak" icon={FileSpreadsheet} onClick={() => onImport()} data-testid="open-import">Import BQ Excel</Button>}
       {next === 'AKTIF' && <Button variant="primary" icon={CheckCircle2} onClick={() => setStatusTarget('AKTIF')} data-testid="activate">Aktifkan</Button>}
       {next === 'DITUTUP' && <Button variant="danger" icon={Lock} onClick={() => setStatusTarget('DITUTUP')} data-testid="close-contract">Tutup</Button>}
+      {deletable && <Button variant="outline" icon={Trash2} onClick={() => setConfirmDelete(true)} data-testid="delete-contract">Padam</Button>}
     </>
   );
 
@@ -93,6 +96,16 @@ const ContractDetail: React.FC<Props> = ({ contract, tab, onTab, onBack, onImpor
 
       {statusTarget && <StatusActionSheet open target={statusTarget} contract={contract} contracts={contracts} drafProjects={draf}
         onClose={() => setStatusTarget(null)} onConfirm={status => setStatus.mutateAsync({ id: contract.id, status })} />}
+
+      <Sheet open={confirmDelete} title={`Padam ${contract.code}?`} onClose={() => setConfirmDelete(false)}
+        footer={<div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={() => setConfirmDelete(false)}>Batal</Button>
+          <Button variant="danger" icon={Trash2} disabled={deleteContract.isPending} data-testid="confirm-delete-contract"
+            onClick={async () => { await deleteContract.mutateAsync(contract.id); setConfirmDelete(false); onBack(); }}>Padam kontrak</Button>
+        </div>}>
+        <p className="text-[15px] text-ink">Tiada projek menggunakan kontrak ini. Semua versi buku kadar, panel dan padanan import akan dibuang. Tindakan ini direkod dalam log perubahan.</p>
+        {deleteContract.error && <p className="mt-3 rounded-ih-md border border-danger-line bg-danger-tint px-3 py-2 text-sm font-bold text-danger" role="alert">{(deleteContract.error as Error).message}</p>}
+      </Sheet>
     </div>
   );
 };
