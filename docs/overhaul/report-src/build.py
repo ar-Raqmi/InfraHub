@@ -17,9 +17,9 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CHROME = "/home/rezephyr/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome"
+CHROME = os.environ.get("REPORT_CHROME", "/home/rezephyr/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome")
 REPORT_NAME = "InfraHub · Overhaul discovery"
-PDF = os.path.join(HERE, "InfraHub-Overhaul-Discovery-Report.pdf")
+PDF = os.path.join(HERE, os.environ.get("REPORT_PDF", "InfraHub-Overhaul-Discovery-Report.pdf"))
 HTML = os.path.join(HERE, "report.html")
 SECTION = re.compile(r'(<section\s+class="page[^"]*"[^>]*>)(.*?)(</section>)', re.S)
 META = re.compile(r"<!--\s*chapter:\s*(\w+)\s*\|\s*(.*?)\s*-->")
