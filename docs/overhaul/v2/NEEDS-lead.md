@@ -124,3 +124,10 @@ INSERT OR IGNORE INTO policy_rules (key, effective_from, value, note, created_at
 5. **Alternatives in `GET /rate-book/versions/:vid`.** The import response carries `matches[].alternatives` but the
    version detail does not, so after a reload "Pilih item lain" falls back to a search of the old book. Request:
    include `alternatives` (or `altRefs`) in `rate_book_matches`.
+
+### Lead: K requests resolved (2026-11-22)
+1. `DELETE /api/contracts/:id` (added for P2) also serves K: refused 409 for AKTIF or any used contract; K.spec cleanup now deletes its test contract (run on merged code: 21/21, "cleanup: test contract deleted DELETE 200", contract count 3 → 3). The detail header offers **Padam** only when the server would allow it, behind a confirm sheet.
+2. Contract stats carry `repriceableProjects`. The rule lives in `domain/repricing.ts` (FASA_DRAF or MENUNGGU_LANTIKAN, and no No. Inden) and is shared by the close sheet, the project "Perlu harga semula" banner, `useContractProjects` and the SQL stat. Tile renamed "Belum dilantik". Live dev seed: MPS/SH/302/25 = 65.
+3. Kontrak is on the phone tab bar (`mobile` flag removed): officers may import a sebutharga from the phone.
+4. AI import method: deferred. The deterministic parser reached 0 warnings on the real file; the switch stays off (no route).
+5. Match alternatives in version detail: deferred to after review with the owner.
