@@ -175,6 +175,11 @@ The concept's desktop screens were dark: **re-draw them light.**
   **WorkflowStepper** (6 statuses), Card, SectionHeader, StatTile, DataTable, Field/Input/Select, Sheet (wraps
   `BottomSheet`), Tabs, Indicator (stale-rate dot + label), EmptyState, Timeline, DiffRow (old -> new).
 - A dev-only `kit.html` gallery renders every primitive (used for screenshots and review).
+- **Product logo = `components/ui/BrandMark`** (`/icons/apple-touch-icon-180.png`, the official InfraHub icon, on a
+  white tile with a hairline ring). It is used in the desktop rail, the mobile top bar and the login page, and every
+  new screen that shows the product brand must use BrandMark (no HardHat or other stand-in icons). The
+  ORGANISATION logo (e.g. the MPS crest on letterheads and PDFs) is a separate, configurable asset owned by
+  builder O. Never swap one for the other.
 
 ## 8. Waves
 | Wave | Builder | Delivers |

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Users, Image as ImageIcon, LogOut, Settings, LayoutDashboard, Briefcase, HardHat, User as UserIcon, LucideIcon } from 'lucide-react';
+import { Users, Image as ImageIcon, LogOut, Settings, LayoutDashboard, Briefcase, User as UserIcon, LucideIcon } from 'lucide-react';
 import { Role } from '../types';
 import { pageHref } from '../lib/appUrl';
+import BrandMark from './ui/BrandMark';
 
 interface SidebarProps {
   role: Role;
@@ -79,11 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return <button onClick={() => onNavigate!(entry.page)} className={cls}>{inner}</button>;
   };
 
-  const Mark = ({ size }: { size: 'rail' | 'bar' }) => (
-    <span className={`${size === 'rail' ? 'w-11 h-11 rounded-ih-md' : 'w-9 h-9 rounded-ih-sm'} shrink-0 bg-emerald-bright text-ink flex items-center justify-center`}>
-      <HardHat className={size === 'rail' ? 'w-6 h-6' : 'w-5 h-5'} strokeWidth={2.25} />
-    </span>
-  );
+  const Mark = ({ size }: { size: 'rail' | 'bar' }) => <BrandMark size={size === 'rail' ? 44 : 36} />;
 
   const Logo = () => {
     const logoInner = (

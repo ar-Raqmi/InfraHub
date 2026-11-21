@@ -1,4 +1,5 @@
 export { default as Button } from './Button';
+export { default as BrandMark } from './BrandMark';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 export { default as IconButton } from './IconButton';
 export { default as Chip } from './Chip';

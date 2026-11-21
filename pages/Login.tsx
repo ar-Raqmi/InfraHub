@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { apiService } from '../services/apiService';
 import { User as UserType } from '../types';
-import { HardHat, User, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import BrandMark from '../components/ui/BrandMark';
 
 interface LoginProps {
   onLogin: (user: UserType) => void;
@@ -39,9 +40,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       <div className="w-full max-w-md bg-white/95  rounded-[40px] p-6 md:p-12 shadow-2xl border border-white/50  relative z-10 animate-fade-in">
         
         <div className="flex flex-row md:flex-col items-center gap-4 md:gap-0 mb-6 md:mb-10">
-          <div className="w-12 h-12 md:w-16 md:h-16 shrink-0 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center md:mb-6 shadow-xl shadow-emerald-500/30">
-            <HardHat className="w-7 h-7 md:w-10 md:h-10 text-white" strokeWidth={2.5} />
-          </div>
+          <BrandMark size={64} className="md:mb-6 shadow-sm" />
           <div className="md:text-center">
             <h2 className="text-3xl md:text-4xl font-black text-slate-900  mb-1 md:mb-2 tracking-tight font-jakarta">InfraHub</h2>
             <p className="text-slate-500  font-bold uppercase tracking-[0.2em] text-[10px]">by Syafiq Daniel</p>
