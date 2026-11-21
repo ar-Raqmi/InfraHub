@@ -96,3 +96,14 @@ INSERT OR IGNORE INTO policy_rules (key, effective_from, value, note, created_at
    `/api/storage/upload` files images into the project photo gallery (user/project fields, gallery listing and
    cleanup). If a dedicated `PUT /api/storage/org-logo` (R2, fixed key) is added later, only `LogoSection` changes;
    `org.logo.src` then holds the URL. Note `change_log.diff` stores before/after, so each logo change logs up to ~0.7 MB.
+
+### Lead: O requests resolved (2026-11-22)
+1. `migrations/0003_org_defaults.sql` = O's SQL verbatim + a `doc.bq` row (BQ cover texts). Applied on a fresh state: all 14 doc/org keys present.
+2. `DLP_MONTHS`, `TEMPOH_KONTRAK_DEFAULT_WEEKS` are now in `domain/policy` (POLICY_KEYS + DEFAULT_POLICY_RULES); `EXTRA_POLICY_KEYS` aliases them; the duplicate copy in org-defaults.json is gone.
+3. `POST /policies` → 409 on an existing (key, date). `DELETE /policies/:key/:date` withdraws only a value not yet in force (409 otherwise, 404 if missing), logged as `withdraw`. O.spec restores via DELETE now.
+4. `useOrgConfig` mutations also invalidate `['changelog']`.
+5. `vitest.config.ts` includes `components/**/*.test.ts` → 81 tests in the gate.
+6. ProjectDetail BP/Zon/Mukim use `useLookupOptions(list, fallback)`; Zon sort follows the list order. ProjectsList: P1 was steered to do the same.
+7. BQPDFExporter cover letter reads `doc.bq` + org logo + org slogans. Parity: pdftotext of 3 projects before vs after = IDENTICAL; a changed `doc.bq` changes exactly the 2 edited lines.
+8. ONE policy-date rule (`ladPolicyDate`, `locPolicyDate`, `clampToRules` in domain/policy) used by both the form (moneyRules) and the documents (finance.ts re-export): LAD = mula kontrak → lantikan → serah tapak → tamat → buka; LoC = siap sebenar → tuntutan.
+9. Config change_log replaces data-URL images with `[imej N aksara]` (5,022-char logo → 77-char diff).
