@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, Building2, Calendar, ChevronRight, FileDigit, Grid2x2, Package } from 'lucide-react';
+import { Award, BookOpen, Building2, Calendar, ChevronRight, FileDigit, Grid2x2, Package } from 'lucide-react';
 import { SettingsSection } from './useSettingsRoute';
 
 export interface HubSummaries {
@@ -16,7 +16,7 @@ const GROUPS: { label: string; rows: { sec: SettingsSection; title: string; icon
     label: 'Mesyuarat & Sebut Harga',
     rows: [
       { sec: 'meeting', title: 'Tetapan Mesyuarat', icon: Calendar, tint: 'bg-orange-100 text-orange-600' },
-      { sec: 'sebutharga', title: 'No. Sebutharga', icon: Award, tint: 'bg-emerald-100 text-emerald-600' },
+      { sec: 'sebutharga', title: 'No. Sebutharga (lama)', icon: Award, tint: 'bg-emerald-100 text-emerald-600' },
     ],
   },
   {
@@ -42,6 +42,14 @@ interface SettingsHubProps {
 
 const SettingsHub: React.FC<SettingsHubProps> = ({ summaries, onOpen }) => (
   <div className="md:hidden space-y-5">
+    <a href="/kontrak.html" data-testid="hub-kontrak" className="min-h-[64px] flex items-center gap-3 px-4 py-3 rounded-2xl border border-kontrak-line bg-kontrak-tint">
+      <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-kontrak text-white"><BookOpen className="w-5 h-5" /></span>
+      <span className="flex-1 min-w-0">
+        <span className="block font-bold text-kontrak">Kontrak & buku kadar</span>
+        <span className="block text-sm text-ink-soft">Sebutharga, kadar, panel dan import BQ Excel</span>
+      </span>
+      <ChevronRight className="w-5 h-5 text-kontrak shrink-0" />
+    </a>
     {GROUPS.map(group => (
       <section key={group.label}>
         <h2 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">{group.label}</h2>

@@ -107,3 +107,20 @@ INSERT OR IGNORE INTO policy_rules (key, effective_from, value, note, created_at
 7. BQPDFExporter cover letter reads `doc.bq` + org logo + org slogans. Parity: pdftotext of 3 projects before vs after = IDENTICAL; a changed `doc.bq` changes exactly the 2 edited lines.
 8. ONE policy-date rule (`ladPolicyDate`, `locPolicyDate`, `clampToRules` in domain/policy) used by both the form (moneyRules) and the documents (finance.ts re-export): LAD = mula kontrak → lantikan → serah tapak → tamat → buka; LoC = siap sebenar → tuntutan.
 9. Config change_log replaces data-URL images with `[imej N aksara]` (5,022-char logo → 77-char diff).
+
+## From K (Kontrak), 2026-11-21
+1. **Delete / discard a DRAF contract.** There is no `DELETE /contracts/:id` and `DRAF -> DITUTUP` is refused (409),
+   so an officer cannot discard a mistaken DRAF contract and `e2e/K.spec.py` cannot clean up after itself (it labels
+   its contract `[E2E selesai] …` instead). Request: `DELETE /contracts/:id` allowed only when status = DRAF and
+   `stats.projects = 0` (cascade its versions/groups/matches/panel; log `action: 'delete'`), *or* allow DRAF -> DITUTUP.
+   The UI will show "Buang draf" on DRAF contracts once the route exists.
+2. **Draf count in contract stats.** The close-confirm sheet says "N projek draf … akan ditanda Perlu harga semula";
+   K derives N from `GET /projects` (local adapter `components/kontrak/useContractProjects.ts`). Request:
+   `stats.drafProjects` in `GET /contracts` and `GET /contracts/:id`.
+3. **Mobile tab bar.** `components/Sidebar.tsx` has Kontrak with `mobile: false`, so phones only reach it via the
+   Tetapan hub link K added. Suggest `mobile: true` (or a "Lagi" entry) since any officer may import a sebutharga.
+4. **apiService.aiMatchSuggest(versionId)** + a config switch `ai.matchSuggest`. K's `import/AiSuggestButton.tsx`
+   uses a local fetch and only renders when `GET /config` has `ai.matchSuggest: true`, so a 501 server shows nothing.
+5. **Alternatives in `GET /rate-book/versions/:vid`.** The import response carries `matches[].alternatives` but the
+   version detail does not, so after a reload "Pilih item lain" falls back to a search of the old book. Request:
+   include `alternatives` (or `altRefs`) in `rate_book_matches`.

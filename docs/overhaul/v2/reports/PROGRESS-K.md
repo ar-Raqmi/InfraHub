@@ -1,0 +1,5 @@
+- 2026-11-21 23:16 read CONTRACT/WAVE2/API/DESIGN + concepts; next: serve state-K, migrate-legacy, build UI
+- 2026-11-21 23:31 UI written (register, detail, panel, book, versions+diff, import wizard 5 steps); tsc=3; next: build + browser check
+- 2026-11-21 23:40 real Excel via UI: 195 exact (145+50)/154/116/37 match F; AdminSettings banners; K.spec.py written; next: run spec
+- 2026-11-21 23:52 screenshots 01-15 (desktop+phone, settings before/after); polish (pending-first sort, word diff marks, panel cap null, log collapse); next: final spec run, vitest, standards check, report
+- 2026-11-22 00:09 final: spec 21/21, negative control fails as designed, vitest 70, tsc 3, build green, eslint clean; REPORT-K.md written; NEEDS-lead 5 requests. Done.
