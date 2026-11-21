@@ -1,0 +1,153 @@
+<!-- chapter: 05 | D · Design system -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">05</div>
+    <div>
+      <p class="kicker">Sub-Yiyi D · Design system</p>
+      <h1>A light, warm look made for the field</h1>
+      <p class="dek">Asked for Direction C “Tapak”: self-hosted fonts, colour tokens, a set of UI primitives, a re-skinned shell and a gallery page to show them.</p>
+    </div>
+  </header>
+
+  <div class="strip">
+    <div class="s deep"><div class="n">19<span class="u">min</span></div><div class="l">wall time</div></div>
+    <div class="s"><div class="n">58</div><div class="l">API calls</div></div>
+    <div class="s amber"><div class="n">$4.45</div><div class="l">est. API list price</div></div>
+    <div class="s deep"><div class="n">17</div><div class="l">UI primitives, 21 files</div></div>
+    <div class="s purple"><div class="n">10<span class="u">of 10</span></div><div class="l">page-width probes with no overflow</div></div>
+  </div>
+
+  <h2 class="sp-2">What it built</h2>
+  <figure class="fig sp-1">
+    <div class="fig-title">Two typefaces and ten colours carry the whole app, and purple is kept for contracts</div>
+    <img class="shot soft" style="width:118mm" src="img/r1/kit-tokens.png" alt="Colour and type section of the UI kit gallery">
+    <figcaption><b>Warna &amp; taip</b> (colour and type) from the <code>kit.html</code> gallery. Hex values are those of <code>CONTRACT.md</code> §7: paper #F7F5EF, ink #14211F,
+      emerald #059669 and #10B981, teal, kontrak purple #3B2E8C, amber #B45309, danger #B42318. <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="cols-7-5 sp-3">
+    <ul class="list small">
+      <li><b>Fonts.</b> Bricolage Grotesque for headings, Atkinson Hyperlegible Next for the body: self-hosted (224 KB, OFL-1.1), with tabular figures for money.</li>
+      <li><b>Tokens.</b> CSS variables in <code>theme.css</code>, mirrored in <code>tw-config.js</code>. <code>color-scheme: light</code>; no <code>dark:</code> class anywhere.</li>
+      <li><b>17 primitives</b> in <code>components/ui</code>, with typed props and no data fetching (page 2 of this chapter).</li>
+      <li><b>Shell.</b> <code>AppShell</code>, <code>Sidebar</code> and <code>BottomSheet</code> re-skinned. Props and routes are unchanged.</li>
+      <li><b>Gallery.</b> <code>kit.html</code> shows every primitive; <code>DESIGN.md</code> holds the rules.</li>
+    </ul>
+    <figure class="fig">
+      <div class="fig-title" style="font-size:11.5pt">Half of the lines are the primitives; the rest is the gallery, tokens and notes</div>
+      {{svg:r1_d_lines}}
+      <figcaption><b>Lines new or changed.</b> REPORT-D “Numbers”. <span class="tag v">Verified</span></figcaption>
+    </figure>
+  </div>
+
+  <div class="callout contract sp-3 push">
+    <h3>Why “Tapak” and why light only</h3>
+    <p class="small">“Tapak” means site: Direction C is field-first, with touch targets of at least 44 px, 16 px inputs on a phone and no hover-only actions. The concept’s desktop screens were dark; you chose light only, so they were redrawn. Purple appears only on something that <b>is</b> a contract.</p>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">The primitives</h2>
+  <p class="lede measure sp-1">Every screen built after this uses the same chip, stepper and row, so a contract looks like a contract everywhere.</p>
+  <div class="r1-tagline sp-2">
+    <span class="tag s">Button</span><span class="tag s">IconButton</span><span class="tag s">Chip</span><span class="tag c">ContractChip</span><span class="tag s">StatusPill</span><span class="tag s">WorkflowStepper</span><span class="tag s">Card</span><span class="tag s">SectionHeader</span><span class="tag s">StatTile</span><span class="tag s">DataTable</span><span class="tag s">Field / Input / Select</span><span class="tag s">Sheet</span><span class="tag s">Tabs</span><span class="tag s">Indicator</span><span class="tag s">EmptyState</span><span class="tag s">Timeline</span><span class="tag s">DiffRow</span>
+  </div>
+
+  <figure class="fig sp-3">
+    <div class="fig-title">A contract is always a purple chip: small in a list, large in a header, hatched while still a draft</div>
+    <img class="shot soft" style="width:150mm" src="img/r1/kit-chips.png" alt="ContractChip and Chip variants in the kit gallery">
+    <figcaption><b>ContractChip</b> small and large, in the three states AKTIF, DRAF (dashed, hatched) and DITUTUP (grey-purple), and the neutral Chip tones.
+      The codes shown are invented sample data. <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <figure class="fig sp-3">
+    <div class="fig-title">The six project statuses read the same on a phone (vertical) and on a desktop (horizontal)</div>
+    <img class="shot soft" style="width:150mm" src="img/r1/kit-flow.png" alt="WorkflowStepper vertical and horizontal, and StatusPill">
+    <figcaption><b>WorkflowStepper</b> vertical (phone), horizontal (desktop only: the labels would collide at 360 px), and the six-segment <b>StatusPill</b>. The labels come from
+      <code>services/StatusHelper.ts</code>, not from a second list. <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="callout sys sp-3 push">
+    <h3>Where the old look remains</h3>
+    <p class="small">Fonts changed everywhere, but page bodies keep their old slate cards until each wave-2 builder moved its page onto these primitives. The login page was not re-skinned by D; that was handed to O (chapter 08, p. {{page:08}}).
+      <span class="tag i">Inference</span> The visible gap between slate cards and warm paper narrowed as pages were rebuilt.</p>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">In the app</h2>
+  <figure class="fig sp-2">
+    <div class="fig-title">The shell is a flush 112 px labelled rail, and the dashboard sits on warm paper</div>
+    <img class="shot" src="img-v2/D/dashboard-desktop.png" alt="Dashboard on desktop with the new rail">
+    <figcaption><b>Dashboard at 1280 px</b> on the anonymised seed (admin01). Visible labels replace hover-only tooltips; the role shows above Log Keluar. The rail is exactly the width of the project page’s fixed header (112 px). <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="r1-phones sp-3">
+    <figure class="fig">
+      <img class="shot" src="img/r1/d-dash-phone.png" alt="Dashboard on a phone, 430 px">
+      <figcaption>Dashboard at 430 px: 56 px top bar, 44 px controls.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="shot" src="img/r1/d-sheet-phone.png" alt="Rate-decision sheet on a phone">
+      <figcaption>Sheet with a grab handle: old rate against new rate, two choices.</figcaption>
+    </figure>
+    <div>
+      <h3>On a phone</h3>
+      <ul class="list small">
+        <li>A 64 px tab bar and 56 px top bar.</li>
+        <li>No control in the nav or top bar under 44 px at 360, 390 and 430.</li>
+        <li>The sheet comes from <code>BottomSheet</code> with a handle and a display-font title.</li>
+      </ul>
+      <figure class="fig sp-2">
+        <img class="shot soft" src="img-v2/lead/brandmark-placements.png" alt="Product icon in rail, top bar and login">
+        <figcaption><b>Lead, after merging:</b> the real InfraHub icon in the rail, the top bar and the login page.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">How it was proved</h2>
+  <figure class="fig sp-2">
+    <div class="fig-title">Of eleven text colour pairs, one scored 4.49 against the 4.5 bar; the check caught it and a lighter tint fixed it</div>
+    <p class="fig-sub">WCAG contrast of every pair used for text, computed with the sRGB formula. The amber pair is shown twice: first try and fix.</p>
+    {{svg:r1_d_contrast}}
+    <figcaption><b>Source:</b> REPORT-D Evidence (python, sRGB formula). The fix changed the amber tint from #FCF1DE to #FDF4E4 (4.49 to 4.6). The screenshots were taken before this last tint change; the probes ran after it.
+      <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <h3 class="sp-3">Checks by command</h3>
+  <table class="data compact sp-1">
+    <tr><th style="width:84mm">Check</th><th>Result</th></tr>
+    <tr><td><code>dark:</code> or <code>prefers-color-scheme</code> in app source</td><td>0 hits</td></tr>
+    <tr><td><code>/theme.css</code> linked from the html pages; Google Fonts links left</td><td>10 of 10 pages; 0 links</td></tr>
+    <tr><td>Horizontal overflow at 360, 390, 430 (on /kit, /dashboard, /projects) and 1440 (/dashboard)</td><td>10 of 10: scrollWidth = clientWidth</td></tr>
+    <tr><td>Nav or top-bar controls under 44 px</td><td>0 at every width</td></tr>
+    <tr><td>Faces with status “loaded” on 390 /dashboard</td><td>Bricolage; Atkinson; Atkinson italic</td></tr>
+    <tr><td>Rail right edge against ProjectDetail header left, at 1440</td><td>112 px = 112 px</td></tr>
+    <tr><td>DiffRow text: unchanged rate against a changed one</td><td><code>RM 28.50 Sama</code>; <code>RM 22.00 RM 24.90 +13.2%</code></td></tr>
+    <tr><td>Type check and build</td><td>3 errors, same as base; built in 7.12 s</td></tr>
+  </table>
+  <p class="small sp-1"><b>A check that cannot fail was not trusted.</b> <code>document.fonts.check()</code> returns true for a font it never heard of, so D used the list of faces whose status is “loaded” as the proof.
+    <span class="tag v">Verified</span></p>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout risk">
+      <h3>What it could not check <span class="tag i">Inference</span></h3>
+      <ul class="list small l-amber" style="margin-top:1mm">
+        <li>Real iOS Safari or Android: only headless Chromium ran.</li>
+        <li>A keyboard or screen-reader walk of the primitives.</li>
+        <li>Users, report, settings, profile and login under the new fonts.</li>
+        <li>Whether wave-2 builders followed <code>DESIGN.md</code>.</li>
+      </ul>
+    </div>
+    <div class="callout sys">
+      <h3>What the lead changed after merging</h3>
+      <ul class="list small" style="margin-top:1mm">
+        <li><b>Status bar.</b> <code>theme-color</code> to #FFFFFF in all 10 html heads; manifest background to paper #F7F5EF.</li>
+        <li><b>Brand.</b> The real product icon, <code>BrandMark</code>, replaces stand-in icons in the rail, top bar and login.</li>
+        <li><b>Hand-offs.</b> Login re-skin to O; the rail and header width coupling to P2.</li>
+      </ul>
+    </div>
+  </div>
+</section>

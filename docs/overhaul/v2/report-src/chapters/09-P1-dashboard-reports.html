@@ -1,0 +1,178 @@
+<!-- chapter: 09 | P1 · Dashboard and reports -->
+<section class="page r2">
+  <header class="opener sys">
+    <div class="no">09</div>
+    <div>
+      <p class="kicker">Sub-Yiyi P1 · Dashboard, list and report scope</p>
+      <h1>A dashboard that starts with what needs doing</h1>
+      <p class="dek">Asked for: rebuild the dashboard and the projects list in the new design, and let a report be filtered by
+        one sebutharga, by year, or by a custom range, with totals that follow exactly that filter.</p>
+    </div>
+  </header>
+
+  <div class="strip5">
+    <div class="stat"><div class="n">56<span class="u">min</span></div><div class="l"><b>wall time</b>3,364 s, parallel with K, P2, O</div></div>
+    <div class="stat"><div class="n">124</div><div class="l"><b>API calls</b>162,724 output tokens</div></div>
+    <div class="stat s-deep"><div class="n">$12.51</div><div class="l"><b>est. API price</b>plan quota, not dollars</div></div>
+    <div class="stat"><div class="n">39</div><div class="l"><b>tests added</b>18 vitest + 21 e2e checks</div></div>
+    <div class="stat s-deep"><div class="n">21/21</div><div class="l"><b>spec result</b>local and live preview <span class="tag v">Verified</span></div></div>
+  </div>
+
+  <h2 class="sp-3">Dashboard: from six equal tiles to a worklist</h2>
+  <div class="pair sp-1">
+    <figure class="fig">
+      <p class="tagline before">Before</p>
+      <p class="fig-title">Six tiles and a bulletin wall</p>
+      <img class="shot" src="img-v2/P1/01-before-dashboard-desktop.png" alt="">
+    </figure>
+    <figure class="fig">
+      <p class="tagline after">After</p>
+      <p class="fig-title">“Pusat kawalan” puts action items first</p>
+      <img class="shot" src="img-v2/P1/02-after-dashboard-desktop.png" alt="">
+    </figure>
+  </div>
+  <p class="cap">Desktop 1440, anonymised seed. The header shows the date, the scope (“Projek anda sahaja” for a PJA) and how many items need action.</p>
+
+  <div class="cols-3 sp-3 small">
+    <div class="rule-top"><h3>Pipeline strip</h3><p>Six tiles in workflow order, each with an amber hint for the work waiting there: “N perlu harga semula”, “N siap, belum dituntut”, “N belum ke Kewangan”. A tile still filters the list.</p></div>
+    <div class="rule-top"><h3>Perlu tindakan</h3><p>One card with three groups, each row a 44 px button that opens the project: Perlu harga semula, Notis tertunggak, Menunggu kertas kerja (days waiting, longest first, with the live median).</p></div>
+    <div class="rule-top"><h3>Kept as they were</h3><p>PJA filter, search, pagination, inline Kemajuan (%) edit, notice chips, long-press to select text, bulletins (create, read, react, delete), the profile link and the phone “Tambah Projek” button.</p></div>
+  </div>
+
+  <div class="callout sys sp-3 push">
+    <h3>The file shrank while the screen gained features</h3>
+    <p class="small"><code>pages/Dashboard.tsx</code> went from 932 to 355 lines and <code>pages/ProjectsList.tsx</code> from 1,518 to 494. The pieces now live in
+      <code>components/dash/</code> and <code>components/projects/</code>, with the rules in two pure files (<code>worklist.ts</code>, <code>reportScope.ts</code>) that vitest tests.
+      <span class="tag v">Verified</span> <span class="src">REPORT-P1 Numbers</span></p>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>On the phone it is “Hari ini”, one next step at a time</h2>
+  <div class="phones sp-2">
+    <figure class="fig"><p class="tagline before" style="font:700 6.8pt/1.2 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-bottom:1.2mm">Before · 390 px</p><img class="phone" src="img-v2/P1/03-before-dashboard-phone-390.png" alt=""></figure>
+    <figure class="fig"><p class="tagline after" style="font:700 6.8pt/1.2 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--deep);margin-bottom:1.2mm">After · 390 px</p><img class="phone" src="img-v2/P1/04-after-dashboard-phone-390.png" alt=""></figure>
+    <figure class="fig"><p class="tagline after" style="font:700 6.8pt/1.2 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--deep);margin-bottom:1.2mm">PJA · 430 px</p><img class="phone" src="img-v2/P1/09-hari-ini-pja-430.png" alt=""></figure>
+    <figure class="fig"><p class="tagline after" style="font:700 6.8pt/1.2 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--deep);margin-bottom:1.2mm">Admin · 390 px</p><img class="phone" src="img-v2/P1/15-hari-ini-admin-390.png" alt=""></figure>
+  </div>
+  <p class="cap">A single ink “Seterusnya” card names the next thing to do: an overdue notice, then a re-price, then the longest paperwork wait. A PJA stays PJA-first and sees own projects only.</p>
+
+  <div class="cols-2 sp-3">
+    <figure class="fig">
+      <p class="fig-title">The dashboard count equals the API count, for every status</p>
+      <p class="fig-sub">admin01, 1440 px, year 2026. The e2e compares each tile with <span class="mono">/api/projects</span>.</p>
+      {{svg:r2_p1_pipeline}}
+      <figcaption>pja01 at 390 and 430 px: 1 / 0 / 0 / 0 / 3 / 51, also equal to the API. <span class="tag v">Verified</span></figcaption>
+    </figure>
+    <figure class="fig">
+      <p class="fig-title">A project on a closed sebutharga lands in “Perlu harga semula”</p>
+      <img class="shot" src="img-v2/P1/14-perlu-harga-semula-desktop.png" alt="">
+      <figcaption>The row carries its DITUTUP contract chip and a link to the project. The e2e builds this case itself on a throwaway contract.</figcaption>
+    </figure>
+  </div>
+
+  <h4 class="sp-3">Three worklist rules (pure functions in <span class="mono">worklist.ts</span>)</h4>
+  <table class="data compact">
+    <thead><tr><th style="width:38mm">Group</th><th>Rule</th><th style="width:34mm">After the lead</th></tr></thead>
+    <tr><td><b>Perlu harga semula</b></td><td>A FASA_DRAF or MENUNGGU_LANTIKAN project whose sebutharga is DITUTUP, DRAF, missing or unknown.</td><td>One shared rule; an issued No. Inden now locks (chapter 10, fix 5)</td></tr>
+    <tr><td><b>Notis tertunggak</b></td><td>The notice rules that used to sit inside Dashboard (moved, same rules).</td><td>Unchanged</td></tr>
+    <tr><td><b>Menunggu kertas kerja</b></td><td>Siap Sebenar is set, the status is not SIAP, and the claim or the hand-over to Kewangan is missing.</td><td>Unchanged</td></tr>
+  </table>
+  <p class="small sp-1 push">Menunggu kertas kerja answers the longest unowned stretch the discovery report found (about 62 days of paperwork after the site is done). It shows days waiting and the live median; it does not remind anyone yet.</p>
+</section>
+
+<section class="page r2">
+  <h2>Projects list, and a report scope that labels its own totals</h2>
+  <div class="pair sp-1">
+    <figure class="fig">
+      <p class="tagline before">Before</p>
+      <p class="fig-title">Row actions on hover, no sebutharga column</p>
+      <img class="shot" src="img-v2/P1/05-before-projects-desktop.png" alt="">
+    </figure>
+    <figure class="fig">
+      <p class="tagline after">After</p>
+      <p class="fig-title">A Sebutharga column, and a scope bar above the list</p>
+      <img class="shot" src="img-v2/P1/06-after-projects-desktop.png" alt="">
+    </figure>
+  </div>
+
+  <figure class="fig sp-3">
+    <p class="fig-title">“Skop laporan”: pick one or more sebutharga, then a year, all years or a custom range</p>
+    <p class="fig-sub">Custom range (Julat tersuai) has presets (Jan–Jun, Jul–Dis, Bulan ini, 90 hari lepas) and two date inputs on Tarikh Buka. The bar prints “Angka laporan dikira daripada: …”.</p>
+    <img class="shot" src="img-v2/P1/12-skop-julat-tersuai.png" alt="">
+  </figure>
+
+  <div class="cols-7-5 sp-3">
+    <figure class="fig">
+      <p class="fig-title">Vote summary: “Dikira daripada” names the scope that produced it</p>
+      <img class="shot" src="img-v2/P1/11-rumusan-kewangan-labelled.png" alt="">
+    </figure>
+    <div class="small">
+      <h3>Totals come from one filter state</h3>
+      <ul class="list">
+        <li>The summary, the PDF summary and the scope count use only the projects <b>in scope</b>. Search, status and PJA narrow the list, not the totals. This fixes the old flaw of balances computed from the filtered list.</li>
+        <li>Allocation and balance appear only when the scope sits inside one financial year; otherwise “—” with an amber note.</li>
+        <li>A negative balance is red. Manual deductions (Lain-lain, YDP) are editable only when the scope is the selected year.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>Proof, and the one check that was shown able to fail</h2>
+  <div class="cols-2 sp-1">
+    <figure class="fig">
+      <p class="fig-title">Turning a status filter on must not change the report totals</p>
+      <p class="fig-sub">Sebutharga MPS/SH/302/25, Tahun 2026, then the SIAP filter on screen. P1 temporarily computed totals from the filtered list, rebuilt, ran the spec, then restored the file.</p>
+      {{svg:r2_p1_mutation}}
+      <figcaption>The broken build fails exactly one check (19/20); the restored build passes (20/20, 21/21 after merge). The grep for the mutation marker returns 0.</figcaption>
+    </figure>
+    <div>
+      <div class="cmd"><span class="ok">PASS</span>  an on-screen status filter does not change the totals
+      before=(12026468.49,422) after=(12026468.49,422)
+
+<span class="c"># same spec, totals taken from the filtered list</span>
+<span class="bad">FAIL</span>  an on-screen status filter does not change the totals
+      before=(12026468.49,422) after=(8098687.89,291)
+<span class="c">19/20 checks passed   exit 1</span></div>
+      <h4 class="sp-3">Other checks that passed</h4>
+      <ul class="list small">
+        <li>Totals equal an API-side sum in two cases: RM 12,026,468.49 over 422 projects (AKTIF + 2026), and RM 12,345.67 over 1 project (a test contract, all years).</li>
+        <li>11 regression checks: CSV export, Rotasi and Senarai PDFs print their scope, the delete 5-second countdown, sort, tile filter, bulletins, PJA filter.</li>
+        <li>6 phone probes at 390 and 430: no overflow, no tap target under 44 px, no input under 16 px.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cols-7-5 sp-3">
+    <figure class="fig">
+      <p class="fig-title">Each company’s use of its cap is shown per contract, and only warns</p>
+      <img class="shot" src="img-v2/P1/10-syarikat-scope-cap-desktop.png" alt="">
+      <figcaption>“RM used / RM cap” under each company. Used = every project of that company on that contract; cap = the per-company override, else the contract’s cap. Over it turns amber with “melebihi had”.</figcaption>
+    </figure>
+    <figure class="fig">
+      <p class="fig-title">Less code for the same job</p>
+      {{svg:r2_p1_lines}}
+    </figure>
+  </div>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout">
+      <h3><span class="tag i">Inference</span> What P1 could not check</h3>
+      <ul class="list small">
+        <li>Company-cap figures against a hand calculation: only unit tests cover <code>capUsage</code>; the screenshot shows a plausible RM 199,620.89 / RM 200,000.</li>
+        <li>The custom-range presets and an allocation for a non-selected year in the browser.</li>
+        <li>How the two PDFs look: only their text was read back with <code>pdftotext</code>. iOS Safari was not tried.</li>
+      </ul>
+    </div>
+    <div class="callout contract">
+      <h3>What the lead changed after merging</h3>
+      <ul class="list l-purple small">
+        <li><b>One re-price rule</b> for dashboard and list (fix 5).</li>
+        <li><b>POST /projects without bp</b> no longer 500s (fix 7).</li>
+        <li><b>P1’s 18 tests</b> are in the gate; test contract is deleted after each run (fixes 6, 8).</li>
+        <li>BP / Zon / Mukim filters read the lookups.</li>
+      </ul>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1model" viewBox="0 0 657.64 372.00" role="img" aria-label="Before and after: one global price list versus contracts that own versioned rate books" style="display:block;width:100%;height:auto">
+<defs><marker id="r1model-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<defs><marker id="r1model-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#D97706"/></marker></defs>
+<rect x="0.00" y="0.00" width="308.82" height="22.00" fill="#0F1E1C" />
+<text x="10.00" y="15.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >BEFORE · V1 (DISCOVERY REPORT)</text>
+<rect x="348.82" y="0.00" width="308.82" height="22.00" fill="#3B2E8C" />
+<text x="358.82" y="15.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#F6F4EE" text-anchor="start" letter-spacing="0.6" >AFTER · V2 (THIS BUILD)</text>
+<line x1="328.82" y1="0.00" x2="328.82" y2="372.00" stroke="#495450" stroke-width="1" stroke-dasharray="3 4"/>
+<rect x="0.00" y="38.00" width="308.82" height="62.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="8.00" y="54.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Settings by calendar year</text>
+<text x="8.00" y="68.10" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >panel companies and sebutharga numbers live inside a</text>
+<text x="8.00" y="80.06" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >year, so a second sebutharga in one year cannot exist</text>
+<rect x="0.00" y="120.00" width="308.82" height="84.00" fill="#F0D8BB" stroke="#D97706" stroke-width="1" />
+<rect x="0.00" y="120.00" width="4.00" height="84.00" fill="#D97706" />
+<text x="10.00" y="136.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >Pustaka: one global master BQ</text>
+<text x="10.00" y="150.10" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >no year, no sebutharga, no history. Saving deletes every</text>
+<text x="10.00" y="162.06" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >row and inserts them again.</text>
+<path d="M154.4,204.0 L154.4,246.0" stroke="#D97706" stroke-width="1.6" fill="none" marker-end="url(#r1model-a)"/>
+<text x="162.41" y="230.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#D97706" text-anchor="start" >copied into each project</text>
+<rect x="0.00" y="250.00" width="308.82" height="62.00" fill="#FFFFFF" stroke="#0F1E1C" stroke-width="1" />
+<text x="8.00" y="266.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >489 projects, each with its own copy</text>
+<text x="8.00" y="280.10" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >a project&#x27;s rates come from today&#x27;s list, not from the</text>
+<text x="8.00" y="292.06" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >contract it was issued under</text>
+<rect x="0.00" y="326.00" width="308.82" height="34.00" fill="none" stroke="#3B2E8C" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="9.00" y="347.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#3B2E8C" text-anchor="start" >no_sebutharga = a text label</text>
+<text x="299.82" y="347.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#D97706" text-anchor="end" >no link</text>
+<rect x="348.82" y="38.00" width="308.82" height="96.00" fill="#3B2E8C" />
+<text x="358.82" y="56.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#F6F4EE" text-anchor="start" >MPS/SH/302/25</text>
+<text x="647.64" y="56.00" font-family="'JetBrains Mono', monospace" font-size="9.2" font-weight="800" fill="#BEB9D1" text-anchor="end" letter-spacing="0.5" >AKTIF</text>
+<text x="358.82" y="73.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#F6F4EE" text-anchor="start" >panel of 60 rows; rate book v1 (a LEGACY copy of today&#x27;s</text>
+<text x="358.82" y="85.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#F6F4EE" text-anchor="start" >Pustaka); every later upload or edit adds a version, it</text>
+<text x="358.82" y="97.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#F6F4EE" text-anchor="start" >never overwrites</text>
+<rect x="358.82" y="112.00" width="62.00" height="16.00" fill="#574C9B" stroke="#A29BC2" stroke-width="1" />
+<text x="389.82" y="123.50" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="700" fill="#F6F4EE" text-anchor="middle" >v1 LEGACY</text>
+<rect x="428.82" y="112.00" width="62.00" height="16.00" fill="none" stroke="#A29BC2" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="459.82" y="123.50" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="700" fill="#F6F4EE" text-anchor="middle" >v2 ...</text>
+<rect x="498.82" y="112.00" width="62.00" height="16.00" fill="none" stroke="#A29BC2" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="529.82" y="123.50" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="700" fill="#F6F4EE" text-anchor="middle" >v3 ...</text>
+<rect x="348.82" y="146.00" width="308.82" height="34.00" fill="#D4D0DC" stroke="#3B2E8C" stroke-width="1" />
+<text x="358.82" y="161.00" font-family="'JetBrains Mono', monospace" font-size="9.6" font-weight="800" fill="#3B2E8C" text-anchor="start" >contract, DITUTUP</text>
+<text x="358.82" y="173.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#3B2E8C" text-anchor="start" >read-only; still prices its own projects</text>
+<rect x="348.82" y="188.00" width="308.82" height="34.00" fill="#D4D0DC" stroke="#3B2E8C" stroke-width="1" />
+<text x="358.82" y="203.00" font-family="'JetBrains Mono', monospace" font-size="9.6" font-weight="800" fill="#3B2E8C" text-anchor="start" >contract, DITUTUP</text>
+<text x="358.82" y="215.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#3B2E8C" text-anchor="start" >read-only; still prices its own projects</text>
+<text x="348.82" y="236.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="start" >3 contracts, 3 versions after the legacy migration</text>
+<path d="M426.0,244.0 L426.0,262.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1model-p)"/>
+<path d="M503.2,244.0 L503.2,262.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1model-p)"/>
+<path d="M580.4,244.0 L580.4,262.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1model-p)"/>
+<rect x="348.82" y="266.00" width="308.82" height="46.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="348.82" y="266.00" width="4.00" height="46.00" fill="#3B2E8C" />
+<text x="358.82" y="282.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#0F1E1C" text-anchor="start" >490 projects, each bound to a contract</text>
+<text x="358.82" y="296.10" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >contract_id + rate_book_version_id on every row (490 of</text>
+<text x="358.82" y="308.06" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="400" fill="#495450" text-anchor="start" >490 linked)</text>
+<rect x="348.82" y="326.00" width="308.82" height="34.00" fill="#D2E6DA" stroke="#059669" stroke-width="1" />
+<text x="357.82" y="347.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#059669" text-anchor="start" >change_log: who, when, diff</text>
+<text x="648.64" y="347.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#059669" text-anchor="end" >every write</text>
+</svg>

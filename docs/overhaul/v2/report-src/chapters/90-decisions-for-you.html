@@ -1,0 +1,83 @@
+<!-- chapter: 90 | Decisions for you -->
+<section class="page r2">
+  <header class="opener">
+    <div class="no">90</div>
+    <div>
+      <p class="kicker">Decisions for you</p>
+      <h1>Fourteen questions, each with the default already built</h1>
+      <p class="dek">Seven open questions from the lead’s verified facts, then seven smaller ones the builders raised in their own
+        reports. Nothing is blocked: each says what was chosen and what changes if you pick otherwise.</p>
+    </div>
+  </header>
+
+  <div class="group-head contract"><h3>Open questions from the lead</h3><span class="kicker">7 · decide these first</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Should the contract start date decide the LAD rate?</p>
+      <p class="why"><b>Default:</b> yes. Fallbacks, in order: lantikan, serah tapak, tamat, buka. The stored amount and the printed certificate both read it.
+        <b>If otherwise:</b> one function changes (<code>ladPolicyDate</code>) and the money parity run is repeated.
+        <span class="src">LEAD-FACTS Q1 · NEEDS-lead O 8</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Keep today’s wording mistakes on paper, or fix them?</p>
+      <p class="why"><b>Default:</b> kept, so the paper is identical to before: <code>sebanyakRM20.00/hari</code>, <code>dalam tempohtujuh (7) hari</code>, <code>Gred" G1"</code>.
+        <b>If you fix them:</b> each is one edit in Tetapan Organisasi › Teks dokumen. No code change; all later prints use the new text.
+        <span class="src">LEAD-FACTS Q2</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Which sheet is the 2026 book: KESELURUHAN, or the 16 category sheets? And is the KONTRAKTOR column the kadar kontrak?</p>
+      <p class="why"><b>Default:</b> KESELURUHAN, KONTRAKTOR column. Both parse with 0 warnings (465 and 508 priced rows). The 195 / 154 / 116 / 37 comparison was measured on KESELURUHAN only.
+        <b>If otherwise:</b> pick the other choice in wizard step 2. The comparison against today’s Pustaka would have to be run again.
+        <span class="src">LEAD-FACTS Q3</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">The RM 200,000 company cap per sebutharga is a warning only. Keep it?</p>
+      <p class="why"><b>Default:</b> warn (amber “melebihi had”), never block; stored per contract with an override per company.
+        <b>If you want it enforced:</b> a block when a company is appointed over the cap. <span class="tag i">Inference</span> That is new work; nothing in v2 refuses an over-cap appointment.
+        <span class="src">LEAD-FACTS Q4 · CONTRACT.md</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Unlocking a project that already has a No. Inden is allowed and logged. Should only PT or Admin be able to?</p>
+      <p class="why"><b>Default:</b> unlocking is allowed and written to the change log; no role restriction was added.
+        <b>If restricted:</b> a role check on the unlock action. <span class="tag i">Inference</span> Authentication is out of scope for this overhaul, so a check in the screen alone is not a guard.
+        <span class="src">LEAD-FACTS Q5</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Leave AI-assisted import switched off?</p>
+      <p class="why"><b>Default:</b> off. The deterministic parser read the real file with 0 warnings; AI would only ever <i>suggest</i> a match, and a person still approves.
+        <b>If you want it later:</b> a server route and the <code>ai.matchSuggest</code> switch; the button already hides itself until both exist. K’s request for it was deferred.
+        <span class="src">LEAD-FACTS Q6 · NEEDS-lead K 4</span></p></div></div>
+  </div>
+</section>
+
+<section class="page r2">
+  <div class="group-head contract"><h3>Open questions from the lead, continued</h3><span class="kicker">question 7 of 7</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Go-live: when do you approve moving production to v2?</p>
+      <p class="why"><b>Default:</b> nothing happens. Production is untouched (<span class="mono">infra-hub</span> still on <span class="mono">567c83c</span>, <span class="mono">infrahub-db</span> still 8 tables).
+        <b>When you approve:</b> a production D1 migration plan and a fresh backup come first. There is a backup from 21 Nov (<span class="mono">20261121-221650</span>, restore test passed) and a <span class="mono">CODE-RED.md</span> runbook; the plan itself is not written.
+        <span class="src">LEAD-FACTS Q7</span></p></div></div>
+  </div>
+  <div class="group-head sys"><h3>Smaller questions from the builders’ reports</h3><span class="kicker">7 · when you have a minute</span></div>
+  <div class="checks">
+    <div class="check"><div class="box"></div><div><p class="qn">Which projects should appear under “Perlu harga semula”?</p>
+      <p class="why"><b>Default:</b> projects in FASA_DRAF or MENUNGGU_LANTIKAN with no No. Inden issued. A project with a No. Inden issued is locked and never flagged.
+        <b>If otherwise:</b> one rule in <code>domain/repricing</code>; the close sheet, banner, dashboard and list all follow it.
+        <span class="src">LEAD-FACTS fix 5</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Should the summary count projects with a vote (422 in the test scope), or every project in scope (486)?</p>
+      <p class="why"><b>Default:</b> both, each labelled: the vote summary says “Projek bervot”; the scope line counts everything in scope.
+        <b>If you want one number:</b> a wording and layout change in the report scope bar.
+        <span class="src">REPORT-P1 Caveats</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Do you want click-to-sort column headers back on the desktop list?</p>
+      <p class="why"><b>Default:</b> a “Susun” select with a direction button, because the table component’s headers are plain text.
+        <b>If yes:</b> the table component needs a sortable header first. <span class="src">REPORT-P1 Caveats</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">After a reload, should “Pilih item lain” in the import review show a ranked list of alternatives?</p>
+      <p class="why"><b>Default:</b> a search of the old book, because the version detail does not return the alternatives.
+        <b>If yes:</b> the API must return them with the matches (K’s request 5, deferred to your review).
+        <span class="src">NEEDS-lead K 5</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">What should the “Unit” list in Senarai mean?</p>
+      <p class="why"><b>Default:</b> an empty list, because nothing used one before and the brief said “units” without saying which.
+        <b>Your answer:</b> units of work, units in the organisation, or remove the tab. <span class="src">REPORT-O Caveats</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">A non-square logo is stretched into the fixed boxes (Prestasi 24 × 20 mm, letterhead 22 × 22 mm). Fit it instead?</p>
+      <p class="why"><b>Default:</b> stretch; the official seal prints exactly as before.
+        <b>If you want it fitted:</b> a drawing change in the PDF helper, with a new parity run. <span class="src">REPORT-O Caveats</span></p></div></div>
+    <div class="check"><div class="box"></div><div><p class="qn">Upload your own copy of the seal instead of the public image link the paper uses today?</p>
+      <p class="why"><b>Default:</b> the link is kept as the default logo, so day-one output is unchanged. <span class="tag i">Inference</span> A print then depends on that site being reachable; this was not tested.
+        <b>If you upload one:</b> it is stored in the settings and used everywhere. <span class="src">REPORT-O inventory</span></p></div></div>
+  </div>
+
+  <div class="callout contract sp-3 push">
+    <h3>How a decision turns into work</h3>
+    <p class="small">Questions 1, 2, 8, 9, 12 and 14 are one edit, one setting or one function each. Questions 4, 5, 6, 7, 10, 11 and 13 need new code or a new plan. Question 3 needs one more run of the importer on the sheet you pick.
+      <span class="tag i">Inference</span> The sizes are the lead’s reading of the reports, not estimates anyone measured.</p>
+  </div>
+</section>

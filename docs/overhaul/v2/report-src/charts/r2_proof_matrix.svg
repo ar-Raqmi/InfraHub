@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_proof_matrix" viewBox="0 0 657.64 228.00" role="img" aria-label="Every e2e check passes on the local merged server and on the live preview" style="display:block;width:100%;height:auto">
+<text x="215.00" y="10.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="start" >one square = one check</text>
+<text x="0.00" y="30.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >O  organisasi</text>
+<text x="205.00" y="30.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >local :8790</text>
+<rect x="215.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="230.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="245.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="260.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="275.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="290.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="305.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="320.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="335.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="350.00" y="20.00" width="12.00" height="12.00" fill="#059669" />
+<text x="538.00" y="30.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#059669" text-anchor="start" >10/10</text>
+<text x="0.00" y="50.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" ></text>
+<text x="205.00" y="50.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >live preview</text>
+<rect x="215.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="230.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="245.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="260.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="275.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="290.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="305.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="320.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="335.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="350.00" y="40.00" width="12.00" height="12.00" fill="#14B8A6" />
+<text x="538.00" y="50.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#128276" text-anchor="start" >10/10</text>
+<text x="0.00" y="76.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >K  kontrak + import</text>
+<text x="205.00" y="76.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >local :8790</text>
+<rect x="215.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="230.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="245.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="260.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="275.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="290.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="305.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="320.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="335.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="350.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="365.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="380.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="395.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="410.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="425.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="440.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="455.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="470.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="485.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="500.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="515.00" y="66.00" width="12.00" height="12.00" fill="#059669" />
+<text x="538.00" y="76.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#059669" text-anchor="start" >21/21</text>
+<text x="0.00" y="96.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" ></text>
+<text x="205.00" y="96.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >live preview</text>
+<rect x="215.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="230.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="245.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="260.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="275.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="290.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="305.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="320.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="335.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="350.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="365.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="380.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="395.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="410.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="425.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="440.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="455.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="470.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="485.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="500.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="515.00" y="86.00" width="12.00" height="12.00" fill="#14B8A6" />
+<text x="538.00" y="96.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#128276" text-anchor="start" >21/21</text>
+<text x="0.00" y="122.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >P1  dashboard + list</text>
+<text x="205.00" y="122.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >local :8790</text>
+<rect x="215.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="230.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="245.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="260.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="275.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="290.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="305.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="320.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="335.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="350.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="365.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="380.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="395.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="410.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="425.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="440.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="455.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="470.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="485.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="500.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="515.00" y="112.00" width="12.00" height="12.00" fill="#059669" />
+<text x="538.00" y="122.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#059669" text-anchor="start" >21/21</text>
+<text x="0.00" y="142.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" ></text>
+<text x="205.00" y="142.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >live preview</text>
+<rect x="215.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="230.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="245.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="260.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="275.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="290.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="305.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="320.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="335.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="350.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="365.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="380.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="395.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="410.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="425.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="440.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="455.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="470.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="485.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="500.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="515.00" y="132.00" width="12.00" height="12.00" fill="#14B8A6" />
+<text x="538.00" y="142.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#128276" text-anchor="start" >21/21</text>
+<text x="0.00" y="168.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >P2  project + BQ</text>
+<text x="205.00" y="168.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >local :8790</text>
+<rect x="215.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="230.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="245.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="260.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="275.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="290.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="305.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="320.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="335.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="350.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="365.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="380.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="395.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="410.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="425.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="440.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="455.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="470.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<rect x="485.00" y="158.00" width="12.00" height="12.00" fill="#059669" />
+<text x="538.00" y="168.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#059669" text-anchor="start" >19/19</text>
+<text x="0.00" y="188.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" ></text>
+<text x="205.00" y="188.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#64748B" text-anchor="end" >live preview</text>
+<rect x="215.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="230.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="245.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="260.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="275.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="290.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="305.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="320.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="335.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="350.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="365.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="380.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="395.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="410.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="425.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="440.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="455.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="470.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<rect x="485.00" y="178.00" width="12.00" height="12.00" fill="#14B8A6" />
+<text x="538.00" y="188.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#128276" text-anchor="start" >19/19</text>
+<text x="215.00" y="212.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >142 checks in total: 71 on each target (sum of the four spec sizes)</text>
+</svg>

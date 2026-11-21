@@ -1,0 +1,168 @@
+<!-- chapter: 04 | F · Foundation -->
+<section class="page">
+  <header class="opener sys">
+    <div class="no">04</div>
+    <div>
+      <p class="kicker">Sub-Yiyi F · Foundation</p>
+      <h1>The base under every screen</h1>
+      <p class="dek">Asked to build the v2 data model, the business rules as plain code, the Excel parser and the API, with tests, so four feature builders could then work in parallel.</p>
+    </div>
+  </header>
+
+  <div class="strip">
+    <div class="s deep"><div class="n">37<span class="u">min</span></div><div class="l">wall time</div></div>
+    <div class="s"><div class="n">114</div><div class="l">API calls</div></div>
+    <div class="s amber"><div class="n">$10.90</div><div class="l">est. API list price</div></div>
+    <div class="s deep"><div class="n">70</div><div class="l">tests passed, 9 files (+5 gated)</div></div>
+    <div class="s purple"><div class="n">0</div><div class="l">rows changed by the 2nd migration run</div></div>
+  </div>
+
+  <h2 class="sp-2">What it built</h2>
+  <p class="lede measure">Nothing a user could see. F made the parts every other builder stands on: ten new tables, the rules as pure TypeScript, an Excel reader and the routes that serve them.</p>
+
+  <div class="cols-7-5 sp-2">
+    <ul class="list">
+      <li><b>Migrations.</b> <code>0001</code> adds contracts, companies, contract_companies, rate_book_versions, rate_book_groups,
+        rate_book_matches, change_log, app_config, lookup_values and policy_rules. <code>0002</code> adds the contract and book
+        version to every project.</li>
+      <li><b>Domain layer.</b> The money rules lifted out of the 1,790-line project form; a policy that answers “which value applied on this date”;
+        the master-BQ parser, matcher, diff, row status and re-price planner.</li>
+      <li><b>Excel reader.</b> SheetJS CE 0.20.3 turns a file into rows in the browser and keeps a code like <code>1.10</code> as text.</li>
+      <li><b>API.</b> 11 new files: contracts, rate book, change log, config, lookups, policies, a legacy migration, and the project swap
+        and re-price routes. <code>API.md</code> has the route table and 35 curl examples.</li>
+      <li><b>Client layer.</b> One method per route in <code>apiService</code>, four hooks, and the acting user sent as a header.</li>
+    </ul>
+    <figure class="fig">
+      <div class="fig-title" style="font-size:11.5pt">Most of the lines are API, domain code and its tests</div>
+      {{svg:r1_f_lines}}
+      <figcaption><b>Lines by file group.</b> REPORT-F “Numbers”. <span class="tag v">Verified</span></figcaption>
+    </figure>
+  </div>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout sys">
+      <h3>Why no screen?</h3>
+      <p class="small">The contract (chapter 02) fixed the API before any screen existed. With routes and rules in place, K, P1, P2 and O could each build a screen at once. F marked <code>API.md</code> “FOUNDATION READY” when the routes were done.</p>
+    </div>
+    <div class="callout risk">
+      <h3>One deviation from the contract</h3>
+      <p class="small"><code>rate_book_groups</code> has two extra columns, <code>code</code> and <code>bill</code>, so an item’s official number and bill heading survive storage. It is additive; nothing in <code>CONTRACT.md</code> §3 was removed.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">How the importer reads the officer’s Excel</h2>
+  <p class="lede measure sp-1">A script reads every rate and unit from its cell. It never asks an AI. Matching only suggests which old item a
+    reworded line is, and a person decides.</p>
+
+  <figure class="fig sp-2">
+    <div class="fig-title">Only 195 of the 465 priced rows in the new book match today’s Pustaka word for word</div>
+    <p class="fig-sub">The real master BQ (KESELURUHAN sheet, KONTRAKTOR column) against today’s Pustaka. The bottom bar is the diff after every pending match was decided.</p>
+    {{svg:r1_f_match}}
+    <figcaption><b>Source:</b> REPORT-F Evidence: real-file test (<code>EXACT 195, FUZZY 154, NEW 116, removed 37</code>) and API call 19 (publish diff). The 154 reworded
+      pairs are suggestions: none was reviewed by an officer. <span class="tag v">Verified</span> <span class="tag i">Inference</span> for “reworded”.</figcaption>
+  </figure>
+
+  <div class="cols-2 sp-2">
+    <div>
+      <h3>The parser on the real workbook</h3>
+      <table class="data compact sp-1">
+        <tr><th>Book</th><th class="num">Bills</th><th class="num">Groups</th><th class="num">Items</th><th class="num">Variants</th><th class="num">Priced</th><th class="num">Warn</th></tr>
+        <tr><td>KESELURUHAN</td><td class="num">16</td><td class="num">98</td><td class="num">174</td><td class="num">342</td><td class="num" style="white-space:nowrap">465 / 465</td><td class="num">0</td></tr>
+        <tr><td>16 category sheets</td><td class="num">16</td><td class="num">109</td><td class="num">201</td><td class="num">359</td><td class="num" style="white-space:nowrap">508 / 508</td><td class="num">0</td></tr>
+      </table>
+      <p class="small sp-2">The parser handles bills and their “(SAMBUNGAN)” continuations, groups <code>1.0</code>, items <code>1.1</code>, descriptions wrapped over many rows,
+        variants <code>i)</code>, <code>a)</code>, <code>ii.</code>, a rate on the variant line or the first description line, and several rate columns.
+        Parsed in the browser in 0.45 s (lead run).</p>
+    </div>
+    <div>
+      <h3>Two surprises in the file</h3>
+      <ul class="list small sp-1 l-amber">
+        <li><b>3 rows are off the pattern.</b> The kontraktor rate is normally 0.849 to 0.851 of the jabatan rate. Three rows differ (lowest 0.8244, item 11/4.3(xiii)). The importer copies
+          cells as written, so that is the file’s data.</li>
+        <li><b>Some rates moved.</b> Papan tanda rows are about 1.2 times today’s Pustaka. They still match, and the diff shows them as rate changes.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig sp-2 push">
+    <div class="fig-title">An Excel file becomes a published rate book in five steps, and step 5 refuses while any match is undecided</div>
+    {{svg:r1_f_flow}}
+    <figcaption><b>Source:</b> REPORT-F API run, calls 15 to 19 (import 201; publish 409; decide 200; publish 200). <span class="tag v">Verified</span></figcaption>
+  </figure>
+</section>
+
+<section class="page">
+  <h2 class="big">How it was proved</h2>
+  <div class="cols-2 sp-1">
+    <div>
+      <h3>Tests first, and shown able to fail</h3>
+      <pre class="raw sp-1"><span class="bad">RED</span>  FAIL domain/rateBook/toPresetGroups.test.ts
+      Test Files  8 failed (8)
+           Tests  no tests
+<span class="bad">RED</span>  x follows a variant that kept its id but
+     moved to another item   8ms
+      Tests  1 failed | 3 passed (4)
+<span class="ok">GREEN</span> Test Files  9 passed | 1 skipped (10)
+      Tests  70 passed | 5 skipped (75)</pre>
+      <p class="small sp-1">The first block is the run before the modules existed. The second is a bug found later in the diff function, a
+        variant that kept its id but moved to another item: its test failed, then passed after the fix. Two tests were written after
+        the code (the <code>m2</code> unit and the Excel reader), so they have no red run. <span class="tag v">Verified</span></p>
+    </div>
+    <figure class="fig">
+      <div class="fig-title" style="font-size:11.5pt">The test gate grew from 70 to 104 as other builders’ tests joined it</div>
+      {{svg:r1_f_tests}}
+      <figcaption><b>Source:</b> REPORT-F (70); <code>NEEDS-lead.md</code> (81 after the include); <code>LEAD-FACTS.md</code> (104, re-run). <span class="tag v">Verified</span></figcaption>
+    </figure>
+  </div>
+
+  <div class="cols-2 sp-3">
+    <div>
+      <h3>The legacy migration is safe to run twice</h3>
+      <table class="data compact sp-1">
+        <tr><th>Metric</th><th class="num">Run 1</th><th class="num">Run 2</th></tr>
+        <tr class="hl"><td>Rows changed</td><td class="num">1,362</td><td class="num">0</td></tr>
+        <tr><td>Contracts</td><td class="num">3</td><td class="num">3</td></tr>
+        <tr><td>Companies / panel rows</td><td class="num">63 / 60</td><td class="num">63 / 60</td></tr>
+        <tr><td>Rate-book versions / groups</td><td class="num">3 / 207</td><td class="num">3 / 207</td></tr>
+        <tr><td>Lookup values / policy rules</td><td class="num">36 / 10</td><td class="num">36 / 10</td></tr>
+        <tr><td>Projects linked</td><td class="num">490 of 490</td><td class="num">490 of 490</td></tr>
+      </table>
+      <p class="src sp-1">REPORT-F Evidence, “COUNTS run1/run2”. A third run after the last code change also changed 0 rows.</p>
+    </div>
+    <div>
+      <h3>Calls from the 42-call API run worth knowing</h3>
+      <table class="data compact sp-1">
+        <tr><th style="width:9mm">#</th><th>What happened</th></tr>
+        <tr><td class="code">17</td><td>Publish with pending matches: <b>409</b>. After the decisions (call 19): 200; diff unchanged 140, rate 101, wording 107, added 117, removed 38.</td></tr>
+        <tr><td class="code">9</td><td>Old <code>PUT /system/library_groups</code> now makes a new EDIT version (1 to 2); v1 keeps its 69 groups.</td></tr>
+        <tr><td class="code">25</td><td>Re-price dry run: kos projek 41,253.88 to 40,729.45, 6 MISSING rows listed.</td></tr>
+        <tr><td class="code">27</td><td>Swap on a locked project: <b>423</b>; with unlock: 200 (call 28).</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="cols-2 sp-3">
+    <div class="callout risk">
+      <h3>What it could not check <span class="tag i">Inference</span></h3>
+      <ul class="list small l-amber" style="margin-top:1mm">
+        <li>No screen used the hooks yet, so they were only type-checked.</li>
+        <li>No browser run: the brief asked for none from F.</li>
+        <li>Cloudflare CPU time for an import. Locally it took 0.097 s wall.</li>
+        <li>Match quality beyond counts: the 154 suggestions were sampled by eye, not reviewed.</li>
+        <li>The pages did not call <code>money.ts</code> yet; parity was shown on 23 pinned inputs and 1,820 sums.</li>
+      </ul>
+    </div>
+    <div class="callout sys">
+      <h3>What the lead changed after merging</h3>
+      <ul class="list small" style="margin-top:1mm">
+        <li><b>Policy history.</b> A second value on an existing date now answers 409 instead of overwriting (fix 3).</li>
+        <li><b>Delete.</b> <code>DELETE /contracts/:id</code>, refused while AKTIF or in use (fix 6).</li>
+        <li><b>500 to a stored blank.</b> <code>POST /projects</code> without <code>bp</code> crashed; it now stores '' (fix 7).</li>
+        <li><b>Test gate.</b> vitest now includes <code>components/**/*.test.ts</code>: 70 to 104 tests (fix 8).</li>
+        <li><b>Git.</b> <code>.gitignore</code> had hidden the migrations folder; fixed (fix 10).</li>
+      </ul>
+    </div>
+  </div>
+</section>

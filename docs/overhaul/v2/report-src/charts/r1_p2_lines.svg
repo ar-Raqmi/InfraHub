@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1p2lines" viewBox="0 0 313.70 172.00" role="img" aria-label="Lines before and after in the three big P2 files, plus the nine new files" style="display:block;width:100%;height:auto">
+<text x="0.00" y="22.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >ProjectDetail.tsx</text>
+<rect x="112.00" y="2.00" width="137.83" height="14.00" fill="#B4BAC1" />
+<text x="253.83" y="13.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="500" fill="#64748B" text-anchor="start" >1,790</text>
+<rect x="112.00" y="19.00" width="125.43" height="14.00" fill="#059669" />
+<text x="241.43" y="30.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="700" fill="#0F1E1C" text-anchor="start" >1,629</text>
+<text x="0.00" y="62.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >BQEditor.tsx</text>
+<rect x="112.00" y="42.00" width="157.31" height="14.00" fill="#B4BAC1" />
+<text x="273.31" y="53.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="500" fill="#64748B" text-anchor="start" >2,043</text>
+<rect x="112.00" y="59.00" width="157.54" height="14.00" fill="#059669" />
+<text x="273.54" y="70.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="700" fill="#0F1E1C" text-anchor="start" >2,046</text>
+<text x="0.00" y="102.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >BQPelarasanEditor.tsx</text>
+<rect x="112.00" y="82.00" width="135.98" height="14.00" fill="#B4BAC1" />
+<text x="251.98" y="93.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="500" fill="#64748B" text-anchor="start" >1,766</text>
+<rect x="112.00" y="99.00" width="135.29" height="14.00" fill="#059669" />
+<text x="251.29" y="110.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="700" fill="#0F1E1C" text-anchor="start" >1,757</text>
+<text x="0.00" y="142.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="600" fill="#0F1E1C" text-anchor="start" >9 new files</text>
+<rect x="112.00" y="126.00" width="62.76" height="14.00" fill="#14B8A6" />
+<text x="178.75" y="137.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="700" fill="#0F1E1C" text-anchor="start" >815</text>
+<text x="0.00" y="166.00" font-family="'JetBrains Mono', monospace" font-size="8.2" font-weight="500" fill="#64748B" text-anchor="start" >grey = before, green = after, teal = new</text>
+</svg>

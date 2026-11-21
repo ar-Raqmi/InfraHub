@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1gantt" viewBox="0 0 578.72 314.00" role="img" aria-label="Timeline of the build night, 21 to 22 Nov 2026" style="display:block;width:100%;height:auto">
+<line x1="150.00" y1="70.00" x2="150.00" y2="292.00" stroke="#3D4946" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="150.00" y="306.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="middle" >22:00</text>
+<line x1="224.60" y1="70.00" x2="224.60" y2="292.00" stroke="#3D4946" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="224.60" y="306.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="middle" >22:30</text>
+<line x1="299.20" y1="70.00" x2="299.20" y2="292.00" stroke="#3D4946" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="299.20" y="306.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="middle" >23:00</text>
+<line x1="373.79" y1="70.00" x2="373.79" y2="292.00" stroke="#3D4946" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="373.79" y="306.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="middle" >23:30</text>
+<line x1="448.39" y1="70.00" x2="448.39" y2="292.00" stroke="#3D4946" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="448.39" y="306.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="middle" >00:00</text>
+<line x1="522.99" y1="70.00" x2="522.99" y2="292.00" stroke="#3D4946" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="522.99" y="306.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#64748B" text-anchor="middle" >00:30</text>
+<text x="0.00" y="12.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#0F1E1C" text-anchor="start" >LEAD</text>
+<line x1="150.00" y1="64.00" x2="572.72" y2="64.00" stroke="#0F1E1C" stroke-width="1.2" />
+<line x1="189.79" y1="18.00" x2="189.79" y2="64.00" stroke="#0F1E1C" stroke-width="1" />
+<rect x="186.79" y="61.00" width="6.00" height="6.00" fill="#0F1E1C" />
+<text x="193.79" y="16.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >22:16 D1 backup, restore test</text>
+<line x1="214.65" y1="34.00" x2="214.65" y2="64.00" stroke="#0F1E1C" stroke-width="1" />
+<rect x="211.65" y="61.00" width="6.00" height="6.00" fill="#3B2E8C" />
+<text x="218.65" y="32.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >22:26 CONTRACT.md</text>
+<line x1="224.60" y1="50.00" x2="224.60" y2="64.00" stroke="#0F1E1C" stroke-width="1" />
+<rect x="221.60" y="61.00" width="6.00" height="6.00" fill="#0F1E1C" />
+<text x="228.60" y="48.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >22:30 wave 1 dispatched</text>
+<line x1="334.01" y1="18.00" x2="334.01" y2="64.00" stroke="#0F1E1C" stroke-width="1" />
+<rect x="331.01" y="61.00" width="6.00" height="6.00" fill="#0F1E1C" />
+<text x="338.01" y="16.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >23:14 wave 2 dispatched</text>
+<line x1="530.45" y1="50.00" x2="530.45" y2="64.00" stroke="#0F1E1C" stroke-width="1" />
+<rect x="527.45" y="61.00" width="6.00" height="6.00" fill="#0F1E1C" />
+<text x="526.45" y="48.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="end" >00:33 preview deployed</text>
+<line x1="537.91" y1="34.00" x2="537.91" y2="64.00" stroke="#0F1E1C" stroke-width="1" />
+<rect x="534.91" y="61.00" width="6.00" height="6.00" fill="#0F1E1C" />
+<text x="533.91" y="32.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="end" >00:36 every spec passes live</text>
+<text x="0.00" y="102.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#14B8A6" text-anchor="start" >F</text>
+<text x="24.00" y="102.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#64748B" text-anchor="start" >Foundation</text>
+<rect x="224.60" y="90.00" width="87.03" height="18.00" fill="#14B8A6" />
+<text x="268.11" y="102.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" >35 min</text>
+<text x="317.63" y="102.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >merged 23:05 · run 37 min · 114 calls</text>
+<text x="0.00" y="133.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#14B8A6" text-anchor="start" >D</text>
+<text x="24.00" y="133.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#64748B" text-anchor="start" >Design system</text>
+<rect x="224.60" y="121.00" width="47.25" height="18.00" fill="#14B8A6" />
+<text x="248.22" y="133.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" >19 min</text>
+<text x="277.84" y="133.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >merged 22:49 · run 19 min · 58 calls</text>
+<text x="0.00" y="164.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#059669" text-anchor="start" >P2</text>
+<text x="24.00" y="164.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#64748B" text-anchor="start" >Project + BQ</text>
+<rect x="334.01" y="152.00" width="106.92" height="18.00" fill="#059669" />
+<text x="387.47" y="164.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" >43 min</text>
+<text x="328.01" y="164.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="end" >merged 23:57 · run 39 min · 124 calls</text>
+<text x="0.00" y="195.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#059669" text-anchor="start" >O</text>
+<text x="24.00" y="195.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#64748B" text-anchor="start" >Organisasi</text>
+<rect x="334.01" y="183.00" width="129.30" height="18.00" fill="#059669" />
+<text x="398.66" y="195.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" >52 min</text>
+<text x="328.01" y="195.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="end" >merged 00:06 · run 51 min · 132 calls</text>
+<text x="0.00" y="226.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#059669" text-anchor="start" >K</text>
+<text x="24.00" y="226.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#64748B" text-anchor="start" >Kontrak + import</text>
+<rect x="334.01" y="214.00" width="161.63" height="18.00" fill="#059669" />
+<text x="414.82" y="226.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" >65 min</text>
+<text x="328.01" y="226.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="end" >merged 00:19 · run 56 min · 129 calls</text>
+<text x="0.00" y="257.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#059669" text-anchor="start" >P1</text>
+<text x="24.00" y="257.00" font-family="'General Sans', sans-serif" font-size="9.2" font-weight="500" fill="#64748B" text-anchor="start" >Dashboard + list</text>
+<rect x="334.01" y="245.00" width="174.06" height="18.00" fill="#059669" />
+<text x="421.04" y="257.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" >70 min</text>
+<text x="328.01" y="257.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="end" >merged 00:24 · run 56 min · 124 calls</text>
+</svg>

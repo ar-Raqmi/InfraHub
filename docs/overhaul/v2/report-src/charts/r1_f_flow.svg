@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1fflow" viewBox="0 0 657.64 150.00" role="img" aria-label="Import, decide, publish: the path an Excel file takes into a contract" style="display:block;width:100%;height:auto">
+<defs><marker id="r1fflow-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<defs><marker id="r1fflow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#D97706"/></marker></defs>
+<rect x="0.00" y="8.00" width="118.73" height="98.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="0.00" y="8.00" width="4.00" height="98.00" fill="#3B2E8C" />
+<text x="10.00" y="24.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#3B2E8C" text-anchor="start" >1 Read</text>
+<text x="10.00" y="38.10" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >SheetJS parses the</text>
+<text x="10.00" y="49.54" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >file in the browser;</text>
+<text x="10.00" y="60.98" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >every rate and unit</text>
+<text x="10.00" y="72.42" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >is copied from its</text>
+<text x="10.00" y="83.86" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >cell</text>
+<path d="M119.7,57.0 L132.7,57.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1fflow-p)"/>
+<rect x="134.73" y="8.00" width="118.73" height="98.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="134.73" y="8.00" width="4.00" height="98.00" fill="#3B2E8C" />
+<text x="144.73" y="24.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#3B2E8C" text-anchor="start" >2 Match</text>
+<text x="144.73" y="38.10" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >EXACT, CODE, FUZZY</text>
+<text x="144.73" y="49.54" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >or NEW against the</text>
+<text x="144.73" y="60.98" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >old book; unsure</text>
+<text x="144.73" y="72.42" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >pairs stay PENDING</text>
+<path d="M254.5,57.0 L267.5,57.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1fflow-p)"/>
+<rect x="269.46" y="8.00" width="118.73" height="98.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="269.46" y="8.00" width="4.00" height="98.00" fill="#3B2E8C" />
+<text x="279.46" y="24.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#3B2E8C" text-anchor="start" >3 Import</text>
+<text x="279.46" y="38.10" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >POST</text>
+<text x="279.46" y="49.54" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >/versions/import</text>
+<text x="279.46" y="60.98" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >makes a DRAF version</text>
+<text x="279.46" y="72.42" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >and its match rows</text>
+<text x="279.46" y="83.86" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >(201)</text>
+<path d="M389.2,57.0 L402.2,57.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1fflow-p)"/>
+<rect x="404.18" y="8.00" width="118.73" height="98.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="404.18" y="8.00" width="4.00" height="98.00" fill="#3B2E8C" />
+<text x="414.18" y="24.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#3B2E8C" text-anchor="start" >4 Decide</text>
+<text x="414.18" y="38.10" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >an officer accepts</text>
+<text x="414.18" y="49.54" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >or rejects each</text>
+<text x="414.18" y="60.98" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >PENDING match</text>
+<text x="414.18" y="72.42" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#0F1E1C" text-anchor="start" >(PATCH, 200)</text>
+<path d="M523.9,57.0 L536.9,57.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1fflow-p)"/>
+<rect x="538.91" y="8.00" width="118.73" height="98.00" fill="#3B2E8C" stroke="#3B2E8C" stroke-width="1" />
+<text x="546.91" y="24.50" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="600" fill="#F6F4EE" text-anchor="start" >5 Publish</text>
+<text x="546.91" y="38.10" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#F6F4EE" text-anchor="start" >TERBIT with a</text>
+<text x="546.91" y="49.54" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#F6F4EE" text-anchor="start" >message; diff stats</text>
+<text x="546.91" y="60.98" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="400" fill="#F6F4EE" text-anchor="start" >are logged (200)</text>
+<path d="M530.9,112.0 L530.9,126.0" stroke="#D97706" stroke-width="1.4" fill="none" marker-end="url(#r1fflow-a)"/>
+<text x="530.91" y="142.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#D97706" text-anchor="end" >publish before step 4 is done: 409 (call 17)</text>
+</svg>

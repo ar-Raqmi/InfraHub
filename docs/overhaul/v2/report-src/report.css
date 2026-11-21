@@ -1,0 +1,404 @@
+/* =====================================================================================================
+   InfraHub Overhaul: Discovery Report  ·  report.css (the single stylesheet)
+   A4 portrait, one fixed <section class="page"> per printed page, nothing reflows across pages.
+   Fonts come from fonts.css: Zodiak (display serif 400/700/800), General Sans (body 400-700),
+   JetBrains Mono (codes, numbers, captions).
+   Colour code (a teaching device, keep it consistent):
+     purple  = a contract / rate book / sebutharga       emerald, teal = the system (InfraHub itself)
+     amber   = risk, warning, danger                     slate         = secondary text, inference
+   Sharp corners everywhere: border-radius is forced to 0 below.
+   Reusable classes are documented in TEMPLATE-NOTES.md (page anatomy, opener, figure, tag, etc.).
+   ===================================================================================================== */
+
+@page { size: A4; margin: 0; }
+
+:root {
+  --ink: #0F1E1C; --paper: #F6F4EE; --white: #FFFFFF;
+  --em: #10B981; --deep: #059669; --teal: #14B8A6;
+  --purple: #3B2E8C; --amber: #D97706; --slate: #64748B;
+  /* tints = palette colour mixed with paper */
+  --paper-2: #ECE9E1;     /* panel on paper */
+  --hair: #CFCBC0;        /* hairlines */
+  --em-t: #D8EFE3;        /* emerald tint */
+  --teal-t: #D6EEE9;
+  --purple-t: #E3E0EC;    /* purple tint */
+  --purple-m: #8E87B7;
+  --amber-t: #F5E3C8;     /* amber tint */
+  --slate-t: #E2E3E2;
+  --pad-top: 16mm; --pad-x: 18mm; --pad-bottom: 22mm;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
+html { background: #CFCBC0; }
+body {
+  font-family: 'General Sans', sans-serif; font-size: 10.25pt; line-height: 1.45; color: var(--ink);
+  font-kerning: normal; font-feature-settings: "kern", "liga";
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+/* ---------------------------------------------------------------- page anatomy */
+.page {
+  width: 210mm; height: 297mm; position: relative; overflow: hidden; background: var(--paper);
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom); break-after: page; page-break-after: always;
+  display: flex; flex-direction: column;
+}
+.page:last-child { break-after: auto; page-break-after: auto; }
+@media screen { .page { margin: 8mm auto; } }
+.page.ink { background: var(--ink); color: var(--paper); }
+.page.tight { --pad-top: 13mm; }
+.fill { flex: 1 1 auto !important; min-height: 0; }          /* absorbs the slack in a column page */
+.push { margin-top: auto !important; }                       /* pins a block to the bottom of the content area */
+
+/* footer (injected by build.py): left = report name, middle = running chapter title, right = page number */
+.folio {
+  position: absolute; left: var(--pad-x); right: var(--pad-x); bottom: 9mm;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 6mm;
+  padding-top: 2.2mm; border-top: 0.6pt solid var(--hair);
+  font: 500 6.8pt/1 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--slate);
+}
+.folio .run { flex: 1; text-align: center; color: var(--ink); font-weight: 600; }
+.folio .pg { font-weight: 800; color: var(--ink); font-size: 8pt; }
+.page.ink .folio { border-top-color: #2E3B38; color: #8A9592; }
+.page.ink .folio .run, .page.ink .folio .pg { color: var(--paper); }
+
+/* ---------------------------------------------------------------- chapter opener (full-bleed band) */
+.opener {
+  margin: calc(-1 * var(--pad-top)) calc(-1 * var(--pad-x)) 7mm; padding: 13mm var(--pad-x) 8mm;
+  background: var(--ink); color: var(--paper);
+  display: grid; grid-template-columns: 46mm 1fr; column-gap: 6mm; align-items: end; flex: 0 0 auto;
+}
+.opener.sys { background: var(--deep); }
+.opener.contract { background: var(--purple); }
+.opener.risk { background: #B45F06; }
+.opener .no { font: 800 92pt/0.78 'Zodiak', serif; letter-spacing: -0.04em; color: var(--paper); }
+.opener.sys .no { color: #BDEBD7; }
+.opener.contract .no { color: #C9C3EA; }
+.opener .kicker { color: rgba(246,244,238,.72); margin-bottom: 2.5mm; }
+.opener h1 { font: 800 30pt/1.02 'Zodiak', serif; letter-spacing: -0.015em; }
+.opener .dek { margin-top: 3mm; font: 500 11pt/1.4 'General Sans', sans-serif; max-width: 118mm; color: rgba(246,244,238,.9); }
+
+/* ---------------------------------------------------------------- type */
+.kicker { font: 600 7.4pt/1.2 'JetBrains Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--slate); }
+h2 { font: 700 18pt/1.1 'Zodiak', serif; letter-spacing: -0.01em; margin: 0 0 2.6mm; }
+h2.big { font-size: 24pt; font-weight: 800; }
+h3 { font: 700 10.5pt/1.25 'General Sans', sans-serif; margin: 0 0 1.4mm; }
+h4 { font: 600 7.4pt/1.2 'JetBrains Mono', monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--slate); margin: 0 0 1.6mm; }
+p + p { margin-top: 2mm; }
+.lede { font: 400 13pt/1.38 'Zodiak', serif; letter-spacing: -0.003em; }
+.measure { max-width: 128mm; }
+.small { font-size: 8.8pt; line-height: 1.42; }
+.muted { color: var(--slate); }
+b, strong { font-weight: 600; }
+code, .mono { font-family: 'JetBrains Mono', monospace; font-size: .86em; font-weight: 500; }
+.src { font: 500 7.2pt/1.3 'JetBrains Mono', monospace; color: var(--slate); letter-spacing: .01em; }
+.purple { color: var(--purple); } .amber { color: var(--amber); } .deep { color: var(--deep); }
+.sp-1 { margin-top: 2mm; } .sp-2 { margin-top: 4mm; } .sp-3 { margin-top: 6mm; } .sp-4 { margin-top: 9mm; }
+.rule { border: 0; border-top: 0.6pt solid var(--hair); margin: 4mm 0; }
+.rule.ink { border-top: 1.2pt solid var(--ink); }
+ul.list { list-style: none; } ul.list li { padding-left: 4mm; position: relative; }
+ul.list li + li { margin-top: 1.2mm; }
+ul.list li::before { content: ""; position: absolute; left: 0; top: .62em; width: 1.6mm; height: 1.6mm; background: var(--deep); }
+ul.list.l-amber li::before { background: var(--amber); } ul.list.l-purple li::before { background: var(--purple); }
+ol.num { list-style: none; counter-reset: n; }
+ol.num > li { counter-increment: n; position: relative; padding-left: 8mm; }
+ol.num > li + li { margin-top: 1.8mm; }
+ol.num > li::before { content: counter(n); position: absolute; left: 0; top: .05em; width: 5mm; height: 5mm;
+  background: var(--ink); color: var(--paper); font: 800 7.5pt/5mm 'JetBrains Mono', monospace; text-align: center; }
+ol.num.n-purple > li::before { background: var(--purple); } ol.num.n-amber > li::before { background: var(--amber); }
+
+/* ---------------------------------------------------------------- layout helpers */
+.cols-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
+.cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 6mm; }
+.cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 4mm; }
+.cols-rail { display: grid; grid-template-columns: 42mm 1fr; column-gap: 8mm; }   /* side label + main */
+.cols-7-5 { display: grid; grid-template-columns: 7fr 5fr; column-gap: 8mm; }
+.cols-5-7 { display: grid; grid-template-columns: 5fr 7fr; column-gap: 8mm; }
+.gap-y > * + * { margin-top: 4mm; }
+.span-all { grid-column: 1 / -1; }
+
+/* ---------------------------------------------------------------- tags (Verified / Inference / Needs your answer) */
+.tag { display: inline-block; vertical-align: 0.12em; padding: 0.55mm 1.4mm 0.45mm; margin: 0 0.6mm;
+  font: 700 6.4pt/1 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.tag.v { background: var(--deep); color: var(--paper); }
+.tag.i { background: transparent; color: var(--slate); box-shadow: inset 0 0 0 0.7pt var(--slate); }
+.tag.q { background: var(--ink); color: var(--paper); }
+.tag.c { background: var(--purple); color: var(--paper); }     /* contract */
+.tag.r { background: var(--amber); color: var(--paper); }      /* risk */
+.tag.s { background: var(--paper-2); color: var(--ink); }      /* neutral label, e.g. effort S/M/L */
+
+/* ---------------------------------------------------------------- figures and charts */
+.fig { margin: 0; break-inside: avoid; }
+.fig-title { font: 700 13pt/1.15 'Zodiak', serif; letter-spacing: -0.005em; margin-bottom: 1mm; }
+.fig-title.lg { font-size: 17pt; font-weight: 800; }
+.fig-sub { font-size: 8.8pt; line-height: 1.35; color: var(--slate); margin-bottom: 2.6mm; }
+.fig svg { display: block; width: 100%; height: auto; overflow: visible; }
+.fig figcaption, .cap { margin-top: 2mm; padding-top: 1.4mm; border-top: 0.6pt solid var(--hair);
+  font: 500 7.5pt/1.4 'JetBrains Mono', monospace; color: var(--slate); }
+.fig figcaption b, .cap b { color: var(--ink); font-weight: 700; }
+
+/* ---------------------------------------------------------------- big numbers */
+.stat .n { font: 800 40pt/0.9 'Zodiak', serif; letter-spacing: -0.03em; }
+.stat .n .u { font-size: .42em; font-weight: 700; letter-spacing: 0; margin-left: .6mm; }
+.stat .l { margin-top: 2mm; font-size: 8.8pt; line-height: 1.35; }
+.stat .l b { display: block; font-size: 9.8pt; }
+.stat.xl .n { font-size: 96pt; }
+.stat.lg .n { font-size: 56pt; }
+.stat.s-purple .n { color: var(--purple); } .stat.s-amber .n { color: var(--amber); } .stat.s-deep .n { color: var(--deep); }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 7mm; row-gap: 7mm; }
+.stat-grid .stat { border-top: 1.4pt solid var(--ink); padding-top: 3mm; }
+
+/* ---------------------------------------------------------------- cards */
+.card { background: var(--white); border-top: 3pt solid var(--c, var(--ink)); padding: 3.2mm 3.6mm 3.6mm; break-inside: avoid; }
+.card.sys { --c: var(--deep); } .card.contract { --c: var(--purple); } .card.risk { --c: var(--amber); }
+.card.flat { background: var(--paper-2); }
+.card.fill-contract { background: var(--purple); color: var(--paper); --c: var(--purple); }
+.card.fill-ink { background: var(--ink); color: var(--paper); --c: var(--ink); }
+.card h3 { margin-bottom: 1.2mm; }
+.card .kicker { margin-bottom: 1.4mm; }
+
+/* formula card: rule, formula, plain words, source */
+.formula { background: var(--white); border-left: 3pt solid var(--c, var(--deep)); padding: 3mm 3.6mm; break-inside: avoid; }
+.formula.risk { --c: var(--amber); } .formula.contract { --c: var(--purple); }
+.formula .eq { font: 600 8.6pt/1.45 'JetBrains Mono', monospace; background: var(--paper-2); padding: 1.6mm 2.2mm; margin: 1.4mm 0 1.8mm; }
+.formula .eq .op { color: var(--slate); }
+.formula p { font-size: 9pt; line-height: 1.42; }
+
+/* ---------------------------------------------------------------- tables */
+table { width: 100%; border-collapse: collapse; }
+table.data { font-size: 8.6pt; line-height: 1.35; }
+table.data th { font: 700 6.8pt/1.2 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--slate); text-align: left; padding: 0 2.2mm 1.6mm 0; border-bottom: 1.2pt solid var(--ink); vertical-align: bottom; }
+table.data td { padding: 1.6mm 2.2mm 1.6mm 0; border-bottom: 0.6pt solid var(--hair); vertical-align: top; }
+table.data td.num, table.data th.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 8.2pt; }
+table.data td.code { font-family: 'JetBrains Mono', monospace; font-size: 8pt; font-weight: 600; white-space: nowrap; }
+table.data tr.hl td { background: var(--purple-t); }
+table.data.compact td { padding-top: 1.1mm; padding-bottom: 1.1mm; }
+
+/* comparison table: first column = row label; .rec column = the recommended option (purple) */
+table.cmp { font-size: 8.9pt; line-height: 1.34; table-layout: fixed; }
+table.cmp th { font: 700 7pt/1.2 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase;
+  text-align: left; padding: 2mm 2mm; background: var(--ink); color: var(--paper); vertical-align: bottom; }
+table.cmp th.rec { background: var(--purple); }
+table.cmp td { padding: 1.7mm 2mm; border-bottom: 0.6pt solid var(--hair); vertical-align: top; }
+table.cmp td:first-child { font-weight: 600; background: var(--paper-2); }
+table.cmp td.rec { background: var(--purple-t); }
+table.cmp td.bad { color: var(--amber); font-weight: 600; }
+
+/* swimlane: status x who x fields x documents */
+table.swim { font-size: 8.8pt; line-height: 1.36; table-layout: fixed; }
+table.swim th { font: 700 6.8pt/1.2 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--slate); text-align: left; padding: 0 2mm 1.6mm; border-bottom: 1.2pt solid var(--ink); }
+table.swim td { padding: 2mm 2mm; border-bottom: 0.6pt solid var(--hair); vertical-align: top; }
+table.swim td.st { border-left: 3pt solid var(--c); background: var(--white); }
+table.swim td.st b { display: block; font: 800 8pt/1.2 'JetBrains Mono', monospace; letter-spacing: .02em; }
+table.swim td.st span { display: block; margin-top: .8mm; font-size: 8pt; color: var(--slate); line-height: 1.3; }
+table.swim td.who { font: 700 8pt/1.3 'JetBrains Mono', monospace; }
+table.swim td .auto { color: var(--deep); font-weight: 600; }
+table.swim td .man { color: var(--amber); font-weight: 600; }
+
+/* ---------------------------------------------------------------- pull quote */
+.pull { border-left: 4pt solid var(--purple); padding: 1mm 0 1mm 6mm; }
+.pull q, .pull p:not(.by) { font: 800 22pt/1.14 'Zodiak', serif; letter-spacing: -0.012em; color: var(--purple); quotes: none; }
+.pull .by { margin-top: 2.5mm; }
+
+/* ---------------------------------------------------------------- checklist (decisions) */
+.check { display: grid; grid-template-columns: 5mm 1fr; column-gap: 3mm; padding: 1.9mm 0; border-bottom: 0.6pt solid var(--hair); break-inside: avoid; }
+.check .box { width: 4.2mm; height: 4.2mm; border: 1.1pt solid var(--ink); background: var(--white); margin-top: .5mm; }
+.check .qn { font-weight: 600; font-size: 9.6pt; line-height: 1.35; }
+.check .why { font-size: 8.6pt; line-height: 1.38; color: #34413F; margin-top: .8mm; }
+.check .why .src { margin-left: 1mm; }
+.group-head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1.4pt solid var(--c, var(--ink)); padding-bottom: 1.2mm; margin-top: 4mm; }
+.group-head:first-child { margin-top: 0; }
+.group-head h3 { font: 800 13pt/1.1 'Zodiak', serif; color: var(--c, var(--ink)); margin: 0; }
+.group-head.contract { --c: var(--purple); } .group-head.risk { --c: var(--amber); } .group-head.sys { --c: var(--deep); }
+
+/* ---------------------------------------------------------------- ranked list with impact bar */
+table.rank { font-size: 8.3pt; line-height: 1.32; table-layout: fixed; }
+table.rank td { padding: 1.5mm 2mm 1.5mm 0; border-bottom: 0.6pt solid var(--hair); vertical-align: top; }
+table.rank th { font: 700 6.8pt/1.2 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--slate);
+  text-align: left; padding: 0 2mm 1.4mm 0; border-bottom: 1.2pt solid var(--ink); }
+table.rank td.r { font: 800 12pt/1 'Zodiak', serif; }
+table.rank .impact { height: 2.2mm; background: var(--amber); margin-top: 1.4mm; }
+table.rank .impact.lo { background: var(--slate); }
+
+/* ---------------------------------------------------------------- roadmap steps */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 0; }
+.step { position: relative; padding: 3.4mm 6mm 4mm 4mm; background: var(--white); border-top: 3pt solid var(--c, var(--purple)); }
+.step + .step { margin-left: 3mm; }
+.step .when { font: 700 7pt/1 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--c, var(--purple)); }
+.step .big { font: 800 30pt/0.9 'Zodiak', serif; color: var(--c, var(--purple)); margin: 1.6mm 0 1.6mm; }
+.step h3 { font-size: 10pt; }
+.step p, .step li { font-size: 8.7pt; line-height: 1.38; }
+.step.now { --c: var(--amber); }
+
+/* ---------------------------------------------------------------- callouts and panels */
+.callout { background: var(--paper-2); padding: 3.4mm 4mm; border-left: 3pt solid var(--c, var(--ink)); }
+.callout.risk { --c: var(--amber); background: var(--amber-t); }
+.callout.contract { --c: var(--purple); background: var(--purple-t); }
+.callout.sys { --c: var(--deep); background: var(--em-t); }
+.legend { display: flex; flex-wrap: wrap; gap: 2mm 5mm; font-size: 8.6pt; align-items: center; }
+.swatch { display: inline-block; width: 3.2mm; height: 3.2mm; vertical-align: -0.4mm; margin-right: 1.4mm; }
+
+/* ---------------------------------------------------------------- full-bleed image page (for UX screenshots) */
+.page.bleed { padding: 0; }
+.page.bleed > img { position: absolute; inset: 0; width: 210mm; height: 297mm; object-fit: cover; }
+.page.bleed .bleed-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 6mm var(--pad-x) 16mm;
+  background: var(--ink); color: var(--paper); }
+.page.bleed .folio { z-index: 2; }
+.shot { display: block; width: 100%; border: 0.75pt solid var(--ink); background: var(--white); }
+
+/* ---------------------------------------------------------------- cover */
+.page.cover { background: var(--ink); color: var(--paper); padding: 16mm 18mm 14mm; }
+.cover .top { display: flex; justify-content: space-between; align-items: baseline; }
+.cover .kicker { color: #8A9592; }
+.cover h1 { font: 800 62pt/0.92 'Zodiak', serif; letter-spacing: -0.035em; margin-top: 14mm; }
+.cover h1 em { font-style: normal; color: var(--em); }
+.cover .sub { margin-top: 6mm; font: 500 13pt/1.38 'General Sans', sans-serif; max-width: 140mm; color: #D9DED9; }
+.cover .meta { margin-top: 6mm; font: 500 7.8pt/1.6 'JetBrains Mono', monospace; letter-spacing: .04em; color: #9AA5A2; }
+.cover .meta b { color: var(--paper); font-weight: 700; }
+.cover .motif { margin-top: auto; }
+
+/* ---------------------------------------------------------------- contents list */
+.toc { list-style: none; }
+.toc li { display: grid; grid-template-columns: 9mm 1fr 10mm; align-items: baseline; padding: 1.3mm 0; border-bottom: 0.6pt solid var(--hair); font-size: 9.4pt; }
+.toc li .k { font: 800 8pt/1 'JetBrains Mono', monospace; }
+.toc li .p { text-align: right; font: 700 8pt/1 'JetBrains Mono', monospace; }
+.toc li.later { color: var(--slate); }
+
+/* checklist laid out in two columns inside a group */
+.checks { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
+.card.fill-ink ol.num > li::before { background: var(--amber); }
+.card.fill-contract .tag.s, .card.fill-ink .tag.s { background: rgba(246,244,238,.18); color: var(--paper); }
+.check .why::after { content: ""; display: block; height: 5.5mm; border-bottom: 0.6pt dotted var(--slate); }
+.notes-box { border: 0.8pt solid var(--ink); padding: 3mm 4mm; background:
+  repeating-linear-gradient(to bottom, transparent 0, transparent 7.4mm, var(--hair) 7.4mm, var(--hair) 7.7mm); }
+body { counter-reset: q; }
+.check .qn::before { counter-increment: q; content: counter(q, decimal-leading-zero) "  "; font: 800 8pt 'JetBrains Mono', monospace; color: var(--slate); }
+.pull.xl q, .pull.xl p:not(.by) { font-size: 27pt; }
+
+
+/* =====================================================================================================
+   UX CHAPTERS 10-14 (appended block; added by the UX-chapters builder; no rule above was changed)
+   ===================================================================================================== */
+/* screenshot with numbered call-out markers: <div class="shotbox"><img class="shot" src=…><span class="mk" style="left:x%;top:y%">1</span></div> */
+.shotbox { position: relative; }
+.shotbox .shot { width: 100%; }
+.mk { position: absolute; transform: translate(-50%, -50%); width: 5.2mm; height: 5.2mm; background: var(--amber); color: var(--white);
+  font: 800 7.6pt/5.2mm 'JetBrains Mono', monospace; text-align: center; box-shadow: 0 0 0 0.9pt var(--white); }
+.mk.ink { background: var(--ink); } .mk.contract { background: var(--purple); }
+.mk-ref { display: inline-block; width: 4.2mm; height: 4.2mm; background: var(--amber); color: var(--white); vertical-align: -0.5mm;
+  font: 800 6.6pt/4.2mm 'JetBrains Mono', monospace; text-align: center; margin-right: 1.4mm; }
+.mk-ref.ink { background: var(--ink); } .mk-ref.contract { background: var(--purple); }
+/* issue notes beside a screenshot */
+.issue { padding: 2mm 0 2.2mm; border-top: 0.6pt solid var(--hair); }
+.issue:first-child { border-top: 0; padding-top: 0; }
+.issue h3 { font-size: 9.8pt; }
+.issue p { font-size: 8.7pt; line-height: 1.4; }
+.sev { display: inline-block; font: 800 6.4pt/1 'JetBrains Mono', monospace; letter-spacing: .08em; padding: .6mm 1.3mm .5mm;
+  background: var(--amber); color: var(--white); vertical-align: .15em; margin-right: 1mm; }
+.sev.s2 { background: var(--ink); } .sev.s3 { background: var(--paper-2); color: var(--ink); }
+/* phone screenshot frame */
+.phone { display: block; width: 100%; border: 1.6pt solid var(--ink); background: var(--white); }
+.phones { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 3.6mm; }
+.phones figcaption { margin-top: 1.4mm; }
+/* concept screens */
+.screen { margin: 0; }
+.screen + .screen { margin-top: 4.5mm; }
+.screen .shot { border-color: var(--ink); }
+.screen figcaption { display: grid; grid-template-columns: 9mm 1fr; column-gap: 2mm; margin-top: 1.6mm; padding-top: 1.4mm;
+  border-top: 0.6pt solid var(--hair); font: 500 7.6pt/1.42 'JetBrains Mono', monospace; color: var(--slate); }
+.screen figcaption .k { font: 800 12pt/1 'Zodiak', serif; color: var(--deep); }
+.screen figcaption b { color: var(--ink); font-weight: 700; }
+.board-head { display: block; width: 100%; border: 0.75pt solid var(--hair); }
+/* dot ratings: five squares, filled = score */
+.dots { display: inline-flex; gap: 0.9mm; vertical-align: -0.2mm; }
+.dots i { display: block; width: 2.6mm; height: 2.6mm; box-shadow: inset 0 0 0 0.7pt var(--ink); }
+.dots i.on { background: var(--ink); }
+.dots.best i.on { background: var(--deep); box-shadow: inset 0 0 0 0.7pt var(--deep); }
+table.matrix { table-layout: fixed; font-size: 8.4pt; line-height: 1.34; }
+table.matrix th { font: 700 7pt/1.2 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; text-align: left;
+  padding: 2mm; background: var(--ink); color: var(--paper); vertical-align: bottom; }
+table.matrix th .nm { display: block; font: 800 13pt/1.05 'Zodiak', serif; letter-spacing: 0; text-transform: none; margin-top: .6mm; }
+table.matrix td { padding: 2mm; border-bottom: 0.6pt solid var(--hair); vertical-align: top; }
+table.matrix td:first-child { font-weight: 600; background: var(--paper-2); }
+table.matrix td .why { display: block; margin-top: 1mm; color: var(--slate); font-size: 7.8pt; }
+/* effort range bars (weeks) */
+.effort { display: grid; grid-template-columns: 30mm 1fr 22mm; align-items: center; row-gap: 2.4mm; column-gap: 3mm; font-size: 8.8pt; }
+.effort .track { position: relative; height: 6mm; background: repeating-linear-gradient(to right, var(--paper-2) 0, var(--paper-2) calc(100%/12 - 0.4pt), var(--hair) calc(100%/12 - 0.4pt), var(--hair) calc(100%/12)); }
+.effort .bar { position: absolute; top: 0; bottom: 0; background: var(--deep); }
+.effort .w { font: 700 8.4pt/1 'JetBrains Mono', monospace; }
+.effort .axis { grid-column: 2; display: flex; justify-content: space-between; font: 500 6.8pt/1 'JetBrains Mono', monospace; color: var(--slate); }
+/* merge composite diagram: three source parts on top, the shared contract model as a band under all three */
+.merge { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 3mm; row-gap: 0; align-items: stretch; }
+.merge .part { background: var(--white); border-top: 3pt solid var(--c, var(--deep)); padding: 2.4mm 2.4mm 2.6mm; }
+.merge .part.contract { --c: var(--purple); } .merge .part.field { --c: var(--teal); }
+.merge .part img { display: block; width: 100%; border: 0.6pt solid var(--hair); }
+.merge .part img + img { margin-top: 1.6mm; }
+.merge .part .from { font: 700 6.8pt/1.2 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--c, var(--deep)); }
+.merge .part h3 { font-size: 9.6pt; margin: 1mm 0 1.8mm; }
+.merge .part p { font-size: 8.2pt; line-height: 1.36; margin-top: 1.8mm; }
+.merge .stem { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 3mm; height: 5mm; }
+.merge .stem i { display: block; width: 1.2pt; height: 100%; background: var(--purple); margin: 0 auto; }
+.merge .core { grid-column: 1 / -1; background: var(--purple); color: var(--paper); padding: 3mm 3.6mm 3.4mm; }
+.merge .core .head { display: flex; align-items: baseline; gap: 4mm; margin-bottom: 2.2mm; }
+.merge .core h3 { font: 800 13pt/1.1 'Zodiak', serif; margin: 0; }
+.merge .core ol.num { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 4mm; }
+.merge .core ol.num > li { font-size: 8pt; line-height: 1.36; margin-top: 0; }
+.merge .core ol.num > li::before { background: var(--paper); color: var(--purple); }
+.merge-rail { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 3mm; margin-bottom: 1.6mm; }
+.merge-rail span { display: block; font: 700 6.8pt/1.3 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--slate); }
+.pc { font-size: 8.8pt; line-height: 1.4; }
+.pc li + li { margin-top: 1.4mm; }
+
+/* ---- R1 additions ---- (build report chapters 00-06; no rule above was changed) */
+/* stat strip under a sub-Yiyi opener: five small numbers in one row */
+.strip { display: grid; grid-template-columns: repeat(5, 1fr); column-gap: 5mm; border-top: 1.4pt solid var(--ink); padding-top: 2.4mm; }
+.strip .s .n { font: 800 21pt/0.95 'Zodiak', serif; letter-spacing: -0.02em; }
+.strip .s .n .u { font-size: .5em; font-weight: 700; letter-spacing: 0; margin-left: .5mm; }
+.strip .s .l { margin-top: 1.3mm; font: 500 6.9pt/1.35 'JetBrains Mono', monospace; color: var(--slate); text-transform: uppercase; letter-spacing: .04em; }
+.strip .s.deep .n { color: var(--deep); } .strip .s.purple .n { color: var(--purple); } .strip .s.amber .n { color: var(--amber); }
+/* raw command output */
+pre.raw { font: 500 7.3pt/1.45 'JetBrains Mono', monospace; background: var(--paper-2); padding: 2.2mm 3mm; border-left: 3pt solid var(--ink);
+  white-space: pre-wrap; overflow-wrap: anywhere; }
+pre.raw .ok { color: var(--deep); font-weight: 700; } pre.raw .bad { color: var(--amber); font-weight: 700; }
+/* screenshot groups */
+.shots-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 5mm; align-items: start; }
+.r1-phones { display: grid; grid-template-columns: 56mm 56mm 1fr; column-gap: 5mm; align-items: start; }
+.shot-cap { font: 500 7.2pt/1.35 'JetBrains Mono', monospace; color: var(--slate); margin-top: 1.4mm; }
+.shot-cap b { color: var(--ink); }
+.shot.soft { border-color: var(--hair); }
+.r1-tagline { display: flex; flex-wrap: wrap; gap: 1.2mm 0.8mm; }
+.who { font: 700 7pt/1 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--slate); }
+.team .card h3 { font: 800 15pt/1.05 'Zodiak', serif; margin-bottom: 1mm; }
+.team .card .nums { margin-top: 2mm; font: 600 7.4pt/1.4 'JetBrains Mono', monospace; color: var(--deep); }
+.team .card.wave2 { --c: var(--deep); } .team .card.wave1 { --c: var(--teal); } .team .card.lead { --c: var(--ink); }
+.stat-grid.sm { row-gap: 4.5mm; } .stat-grid.sm .stat .n { font-size: 31pt; } .stat-grid.sm .stat .n .u { font-size: .4em; }
+.stat-grid.sm .stat .l { font-size: 8.5pt; margin-top: 1.4mm; }
+/* ---- R2 additions ---- */
+/* R2 figures keep their sp-N spacing (.fig resets margins; scoped so R1 pages are unchanged) */
+.page.r2 .fig.sp-1 { margin-top: 2mm; } .page.r2 .fig.sp-2 { margin-top: 4mm; } .page.r2 .fig.sp-3 { margin-top: 6mm; } .page.r2 .fig.sp-4 { margin-top: 9mm; }
+.strip5, .strip4 { display: grid; grid-template-columns: repeat(5, 1fr); column-gap: 5mm; }
+.strip4 { grid-template-columns: repeat(4, 1fr); }
+.strip5 .stat, .strip4 .stat { border-top: 1.4pt solid var(--ink); padding-top: 2.4mm; }
+.strip5 .stat .n, .strip4 .stat .n { font-size: 25pt; }
+.strip5 .stat .l, .strip4 .stat .l { margin-top: 1.4mm; font-size: 7.9pt; line-height: 1.3; }
+.strip5 .stat .l b, .strip4 .stat .l b { font-size: 8.5pt; }
+.cmd { font: 500 7.3pt/1.5 'JetBrains Mono', monospace; background: var(--ink); color: #D9DED9; padding: 2.4mm 3mm;
+  white-space: pre-wrap; overflow-wrap: anywhere; }
+.cmd .c { color: #8A9592; } .cmd .ok { color: #7FE0B5; } .cmd .bad { color: #F2A65A; }
+.phones.p2 { grid-template-columns: repeat(2, 1fr); } .phones.p3 { grid-template-columns: repeat(3, 1fr); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; column-gap: 5mm; }
+.pair .tagline { font: 700 6.8pt/1.2 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1.2mm; }
+.pair .tagline.before { color: var(--slate); } .pair .tagline.after { color: var(--deep); }
+table.data td.ok { color: var(--deep); font-weight: 700; } table.data td.fail { color: var(--amber); font-weight: 700; }
+table.data td.mono, table.data th.mono { font-family: 'JetBrains Mono', monospace; font-size: 8pt; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.hash { font: 600 7.2pt/1.3 'JetBrains Mono', monospace; color: var(--purple); white-space: nowrap; }
+table.log td { padding: 0.75mm 2mm 0.75mm 0; font-size: 7.4pt; line-height: 1.25; border-bottom: 0.5pt solid var(--hair); }
+table.log td.mono { font-size: 6.9pt; }
+.gl dt { font: 700 8.4pt/1.3 'General Sans', sans-serif; }
+.gl dd { font-size: 8.3pt; line-height: 1.36; margin: 0 0 1.8mm; color: #34413F; }
+.gl dt .ms { font: 500 7pt/1 'JetBrains Mono', monospace; color: var(--slate); margin-left: 1.2mm; }
+.bignum { font: 800 34pt/0.95 'Zodiak', serif; letter-spacing: -0.03em; }
+.rule-top { border-top: 1.4pt solid var(--ink); padding-top: 2.4mm; }
+table.filemap td.code { white-space: normal; overflow-wrap: anywhere; }

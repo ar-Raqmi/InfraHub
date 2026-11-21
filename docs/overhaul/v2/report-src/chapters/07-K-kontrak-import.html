@@ -1,0 +1,194 @@
+<!-- chapter: 07 | K · Kontrak and import -->
+<section class="page r2">
+  <header class="opener contract">
+    <div class="no">07</div>
+    <div>
+      <p class="kicker">Sub-Yiyi K · Kontrak &amp; Buku Kadar</p>
+      <h1>Contracts that own their prices</h1>
+      <p class="dek">Asked for: a screen to create, activate and close a sebutharga, and a wizard that turns the
+        officer’s master BQ Excel into a new rate book. A script reads every price. Software only suggests
+        which old line a reworded line is.</p>
+    </div>
+  </header>
+
+  <div class="strip5">
+    <div class="stat"><div class="n">56<span class="u">min</span></div><div class="l"><b>wall time</b>3,358 s, run in parallel with P1, P2, O</div></div>
+    <div class="stat"><div class="n">129</div><div class="l"><b>API calls</b>164,706 output tokens</div></div>
+    <div class="stat s-purple"><div class="n">$10.60</div><div class="l"><b>est. API price</b>plan quota, not dollars</div></div>
+    <div class="stat"><div class="n">21</div><div class="l"><b>e2e checks added</b><span class="mono">K.spec.py</span>; no new unit tests</div></div>
+    <div class="stat s-deep"><div class="n">21/21</div><div class="l"><b>spec result</b>local and live preview <span class="tag v">Verified</span></div></div>
+  </div>
+
+  <h2 class="sp-3">What it built</h2>
+  <p class="measure small">Two screens and a wizard, all on one URL (<code>/kontrak</code>) that keeps its place in the address bar:
+    back, forward and shared links work. Every status change, upload, match decision and publish lands in the
+    change log with who, when and a diff.</p>
+
+  <div class="cols-7-5 sp-2">
+    <figure class="fig">
+      <p class="fig-title">The register shows which sebutharga is in force at a glance</p>
+      <p class="fig-sub">Kontrak &amp; buku kadar, desktop. AKTIF first, then DRAF, then DITUTUP. Each row: code, status, book version, validity, projects, panel size.</p>
+      <img class="shot" src="img-v2/K/01-register-desktop.png" alt="">
+      <figcaption>Anonymised dev seed. Contract codes beginning <b>REAL-K</b> or <b>E2E</b> are test contracts.</figcaption>
+    </figure>
+    <div>
+      <div class="phones p2">
+        <img class="phone" src="img-v2/K/02-register-phone.png" alt="">
+        <img class="phone" src="img-v2/K/03b-detail-book-phone.png" alt="">
+      </div>
+      <p class="cap">Same two screens at 430 px: the register, and one contract with its rate book. Kontrak is on the phone tab bar, so an officer can import a sebutharga from the phone.</p>
+    </div>
+  </div>
+
+  <div class="cols-3 sp-3 push small">
+    <div class="rule-top"><h3>Register and detail</h3><p>Filters by status, kind and text. A purple identity header for the contract, four tiles (projek, projek draf, panel, versi), and the actions Import BQ Excel, Aktifkan and Tutup.</p></div>
+    <div class="rule-top"><h3>Panel and book</h3><p>Add, remove and reorder panel companies, with a per-company cap and a cap meter (amber when over; a warning only). A rate-book browser from category down to variant, searchable, for any version.</p></div>
+    <div class="rule-top"><h3>Version log</h3><p>A commit list per contract (vN, message, TERBIT or DRAF, source LEGACY / IMPORT / CLONE / EDIT) with a diff viewer between any two versions.</p></div>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>The import wizard: five steps, one decision that matters</h2>
+  <p class="measure small">The parser (F’s domain code) reads each cell. Step 4 is the only place a person must decide: a line that was
+    reworded cannot be matched by script with certainty, so it is shown old against new, with a similarity score.
+    Publishing is blocked while any suggestion is still pending.</p>
+  <figure class="fig sp-2">
+    <p class="fig-title">The real file reaches the review step in 1.6 seconds</p>
+    <p class="fig-sub">Numbers are from the officer’s real master BQ run through the UI on 21 Nov (REPORT-K, “Real master BQ through the UI”).</p>
+    {{svg:r2_k_flow}}
+  </figure>
+
+  <div class="cols-7-5 sp-3">
+    <figure class="fig">
+      <p class="fig-title">Each old line meets its new line, side by side</p>
+      <p class="fig-sub">Step 4 on the real file: 154 reworded lines wait for a decision; the rest are exact.</p>
+      <img class="shot" src="img-v2/K/06-review-real-desktop.png" alt="">
+      <figcaption>Tabs count each bucket. <b>Terima N cadangan</b> accepts every suggestion above a chosen score. Keys: J/K move, A accept, R reject, P pick another.</figcaption>
+    </figure>
+    <div>
+      <div class="phones p2">
+        <img class="phone" src="img-v2/K/07-review-real-phone.png" alt="">
+        <img class="phone" src="img-v2/K/08-review-real-phone-sheet.png" alt="">
+      </div>
+      <p class="cap">On a phone one suggestion fills a sheet, with big Terima and Tolak buttons, then jumps to the next pending one.</p>
+    </div>
+  </div>
+
+  <h4 class="sp-3">The five review buckets: who decides what</h4>
+  <table class="data compact">
+    <thead><tr><th style="width:36mm">Bucket</th><th>Meaning</th><th style="width:30mm">Decision</th></tr></thead>
+    <tr><td><b>Sama</b></td><td>Same code, wording and rate as the old book.</td><td>None</td></tr>
+    <tr><td><b>Kadar berubah</b></td><td>Same line, new rate. Shown with old and new rate.</td><td>None; the rate is copied as written</td></tr>
+    <tr><td><b>Perkataan berubah</b></td><td>A kept link where the wording differs (CODE, FUZZY, AI or MANUAL). A suggestion.</td><td class="fail">Person: accept, reject, pick</td></tr>
+    <tr><td><b>Baharu</b></td><td>No old line found, or the suggestion was rejected.</td><td>None</td></tr>
+    <tr><td><b>Dibuang</b></td><td>An old line the new file no longer has.</td><td>None</td></tr>
+  </table>
+
+</section>
+
+<section class="page r2">
+  <h2>How it was proved</h2>
+  <figure class="fig sp-1">
+    <p class="fig-title">Of 465 imported rows, 195 match today’s book exactly and 154 need a human</p>
+    <p class="fig-sub">KESELURUHAN sheet, KONTRAKTOR column, against today’s Pustaka. The two bars are sums of the verified counts: 195 + 154 + 37 = 386 rows in the old book (the same 386 K.spec printed as <span class="mono">book rows</span>) and 195 + 154 + 116 = 465 priced rows in the file.</p>
+    {{svg:r2_k_books}}
+    <figcaption>195 exact = 145 Sama + 50 Kadar berubah. Perkataan berubah (cadangan) = a kept link with different wording; none is accepted until a person decides.</figcaption>
+  </figure>
+
+  <div class="cols-2 sp-3">
+    <div>
+      <h4>The officer’s real file, two ways to read it</h4>
+      <table class="data compact">
+        <thead><tr><th>Book</th><th class="num">Bills</th><th class="num">Groups</th><th class="num">Items</th><th class="num">Variants</th><th class="num">Priced</th><th class="num">Warn</th></tr></thead>
+        <tr><td><b>KESELURUHAN</b> sheet</td><td class="num">16</td><td class="num">98</td><td class="num">174</td><td class="num">342</td><td class="num">465</td><td class="num">0</td></tr>
+        <tr><td><b>16 category</b> sheets</td><td class="num">16</td><td class="num">109</td><td class="num">201</td><td class="num">359</td><td class="num">508</td><td class="num">0</td></tr>
+      </table>
+      <p class="small sp-1">The wizard offers both. It defaults to the choice that has a KONTRAKTOR column. Which sheet is the 2026 book is your call (chapter 90). Parsed in the browser in 0.45 s. <span class="tag v">Verified</span> <span class="src">LEAD-FACTS · REPORT-K</span></p>
+      <h4 class="sp-3">Check that can fail</h4>
+      <p class="small">K ran its spec a second time with the reworded row made exact (<span class="mono">REWORD_TAIL=""</span>). The spec must fail, and it did:</p>
+      <div class="cmd sp-1"><span class="bad">FAIL</span>  review counts 1/1/1/1/removed
+<span class="bad">FAIL</span>  publish is blocked while a match is pending
+<span class="bad">FAIL</span>  one PENDING candidate shown side by side
+<span class="bad">FAIL</span>  spec ran to the end  TimeoutError
+<span class="c">6/10 checks passed in 33.9s   exit=1</span></div>
+    </div>
+    <div>
+      <h4>What the 21 checks cover (K.spec.py, pja01)</h4>
+      <ol class="num small">
+        <li>Clone a contract with a unique code; the <b>API’s own</b> duplicate-code message shows.</li>
+        <li>Upload a workbook built from the live book: default rate column, preview of 4 rates, 0 warnings.</li>
+        <li>Review counts 1 / 1 / 1 / 1 and 383 removed; <b>publish refused while a match is pending</b>.</li>
+        <li>Accept it; an empty commit message is refused; publish.</li>
+        <li>Diff tiles, version log (v2 on top, TERBIT, Import Excel), stats line, diff-viewer tab counts.</li>
+        <li>Change log has import, match, publish with the actor and a diff. The AKTIF contract is untouched; the test contract is deleted.</li>
+      </ol>
+      <p class="small sp-2">Local merged server: 21/21 in 4.4 s. Live preview: 21/21 in 8.6 s. <span class="tag v">Verified</span> <span class="src">merged-e2e/K.log</span></p>
+    </div>
+  </div>
+
+  <div class="callout contract sp-3 push">
+    <h3>Where AI is, and is not</h3>
+    <p class="small">The AI-assisted match button renders nothing unless the server config says <code>ai.matchSuggest: true</code>.
+      The deterministic parser reached 0 warnings on the real file, so the switch stays off and no AI route exists yet.
+      The word-level highlighting in the side-by-side card is display only. <span class="tag v">Verified</span> (hidden case)
+      <span class="tag i">Inference</span> the AI path would work: no command exercised it.</p>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>History, closing and the way back from Tetapan</h2>
+  <div class="cols-2 sp-1">
+    <figure class="fig">
+      <p class="fig-title">A published import is a commit: message, counts and a diff</p>
+      <p class="fig-sub">The real book resolved and published through the UI: bulk-accept at 70 % took 138 of 154 suggestions; 16 were rejected with the R key. Diff v1 to v2: 93 / 100 / 132 / 53 / 140, where 132 = 116 + 16 and 53 = 37 + 16.</p>
+      <img class="shot" src="img/r2/r2_k_versions.png" alt="">
+    </figure>
+    <figure class="fig">
+      <p class="fig-title">Tutup says what it will do before it does it</p>
+      <p class="fig-sub">Confirm sheet for closing a contract, with the consequences listed. It needs an “I understand” tick. A closed contract cannot be reopened. The panel editor (caps per company, amber over the cap, warns only) sits one tab over.</p>
+      <img class="shot" src="img-v2/K/11-close-confirm-desktop.png" alt="">
+    </figure>
+  </div>
+
+  <h3 class="sp-3">Tetapan now points to Kontrak</h3>
+  <div class="cols-2 sp-1">
+    <figure class="fig">
+      <p class="fig-title">Before: no sign of a contract</p>
+      <img class="shot" src="img-v2/K/14-before-settings-pustaka-desktop.png" alt="">
+    </figure>
+    <figure class="fig">
+      <p class="fig-title">After: Pustaka names its contract</p>
+      <img class="shot" src="img-v2/K/15-after-settings-pustaka-desktop.png" alt="">
+    </figure>
+  </div>
+  <div class="cols-2 sp-2 small">
+    <ul class="list">
+      <li>“Simpan Pustaka” now creates a version of source Suntingan (EDIT) in the contract’s log.</li>
+      <li>A banner in the old per-year “Senarai No. Sebutharga” card points to Kontrak.</li>
+    </ul>
+    <ul class="list">
+      <li>On the phone, the Tetapan hub gets a purple “Kontrak &amp; buku kadar” row; the old row is renamed “No. Sebutharga (lama)”.</li>
+      <li>Votes, templates, meeting and companies are untouched. K re-rendered the templates section: no page errors.</li>
+    </ul>
+  </div>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout">
+      <h3><span class="tag i">Inference</span> What K could not check</h3>
+      <ul class="list small">
+        <li>390 px width was not screenshotted (430 and 1440 were).</li>
+        <li>That a Pustaka save creates an EDIT version was proved by F, not re-run by K.</li>
+        <li>That Tutup marks draf projects “Perlu harga semula” end to end: K only states it.</li>
+        <li>The AI path with a real binding. Visual fidelity to Direction C is a screenshot judgement.</li>
+      </ul>
+    </div>
+    <div class="callout contract">
+      <h3>What the lead changed after merging</h3>
+      <ul class="list l-purple small">
+        <li><b>Padam.</b> No way to discard a mistaken contract: <code>DELETE /contracts/:id</code>, refused for AKTIF or used contracts, plus a button shown only when allowed. K’s spec now cleans up: contract count 3 before and after.</li>
+        <li><b>One re-price rule</b> for the close sheet (chapter 10). Live seed: 65 re-priceable projects.</li>
+        <li><b>Kontrak on the phone tab bar.</b></li>
+      </ul>
+    </div>
+  </div>
+</section>

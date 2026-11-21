@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1fmatch" viewBox="0 0 657.64 232.00" role="img" aria-label="How the real master BQ matched today&#x27;s Pustaka, and what the publish diff counted" style="display:block;width:100%;height:auto">
+<text x="0.00" y="19.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="start" >New book</text>
+<text x="0.00" y="32.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="500" fill="#64748B" text-anchor="start" >465 priced rows</text>
+<rect x="150.00" y="8.00" width="211.20" height="32.00" fill="#059669" />
+<text x="255.60" y="29.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >195</text>
+<text x="255.60" y="55.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >exact</text>
+<rect x="361.20" y="8.00" width="166.80" height="32.00" fill="#D97706" />
+<text x="444.60" y="29.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >154</text>
+<text x="444.60" y="55.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >reworded</text>
+<rect x="528.00" y="8.00" width="125.64" height="32.00" fill="#14B8A6" />
+<text x="590.82" y="29.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >116</text>
+<text x="590.82" y="55.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >new</text>
+<text x="0.00" y="93.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="start" >Today&#x27;s Pustaka</text>
+<text x="0.00" y="106.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="500" fill="#64748B" text-anchor="start" >386 priced rows</text>
+<rect x="150.00" y="82.00" width="211.20" height="32.00" fill="#059669" />
+<text x="255.60" y="103.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >195</text>
+<text x="255.60" y="129.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >exact</text>
+<rect x="361.20" y="82.00" width="166.80" height="32.00" fill="#D97706" />
+<text x="444.60" y="103.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >154</text>
+<text x="444.60" y="129.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >reworded</text>
+<rect x="528.00" y="82.00" width="40.07" height="32.00" fill="#64748B" />
+<text x="548.04" y="103.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >37</text>
+<text x="548.04" y="129.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >removed</text>
+<text x="0.00" y="167.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="700" fill="#0F1E1C" text-anchor="start" >Publish diff vs base</text>
+<text x="0.00" y="180.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="500" fill="#64748B" text-anchor="start" >503 rows counted</text>
+<rect x="150.00" y="156.00" width="140.18" height="32.00" fill="#A6AEB8" />
+<text x="220.09" y="177.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#0F1E1C" text-anchor="middle" >140</text>
+<text x="220.09" y="203.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >unchanged</text>
+<rect x="290.18" y="156.00" width="101.13" height="32.00" fill="#D97706" />
+<text x="340.74" y="177.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >101</text>
+<text x="340.74" y="203.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >rate changed</text>
+<rect x="391.31" y="156.00" width="107.14" height="32.00" fill="#14B8A6" />
+<text x="444.87" y="177.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >107</text>
+<text x="444.87" y="203.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >wording</text>
+<rect x="498.44" y="156.00" width="117.15" height="32.00" fill="#059669" />
+<text x="557.02" y="177.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >117</text>
+<text x="557.02" y="203.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >added</text>
+<rect x="615.59" y="156.00" width="38.05" height="32.00" fill="#64748B" />
+<text x="634.62" y="177.00" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" >38</text>
+<text x="634.62" y="203.00" font-family="'General Sans', sans-serif" font-size="8.8" font-weight="600" fill="#0F1E1C" text-anchor="middle" >removed</text>
+</svg>

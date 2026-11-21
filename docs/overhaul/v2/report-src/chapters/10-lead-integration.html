@@ -1,0 +1,78 @@
+<!-- chapter: 10 | Lead integration -->
+<section class="page r2">
+  <header class="opener">
+    <div class="no">10</div>
+    <div>
+      <p class="kicker">Lead · after merging K, O, P1 and P2</p>
+      <h1>One rule, one place</h1>
+      <p class="dek">Each builder was right inside its own folder. Ten problems showed up only when the pieces met, and most had
+        the same shape: one rule had been written twice, differently. The lead fixed them on the merged branch.</p>
+    </div>
+  </header>
+
+  <div class="strip4">
+    <div class="stat"><div class="n">10</div><div class="l"><b>cross-builder fixes</b>none visible to a single builder</div></div>
+    <div class="stat s-deep"><div class="n">0</div><div class="l"><b>money differences</b>490 projects, 2,940 fields; 6,860 synthetic cases</div></div>
+    <div class="stat s-purple"><div class="n">70 to 104</div><div class="l"><b>vitest tests in the gate</b>104 passed, 5 skipped</div></div>
+    <div class="stat"><div class="n">3 and 3</div><div class="l"><b>contracts, before and after</b>a full e2e run leaves none behind</div></div>
+  </div>
+
+  <figure class="fig sp-3">
+    <p class="fig-title">The date that decides the LAD rate was chosen twice, so a stored amount and a printed certificate could disagree</p>
+    <p class="fig-sub">Fix 1. P2’s form and O’s certificates each picked a date. Now both call <code>ladPolicyDate</code>, <code>locPolicyDate</code> and <code>clampToRules</code> in <code>domain/policy</code>. Proof: money parity 0 diffs over 490 projects (2,940 fields) and 6,860 synthetic cases.</p>
+    {{svg:r2_hub_policy}}
+  </figure>
+
+  <figure class="fig sp-3">
+    <p class="fig-title">“Needs re-pricing” had three meanings, and none respected an issued No. Inden</p>
+    <p class="fig-sub">Fix 5. K counted draf only, P1 counted draf and menunggu lantikan, P2 counted draf only. One rule in <code>domain/repricing</code> now feeds the close sheet, project banner, dashboard, list and the API stat. On the live seed, MPS/SH/302/25 has 65 re-priceable projects.</p>
+    {{svg:r2_hub_reprice}}
+  </figure>
+
+  <div class="callout contract sp-3 push">
+    <h3>Why “one rule, one place” is the theme</h3>
+    <p class="small">A rule inside one component is invisible to the next. Both pass their own tests and still disagree.
+      The fix each time: move the rule into <code>domain/</code>, call it from every user, test it once. <code>domain/</code> was lead-owned, so builders put new rules in their own folders (P1 says so in its caveats), and two of them wrote the same rule twice.
+      <span class="tag v">Verified</span> <span class="src">REPORT-P1 Caveats</span></p>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>The ten fixes</h2>
+  <p class="measure small">From <span class="mono">LEAD-FACTS.md</span>. “Proof” is what a command showed; a dash means the fix was small and no separate command was kept.</p>
+  <table class="data compact sp-2" style="table-layout:fixed">
+    <thead><tr><th style="width:7mm">#</th><th style="width:60mm">Found when merging</th><th style="width:54mm">Fix</th><th>Proof</th></tr></thead>
+    <tr><td class="num">1</td><td>P2 (form) and O (certificates) chose a different date to decide the LAD rate.</td><td>One rule in <code>domain/policy</code>, used by both.</td><td>Money parity: 0 diffs, 490 projects and 6,860 cases.</td></tr>
+    <tr><td class="num">2</td><td>The BQ cover letter still hard-coded council name, address, phone and logo.</td><td>New <code>doc.bq</code> text group in Tetapan Organisasi.</td><td><code>pdftotext</code> of 3 projects before and after: identical. A changed name changes exactly the 2 edited lines.</td></tr>
+    <tr><td class="num">3</td><td>Policy history could be overwritten: a POST on an existing date replaced it, and nothing could be deleted.</td><td>409 on an existing (rule, date). DELETE only for a value not yet in force.</td><td>Duplicate 409; withdraw future 200; withdraw in-force 409; missing 404.</td></tr>
+    <tr><td class="num">4</td><td>Uploading the logo copied about 0.7 MB into the change log each time.</td><td>Images summarised as <code>[imej N aksara]</code> in the log.</td><td>5,022-character logo became a 77-character entry.</td></tr>
+    <tr><td class="num">5</td><td>Three “needs re-pricing” definitions; none respected an issued No. Inden.</td><td>One rule, <code>domain/repricing</code>, used by close sheet, banner, dashboard, list and API stat.</td><td>Unit tests; live seed: 65 re-priceable projects.</td></tr>
+    <tr><td class="num">6</td><td>No way to remove a test or mistaken contract.</td><td><code>DELETE /contracts/:id</code> (refused for AKTIF or used) and a Padam button shown only when allowed.</td><td>K, P1, P2 specs clean up; contract count 3 to 3.</td></tr>
+    <tr><td class="num">7</td><td><code>POST /projects</code> without <code>bp</code> crashed with 500.</td><td>Omitted NOT NULL fields stored as empty text (the form already sends it; 5 live projects have bp empty).</td><td>—</td></tr>
+    <tr><td class="num">8</td><td>O’s 11 tests and P1’s 18 tests were outside the test gate.</td><td>vitest include <code>components/**/*.test.ts</code>.</td><td>70 to 104 tests.</td></tr>
+    <tr><td class="num">9</td><td>BP / Zon / Mukim dropdowns in ProjectDetail still hard-coded.</td><td><code>useLookupOptions(list, fallback)</code>; Zon sort follows the Senarai order.</td><td>—</td></tr>
+    <tr><td class="num">10</td><td><code>.gitignore</code> <code>*.sql</code> had silently excluded the migrations folder.</td><td><code>!migrations/*.sql</code>.</td><td>Migrations apply on a fresh state.</td></tr>
+  </table>
+
+  <div class="cols-3 sp-3">
+    <div class="card sys"><p class="kicker">Fix 3 · four requests</p>
+      <table class="data compact">
+        <tr><td>Duplicate (rule, date)</td><td class="num ok">409</td></tr>
+        <tr><td>Withdraw a future value</td><td class="num ok">200</td></tr>
+        <tr><td>Withdraw a value in force</td><td class="num ok">409</td></tr>
+        <tr><td>Withdraw a missing value</td><td class="num ok">404</td></tr>
+      </table></div>
+    <div class="card sys"><p class="kicker">Fix 4 · the logo in the log</p>
+      <p class="bignum">5,022<span style="font-size:.4em;font-weight:700"> chars</span></p>
+      <p class="small sp-1">of image data became a <b>77-character</b> entry, <span class="mono">[imej N aksara]</span>.</p></div>
+    <div class="card sys"><p class="kicker">Fix 2 · the BQ cover letter</p>
+      <p class="bignum">3 of 3</p>
+      <p class="small sp-1">projects print identical text before and after. A changed name changes exactly the 2 edited lines.</p></div>
+  </div>
+
+  <div class="cols-3 sp-3 push small">
+    <div class="rule-top"><h3>Rules (fixes 1, 5)</h3><p>The same decision made in two places. Cure: one function in <code>domain/</code>.</p></div>
+    <div class="rule-top"><h3>Data safety (3, 4, 6)</h3><p>History must not be overwritten, logs must not balloon, and test data must be removable.</p></div>
+    <div class="rule-top"><h3>Housekeeping (2, 7, 8, 9, 10)</h3><p>A remaining hard-code, a 500, tests outside the gate, a dropdown, an ignore rule.</p></div>
+  </div>
+</section>

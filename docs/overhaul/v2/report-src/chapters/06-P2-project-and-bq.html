@@ -1,0 +1,184 @@
+<!-- chapter: 06 | P2 · Project and BQ -->
+<section class="page">
+  <header class="opener contract">
+    <div class="no">06</div>
+    <div>
+      <p class="kicker">Sub-Yiyi P2 · Project detail and BQ</p>
+      <h1>The project knows which sebutharga prices it</h1>
+      <p class="dek">Asked to bind the project page and both BQ editors to the project’s own sebutharga, add a swap-and-re-price flow with a preview, and mark stale rows instead of rewriting them.</p>
+    </div>
+  </header>
+
+  <div class="strip">
+    <div class="s deep"><div class="n">39<span class="u">min</span></div><div class="l">wall time</div></div>
+    <div class="s"><div class="n">124</div><div class="l">API calls</div></div>
+    <div class="s amber"><div class="n">$9.83</div><div class="l">est. API list price</div></div>
+    <div class="s deep"><div class="n">17<span class="u">/ 17</span></div><div class="l">own spec checks (19 of 19 after merge)</div></div>
+    <div class="s purple"><div class="n">0</div><div class="l">money diffs, 2,940 fields + 6,860 cases</div></div>
+  </div>
+
+  <h2 class="sp-3">What it built</h2>
+  <div class="r1-phones sp-1">
+    <figure class="fig">
+      <img class="shot" style="height:64mm;object-fit:cover;object-position:top" src="img/r1/p2-phone-before.png" alt="Project header on a phone before P2">
+      <figcaption><b>Before</b> (the merged wave-1 base, 430 px): four phase tabs; nothing says which sebutharga prices this project.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="shot" style="height:64mm;object-fit:cover;object-position:top" src="img/r1/p2-phone-after.png" alt="Project header on a phone after P2">
+      <figcaption><b>After:</b> a one-line “Langkah 1 daripada 6” card, the contract chip, and a Tukar sebutharga (swap) button.</figcaption>
+    </figure>
+    <div>
+      <h3>The header</h3>
+      <ul class="list small">
+        <li><b>Contract panel.</b> Code, status, “Kadar versi N”, and when locked, why: “Dikunci: No. Inden … telah dikeluarkan”.</li>
+        <li><b>Stepper.</b> The six statuses, with the four phase tabs laid under the statuses they cover. On a phone it folds to one line.</li>
+        <li><b>No. Sebutharga</b> is read-only now: the contract decides it, and “Tukar sebutharga” is how to change it.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cols-2 sp-3" style="grid-template-columns: 62mm 1fr; column-gap: 6mm; align-items:start">
+    <figure class="fig">
+      <img class="shot" src="img/r1/p2-picker.png" alt="Item picker titled with the project contract">
+      <figcaption><b>The BQ is bound too.</b> The item picker names the contract and its version.</figcaption>
+    </figure>
+    <ul class="list small">
+      <li><b>Both BQ editors read the project’s book.</b> Tambah Item, templates and pelarasan additions come from the project’s sebutharga, not the global Pustaka.</li>
+      <li><b>Money rules moved out.</b> LAD, LoC, kos sebenar and pelarasan extra now call <code>domain/money</code> with policies from Tetapan. The cost bar moved into its own file.</li>
+      <li><b>Stale rows are flagged</b> with an indicator the officer decides on (page 3 of this chapter), never rewritten on their own.</li>
+      <li><b>The BQ PDF</b> prints one line under RINGKASAN: “Kadar: Jadual Kadar Harga MPS/SH/302/25 (versi 1)”, checked with <code>pdftotext</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">Swap and re-price</h2>
+  <figure class="fig sp-2">
+    <div class="fig-title">The preview shows old rate, new rate and the new total for every row, and nothing changes until you press Apply</div>
+    <div class="shots-2 sp-1">
+      <div>
+        <img class="shot" src="img/r1/p2-swap.png" alt="Tukar sebutharga sheet listing selectable contracts">
+        <p class="shot-cap"><b>1 Pick.</b> Tukar sebutharga lists the AKTIF contracts first; the ones that cannot be chosen (current, DRAF, DITUTUP) are folded under one line.</p>
+      </div>
+      <div>
+        <img class="shot" src="img/r1/p2-preview.png" alt="Re-price preview with before and after totals">
+        <p class="shot-cap"><b>2 Preview.</b> Before RM 3,060.00, after RM 3,138.00. “Kadar berubah” rows show the old rate struck out, the new one and the change in per cent.</p>
+      </div>
+    </div>
+    <figcaption><b>Desktop at 1280 px</b>, test project on a throwaway sebutharga. The re-price works on the saved BQ, so unsaved edits are saved first and a toast says so.
+      <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="r1-phones sp-3">
+    <figure class="fig">
+      <img class="shot" src="img/r1/p2-phone-preview.png" alt="Re-price preview on a phone">
+      <figcaption>The same preview as a phone sheet. “Kembali” cancels; the green button applies.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="shot" src="img/r1/p2-phone-locked.png" alt="Locked project: apply disabled until unlock">
+      <figcaption>Locked: a No. Inden exists, so apply stays off until “Buka kunci untuk projek ini”.</figcaption>
+    </figure>
+    <div>
+      <div class="formula contract">
+        <p class="kicker">The spec’s arithmetic</p>
+        <div class="eq">before&nbsp;&nbsp;&nbsp;2,295.00<br>change&nbsp;&nbsp;&nbsp;3 x 12.50 = 37.50<br>after&nbsp;&nbsp;&nbsp;&nbsp;2,332.50</div>
+        <p>The spec asserts that the preview differs from the old total by exactly quantity times rate change, then that Apply stores that same total as kos projek.</p>
+      </div>
+      <ul class="list small sp-2">
+        <li>Locked projects can preview; only apply is held.</li>
+        <li>Unlocking is a separate, logged call (<code>swap-unlocked</code>).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">Stale rows: an indicator, never a silent rewrite</h2>
+  <div class="cols-2 sp-2" style="grid-template-columns: 101mm 1fr; column-gap: 5mm; align-items:start">
+    <figure class="fig">
+      <img class="shot" src="img/r1/p2-rowflag.png" alt="BQ row with a Kadar berubah indicator">
+      <figcaption><b>On a draf project</b> a row whose book rate changed carries “Kadar berubah · kini RM 360.00”. Tap it to decide.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="shot" src="img/r1/p2-decision.png" alt="Decision sheet with Kekal kadar kontrak and Guna kadar baharu">
+      <figcaption><b>The decision.</b> “Kekal kadar kontrak” is the default and changes nothing; “Guna kadar baharu” takes the new rate and records who and when.</figcaption>
+    </figure>
+  </div>
+
+  <figure class="fig sp-3">
+    <div class="fig-title">A draf project on a closed sebutharga says so at the top, and shows why it is locked</div>
+    <img class="shot" style="width:140mm" src="img/r1/p2-banner.png" alt="Perlu harga semula banner, locked contract strip and stepper">
+    <figcaption><b>Perlu harga semula</b> (needs re-pricing): the banner offers one button, “Harga semula”. Below it the contract strip is grey (DITUTUP) and states “Dikunci: No. Inden … telah dikeluarkan”.
+      <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="cols-2 sp-3" style="grid-template-columns: 1fr 78mm; column-gap: 6mm; align-items:start">
+    <div>
+      <h3>Rules behind the screens</h3>
+      <ul class="list small">
+        <li>Indicators show on <b>draf</b> projects only (owner decision 4), and only in the BQ Kontrak editor.</li>
+        <li>Four states exist: OK, KADAR_BERUBAH, PERKATAAN_BERUBAH (wording or unit only) and TIADA (gone from the book). Only the first rate-change state was driven in a browser.</li>
+        <li>Templates resolve by stable item id. A row whose source is not in the book is <b>kept</b>, flagged TIADA and listed, never dropped.</li>
+        <li>The editors read the contract’s <b>current</b> published book, not the project’s stored version.</li>
+      </ul>
+    </div>
+    <figure class="fig">
+      <div class="fig-title" style="font-size:11.5pt">The 1,790-line form lost 161 lines; the logic went into small files</div>
+      {{svg:r1_p2_lines}}
+      <figcaption><b>Lines before and after.</b> REPORT-P2 “Numbers”. <span class="tag v">Verified</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">How it was proved</h2>
+  <figure class="fig sp-2">
+    <div class="fig-title">All 17 checks of P2’s own spec pass, and together they walk one project from creation to unlock</div>
+    {{svg:r1_p2_checks}}
+    <figcaption><b>Source:</b> REPORT-P2 Evidence, <code>P2.spec.py</code> against a local server, two clean runs in 13.7 s and 15.6 s; the spec deletes its project afterwards. On the merged code the lead updated two selectors and the spec reports 19 of 19, locally and on the live preview.
+      <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="cols-2 sp-3">
+    <figure class="fig">
+      <div class="fig-title" style="font-size:11.5pt">The money-parity script found 9 float-noise diffs, then 0 after the fix</div>
+      {{svg:r1_p2_parity}}
+      <figcaption><b>Negative control.</b> The old effect compared the saved value to an unrounded sum, so float noise was left alone; a strict compare rewrote 9 of them (e.g. 31543.020000000004 against 31543.02). <code>settlementPatch</code> now compares to the cent.
+        <span class="tag v">Verified</span></figcaption>
+    </figure>
+    <div>
+      <h3>Phone and desktop probes</h3>
+      <table class="data compact sp-1">
+        <tr><th>Width</th><th class="num">scroll = inner</th><th class="num">Targets &lt; 44 px</th><th class="num">Sticky BIL bar</th></tr>
+        <tr><td class="code">360</td><td class="num">360</td><td class="num">n/a</td><td class="num">n/a</td></tr>
+        <tr><td class="code">390</td><td class="num">390</td><td class="num">0</td><td class="num">113 px</td></tr>
+        <tr><td class="code">430</td><td class="num">430</td><td class="num">0</td><td class="num">113 px</td></tr>
+        <tr><td class="code">1440</td><td class="num">1440</td><td class="num">n/a</td><td class="num">cost bar = rail: 112</td></tr>
+      </table>
+      <p class="src sp-1">REPORT-P2 probes from <code>p2_shots.py</code>. The cost bar’s left edge equals the rail’s right edge at 1440.</p>
+    </div>
+  </div>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout risk">
+      <h3>What it could not check <span class="tag i">Inference</span></h3>
+      <ul class="list small l-amber" style="margin-top:1mm">
+        <li>Applying a real template in the UI and seeing the “not added” sheet; only the helper was run.</li>
+        <li>The wording-changed and gone-from-book indicators in a browser.</li>
+        <li>A pelarasan item added end to end (only the picker heading).</li>
+        <li>Screenshots were judged by eye; no pixel diff.</li>
+        <li>Policy dates were P2’s own choice (see right).</li>
+      </ul>
+    </div>
+    <div class="callout contract">
+      <h3>What the lead changed after merging</h3>
+      <ul class="list small" style="margin-top:1mm">
+        <li><b>One date rule (fix 1).</b> P2 and O had picked different dates for the LAD rate. One rule in <code>domain/policy</code> now serves both.</li>
+        <li><b>One re-price rule (fix 5).</b> The banner now respects an issued No. Inden; live seed: 65 projects are re-priceable.</li>
+        <li><b>Lookups (fix 9).</b> BP, Zon and Mukim come from Tetapan lists.</li>
+        <li><b>Requests granted.</b> A project log route for “Guna kadar baharu”, an <code>unlocked</code> flag on re-price, and delete for a test contract.</li>
+        <li><b>Spec updated, not the app:</b> phase tabs became <code>role="tab"</code>; an issued No. Inden hides the banner.</li>
+      </ul>
+    </div>
+  </div>
+</section>

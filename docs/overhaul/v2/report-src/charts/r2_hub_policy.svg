@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_hub_policy" viewBox="0 0 657.64 150.00" role="img" aria-label="Two date rules replaced by one in domain/policy" style="display:block;width:100%;height:auto">
+<text x="0.00" y="10.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#64748B" text-anchor="start" >BEFORE: two answers</text>
+<text x="473.64" y="10.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#64748B" text-anchor="start" >AFTER: one answer, two users</text>
+<defs><marker id="r2_hub_policy-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<rect x="0.00" y="16.00" width="188.00" height="44.00" fill="#FFFFFF" stroke="#D97706" stroke-width="1.2" />
+<text x="8.00" y="33.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >P2 · the project form</text>
+<text x="8.00" y="48.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >date for the LAD rate: its own choice</text>
+<path d="M188,38.0 L220.82,79.0" stroke="#D97706" stroke-width="1.1" fill="none" stroke-dasharray="3 3" marker-end="url(#r2_hub_policy-a)"/>
+<rect x="0.00" y="98.00" width="188.00" height="44.00" fill="#FFFFFF" stroke="#D97706" stroke-width="1.2" />
+<text x="8.00" y="115.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >O · certificates, notices</text>
+<text x="8.00" y="130.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >date for the LAD rate: another choice</text>
+<path d="M188,120.0 L220.82,79.0" stroke="#D97706" stroke-width="1.1" fill="none" stroke-dasharray="3 3" marker-end="url(#r2_hub_policy-a)"/>
+<rect x="223.82" y="18.00" width="214.00" height="122.00" fill="#3B2E8C" />
+<text x="233.82" y="38.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="start" >domain/policy.ts</text>
+<text x="233.82" y="56.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >ladPolicyDate(project)</text>
+<text x="233.82" y="70.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >locPolicyDate(project)</text>
+<text x="233.82" y="84.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >clampToRules(date, rules)</text>
+<text x="233.82" y="98.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >contract start, then lantikan,</text>
+<text x="233.82" y="112.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >serah tapak, tamat, buka</text>
+<rect x="473.64" y="16.00" width="184.00" height="34.00" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="36.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Stored LAD amount (form)</text>
+<path d="M440.82,79.0 L471.64,33.0" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_policy-a)"/>
+<rect x="473.64" y="62.00" width="184.00" height="34.00" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="82.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Printed LAD certificate</text>
+<path d="M440.82,79.0 L471.64,79.0" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_policy-a)"/>
+<rect x="473.64" y="108.00" width="184.00" height="34.00" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="128.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Notis Peringatan LAD rate</text>
+<path d="M440.82,79.0 L471.64,125.0" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_policy-a)"/>
+</svg>

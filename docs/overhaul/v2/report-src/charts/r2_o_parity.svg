@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_o_parity" viewBox="0 0 657.64 134.00" role="img" aria-label="30 generated documents compared by text, four runs" style="display:block;width:100%;height:auto">
+<text x="0.00" y="24.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Config empty (defaults)</text>
+<rect x="150.00" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="161.70" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="173.40" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="188.90" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="200.60" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="212.30" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="227.80" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="239.50" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="251.20" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="266.70" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="278.40" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="290.10" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="305.60" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="317.30" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="329.00" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="344.50" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="356.20" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="367.90" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="383.40" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="395.10" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="406.80" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="422.30" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="434.00" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="445.70" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="461.20" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="472.90" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="484.60" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="500.10" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="511.80" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="523.50" y="16.00" width="9.50" height="9.50" fill="#059669" />
+<text x="657.64" y="24.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#059669" text-anchor="end" >30 / 30 identical</text>
+<text x="0.00" y="44.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Config seeded via API</text>
+<rect x="150.00" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="161.70" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="173.40" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="188.90" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="200.60" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="212.30" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="227.80" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="239.50" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="251.20" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="266.70" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="278.40" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="290.10" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="305.60" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="317.30" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="329.00" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="344.50" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="356.20" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="367.90" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="383.40" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="395.10" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="406.80" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="422.30" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="434.00" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="445.70" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="461.20" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="472.90" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="484.60" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="500.10" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="511.80" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="523.50" y="36.50" width="9.50" height="9.50" fill="#059669" />
+<text x="657.64" y="44.50" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#059669" text-anchor="end" >30 / 30 identical</text>
+<text x="0.00" y="65.00" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >After e2e edit + restore</text>
+<rect x="150.00" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="161.70" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="173.40" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="188.90" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="200.60" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="212.30" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="227.80" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="239.50" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="251.20" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="266.70" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="278.40" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="290.10" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="305.60" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="317.30" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="329.00" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="344.50" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="356.20" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="367.90" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="383.40" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="395.10" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="406.80" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="422.30" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="434.00" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="445.70" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="461.20" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="472.90" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="484.60" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="500.10" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="511.80" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<rect x="523.50" y="57.00" width="9.50" height="9.50" fill="#059669" />
+<text x="657.64" y="65.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#059669" text-anchor="end" >30 / 30 identical</text>
+<text x="0.00" y="85.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="500" fill="#0F1E1C" text-anchor="start" >Another PBT&#x27;s details</text>
+<rect x="150.00" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="161.70" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="173.40" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="188.90" y="77.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="200.60" y="77.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="212.30" y="77.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="227.80" y="77.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="239.50" y="77.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="251.20" y="77.50" width="9.50" height="9.50" fill="#059669" />
+<rect x="266.70" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="278.40" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="290.10" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="305.60" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="317.30" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="329.00" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="344.50" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="356.20" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="367.90" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="383.40" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="395.10" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="406.80" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="422.30" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="434.00" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="445.70" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="461.20" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="472.90" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="484.60" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="500.10" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="511.80" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<rect x="523.50" y="77.50" width="9.50" height="9.50" fill="#D97706" />
+<text x="657.64" y="85.50" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#D97706" text-anchor="end" >6 same, 24 changed</text>
+<text x="166.45" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >CPC</text>
+<text x="205.35" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >LAD</text>
+<text x="244.25" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >LoC</text>
+<text x="283.15" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >PRES</text>
+<text x="322.05" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >AKU</text>
+<text x="360.95" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >N-PEM</text>
+<text x="399.85" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >N-P1</text>
+<text x="438.75" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >N-P2</text>
+<text x="477.65" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >N-P3</text>
+<text x="516.55" y="114.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="600" fill="#64748B" text-anchor="middle" >KTS</text>
+<text x="0.00" y="130.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#64748B" text-anchor="start" >10 document types x 3 projects; one square = one PDF read back with pdftotext</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_wall" viewBox="0 0 313.70 146.00" role="img" aria-label="Wall time per builder" style="display:block;width:100%;height:auto">
+<text x="0.00" y="15.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >F  foundation</text>
+<rect x="88.00" y="4.00" width="177.70" height="14.00" fill="#EAE9E4" />
+<rect x="88.00" y="4.00" width="117.41" height="14.00" fill="#059669" />
+<text x="313.70" y="15.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >37 min</text>
+<text x="0.00" y="38.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >D  design</text>
+<rect x="88.00" y="27.00" width="177.70" height="14.00" fill="#EAE9E4" />
+<rect x="88.00" y="27.00" width="60.29" height="14.00" fill="#059669" />
+<text x="313.70" y="38.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >19 min</text>
+<text x="0.00" y="61.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >K  kontrak</text>
+<rect x="88.00" y="50.00" width="177.70" height="14.00" fill="#EAE9E4" />
+<rect x="88.00" y="50.00" width="177.70" height="14.00" fill="#3B2E8C" />
+<text x="313.70" y="61.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >56 min</text>
+<text x="0.00" y="84.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >P1  dashboard</text>
+<rect x="88.00" y="73.00" width="177.70" height="14.00" fill="#EAE9E4" />
+<rect x="88.00" y="73.00" width="177.70" height="14.00" fill="#059669" />
+<text x="313.70" y="84.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >56 min</text>
+<text x="0.00" y="107.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >P2  project</text>
+<rect x="88.00" y="96.00" width="177.70" height="14.00" fill="#EAE9E4" />
+<rect x="88.00" y="96.00" width="123.76" height="14.00" fill="#059669" />
+<text x="313.70" y="107.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >39 min</text>
+<text x="0.00" y="130.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >O  organisasi</text>
+<rect x="88.00" y="119.00" width="177.70" height="14.00" fill="#EAE9E4" />
+<rect x="88.00" y="119.00" width="161.83" height="14.00" fill="#059669" />
+<text x="313.70" y="130.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >51 min</text>
+</svg>

@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1life" viewBox="0 0 657.64 304.00" role="img" aria-label="Lifecycle of a sebutharga, its rate book and a project" style="display:block;width:100%;height:auto">
+<defs><marker id="r1life-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<defs><marker id="r1life-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker></defs>
+<defs><marker id="r1life-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#D97706"/></marker></defs>
+<rect x="0.00" y="4.00" width="54.00" height="80.00" fill="#3B2E8C" />
+<text x="27.00" y="47.50" font-family="'JetBrains Mono', monospace" font-size="8.2" font-weight="800" fill="#F6F4EE" text-anchor="middle" >SEBUTHARGA</text>
+<rect x="0.00" y="110.00" width="54.00" height="80.00" fill="#3B2E8C" />
+<text x="27.00" y="153.50" font-family="'JetBrains Mono', monospace" font-size="8.2" font-weight="800" fill="#F6F4EE" text-anchor="middle" >RATE BOOK</text>
+<rect x="0.00" y="216.00" width="54.00" height="80.00" fill="#059669" />
+<text x="27.00" y="259.50" font-family="'JetBrains Mono', monospace" font-size="8.2" font-weight="800" fill="#F6F4EE" text-anchor="middle" >PROJECT</text>
+<rect x="66.00" y="4.00" width="132.91" height="80.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="66.00" y="4.00" width="4.00" height="80.00" fill="#3B2E8C" />
+<text x="76.00" y="20.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#3B2E8C" text-anchor="start" >DRAF</text>
+<text x="76.00" y="33.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >created or cloned by</text>
+<text x="76.00" y="45.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >any officer; the book</text>
+<text x="76.00" y="56.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >is imported here</text>
+<rect x="218.91" y="4.00" width="132.91" height="80.00" fill="#3B2E8C" stroke="#3B2E8C" stroke-width="1" />
+<text x="226.91" y="20.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#F6F4EE" text-anchor="start" >AKTIF</text>
+<text x="226.91" y="33.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >needs a published book;</text>
+<text x="226.91" y="45.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >new projects bind to</text>
+<text x="226.91" y="56.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >the newest AKTIF panel</text>
+<text x="226.91" y="68.54" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >contract</text>
+<rect x="371.82" y="4.00" width="132.91" height="80.00" fill="#D4D0DC" stroke="#3B2E8C" stroke-width="1" />
+<text x="379.82" y="20.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#3B2E8C" text-anchor="start" >DITUTUP</text>
+<text x="379.82" y="33.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >read-only; keeps</text>
+<text x="379.82" y="45.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >pricing its own</text>
+<text x="379.82" y="56.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >projects; draf projects</text>
+<text x="379.82" y="68.54" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >are flagged</text>
+<rect x="524.73" y="4.00" width="132.91" height="80.00" fill="#F0DBC0" stroke="#D97706" stroke-width="1" />
+<rect x="524.73" y="4.00" width="4.00" height="80.00" fill="#D97706" />
+<text x="534.73" y="20.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >Padam (delete)</text>
+<text x="534.73" y="33.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >refused (409) while</text>
+<text x="534.73" y="45.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >AKTIF or while any</text>
+<text x="534.73" y="56.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >project uses the</text>
+<text x="534.73" y="68.54" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >contract</text>
+<rect x="66.00" y="110.00" width="132.91" height="80.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="66.00" y="110.00" width="4.00" height="80.00" fill="#3B2E8C" />
+<text x="76.00" y="126.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#3B2E8C" text-anchor="start" >Import to DRAF</text>
+<text x="76.00" y="139.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >browser reads the</text>
+<text x="76.00" y="151.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >Excel; matches are</text>
+<text x="76.00" y="162.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >EXACT, CODE, FUZZY or</text>
+<text x="76.00" y="174.54" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >NEW</text>
+<rect x="218.91" y="110.00" width="132.91" height="80.00" fill="#FFFFFF" stroke="#3B2E8C" stroke-width="1" />
+<rect x="218.91" y="110.00" width="4.00" height="80.00" fill="#3B2E8C" />
+<text x="228.91" y="126.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#3B2E8C" text-anchor="start" >Decide PENDING</text>
+<text x="228.91" y="139.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >an officer accepts or</text>
+<text x="228.91" y="151.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >rejects each reworded</text>
+<text x="228.91" y="162.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >line; no AI in the loop</text>
+<rect x="371.82" y="110.00" width="132.91" height="80.00" fill="#3B2E8C" stroke="#3B2E8C" stroke-width="1" />
+<text x="379.82" y="126.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#F6F4EE" text-anchor="start" >Publish: TERBIT</text>
+<text x="379.82" y="139.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >message and diff stats</text>
+<text x="379.82" y="151.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >are logged; publish is</text>
+<text x="379.82" y="162.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >409 while PENDING</text>
+<text x="379.82" y="174.54" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#F6F4EE" text-anchor="start" >remain</text>
+<rect x="524.73" y="110.00" width="132.91" height="80.00" fill="#D4D0DC" stroke="#3B2E8C" stroke-width="1" />
+<text x="532.73" y="126.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#3B2E8C" text-anchor="start" >Current book</text>
+<text x="532.73" y="139.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >a contract serves its</text>
+<text x="532.73" y="151.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >highest TERBIT version;</text>
+<text x="532.73" y="162.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >older versions stay</text>
+<text x="532.73" y="174.54" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >viewable</text>
+<rect x="66.00" y="216.00" width="132.91" height="80.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<rect x="66.00" y="216.00" width="4.00" height="80.00" fill="#059669" />
+<text x="76.00" y="232.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#059669" text-anchor="start" >New project</text>
+<text x="76.00" y="245.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >bound to the AKTIF</text>
+<text x="76.00" y="257.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >contract unless the PJA</text>
+<text x="76.00" y="268.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >picks another</text>
+<rect x="218.91" y="216.00" width="132.91" height="80.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<rect x="218.91" y="216.00" width="4.00" height="80.00" fill="#059669" />
+<text x="228.91" y="232.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#059669" text-anchor="start" >Swap + re-price</text>
+<text x="228.91" y="245.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >preview old rate, new</text>
+<text x="228.91" y="257.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >rate and total per row;</text>
+<text x="228.91" y="268.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >nothing changes until</text>
+<text x="228.91" y="280.54" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >Apply</text>
+<rect x="371.82" y="216.00" width="132.91" height="80.00" fill="#F0DBC0" stroke="#D97706" stroke-width="1" />
+<rect x="371.82" y="216.00" width="4.00" height="80.00" fill="#D97706" />
+<text x="381.82" y="232.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >No. Inden issued</text>
+<text x="381.82" y="245.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >the contract is locked:</text>
+<text x="381.82" y="257.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >the swap API answers</text>
+<text x="381.82" y="268.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >423</text>
+<rect x="524.73" y="216.00" width="132.91" height="80.00" fill="#FFFFFF" stroke="#059669" stroke-width="1" />
+<rect x="524.73" y="216.00" width="4.00" height="80.00" fill="#059669" />
+<text x="534.73" y="232.20" font-family="'General Sans', sans-serif" font-size="10.2" font-weight="600" fill="#059669" text-anchor="start" >Unlock</text>
+<text x="534.73" y="245.44" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >an explicit, logged</text>
+<text x="534.73" y="257.14" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >action; the swap then</text>
+<text x="534.73" y="268.84" font-family="'General Sans', sans-serif" font-size="9" font-weight="400" fill="#0F1E1C" text-anchor="start" >works again</text>
+<path d="M199.9,44.0 L216.9,44.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1life-p)"/>
+<path d="M352.8,44.0 L369.8,44.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1life-p)"/>
+<path d="M505.7,44.0 L522.7,44.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1life-p)"/>
+<path d="M199.9,150.0 L216.9,150.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1life-p)"/>
+<path d="M352.8,150.0 L369.8,150.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1life-p)"/>
+<path d="M505.7,150.0 L522.7,150.0" stroke="#3B2E8C" stroke-width="1.6" fill="none" marker-end="url(#r1life-p)"/>
+<path d="M199.9,256.0 L216.9,256.0" stroke="#059669" stroke-width="1.6" fill="none" marker-end="url(#r1life-d)"/>
+<path d="M352.8,256.0 L369.8,256.0" stroke="#059669" stroke-width="1.6" fill="none" marker-end="url(#r1life-d)"/>
+<path d="M505.7,256.0 L522.7,256.0" stroke="#D97706" stroke-width="1.6" fill="none" marker-end="url(#r1life-a)"/>
+<path d="M438.3,84.0 L438.3,108.0" stroke="#3B2E8C" stroke-width="1.2" fill="none" marker-end="url(#r1life-p)" stroke-dasharray="4 3"/>
+<text x="444.27" y="101.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#3B2E8C" text-anchor="start" >close</text>
+<path d="M285.4,190.0 L285.4,214.0" stroke="#3B2E8C" stroke-width="1.2" fill="none" marker-end="url(#r1life-p)" stroke-dasharray="4 3"/>
+<text x="291.37" y="207.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#3B2E8C" text-anchor="start" >a new book to re-price to</text>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_k_flow" viewBox="0 0 657.64 168.00" role="img" aria-label="The five steps of the import wizard with the real-file numbers" style="display:block;width:100%;height:auto">
+<rect x="0.00" y="0.00" width="125.13" height="168.00" fill="#FFFFFF" stroke="#D6D6D1" stroke-width="1" />
+<rect x="0.00" y="0.00" width="125.13" height="4.00" fill="#3B2E8C" />
+<text x="9.00" y="34.00" font-family="'Zodiak', serif" font-size="24" font-weight="800" fill="#3B2E8C" text-anchor="start" >1</text>
+<text x="9.00" y="54.00" font-family="'General Sans', sans-serif" font-size="11.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >Muat naik</text>
+<text x="9.00" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >Drop or choose the</text>
+<text x="9.00" y="82.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >.xls or .xlsx. Read</text>
+<text x="9.00" y="95.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >in the browser.</text>
+<rect x="0.00" y="138.00" width="125.13" height="30.00" fill="#EAE9E4" />
+<text x="9.00" y="157.00" font-family="'JetBrains Mono', monospace" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >read + parse 0.45 s</text>
+<text x="129.13" y="22.00" font-family="'General Sans', sans-serif" font-size="8" font-weight="400" fill="#0F1E1C" text-anchor="start" ></text>
+<rect x="133.13" y="0.00" width="125.13" height="168.00" fill="#FFFFFF" stroke="#D6D6D1" stroke-width="1" />
+<rect x="133.13" y="0.00" width="125.13" height="4.00" fill="#3B2E8C" />
+<text x="142.13" y="34.00" font-family="'Zodiak', serif" font-size="24" font-weight="800" fill="#3B2E8C" text-anchor="start" >2</text>
+<text x="142.13" y="54.00" font-family="'General Sans', sans-serif" font-size="11.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >Helaian &amp; lajur</text>
+<text x="142.13" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >Pick the sheet and</text>
+<text x="142.13" y="82.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >the rate column.</text>
+<text x="142.13" y="95.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >Default: the</text>
+<text x="142.13" y="107.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >KONTRAKTOR column.</text>
+<rect x="133.13" y="138.00" width="125.13" height="30.00" fill="#EAE9E4" />
+<text x="142.13" y="157.00" font-family="'JetBrains Mono', monospace" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >465 priced rows</text>
+<text x="262.26" y="22.00" font-family="'General Sans', sans-serif" font-size="8" font-weight="400" fill="#0F1E1C" text-anchor="start" ></text>
+<rect x="266.26" y="0.00" width="125.13" height="168.00" fill="#FFFFFF" stroke="#D6D6D1" stroke-width="1" />
+<rect x="266.26" y="0.00" width="125.13" height="4.00" fill="#3B2E8C" />
+<text x="275.26" y="34.00" font-family="'Zodiak', serif" font-size="24" font-weight="800" fill="#3B2E8C" text-anchor="start" >3</text>
+<text x="275.26" y="54.00" font-family="'General Sans', sans-serif" font-size="11.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >Pratonton</text>
+<text x="275.26" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >Counts, warnings</text>
+<text x="275.26" y="82.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >with sheet and row,</text>
+<text x="275.26" y="95.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >sum of rates as a</text>
+<text x="275.26" y="107.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >cross-check.</text>
+<rect x="266.26" y="138.00" width="125.13" height="30.00" fill="#EAE9E4" />
+<text x="275.26" y="157.00" font-family="'JetBrains Mono', monospace" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >0 warnings</text>
+<text x="395.38" y="22.00" font-family="'General Sans', sans-serif" font-size="8" font-weight="400" fill="#0F1E1C" text-anchor="start" ></text>
+<rect x="399.38" y="0.00" width="125.13" height="168.00" fill="#FFFFFF" stroke="#D6D6D1" stroke-width="1" />
+<rect x="399.38" y="0.00" width="125.13" height="4.00" fill="#D97706" />
+<text x="408.38" y="34.00" font-family="'Zodiak', serif" font-size="24" font-weight="800" fill="#D97706" text-anchor="start" >4</text>
+<text x="408.38" y="54.00" font-family="'General Sans', sans-serif" font-size="11.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >Semak padanan</text>
+<text x="408.38" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >Old line against new</text>
+<text x="408.38" y="82.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >line, side by side.</text>
+<text x="408.38" y="95.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >Accept, reject or</text>
+<text x="408.38" y="107.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >pick another.</text>
+<rect x="399.38" y="138.00" width="125.13" height="30.00" fill="#EAE9E4" />
+<text x="408.38" y="157.00" font-family="'JetBrains Mono', monospace" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >154 to decide</text>
+<text x="528.51" y="22.00" font-family="'General Sans', sans-serif" font-size="8" font-weight="400" fill="#0F1E1C" text-anchor="start" ></text>
+<rect x="532.51" y="0.00" width="125.13" height="168.00" fill="#FFFFFF" stroke="#D6D6D1" stroke-width="1" />
+<rect x="532.51" y="0.00" width="125.13" height="4.00" fill="#3B2E8C" />
+<text x="541.51" y="34.00" font-family="'Zodiak', serif" font-size="24" font-weight="800" fill="#3B2E8C" text-anchor="start" >5</text>
+<text x="541.51" y="54.00" font-family="'General Sans', sans-serif" font-size="11.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >Terbit</text>
+<text x="541.51" y="70.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >A commit message is</text>
+<text x="541.51" y="82.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >required. Publishing</text>
+<text x="541.51" y="95.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >makes the new book</text>
+<text x="541.51" y="107.50" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >TERBIT.</text>
+<rect x="532.51" y="138.00" width="125.13" height="30.00" fill="#EAE9E4" />
+<text x="541.51" y="157.00" font-family="'JetBrains Mono', monospace" font-size="9.2" font-weight="600" fill="#0F1E1C" text-anchor="start" >195/154/116/37 diff</text>
+</svg>

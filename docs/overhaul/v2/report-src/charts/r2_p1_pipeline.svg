@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_p1_pipeline" viewBox="0 0 313.70 164.00" role="img" aria-label="Dashboard status counts for admin01, 2026" style="display:block;width:100%;height:auto">
+<text x="0.00" y="15.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Fasa Draf</text>
+<rect x="104.00" y="4.00" width="175.70" height="14.00" fill="#EAE9E4" />
+<rect x="104.00" y="4.00" width="18.11" height="14.00" fill="#ADB4BC" />
+<text x="313.70" y="15.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >30</text>
+<text x="0.00" y="38.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Menunggu Lantikan</text>
+<rect x="104.00" y="27.00" width="175.70" height="14.00" fill="#EAE9E4" />
+<rect x="104.00" y="27.00" width="20.53" height="14.00" fill="#64748B" />
+<text x="313.70" y="38.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >34</text>
+<text x="0.00" y="61.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Dalam Proses</text>
+<rect x="104.00" y="50.00" width="175.70" height="14.00" fill="#EAE9E4" />
+<rect x="104.00" y="50.00" width="31.40" height="14.00" fill="#7AD3C6" />
+<text x="313.70" y="61.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >52</text>
+<text x="0.00" y="84.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Pemeriksaan Tapak</text>
+<rect x="104.00" y="73.00" width="175.70" height="14.00" fill="#EAE9E4" />
+<rect x="104.00" y="73.00" width="18.72" height="14.00" fill="#14B8A6" />
+<text x="313.70" y="84.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >31</text>
+<text x="0.00" y="107.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Tuntutan Bayaran</text>
+<rect x="104.00" y="96.00" width="175.70" height="14.00" fill="#EAE9E4" />
+<rect x="104.00" y="96.00" width="28.98" height="14.00" fill="#10B981" />
+<text x="313.70" y="107.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >48</text>
+<text x="0.00" y="130.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Siap</text>
+<rect x="104.00" y="119.00" width="175.70" height="14.00" fill="#EAE9E4" />
+<rect x="104.00" y="119.00" width="175.70" height="14.00" fill="#059669" />
+<text x="313.70" y="130.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >291</text>
+<text x="0.00" y="158.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >screen = /api/projects, every status</text>
+</svg>

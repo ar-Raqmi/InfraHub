@@ -1,0 +1,89 @@
+<!-- chapter: 12 | Cost and process -->
+<section class="page r2">
+  <header class="opener">
+    <div class="no">12</div>
+    <div>
+      <p class="kicker">Cost and process</p>
+      <h1>What it cost, and what went wrong on the way</h1>
+      <p class="dek">Hermes’ estimate of the API list price, set beside the plan quota the work actually used, and the mistakes
+        that were caught before they reached the preview or production.</p>
+    </div>
+  </header>
+
+  <div class="strip4">
+    <div class="stat"><div class="n">990</div><div class="l"><b>API calls</b>lead and six builders</div></div>
+    <div class="stat"><div class="n">1.14<span class="u">M</span></div><div class="l"><b>output tokens</b>1,141,372; cache read 239.1 M</div></div>
+    <div class="stat s-amber"><div class="n">$101.61</div><div class="l"><b>est. API list price</b>not billed: the work ran on the Claude plan</div></div>
+    <div class="stat s-deep"><div class="n">2h06</div><div class="l"><b>first dispatch to all specs passing on the preview</b>22:30 to 00:36</div></div>
+  </div>
+
+  <h2 class="sp-3">Per sub-Yiyi</h2>
+  <table class="data compact sp-1">
+    <thead><tr><th style="width:15mm">Name</th><th>Job</th><th class="num">Wall time</th><th class="num">API calls</th><th class="num">Output tokens</th><th class="num">Cache read</th><th class="num">Est. cost</th></tr></thead>
+    <tr><td><b>F</b></td><td>Foundation: data model, migrations, domain layer, Excel parser, API</td><td class="num">37 min</td><td class="num">114</td><td class="num">195,805</td><td class="num">25.6 M</td><td class="num">$10.90</td></tr>
+    <tr><td><b>D</b></td><td>Design system: Direction C light, fonts, tokens, UI kit, shell</td><td class="num">19 min</td><td class="num">58</td><td class="num">85,981</td><td class="num">8.4 M</td><td class="num">$4.45</td></tr>
+    <tr><td><b>K</b></td><td>Kontrak &amp; Buku Kadar + Excel import wizard</td><td class="num">56 min</td><td class="num">129</td><td class="num">164,706</td><td class="num">27.7 M</td><td class="num">$10.60</td></tr>
+    <tr><td><b>P1</b></td><td>Dashboard, projects list, report scope</td><td class="num">56 min</td><td class="num">124</td><td class="num">162,724</td><td class="num">36.0 M</td><td class="num">$12.51</td></tr>
+    <tr><td><b>P2</b></td><td>Project detail + BQ bound to its sebutharga</td><td class="num">39 min</td><td class="num">124</td><td class="num">121,011</td><td class="num">28.6 M</td><td class="num">$9.83</td></tr>
+    <tr><td><b>O</b></td><td>Tetapan Organisasi (no hard-coding)</td><td class="num">51 min</td><td class="num">132</td><td class="num">169,208</td><td class="num">31.7 M</td><td class="num">$11.59</td></tr>
+    <tr><td><b>Lead</b></td><td>Whole conversation, <b>including the 20 Nov discovery round</b></td><td class="num">—</td><td class="num">309</td><td class="num">241,937</td><td class="num">81.1 M</td><td class="num">$41.73</td></tr>
+    <tr class="hl"><td><b>Total</b></td><td></td><td class="num"></td><td class="num"><b>990</b></td><td class="num"><b>1,141,372</b></td><td class="num"><b>239.1 M</b></td><td class="num"><b>$101.61</b></td></tr>
+  </table>
+  <p class="cap">Model claude-opus-5-5 throughout; from the Hermes state database. <span class="tag v">Verified</span> <span class="src">LEAD-FACTS</span></p>
+
+  <div class="cols-2 sp-2">
+    <figure class="fig">
+      <p class="fig-title">Each builder cost between $4 and $13; the lead is the largest line</p>
+      <p class="fig-sub">Estimated API price per builder. The six builders sum to $59.88; the lead’s $41.73 covers the discovery round too.</p>
+      {{svg:r2_cost}}
+    </figure>
+    <figure class="fig">
+      <p class="fig-title">Builders ran in parallel: 258 minutes of work in about 2 hours</p>
+      <p class="fig-sub">Wall time per builder. F and D ran first (wave 1); K, P1, P2, O ran together (wave 2).</p>
+      {{svg:r2_wall}}
+    </figure>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>Dollars are not what was spent</h2>
+  <div class="cols-5-7 sp-1">
+    <figure class="fig">
+      <p class="fig-title">The plan quota went from 9 % to 72 % of a session, and 5 % to 13 % of the week</p>
+      {{svg:r2_quota}}
+      <figcaption>Readings of <span class="mono">hermes usage</span> at wave 1 start, wave 2 start, and after the merge and preview.</figcaption>
+    </figure>
+    <div class="small">
+      <p>The $101.61 is a list price. The work was billed in <b>plan quota</b>, not dollars, so the quota readings are the real cost: 72 % of a session and 13 % of the week by the end.</p>
+      <ul class="list sp-1">
+        <li>Wave 1 (F and D): session 9 % to 28 %.</li>
+        <li>Wave 2 (K, P1, P2, O, then merge and the preview deploy): session 28 % to 72 %.</li>
+        <li>The week moved 8 points, 5 % to 13 %.</li>
+      </ul>
+      <p class="sp-1"><span class="tag i">Inference</span> The readings are three snapshots, not a per-agent bill. Which builder used how much quota is not known.</p>
+    </div>
+  </div>
+
+  <h2 class="sp-3">What went wrong, and what caught it</h2>
+  <table class="data compact sp-1" style="table-layout:fixed">
+    <thead><tr><th style="width:44mm">Problem</th><th style="width:40mm">Caught by</th><th>Fix, and what it would have cost</th></tr></thead>
+    <tr><td><b>Spec drift.</b> O and P2 specs used pre-merge selectors.</td><td>First run on the merged code</td><td>Specs updated, not the app. A false alarm that could have been read as a regression.</td></tr>
+    <tr><td><b>Error 1010.</b> Cloudflare refused Python’s default user agent.</td><td>First run on the preview</td><td>One shared <code>e2e_http.USER_AGENT</code>. Every spec was blocked until then.</td></tr>
+    <tr><td><b>Ignored migrations.</b> <code>.gitignore</code> <code>*.sql</code> had excluded <code>migrations/</code>.</td><td>The lead, after merging F</td><td><code>!migrations/*.sql</code>. A fresh checkout would have had no v2 tables.</td></tr>
+    <tr><td><b>A preview bound to production.</b> A branch preview of <code>infra-hub</code> would have used the real D1 and R2.</td><td>The lead, before the first deploy: the config has no <code>[env.preview]</code></td><td>A separate Pages project, D1 and R2, with a script that refuses production names. Production afterwards: 8 tables, deployment unchanged.</td></tr>
+    <tr><td><b>Three re-pricing rules.</b> K, P1 and P2 each defined it.</td><td>Lead review at merge</td><td>One rule in <code>domain/repricing</code> (chapter 10).</td></tr>
+    <tr><td><b>Test data left behind.</b> No way to delete a contract.</td><td>Each builder’s own caveat</td><td><code>DELETE /contracts/:id</code>; contract count 3 before and after.</td></tr>
+    <tr><td><b>Tests outside the gate.</b> O’s 11 and P1’s 18.</td><td>Lead review at merge</td><td>vitest include widened: 70 to 104 tests.</td></tr>
+    <tr><td><b>Checks that might never fail.</b> A spec that passes on broken code proves nothing.</td><td>K’s and P1’s negative controls</td><td>Both specs shown to fail when the behaviour is broken (4 FAILs; 19/20).</td></tr>
+  </table>
+
+  <div class="callout sys sp-3 push">
+    <h3>Three habits that paid off</h3>
+    <ul class="list small">
+      <li><b>Run every spec again after each merge.</b> Builders’ specs go stale the moment another builder changes the UI they select on.</li>
+      <li><b>Read the deploy config before the deploy.</b> The production-binding risk was visible in <code>wrangler.toml</code> and nowhere else.</li>
+      <li><b>Break it on purpose once.</b> A negative control costs minutes and shows the check is alive.</li>
+    </ul>
+    <p class="small sp-1"><span class="tag i">Inference</span> These are lessons drawn from the list above, not rules any builder was given.</p>
+  </div>
+</section>

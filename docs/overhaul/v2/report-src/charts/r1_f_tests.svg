@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1ftests" viewBox="0 0 313.70 128.00" role="img" aria-label="Test counts: F alone, with O&#x27;s tests, and on the merged code" style="display:block;width:100%;height:auto">
+<text x="0.00" y="18.00" font-family="'General Sans', sans-serif" font-size="9.4" font-weight="600" fill="#0F1E1C" text-anchor="start" >F, first green run</text>
+<rect x="118.00" y="6.00" width="104.80" height="18.00" fill="#14B8A6" />
+<text x="227.80" y="19.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#0F1E1C" text-anchor="start" >70</text>
+<text x="118.00" y="37.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="500" fill="#64748B" text-anchor="start" >9 files, 5 skipped</text>
+<text x="0.00" y="58.00" font-family="'General Sans', sans-serif" font-size="9.4" font-weight="600" fill="#0F1E1C" text-anchor="start" >after the vitest include</text>
+<rect x="118.00" y="46.00" width="121.27" height="18.00" fill="#059669" />
+<text x="244.27" y="59.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#0F1E1C" text-anchor="start" >81</text>
+<text x="118.00" y="77.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="500" fill="#64748B" text-anchor="start" >adds O&#x27;s 11 tests</text>
+<text x="0.00" y="98.00" font-family="'General Sans', sans-serif" font-size="9.4" font-weight="600" fill="#0F1E1C" text-anchor="start" >merged code (lead)</text>
+<rect x="118.00" y="86.00" width="155.70" height="18.00" fill="#059669" />
+<text x="278.70" y="99.00" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#0F1E1C" text-anchor="start" >104</text>
+<text x="118.00" y="117.00" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="500" fill="#64748B" text-anchor="start" >5 skipped</text>
+</svg>

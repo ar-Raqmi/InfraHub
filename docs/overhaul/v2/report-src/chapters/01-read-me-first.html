@@ -1,0 +1,149 @@
+<!-- chapter: 01 | Read me first -->
+<section class="page">
+  <header class="opener">
+    <div class="no">01</div>
+    <div>
+      <p class="kicker">Read me first</p>
+      <h1>Built, proved, your questions</h1>
+      <p class="dek">The whole report on one page. Everything after it explains, measures or asks.</p>
+    </div>
+  </header>
+
+  <div class="stat-grid sm">
+    <div class="stat s-deep">
+      <div class="n">31</div>
+      <div class="l"><b>commits on overhaul/v2</b>215 app files changed, +13,460 and -3,279 lines.</div>
+    </div>
+    <div class="stat">
+      <div class="n">104</div>
+      <div class="l"><b>unit tests pass</b>5 skipped. Build exits 0. tsc: 2 old errors (main had 3).</div>
+    </div>
+    <div class="stat s-purple">
+      <div class="n">71<span class="u">of 71</span></div>
+      <div class="l"><b>browser checks pass, twice</b>Local merged server and live preview: O 10, K 21, P1 21, P2 19.</div>
+    </div>
+    <div class="stat s-deep">
+      <div class="n">0</div>
+      <div class="l"><b>money differences</b>Old rules against new: 490 projects, 2,940 fields, 6,860 synthetic cases.</div>
+    </div>
+    <div class="stat s-purple">
+      <div class="n">490<span class="u">of 490</span></div>
+      <div class="l"><b>projects linked to a sebutharga</b>Three contracts. The migration changed 1,362 rows, then 0.</div>
+    </div>
+    <div class="stat s-amber">
+      <div class="n">8</div>
+      <div class="l"><b>tables in production, still</b>The preview has its own database (19 tables).</div>
+    </div>
+  </div>
+  <p class="src sp-1">All six numbers are <span class="tag v">Verified</span>: the lead ran the commands (chapter 11, p. {{page:11}}).</p>
+
+  <div class="cols-3 sp-3">
+    <div class="card contract">
+      <p class="kicker">What exists now</p>
+      <ul class="list small">
+        <li>A sebutharga is a <b>record</b> that owns versioned rate books, with an Excel import (ch. 07).</li>
+        <li>Every project is <b>bound</b> to one; swap and re-price with a preview (ch. 06).</li>
+        <li>Tetapan Organisasi (ch. 08), a light-only look (ch. 05), a dashboard with report scope (ch. 09).</li>
+      </ul>
+    </div>
+    <div class="card sys">
+      <p class="kicker">What is proven</p>
+      <ul class="list small">
+        <li>Every builder spec passes on the <b>live preview</b>, not only on a laptop.</li>
+        <li>The real master BQ Excel parses with <b>0 warnings</b>: 465 of 465 priced rows.</li>
+        <li>Production was <b>never touched</b>: the preview is a separate project, database and bucket.</li>
+      </ul>
+    </div>
+    <div class="card risk">
+      <p class="kicker">What nothing has checked</p>
+      <ul class="list small l-amber">
+        <li>Real iPhone and Android rendering.</li>
+        <li>An officer reading the <b>154 reworded</b> match suggestions.</li>
+        <li><b>Go-live</b>: no production migration was run, by design.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card fill-contract sp-3 push">
+    <p class="kicker" style="color:#C9C3EA">What needs your decision</p>
+    <h2 style="margin:1mm 0 2mm">Seven main questions, each with a default already chosen</h2>
+    <div class="cols-2">
+      <p class="small">Nothing is blocked: the lead picked defaults. Start with three: <b>which date decides the LAD rate</b>,
+        <b>which Excel book is the 2026 one</b>, and <b>who may unlock</b> a project that already has a No. Inden.</p>
+      <p class="small">The rest: keep today’s wording mistakes, keep the RM 200k cap as a warning, keep AI-assisted import off,
+        plan the go-live. Chapter 90, p. {{page:90}} lists them with seven smaller builder questions.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">In one paragraph</p>
+  <p class="lede sp-1" style="max-width:150mm">InfraHub v2 turns a sebutharga from a text label into a real record. It owns its
+    prices, lives apart from the calendar year, keeps every version like a git history, and tells an officer before it
+    changes a draf project. A lead and six builders wrote it in two waves on 21 to 22 November 2026 (about two hours of
+    clock time), and the lead merged and re-tested it. Every builder spec also passes on a live, isolated preview. What
+    is left is yours: seven main questions, seven smaller ones and the go-live plan.</p>
+
+  <div class="cols-2 sp-4 fill">
+    <div>
+      <h2>How to read this report</h2>
+      <h4 class="sp-2">How sure we are</h4>
+      <table class="data compact">
+        <tr><td style="width:36mm"><span class="tag v">Verified</span></td><td>Proven by a command whose raw output is in a
+          builder’s REPORT file, or re-run by the lead. Numbers are quoted, never recomputed.</td></tr>
+        <tr><td><span class="tag i">Inference</span></td><td>Our reading of what a fact means. Treat it as a proposal.</td></tr>
+        <tr><td><span class="tag q">Needs your answer</span></td><td>Only you can settle it. Collected in chapter 90, p. {{page:90}}.</td></tr>
+      </table>
+      <h4 class="sp-3">What the colours mean</h4>
+      <table class="data compact">
+        <tr><td style="width:36mm"><span class="swatch" style="background:var(--purple)"></span><b class="purple">Purple</b></td>
+          <td>Anything that <b>is</b> a contract: sebutharga, rate book, Jadual Kadar Harga.</td></tr>
+        <tr><td><span class="swatch" style="background:var(--deep)"></span><b class="deep">Emerald, teal</b></td>
+          <td>InfraHub itself: code, tables, statuses, builders.</td></tr>
+        <tr><td><span class="swatch" style="background:var(--amber)"></span><b class="amber">Amber</b></td>
+          <td>A risk, a refusal or a stale rate.</td></tr>
+        <tr><td><span class="swatch" style="background:var(--slate)"></span><b class="muted">Slate</b></td>
+          <td>Secondary information.</td></tr>
+      </table>
+      <h4 class="sp-3">About the numbers</h4>
+      <ul class="list small">
+        <li>Times, costs and the merged-code results come from <code>LEAD-FACTS.md</code>, which the lead verified by
+          running the commands. Each builder’s own numbers come from its REPORT file.</li>
+        <li>Cost is Hermes’ <b>estimated API list price</b>. The work ran on the Claude plan, which is billed in plan quota,
+          not dollars (chapter 12, p. {{page:12}}).</li>
+        <li>Every screenshot shows the anonymised seed: “Pentadbir 01”, “PJA 01”, “Syarikat 01…63”. The repo is public.</li>
+        <li>Malay screen terms stay as they are, with a short gloss the first time: Sebutharga (quotation), Buku Kadar
+          (rate book), Perlu harga semula (needs re-pricing).</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Contents</h2>
+      <ol class="toc sp-2">
+        <li><span class="k">01</span><span>Read me first</span><span class="p">{{page:01}}</span></li>
+        <li><span class="k purple">02</span><span>The new model</span><span class="p">{{page:02}}</span></li>
+        <li><span class="k">03</span><span>Team and method</span><span class="p">{{page:03}}</span></li>
+        <li><span class="k deep">04</span><span>F · Foundation: model, rules, importer</span><span class="p">{{page:04}}</span></li>
+        <li><span class="k deep">05</span><span>D · Design system “Tapak”</span><span class="p">{{page:05}}</span></li>
+        <li><span class="k purple">06</span><span>P2 · Project detail and BQ binding</span><span class="p">{{page:06}}</span></li>
+        <li><span class="k purple">07</span><span>K · Kontrak and Excel import</span><span class="p">{{page:07}}</span></li>
+        <li><span class="k deep">08</span><span>O · Tetapan Organisasi</span><span class="p">{{page:08}}</span></li>
+        <li><span class="k deep">09</span><span>P1 · Dashboard, list and report scope</span><span class="p">{{page:09}}</span></li>
+        <li><span class="k">10</span><span>Lead integration: ten cross-builder fixes</span><span class="p">{{page:10}}</span></li>
+        <li><span class="k">11</span><span>Proof: local, live preview, isolation</span><span class="p">{{page:11}}</span></li>
+        <li><span class="k">12</span><span>Cost and process</span><span class="p">{{page:12}}</span></li>
+        <li><span class="k">90</span><span>Decisions for you</span><span class="p">{{page:90}}</span></li>
+        <li><span class="k">99</span><span>Appendix: commits, files, how to run</span><span class="p">{{page:99}}</span></li>
+      </ol>
+      <div class="callout sys sp-4">
+        <h3>Where to start</h3>
+        <p class="small">Short on time: this page, chapter 02 (the model in one picture), then chapter 90, p. {{page:90}}
+          to annotate. Want the proof? Chapter 11. Chapters 04 to 09 open with a strip of time, calls, cost and result.</p>
+      </div>
+      <div class="callout contract sp-3">
+        <h3>The one idea</h3>
+        <p class="small">A sebutharga decides the prices. A project’s rates come from the sebutharga it was issued under,
+          never from today’s date. Everything built here serves that sentence.</p>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,99 @@
+<!-- chapter: 99 | Appendix -->
+<section class="page r2">
+  <header class="opener">
+    <div class="no">99</div>
+    <div>
+      <p class="kicker">Appendix</p>
+      <h1>Commits, files, how to run it, and the words</h1>
+      <p class="dek">Everything needed to find the work again: the branch history, where each part lives, how to run the app and the proof,
+        how the preview was deployed, and a glossary of the Malay terms used in this report.</p>
+    </div>
+  </header>
+
+  <h2>Commit list</h2>
+  <p class="measure small">From <span class="mono">git log --reverse main..overhaul/v2</span>: 32 commits at the time of writing. LEAD-FACTS counted 31 before the last one, the build-report spec. The first is the discovery report of 20 Nov. Times are Asia/Kuala_Lumpur.</p>
+  <table class="log sp-1" style="table-layout:fixed"><colgroup><col style="width:17mm"><col style="width:21mm"><col style="width:11mm"><col></colgroup>
+    <tbody>
+      <tr><td class="hash">618227d2</td><td class="mono">20 Nov 07:48</td><td style="color:var(--ink);font-weight:700" class="mono">docs</td><td>discovery report, findings, three UI/UX directions</td></tr>
+      <tr><td class="hash">ac026945</td><td class="mono">21 Nov 22:26</td><td style="color:var(--ink);font-weight:700" class="mono">docs</td><td>build contract for the v2 overhaul</td></tr>
+      <tr><td class="hash">ed50143c</td><td class="mono">21 Nov 22:49</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>design: Direction C light design system (fonts, tokens, UI primitives, shell, kit gallery)</td></tr>
+      <tr><td class="hash">437c8c40</td><td class="mono">21 Nov 22:49</td><td style="color:var(--slate);font-weight:700" class="mono">merge</td><td>D design system</td></tr>
+      <tr><td class="hash">acb13a7f</td><td class="mono">21 Nov 22:50</td><td style="color:var(--ink);font-weight:700" class="mono">chore</td><td>status-bar theme colour matches the light top bar</td></tr>
+      <tr><td class="hash">358447fc</td><td class="mono">21 Nov 22:59</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>brand: official InfraHub logo as BrandMark in rail, top bar, login</td></tr>
+      <tr><td class="hash">037feb87</td><td class="mono">21 Nov 23:05</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>foundation: contracts, versioned rate books, change log, config; tested domain layer and API</td></tr>
+      <tr><td class="hash">2b9eb3bb</td><td class="mono">21 Nov 23:05</td><td style="color:var(--slate);font-weight:700" class="mono">merge</td><td>F foundation</td></tr>
+      <tr><td class="hash">79fa270b</td><td class="mono">21 Nov 23:07</td><td style="color:var(--amber);font-weight:700" class="mono">fix</td><td>commit D1 migrations (the *.sql ignore rule had excluded them)</td></tr>
+      <tr><td class="hash">cd08a3df</td><td class="mono">21 Nov 23:11</td><td style="color:var(--ink);font-weight:700" class="mono">chore</td><td>wave-2 scaffolding: Kontrak and Organisasi pages and nav, WAVE2 brief, bootstrap script</td></tr>
+      <tr><td class="hash">3b0d0b37</td><td class="mono">21 Nov 23:57</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>projek: projects bound to their sebutharga (stepper, lock, swap with re-price preview, domain/money)</td></tr>
+      <tr><td class="hash">1311edf9</td><td class="mono">21 Nov 23:57</td><td style="color:var(--slate);font-weight:700" class="mono">merge</td><td>P2 project detail + BQ binding</td></tr>
+      <tr><td class="hash">ef0a8fcb</td><td class="mono">22 Nov 00:03</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>api: project log route, contract delete, reprice records unlock, sebutharga on new projects</td></tr>
+      <tr><td class="hash">54e3aef3</td><td class="mono">22 Nov 00:04</td><td style="color:var(--ink);font-weight:700" class="mono">docs</td><td>lead resolutions for P2 requests</td></tr>
+      <tr><td class="hash">db3dd2aa</td><td class="mono">22 Nov 00:06</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>organisasi: Tetapan Organisasi (profile, logo, texts, lookups, dated policies), text parity proven</td></tr>
+      <tr><td class="hash">1d269af0</td><td class="mono">22 Nov 00:06</td><td style="color:var(--slate);font-weight:700" class="mono">merge</td><td>O organisasi + document config</td></tr>
+      <tr><td class="hash">e5ab1779</td><td class="mono">22 Nov 00:17</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>integration: one policy-date rule, append-only policies, migration 0003, BQ cover from settings</td></tr>
+      <tr><td class="hash">449f899d</td><td class="mono">22 Nov 00:18</td><td style="color:var(--ink);font-weight:700" class="mono">chore</td><td>untrack python caches</td></tr>
+      <tr><td class="hash">a707460d</td><td class="mono">22 Nov 00:18</td><td style="color:var(--ink);font-weight:700" class="mono">docs</td><td>lead resolutions for O requests</td></tr>
+      <tr><td class="hash">9af8b199</td><td class="mono">22 Nov 00:19</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>kontrak: register, detail, panel, book browser, versions + diff, Excel import with match review</td></tr>
+      <tr><td class="hash">8625c61a</td><td class="mono">22 Nov 00:19</td><td style="color:var(--slate);font-weight:700" class="mono">merge</td><td>K kontrak + Excel import</td></tr>
+      <tr><td class="hash">e3c7b998</td><td class="mono">22 Nov 00:23</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>integration: one re-pricing rule (domain/repricing); delete draft contracts; Kontrak on phone tab bar</td></tr>
+      <tr><td class="hash">4591181e</td><td class="mono">22 Nov 00:24</td><td style="color:var(--ink);font-weight:700" class="mono">docs</td><td>lead resolutions for K requests</td></tr>
+      <tr><td class="hash">b4f3fc21</td><td class="mono">22 Nov 00:24</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>dashboard + list: Pusat kawalan / Hari ini, worklists, DataTable list, report scope, lookups</td></tr>
+      <tr><td class="hash">c2be9537</td><td class="mono">22 Nov 00:24</td><td style="color:var(--slate);font-weight:700" class="mono">merge</td><td>P1 dashboard, projects list, report scope</td></tr>
+      <tr><td class="hash">8e37b0af</td><td class="mono">22 Nov 00:27</td><td style="color:var(--deep);font-weight:700" class="mono">feat</td><td>integration: dashboard and list re-pricing from domain/repricing; POST /projects no longer 500s</td></tr>
+      <tr><td class="hash">857211d9</td><td class="mono">22 Nov 00:27</td><td style="color:var(--purple);font-weight:700" class="mono">test</td><td>e2e: P1 spec deletes its test contract</td></tr>
+      <tr><td class="hash">8d35879a</td><td class="mono">22 Nov 00:30</td><td style="color:var(--purple);font-weight:700" class="mono">test</td><td>e2e: O and P2 specs follow the merged UI</td></tr>
+      <tr><td class="hash">7e10b7f9</td><td class="mono">22 Nov 00:30</td><td style="color:var(--purple);font-weight:700" class="mono">test</td><td>e2e: P2 spec deletes its test contract</td></tr>
+      <tr><td class="hash">7f1da18d</td><td class="mono">22 Nov 00:33</td><td style="color:var(--ink);font-weight:700" class="mono">tools</td><td>isolated preview deploy (own Pages project, D1, R2; refuses production names and ids)</td></tr>
+      <tr><td class="hash">6684ae2f</td><td class="mono">22 Nov 00:36</td><td style="color:var(--purple);font-weight:700" class="mono">test</td><td>e2e: specs send an explicit User-Agent (Cloudflare 1010); all specs pass on the preview</td></tr>
+      <tr><td class="hash">0d0eb14c</td><td class="mono">22 Nov 00:39</td><td style="color:var(--ink);font-weight:700" class="mono">docs</td><td>build-report spec + lead facts; report toolkit</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="page r2">
+  <h2>File map</h2>
+  <table class="data compact filemap sp-1" style="table-layout:fixed">
+    <thead><tr><th style="width:50mm">Where</th><th>What lives there</th><th style="width:18mm">Built by</th></tr></thead>
+    <tr><td class="code">domain/</td><td>Pure business rules with unit tests: <span class="mono">money</span>, <span class="mono">policy</span>, <span class="mono">reprice</span>, <span class="mono">repricing</span>, and <span class="mono">rateBook/</span> (Excel parser, matcher, diff, row status).</td><td>F, lead</td></tr>
+    <tr><td class="code">functions/api/</td><td>The API (Hono on Cloudflare Pages Functions): <span class="mono">routes/</span> (contracts, rateBook, orgConfig, projects…), <span class="mono">repositories/</span>, <span class="mono">services/</span> (legacy migration, rate book, project contract).</td><td>F, lead</td></tr>
+    <tr><td class="code">migrations/</td><td><span class="mono">0001_contracts_rate_books</span>, <span class="mono">0002_projects_contract</span>, <span class="mono">0003_org_defaults</span> (SQL, applied with wrangler).</td><td>F, lead</td></tr>
+    <tr><td class="code">components/ui/</td><td>The design-system primitives and tokens (Direction C, light only), plus the kit gallery page <span class="mono">kit.html</span>.</td><td>D</td></tr>
+    <tr><td class="code">components/kontrak/, pages/kontrak/</td><td>Contract register, detail, panel, book browser, version log, import wizard.</td><td>K</td></tr>
+    <tr><td class="code">components/org/, pages/organisasi/</td><td>Tetapan Organisasi and the <span class="mono">OrgDocs</span> loader that every PDF and certificate reads.</td><td>O</td></tr>
+    <tr><td class="code">components/dash/, components/projects/</td><td>Dashboard, projects list, report scope and the cap and vote summaries.</td><td>P1</td></tr>
+    <tr><td class="code">components/detail/, components/bq/</td><td>Project detail, the stepper, swap and re-price, the BQ editors’ rate-source markers.</td><td>P2</td></tr>
+    <tr><td class="code">services/pdf/, services/finance.ts</td><td>The PDF exporters and money helpers, now reading settings instead of constants.</td><td>O</td></tr>
+    <tr><td class="code">lib/excel/readWorkbook.ts</td><td>The in-browser reader for <span class="mono">.xls</span> and <span class="mono">.xlsx</span> (SheetJS).</td><td>F</td></tr>
+    <tr><td class="code">hooks/</td><td>React-query hooks over the API: <span class="mono">useContracts</span>, <span class="mono">useRateBook</span>, <span class="mono">useChangeLog</span>, <span class="mono">useOrgConfig</span>, <span class="mono">useProjects</span>…</td><td>F, lead</td></tr>
+    <tr><td class="code">kontrak.html, organisasi.html</td><td>Page entries for the two new screens (multi-page Vite build).</td><td>lead</td></tr>
+    <tr><td class="code">docs/overhaul/v2/</td><td><span class="mono">CONTRACT.md</span>, <span class="mono">API.md</span>, <span class="mono">DESIGN.md</span>, <span class="mono">WAVE2.md</span>, <span class="mono">NEEDS-lead.md</span>; <span class="mono">e2e/</span> (specs); <span class="mono">tools/</span> (bootstrap, preview deploy); <span class="mono">reports/</span> (each builder’s report and screenshots).</td><td>all</td></tr>
+  </table>
+
+  <h2 class="sp-3">Run it locally</h2>
+  <div class="cmd sp-1"><span class="c"># in a worktree whose wrangler.toml carries the FAKE database id (the script refuses anything else)</span>
+bash docs/overhaul/v2/tools/bootstrap-local.sh &lt;state-dir&gt;     <span class="c"># anonymised seed + migrations</span>
+npm run build &amp;&amp; npx wrangler pages dev dist --port 8790 --persist-to &lt;state-dir&gt; --compatibility-date=2026-06-18
+<span class="c"># once: POST /api/v2/admin/migrate-legacy      users: admin01, jurutera01, pja01 (password: line 2 of CREDS.txt)</span></div>
+
+  <h2 class="sp-3">Deploy the isolated preview</h2>
+  <div class="cmd sp-1"><span class="c"># docs/overhaul/v2/tools/deploy-v2-preview.sh: refuses any name without "v2-preview" and the production D1 id</span>
+./deploy-v2-preview.sh resources            <span class="c"># create D1 + R2 (idempotent); prints the D1 id</span>
+./deploy-v2-preview.sh seed   &lt;d1-id&gt;       <span class="c"># anonymised seed + migrations, first time only</span>
+./deploy-v2-preview.sh deploy &lt;d1-id&gt;       <span class="c"># build overhaul/v2 and deploy to Pages project infrahub-v2-preview</span></div>
+  <p class="cap">Resources: Pages project <span class="mono">infrahub-v2-preview</span>, D1 <span class="mono">infrahub-v2-preview-db</span>, R2 <span class="mono">infrahub-v2-preview-bucket</span>. It needs a logged-in <span class="mono">wrangler</span>. The proof commands are in chapter 11.</p>
+</section>
+
+<section class="page r2">
+  <h2>Glossary</h2>
+  <p class="measure small">Malay terms keep their spelling in the app. The English gloss is for you, as owner and engineer; the app itself stays Malay.</p>
+  <div class="cols-2 sp-2">
+<dl class="gl"><dt>Sebutharga<span class="ms">tender / quotation</span></dt><dd>The contract (code such as MPS/SH/302/25). In v2 it owns its rates.</dd><dt>Buku Kadar<span class="ms">rate book</span></dt><dd>The priced list of work items of one sebutharga, kept as numbered versions.</dd><dt>Kontrak<span class="ms">contract</span></dt><dd>The screen and the record for a sebutharga.</dd><dt>DRAF / AKTIF / DITUTUP<span class="ms">draft / in force / closed</span></dt><dd>The three contract statuses. A new project defaults to the AKTIF one.</dd><dt>TERBIT<span class="ms">published</span></dt><dd>A rate-book version that is official. DRAF versions are still being reviewed.</dd><dt>Panel<span class="ms">approved companies</span></dt><dd>The companies allowed to work under a panel sebutharga.</dd><dt>BQ<span class="ms">bill of quantities</span></dt><dd>A project’s priced list of work, copied from the book of its sebutharga.</dd><dt>Pustaka<span class="ms">library</span></dt><dd>The BQ library in Tetapan. Now the AKTIF contract’s rate book.</dd><dt>Perlu harga semula<span class="ms">needs re-pricing</span></dt><dd>A draf project whose rates may no longer match its sebutharga.</dd><dt>No. Inden<span class="ms">order number</span></dt><dd>Once issued, it locks the project’s sebutharga.</dd><dt>Tetapan Organisasi<span class="ms">organisation settings</span></dt><dd>Profile, logo, document texts, lists and dated rules.</dd><dt>PJA<span class="ms">project officer</span></dt><dd>Prices and runs a project. Staff appear as “PJA 01…” in the seed.</dd><dt>LAD<span class="ms">liquidated damages</span></dt><dd>Denda kelewatan: a daily charge for late completion, from a dated rate.</dd><dt>LoC<span class="ms">late-claim penalty</span></dt><dd>Denda lewat tuntutan: a daily charge after a grace period.</dd><dt>CPC<span class="ms">completion certificate</span></dt><dd>Perakuan Siap Kerja. Starts the defects period.</dd><dt>DLP<span class="ms">defects liability period</span></dt><dd>Tempoh Tanggungan Kecacatan: 6 months by default.</dd><dt>BLR<span class="ms">base lending rate</span></dt><dd>An input of the LAD formula, valid from a date.</dd></dl>
+<dl class="gl"><dt>Peringatan 1–3<span class="ms">reminders 1 to 3</span></dt><dd>The three notice letters sent to a company.</dd><dt>Padanan<span class="ms">match</span></dt><dd>A link from a new rate-book line to an old one.</dd><dt>Sama<span class="ms">same</span></dt><dd>Same code, wording and rate as the old line.</dd><dt>Kadar berubah<span class="ms">rate changed</span></dt><dd>Same line, new rate.</dd><dt>Perkataan berubah<span class="ms">wording changed</span></dt><dd>A kept link with different wording. A suggestion for a person.</dd><dt>Baharu / Dibuang<span class="ms">new / removed</span></dt><dd>A line only in the new file / only in the old book.</dd><dt>Terima / Tolak<span class="ms">accept / reject</span></dt><dd>The two answers to a suggested match.</dd><dt>Aktifkan, Tutup, Padam<span class="ms">activate, close, delete</span></dt><dd>The contract actions.</dd><dt>Skop laporan<span class="ms">report scope</span></dt><dd>Which sebutharga, and which year or range, a report counts.</dd><dt>Julat tersuai<span class="ms">custom range</span></dt><dd>A date range on Tarikh Buka (opening date).</dd><dt>Pusat kawalan / Hari ini<span class="ms">control centre / today</span></dt><dd>The dashboard on desktop / on the phone.</dd><dt>Perlu tindakan<span class="ms">needs action</span></dt><dd>The worklist card on the dashboard.</dd><dt>Menunggu kertas kerja<span class="ms">waiting for paperwork</span></dt><dd>Siap Sebenar is set but the claim or hand-over is missing.</dd><dt>Siap Sebenar<span class="ms">actual completion</span></dt><dd>The date the site work really finished.</dd><dt>Teks dokumen<span class="ms">document texts</span></dt><dd>The printed wording, editable in Tetapan Organisasi.</dd><dt>Akses terhad<span class="ms">restricted access</span></dt><dd>What a non-admin sees on the organisation page.</dd><dt>Lantikan / Serah tapak<span class="ms">appointment / site handover</span></dt><dd>Two dates in a project’s life, used as LAD date fallbacks.</dd></dl>
+  </div>
+  <div class="callout sys sp-3 push">
+    <h3>Sources and how sure each statement is</h3>
+    <p class="small">Numbers come from <span class="mono">reports/LEAD-FACTS.md</span> (the lead re-ran them), the builders’ <span class="mono">REPORT-K, O, P1</span> (their Evidence blocks), the raw e2e logs of the merged run, and <span class="mono">git log</span>. Anything else is tagged.
+      <span class="tag v">Verified</span> a command or file shows it. <span class="tag i">Inference</span> a reading of the facts. <span class="tag q">Needs your answer</span> a decision for chapter 90.
+      Every screenshot is from the anonymised dev seed: staff appear as “Pentadbir 01” and “PJA 01”, companies as “Syarikat 01…63”. The repository is public.</p>
+  </div>
+</section>

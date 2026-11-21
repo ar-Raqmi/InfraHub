@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_hub_reprice" viewBox="0 0 657.64 196.00" role="img" aria-label="Three re-pricing definitions replaced by one in domain/repricing" style="display:block;width:100%;height:auto">
+<text x="0.00" y="10.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#64748B" text-anchor="start" >BEFORE: three definitions</text>
+<text x="473.64" y="10.00" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#64748B" text-anchor="start" >AFTER: one rule, five users</text>
+<defs><marker id="r2_hub_reprice-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#3B2E8C"/></marker></defs>
+<rect x="0.00" y="16.00" width="188.00" height="44.00" fill="#FFFFFF" stroke="#D97706" stroke-width="1.2" />
+<text x="8.00" y="33.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >K · close sheet</text>
+<text x="8.00" y="48.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >draf only</text>
+<path d="M188,38.0 L220.82,102.0" stroke="#D97706" stroke-width="1.1" fill="none" stroke-dasharray="3 3" marker-end="url(#r2_hub_reprice-a)"/>
+<rect x="0.00" y="80.00" width="188.00" height="44.00" fill="#FFFFFF" stroke="#D97706" stroke-width="1.2" />
+<text x="8.00" y="97.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >P1 · dashboard</text>
+<text x="8.00" y="112.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >draf + menunggu lantikan</text>
+<path d="M188,102.0 L220.82,102.0" stroke="#D97706" stroke-width="1.1" fill="none" stroke-dasharray="3 3" marker-end="url(#r2_hub_reprice-a)"/>
+<rect x="0.00" y="144.00" width="188.00" height="44.00" fill="#FFFFFF" stroke="#D97706" stroke-width="1.2" />
+<text x="8.00" y="161.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="700" fill="#0F1E1C" text-anchor="start" >P2 · project banner</text>
+<text x="8.00" y="176.00" font-family="'General Sans', sans-serif" font-size="9.5" font-weight="400" fill="#34413F" text-anchor="start" >draf only</text>
+<path d="M188,166.0 L220.82,102.0" stroke="#D97706" stroke-width="1.1" fill="none" stroke-dasharray="3 3" marker-end="url(#r2_hub_reprice-a)"/>
+<rect x="223.82" y="42.00" width="214.00" height="120.00" fill="#3B2E8C" />
+<text x="233.82" y="62.00" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="start" >domain/repricing.ts</text>
+<text x="233.82" y="80.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >FASA_DRAF or MENUNGGU_LANTIKAN,</text>
+<text x="233.82" y="94.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >and no No. Inden issued.</text>
+<text x="233.82" y="108.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" ></text>
+<text x="233.82" y="122.00" font-family="'General Sans', sans-serif" font-size="9.8" font-weight="500" fill="#E7E4F3" text-anchor="start" >An issued No. Inden locks.</text>
+<rect x="473.64" y="16.00" width="184.00" height="31.20" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="35.10" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Close sheet (Tutup)</text>
+<path d="M440.82,102.0 L471.64,31.6" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_reprice-a)"/>
+<rect x="473.64" y="51.20" width="184.00" height="31.20" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="70.30" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Project banner</text>
+<path d="M440.82,102.0 L471.64,66.8" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_reprice-a)"/>
+<rect x="473.64" y="86.40" width="184.00" height="31.20" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="105.50" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Dashboard worklist</text>
+<path d="M440.82,102.0 L471.64,102.0" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_reprice-a)"/>
+<rect x="473.64" y="121.60" width="184.00" height="31.20" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="140.70" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >Projects list</text>
+<path d="M440.82,102.0 L471.64,137.20000000000002" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_reprice-a)"/>
+<rect x="473.64" y="156.80" width="184.00" height="31.20" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" />
+<text x="481.64" y="175.90" font-family="'General Sans', sans-serif" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >API stat repriceableProjects</text>
+<path d="M440.82,102.0 L471.64,172.4" stroke="#3B2E8C" stroke-width="1.1" fill="none" marker-end="url(#r2_hub_reprice-a)"/>
+</svg>

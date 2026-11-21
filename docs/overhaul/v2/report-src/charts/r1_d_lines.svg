@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r1dlines" viewBox="0 0 313.70 160.00" role="img" aria-label="Lines new or changed by D, by file" style="display:block;width:100%;height:auto">
+<text x="0.00" y="14.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >components/ui (21 files)</text>
+<rect x="138.00" y="3.00" width="139.11" height="14.00" fill="#059669" />
+<text x="281.11" y="14.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >805</text>
+<text x="0.00" y="36.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >entries/kit.tsx</text>
+<rect x="138.00" y="25.00" width="54.09" height="14.00" fill="#059669" />
+<text x="196.09" y="36.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >313</text>
+<text x="0.00" y="58.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >public/theme.css</text>
+<rect x="138.00" y="47.00" width="25.06" height="14.00" fill="#059669" />
+<text x="167.06" y="58.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >145</text>
+<text x="0.00" y="80.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >DESIGN.md</text>
+<rect x="138.00" y="69.00" width="19.53" height="14.00" fill="#059669" />
+<text x="161.53" y="80.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >113</text>
+<text x="0.00" y="102.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >Sidebar.tsx</text>
+<rect x="138.00" y="91.00" width="12.27" height="14.00" fill="#059669" />
+<text x="154.27" y="102.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >71</text>
+<text x="0.00" y="124.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >tw-config.js</text>
+<rect x="138.00" y="113.00" width="6.74" height="14.00" fill="#059669" />
+<text x="148.74" y="124.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >39</text>
+<text x="0.00" y="146.00" font-family="'General Sans', sans-serif" font-size="9" font-weight="500" fill="#0F1E1C" text-anchor="start" >global.css, AppShell, Sheet</text>
+<rect x="138.00" y="135.00" width="6.74" height="14.00" fill="#059669" />
+<text x="148.74" y="146.00" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0F1E1C" text-anchor="start" >39</text>
+</svg>

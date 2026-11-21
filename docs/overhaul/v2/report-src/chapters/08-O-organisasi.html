@@ -1,0 +1,196 @@
+<!-- chapter: 08 | O · Tetapan Organisasi -->
+<section class="page r2">
+  <header class="opener sys">
+    <div class="no">08</div>
+    <div>
+      <p class="kicker">Sub-Yiyi O · Tetapan Organisasi</p>
+      <h1>A council’s name, rates and wording become settings</h1>
+      <p class="dek">Asked for: take every hard-coded value out of the code (organisation, logo, letterhead, printed texts,
+        LAD and LoC rules, notice timings, dropdown lists) and make it editable, with effective dates and a history.</p>
+    </div>
+  </header>
+
+  <div class="strip5">
+    <div class="stat"><div class="n">51<span class="u">min</span></div><div class="l"><b>wall time</b>3,032 s, parallel with K, P1, P2</div></div>
+    <div class="stat"><div class="n">132</div><div class="l"><b>API calls</b>169,208 output tokens</div></div>
+    <div class="stat s-deep"><div class="n">$11.59</div><div class="l"><b>est. API price</b>plan quota, not dollars</div></div>
+    <div class="stat"><div class="n">21</div><div class="l"><b>tests added</b>11 vitest + 10 e2e checks</div></div>
+    <div class="stat s-deep"><div class="n">10/10</div><div class="l"><b>spec result</b>local and live preview <span class="tag v">Verified</span></div></div>
+  </div>
+
+  <h2 class="sp-3">Where the hard-coded values went</h2>
+  <p class="measure small">O first listed every hard-coded value in its files (32 rows, with file and line); this table groups them.
+    Day-one output had to stay <b>identical</b>, so the defaults are today’s exact values, kept in code as a fallback and
+    seeded by migration <code>0003_org_defaults.sql</code>.</p>
+  <table class="data compact sp-1">
+    <thead><tr><th style="width:56mm">Was hard-coded</th><th style="width:44mm">Where</th><th>Now</th></tr></thead>
+    <tr><td><b>LAD rule:</b> RM 20,000 threshold, flat RM 20/day, BLR 6.65, treasury 0.25</td><td class="src">services/finance.ts</td><td>Dated policy rules, read for the project’s <code>ladPolicyDate</code></td></tr>
+    <tr><td><b>LoC:</b> RM 100 a day, 14 days grace</td><td class="src">LoC exporter + certificate</td><td>Policies <code>LOC_DAILY_RATE</code>, <code>LOC_GRACE_DAYS</code></td></tr>
+    <tr><td><b>CPC:</b> defect period +6 months</td><td class="src">CPC exporter + certificate</td><td>New policy <code>DLP_MONTHS</code></td></tr>
+    <tr><td><b>Notices:</b> -7 / +7 / +14 day offsets</td><td class="src">NotisGenerator</td><td>Policies <code>NOTIS_PERINGATAN_1…3_DAYS</code>; hint text generated from the value</td></tr>
+    <tr><td><b>Organisation:</b> name, address, phone, four government slogans</td><td class="src">6 PDF exporters, PDFBaseHelper</td><td><code>org.profile</code>, plus an optional printed letterhead</td></tr>
+    <tr><td><b>Seal</b> drawn on Prestasi</td><td class="src">PrestasiPDFExporter</td><td><code>org.logo</code> (PNG up to 512 px and 350 kB)</td></tr>
+    <tr><td><b>Every printed sentence:</b> titles, paragraphs, sign-offs, footers</td><td class="src">6 PDF exporters, 6 certificate and editor pages</td><td>11 text groups, <b>80 editable fields</b>, with <span class="mono">{{placeholders}}</span></td></tr>
+    <tr><td><b>BP, Zon, Mukim</b> option lists</td><td class="src">types.ts constants</td><td>Lookups editable in Senarai (wired by P1 and the lead)</td></tr>
+  </table>
+
+  <div class="strip4 sp-2">
+    <div class="stat s-deep"><div class="n">80</div><div class="l"><b>editable text fields</b>in 11 groups</div></div>
+    <div class="stat"><div class="n">12</div><div class="l"><b>dated policy rules</b>in 4 groups</div></div>
+    <div class="stat"><div class="n">4</div><div class="l"><b>lookup lists</b>BP, Zon, Mukim, Unit</div></div>
+    <div class="stat"><div class="n">11</div><div class="l"><b>profile fields</b>plus logo and letterhead switch</div></div>
+  </div>
+
+  <div class="callout risk sp-2 push">
+    <h3>Parity kept today’s typing mistakes on purpose</h3>
+    <p class="small">The defaults reproduce the current paper exactly, including <code>sebanyakRM20.00/hari</code> (missing space),
+      <code>dalam tempohtujuh (7) hari</code> and <code>Gred" G1"</code>. Each is now one edit in <b>Teks dokumen</b>, not a code change.
+      Whether to fix them is your call (chapter 90). <span class="tag q">Needs your answer</span></p>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>One admin page, five tabs</h2>
+  <p class="measure small">Only an administrator can open it; a PJA sees “Akses terhad”. Each tab saves through the API and
+    shows its own history from the change log.</p>
+
+  <div class="cols-2 sp-2">
+    <figure class="fig">
+      <p class="fig-title">Profil: the letterhead preview moves as you type</p>
+      <p class="fig-sub">Name, short name, jabatan, address, phone, slogans, and a switch to print the letterhead.</p>
+      <img class="shot" src="img/r2/r2_o_profil.png" alt="">
+    </figure>
+    <figure class="fig">
+      <p class="fig-title">Teks dokumen: 80 fields, each with its original text beside it</p>
+      <p class="fig-sub">Insert-placeholder buttons for the focused field; unknown placeholders are warned about.</p>
+      <img class="shot" src="img/r2/r2_o_teks.png" alt="">
+    </figure>
+  </div>
+
+  <div class="cols-7-5 sp-3">
+    <figure class="fig">
+      <p class="fig-title">Peraturan: a new BLR is added with a date, never typed over</p>
+      <p class="fig-sub">12 rules in four groups. “Semak kadar LAD pada sesuatu tarikh” shows which rate any date would get.</p>
+      <img class="shot" src="img/r2/r2_o_lad.png" alt="">
+      <figcaption>An existing date is refused, so history is never edited. A scheduled value stays editable until it takes effect.</figcaption>
+    </figure>
+    <div>
+      <div class="phones p2">
+        <img class="phone" src="img/r2/r2_o_m_profil.png" alt="">
+        <img class="phone" src="img/r2/r2_o_m_peraturan.png" alt="">
+      </div>
+      <p class="cap">At 430 px: no horizontal overflow, no control under 44 px, no input under 16 px (probe on all five tabs).</p>
+    </div>
+  </div>
+
+  <div class="cols-3 sp-3 push small">
+    <div class="rule-top"><h3>Logo</h3><p>Upload (downscaled to a PNG), use the original seal, or print none. A non-square logo is stretched into the existing fixed boxes.</p></div>
+    <div class="rule-top"><h3>Senarai</h3><p>BP, Zon, Mukim and Unit: rename a label, reorder, deactivate. Codes cannot change, so old projects still match. Unit starts empty.</p></div>
+    <div class="rule-top"><h3>Login</h3><p>The login page is re-skinned in the new design and shows “Digunakan oleh …” with the organisation’s name and logo from the settings.</p></div>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>How it was proved: the paper does not change unless a setting does</h2>
+  <p class="measure small">A harness runs the <b>real PDF exporters</b> in Chromium, once from a snapshot of the pre-change source and once from the new
+    code, over 10 document types and 3 sample projects. Each PDF is read back with <code>pdftotext -layout</code> and the folders are compared
+    with <code>diff -r</code>.</p>
+
+  <figure class="fig sp-2">
+    <p class="fig-title">All 30 documents read the same before and after, whatever the config holds</p>
+    <p class="fig-sub">Empty config, seeded config, and config after the e2e edited and restored values: 0 differences. Then the config was changed to “another PBT”.</p>
+    {{svg:r2_o_parity}}
+    <figcaption>The 6 unchanged documents in the last row are the LAD and LoC sheets, which print no organisation text. Every changed line was an organisation field.</figcaption>
+  </figure>
+
+  <div class="cols-7-5 sp-3">
+    <figure class="fig">
+      <p class="fig-title">Another council’s name and crest appear on paper, from settings only</p>
+      <p class="fig-sub">Notis Peringatan 1 and Borang Prestasi, before and after a sample PBT’s name, address, one slogan, letterhead and an uploaded logo.</p>
+      <img class="shot" src="img-v2/O/14-letterhead-before-after.png" alt="">
+    </figure>
+    <div>
+      <h4>Documents containing each changed line</h4>
+      <table class="data compact">
+        <tr><td class="num">18</td><td>name in the letterhead</td></tr>
+        <tr><td class="num">12</td><td>address line</td></tr>
+        <tr><td class="num">12</td><td>phone and e-mail line</td></tr>
+        <tr><td class="num">12</td><td>4 old slogans out, 1 new in</td></tr>
+        <tr><td class="num">12</td><td>council name in running text</td></tr>
+        <tr><td class="num">6</td><td>upper-case name and address lines, re-wrapped</td></tr>
+        <tr><td class="num">3</td><td>short name in Aku Janji (“pihak MPS” to “MPC”)</td></tr>
+        <tr><td class="num">3</td><td>phone number in Notis Pemberitahuan</td></tr>
+        <tr><td class="num">3</td><td>Prestasi footer address</td></tr>
+      </table>
+      <p class="small sp-1">24 documents changed, 6 identical. <span class="tag v">Verified</span> <span class="src">REPORT-O Evidence</span></p>
+    </div>
+  </div>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout sys">
+      <h3>The acceptance spec (10 checks)</h3>
+      <p class="small">As admin it saves a short name, a Peringatan 1 paragraph and a new BLR dated in the future, and checks the change log holds all three. With BLR 6.65 moving to 7.65 on a future date, the LAD for a test project is <b>RM 8.77 today</b> and <b>RM 10.14 on the effective day</b>. The Notis preview shows the new paragraph; pja01 sees “Akses terhad”; the originals are restored. Local 10/10, preview 10/10.</p>
+    </div>
+    <div class="callout">
+      <h3>A rate change never rewrites the past</h3>
+      <p class="small">The first run used tomorrow as the effective date and failed to find “Jana Notis” because the button sits on tab 2 (PT). The spec was fixed, not the app. Later runs take the next free day, since policy rows cannot be deleted by a test.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>The login page, then and now</h2>
+  <div class="pair sp-1">
+    <div><p class="tagline before">Before</p><img class="shot" src="img-v2/O/00-login-before-desktop.png" alt=""></div>
+    <div><p class="tagline after">After</p><img class="shot" src="img-v2/O/02-login-after-desktop.png" alt=""></div>
+  </div>
+  <p class="cap">The product mark stays; a new line names the organisation using it. Logging in through the new form was not scripted.</p>
+
+  <div class="cols-2 sp-3">
+    <div>
+      <h4>Build gate for O</h4>
+      <table class="data compact">
+        <tr><td>Production build</td><td class="ok">green</td></tr>
+        <tr><td><span class="mono">tsc</span> errors</td><td class="ok">2 (base 3; O fixed one)</td></tr>
+        <tr><td>Repo vitest</td><td class="ok">70 passed, 5 skipped</td></tr>
+        <tr><td>O’s own vitest</td><td class="ok">11 passed</td></tr>
+        <tr><td>Seed script, then re-run</td><td class="ok">15 items, then 0</td></tr>
+        <tr><td>Migration 0003 run twice</td><td class="ok">13 rows, then 13</td></tr>
+      </table>
+    </div>
+    <div>
+      <h4>Accountability</h4>
+      <p class="small">Every save writes a change-log entry. A policy added for a later date does not change the LAD rate for an earlier date (e2e and unit test). The access guard is client-side only; the config API is not role-checked, and authentication is out of scope for this overhaul.</p>
+    </div>
+  </div>
+
+  <div class="cols-2 sp-3">
+    <div class="callout">
+      <h3><span class="tag i">Inference</span> What O could not check</h3>
+      <ul class="list small">
+        <li>The CPC, Aku Janji, LAD, LoC and Prestasi <b>previews</b> were not opened in a browser after the change; they share the PDFs’ code path, which was compared.</li>
+        <li>The Senarai save and the logo upload were not run through the UI (the API routes are F’s tested routes).</li>
+        <li>Phone layout at 430 only, not 390 or 360.</li>
+        <li>The uploaded logo in the letterhead comparison was set through the API.</li>
+      </ul>
+    </div>
+    <div class="callout contract">
+      <h3>What the lead changed after merging</h3>
+      <ul class="list l-purple small">
+        <li><b>One policy date</b> for the form and the certificates (chapter 10, fix 1).</li>
+        <li><b>BQ cover letter</b> reads the organisation: new <code>doc.bq</code> group (fix 2).</li>
+        <li><b>Append-only policies:</b> 409 on a repeated date, withdraw only a future value (fix 3).</li>
+        <li><b>Logo in the log</b> summarised as <code>[imej N aksara]</code> (fix 4).</li>
+        <li>O’s 11 tests join the gate; BP/Zon/Mukim dropdowns read the lookups (fixes 8, 9).</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig sp-3 push">
+    <p class="fig-title">A PJA cannot open the page</p>
+    <div style="display:grid;grid-template-columns:52mm 1fr;column-gap:5mm;align-items:center">
+      <img class="shot" src="img-v2/O/15-pja-akses-terhad.png" alt="">
+      <figcaption style="margin:0;border-top:0;padding-top:0">pja01 gets an “Akses terhad” page with a button back to the Dashboard, and no settings content. Checked in the e2e. <span class="tag v">Verified</span></figcaption>
+    </div>
+  </figure>
+</section>

@@ -1,0 +1,132 @@
+<!-- chapter: 02 | The new model -->
+<section class="page">
+  <header class="opener contract">
+    <div class="no">02</div>
+    <div>
+      <p class="kicker">The new model</p>
+      <h1>A sebutharga owns its prices</h1>
+      <p class="dek">Before, one undated price list served every project. Now each sebutharga owns versioned rate books,
+        and a project’s prices come from the sebutharga it was issued under.</p>
+    </div>
+  </header>
+
+  <p class="lede measure">The discovery report found one global master BQ with no year, no contract and no history, and a
+    sebutharga number that was only a text label. v2 keeps the project workflow and the money formulas, and replaces what
+    sits under them.</p>
+
+  <figure class="fig sp-3">
+    <div class="fig-title">The project no longer reads “today’s list”: it reads the rate book of its own sebutharga</div>
+    <p class="fig-sub">Left: the model the discovery report found. Right: the model that now runs on the preview.</p>
+    {{svg:r1_model}}
+    <figcaption><b>Source:</b> discovery report, chapters 06 to 08; <code>CONTRACT.md</code> §3; F’s legacy migration (3 contracts, 3 versions,
+      490 of 490 projects linked). The versions v2 and v3 are drawn dashed because they do not exist yet; they show where the next
+      upload lands. <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <div class="cols-3 sp-3 push">
+    <div class="callout contract">
+      <h3>What changed</h3>
+      <p class="small">The price source. A contract is a record with a status, a panel and a stack of rate-book versions.</p>
+    </div>
+    <div class="callout sys">
+      <h3>What did not</h3>
+      <p class="small">The stack (React, Hono, D1), the six project statuses and the money formulas. A parity run found 0 differences.</p>
+    </div>
+    <div class="callout risk">
+      <h3>What it costs</h3>
+      <p class="small">A lock and a preview step: a project with a No. Inden no longer swaps freely, and a swap is never one click.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <h2 class="big">Before and after, row by row</h2>
+  <table class="cmp sp-2">
+    <colgroup><col style="width:34mm"><col><col></colgroup>
+    <tr><th></th><th>Before (v1)</th><th class="rec">After (v2)</th></tr>
+    <tr><td>What a sebutharga is</td><td>A text label (<code>no_sebutharga</code>) typed in phase 2</td><td class="rec">A record: code, status DRAF / AKTIF / DITUTUP, panel, dates, cap</td></tr>
+    <tr><td>Where rates live</td><td class="bad">One global Pustaka, no year, no contract</td><td class="rec">Versioned rate books, each owned by a sebutharga</td></tr>
+    <tr><td>Saving a change</td><td class="bad">Delete every row, insert them again</td><td class="rec">A new version; old versions stay viewable</td></tr>
+    <tr><td>Calendar year</td><td>Settings are bound to the year</td><td class="rec">None. A sebutharga can start any day; the year owns votes only</td></tr>
+    <tr><td>Who can add one</td><td>Edit the one global Pustaka</td><td class="rec">Any officer, by uploading the master BQ Excel</td></tr>
+    <tr><td>A project’s rates</td><td class="bad">Today’s list, copied at pricing</td><td class="rec">The rate book of its own sebutharga</td></tr>
+    <tr><td>A stale draf row</td><td>Nothing tells you</td><td class="rec">An indicator on the row; never a silent rewrite</td></tr>
+    <tr><td>Moving to a new sebutharga</td><td>No tool for it</td><td class="rec">Re-price with a row-by-row preview</td></tr>
+    <tr><td>History</td><td>None</td><td class="rec">Change log: who, when, diff, like git commits</td></tr>
+    <tr><td>Hard-coded things</td><td>Name, logo, lists, LAD and LoC constants, texts</td><td class="rec">Editable in Tetapan, with effective dates</td></tr>
+  </table>
+  <p class="src sp-1">Sources: discovery report ch. 06 to 08; <code>CONTRACT.md</code> §0 and §3. <span class="tag v">Verified</span></p>
+
+  <h2 class="sp-3">The decisions that shaped it</h2>
+  <p class="small measure">You settled eight decisions before any code was written (<code>CONTRACT.md</code> §0). The first four
+    define the model; the last four say how it is built. Builders were told not to reopen them.</p>
+  <div class="cols-2 sp-2">
+    <div class="card contract">
+      <p class="kicker">1 · The sebutharga decides the prices</p>
+      <p class="small">Every company on its panel uses its kadar. A <b>standalone</b> sebutharga has its own rates and a small panel,
+        often one project.</p>
+    </div>
+    <div class="card contract">
+      <p class="kicker">2 · No year-binding</p>
+      <p class="small">A sebutharga lives on its own and can start any day. The financial year only owns votes and allocations.</p>
+    </div>
+    <div class="card contract">
+      <p class="kicker">3 · A new project takes the AKTIF one</p>
+      <p class="small">A PJA may swap it. <b>Any officer</b> may create a sebutharga by uploading its master BQ Excel.</p>
+    </div>
+    <div class="card contract">
+      <p class="kicker">4 · History like git commits</p>
+      <p class="small">Every upload, publish, activation and swap is logged with who, when and a diff. Draf projects whose items changed
+        get an indicator.</p>
+    </div>
+  </div>
+  <div class="cols-2 sp-2">
+    <ul class="list small">
+      <li><b>5 · Re-price, don’t rebuild.</b> Old items map to new ones, with a preview of old against new per row.</li>
+      <li><b>6 · Excel import is hybrid.</b> A script reads every rate and unit from the cell; fuzzy matching only suggests,
+        and a human approves.</li>
+    </ul>
+    <ul class="list small">
+      <li><b>7 · No hard-coding.</b> Profile, logo, lists, policy rules with effective dates and printed texts are editable.</li>
+      <li><b>8 · Design is Direction C “Tapak”,</b> light mode only, no dark mode anywhere.</li>
+    </ul>
+  </div>
+  <p class="src sp-2 push">Spec note: the build spec says “the 4 owner decisions”; <code>CONTRACT.md</code> lists eight, so all eight are shown.</p>
+</section>
+
+<section class="page">
+  <h2 class="big">Life of a sebutharga, its book and a project</h2>
+  <figure class="fig sp-2">
+    <div class="fig-title">Three things move on their own clocks: the contract, its rate book, and each project</div>
+    <p class="fig-sub">New projects start on the AKTIF contract. A swap previews before it applies. A No. Inden locks the choice.</p>
+    {{svg:r1_lifecycle}}
+    <figcaption><b>Source:</b> <code>CONTRACT.md</code> §0 and §5; F’s <code>REPORT-F.md</code> caveats (activation needs a published book; more than one AKTIF is
+      allowed; a new project takes the most recently activated AKTIF panel contract); lead fix 6 (delete rule). <span class="tag v">Verified</span></figcaption>
+  </figure>
+
+  <h2 class="sp-3">What the system refuses, and the call that proved it</h2>
+  <table class="data compact sp-1">
+    <tr><th style="width:62mm">Move</th><th style="width:26mm">Answer</th><th>Proved by</th></tr>
+    <tr><td>Publish a book while a match is still PENDING</td><td class="code">409</td><td>F’s API run, call 17; the same call returns 200 after the decisions (call 19)</td></tr>
+    <tr><td>Swap the contract of a project that has a No. Inden</td><td class="code">423</td><td>F call 27; P2 spec checks 14 to 17 (UI shows why, apply stays off)</td></tr>
+    <tr><td>Unlock it</td><td class="code">200, logged</td><td>F call 28; <code>swap-unlocked</code> is in the change log (P2 check 17)</td></tr>
+    <tr><td>Delete a contract that is AKTIF or in use</td><td class="code">409</td><td>Lead fix 6; the specs now delete their own test contract (count 3 before and after)</td></tr>
+    <tr><td>Overwrite a policy value on an existing date</td><td class="code">409</td><td>Lead fix 3: duplicate 409, withdraw a future value 200, withdraw one in force 409</td></tr>
+    <tr><td>Ask the AI matcher for suggestions</td><td class="code">501</td><td>F call 41: AI-assisted import stays off by design</td></tr>
+  </table>
+
+  <div class="cols-2 sp-3 push">
+    <div class="callout">
+      <h3>Why “lock at No. Inden”?</h3>
+      <p class="small">By the time a No. Inden is issued, money is committed to a company at a price. A swap after that would
+        change a figure someone already acted on. Unlocking stays possible, but it is an explicit act and it is logged.
+        <span class="tag q">Needs your answer</span> Should only PT or Admin unlock? (chapter 90, p. {{page:90}})</p>
+    </div>
+    <div class="callout contract">
+      <h3>Two more defaults the lead chose</h3>
+      <p class="small">On import the officer picks which rate column is the kadar kontrak; the default is the column whose
+        header says KONTRAKTOR, copied as written. The RM 200k company cap is stored per sebutharga and only warns.
+        <span class="tag q">Needs your answer</span></p>
+    </div>
+  </div>
+</section>

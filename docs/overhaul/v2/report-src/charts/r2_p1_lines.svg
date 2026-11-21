@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_p1_lines" viewBox="0 0 313.70 166.00" role="img" aria-label="Lines of code before and after, three P1 files" style="display:block;width:100%;height:auto">
+<text x="0.00" y="13.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >pages/Dashboard.tsx</text>
+<rect x="0.00" y="18.00" width="168.04" height="9.00" fill="#97A1AE" />
+<text x="313.70" y="27.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="end" >932</text>
+<rect x="0.00" y="30.00" width="64.01" height="9.00" fill="#059669" />
+<text x="313.70" y="39.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#059669" text-anchor="end" >355</text>
+<text x="0.00" y="61.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >pages/ProjectsList.tsx</text>
+<rect x="0.00" y="66.00" width="273.70" height="9.00" fill="#97A1AE" />
+<text x="313.70" y="75.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="end" >1518</text>
+<rect x="0.00" y="78.00" width="89.07" height="9.00" fill="#059669" />
+<text x="313.70" y="87.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#059669" text-anchor="end" >494</text>
+<text x="0.00" y="109.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="start" >ProjectsListPDFExporter.ts</text>
+<rect x="0.00" y="114.00" width="72.48" height="9.00" fill="#97A1AE" />
+<text x="313.70" y="123.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="500" fill="#64748B" text-anchor="end" >402</text>
+<rect x="0.00" y="126.00" width="78.07" height="9.00" fill="#D97706" />
+<text x="313.70" y="135.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#B1650A" text-anchor="end" >433</text>
+<rect x="0.00" y="154.00" width="9.00" height="6.00" fill="#97A1AE" />
+<text x="13.00" y="161.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="400" fill="#64748B" text-anchor="start" >before</text>
+<rect x="58.00" y="154.00" width="9.00" height="6.00" fill="#059669" />
+<text x="71.00" y="161.00" font-family="'JetBrains Mono', monospace" font-size="8.6" font-weight="400" fill="#64748B" text-anchor="start" >after</text>
+</svg>

@@ -1,0 +1,7 @@
+- 2026-11-22 01:45 R2 read spec/facts/K/O/P1 reports, viewed screenshots, logs; next: charts_r2.py + chapter 07
+- 2026-11-22 01:49 charts_r2.py (13 SVGs), crops.py, R2 CSS block done; chapter 07 (4 pages) built, checks 0; next: chapter 08 (O)
+- 2026-11-22 01:51 chapter 08 (O) 4 pages built; next: chapter 09 (P1)
+- 2026-11-22 01:53 chapters 09 (P1, 4 pages) and 10 (lead integration, 2 pages) built; next: 11 proof, 12 cost, 90, 99
+- 2026-11-22 01:56 chapters 11 (proof, 3 pages) and 12 (cost, 2 pages) built; next: 90 decisions, 99 appendix, then full review
+- 2026-11-22 01:59 chapters 90 (2 pages) and 99 (3 pages) built; all six checks 0 at 24 pages; next: visual review of all sheets, pdffonts, REPORT-R2.md
+- 2026-11-22 02:01 REPORT-R2.md written; R2.pdf 24 pages, six checks 0, no fallback fonts. Done.

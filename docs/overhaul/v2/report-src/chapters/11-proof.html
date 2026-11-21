@@ -1,0 +1,125 @@
+<!-- chapter: 11 | Proof -->
+<section class="page r2">
+  <header class="opener sys">
+    <div class="no">11</div>
+    <div>
+      <p class="kicker">Proof · the merged code on two servers</p>
+      <h1>Every spec passes on a local server and on the live preview</h1>
+      <p class="dek">The four builder specs were run again on the merged branch: once against a local server, once against the isolated
+        Cloudflare preview. Money rules were compared old against new, and production was checked afterwards.</p>
+    </div>
+  </header>
+
+  <div class="strip4">
+    <div class="stat s-deep"><div class="n">71</div><div class="l"><b>checks per target</b>O 10 + K 21 + P1 21 + P2 19, all passing, twice</div></div>
+    <div class="stat"><div class="n">0</div><div class="l"><b>money diffs</b>490 projects, 2,940 fields; 6,860 synthetic cases</div></div>
+    <div class="stat s-purple"><div class="n">567c83c</div><div class="l"><b>production, unchanged</b>latest <span class="mono">infra-hub</span> deployment, 2 days old</div></div>
+    <div class="stat s-amber"><div class="n">2</div><div class="l"><b>specs failed first (local)</b>stale selectors; the app was right</div></div>
+  </div>
+
+  <figure class="fig sp-3">
+    <p class="fig-title">Every spec passes on both servers: 142 of 142 checks</p>
+    <p class="fig-sub">Local merged server (port 8790), then <span class="mono">infrahub-v2-preview.pages.dev</span>. Counted from the raw logs.</p>
+    {{svg:r2_proof_matrix}}
+    <figcaption>K spec: 4.4 s local, 8.6 s on the preview. Every spec deletes its test contract; contract count before and after a full run: 3 and 3.</figcaption>
+  </figure>
+
+  <h4 class="sp-3">What went wrong first, and what was changed</h4>
+  <table class="data compact">
+    <thead><tr><th style="width:42mm">First run on</th><th>What failed</th><th style="width:50mm">What was changed</th></tr></thead>
+    <tr><td><b>Merged code, local</b></td><td>O and P2 failed. Their specs used pre-merge selectors: phase tabs became <code>role="tab"</code>, and an issued No. Inden now hides the re-price banner.</td><td class="ok">The specs. Not the app.</td></tr>
+    <tr><td><b>Live preview</b></td><td>Every spec got HTTP 403 “error code: 1010”: Cloudflare’s browser-integrity check refuses Python’s default urllib user agent.</td><td class="ok">One shared <code>e2e_http.USER_AGENT</code>.</td></tr>
+  </table>
+
+  <div class="cmd sp-2 push"><span class="c"># last line of each log, local | preview</span>
+K    <span class="ok">21/21 checks passed</span> in 4.4s     |  <span class="ok">21/21 checks passed</span> in 8.6s
+O    <span class="ok">10 PASS, 0 FAIL</span> (counted)         |  <span class="ok">10 PASS, 0 FAIL</span>
+P1   <span class="ok">21/21 checks passed</span>              |  <span class="ok">21/21 checks passed</span>
+P2   <span class="ok">19/19 checks passed</span>              |  <span class="ok">19/19 checks passed</span></div>
+</section>
+
+<section class="page r2">
+  <h2>Money: the old inline rules and the new policy-fed rules agree</h2>
+  <p class="measure small">P2’s script copies the <b>old</b> ProjectDetail effects verbatim (constants included), runs them and the <b>new</b> policy-fed path over every saved project on a server, and diffs what each would write. The lead re-ran it on the merged code and on the preview.</p>
+  <div class="strip4 sp-2">
+    <div class="stat"><div class="n">490</div><div class="l"><b>projects</b>on each server</div></div>
+    <div class="stat"><div class="n">2,940</div><div class="l"><b>fields compared</b>6 per project</div></div>
+    <div class="stat s-deep"><div class="n">0</div><div class="l"><b>diffs</b>local and preview</div></div>
+    <div class="stat s-deep"><div class="n">6,860</div><div class="l"><b>synthetic cases</b>0 diffs</div></div>
+  </div>
+  <div class="cmd sp-2"><span class="c">$ money-parity.log (preview run, raw)</span>
+projects=490 fields_compared=2940 diffs=0
+synthetic_sweep_cases=6860 synthetic_sweep_diffs=0
+projects_with_lad_days=31 projects_with_loc_days=0 projects_with_pelarasan=359
+info: stored_values_differ_from_old_formula=9 (both paths recompute them identically)</div>
+  <div class="callout risk sp-2">
+    <h3>Read the last two lines before trusting “0 diffs”</h3>
+    <p class="small"><b>No real project has LoC days</b> (0 of 490), so LoC is covered by the 6,860 synthetic cases only, not by real data. And 9 projects store values that differ from the old formula; both paths recompute them identically, so parity holds, but the stored numbers there are not what the formula gives today. Why the 9 differ was not investigated. <span class="tag v">Verified</span></p>
+  </div>
+
+  <h4 class="sp-3">Checks that were shown able to fail</h4>
+  <table class="data compact">
+    <thead><tr><th style="width:18mm">Who</th><th>What was broken on purpose</th><th style="width:44mm">What the check did</th></tr></thead>
+    <tr><td><b>K</b></td><td>The reworded row made an exact match (<span class="mono">REWORD_TAIL=""</span>).</td><td class="fail">4 FAILs, 6/10 passed, exit 1</td></tr>
+    <tr><td><b>P1</b></td><td>Report totals computed from the row-filtered list, then the file restored.</td><td class="fail">1 FAIL, 19/20, exit 1</td></tr>
+    <tr><td><b>O</b></td><td>Config changed to “another PBT”: the same harness must see differences.</td><td class="fail">24 of 30 documents differ; 6 identical (LAD, LoC)</td></tr>
+  </table>
+
+  <div class="cols-2 sp-3 push">
+    <div>
+      <h4>Isolation: production was never in the path</h4>
+      <p class="small">A branch preview of <span class="mono">infra-hub</span> would have bound the <b>production</b> D1 and R2: its <span class="mono">wrangler.toml</span> has no <span class="mono">[env.preview]</span>. So the preview is a separate Pages project with its own D1 (<span class="mono">infrahub-v2-preview-db</span>) and R2 (<span class="mono">infrahub-v2-preview-bucket</span>). The deploy script refuses any name without <span class="mono">v2-preview</span> and refuses the production database id.</p>
+      <p class="small sp-1">After the run: <span class="mono">infra-hub</span> latest deployment is still <span class="mono">567c83c</span>; <span class="mono">infrahub-db</span> still has 8 tables. <span class="tag v">Verified</span></p>
+    </div>
+    <figure class="fig">
+      <p class="fig-title">Production has none of the v2 tables</p>
+      {{svg:r2_iso}}
+    </figure>
+  </div>
+</section>
+
+<section class="page r2">
+  <h2>The legacy data moved to the preview exactly as it did locally</h2>
+  <p class="measure small">The preview holds the anonymised dev seed (staff “Pentadbir 01”, “PJA 01…”; companies “Syarikat 01…63”). The one-time legacy migration produced the same numbers on both servers.</p>
+  <table class="data compact sp-2">
+    <thead><tr><th>Contracts</th><th>Companies</th><th>Panel rows</th><th>Rate-book groups</th><th>Lookup values</th><th>Policy rules</th><th>Projects linked</th><th>Rows changed</th></tr></thead>
+    <tr><td class="num">3</td><td class="num">63</td><td class="num">60</td><td class="num">207</td><td class="num">36</td><td class="num">12</td><td class="num">490 / 490</td><td class="num">1,362</td></tr>
+  </table>
+  <p class="cap">One contract is MPS/SH/302/25, AKTIF. Identical to the local run. <span class="tag v">Verified</span> <span class="src">LEAD-FACTS</span></p>
+
+  <h2 class="sp-4">How to run the proof again</h2>
+  <p class="measure small">Four commands, in order. The specs create their own data and delete it. They log in as <span class="mono">admin01</span> or <span class="mono">pja01</span>; the password is read from line 2 of <span class="mono">~/Documents/InfraHub-backups/dev-seed/CREDS.txt</span> and never printed.</p>
+  <div class="cmd sp-2"><span class="c"># 1  the gate (repo root)</span>
+npx vitest run &amp;&amp; npx tsc --noEmit &amp;&amp; npm run build
+
+<span class="c"># 2  a local server on a throw-away state (worktree with the fake database id)</span>
+bash docs/overhaul/v2/tools/bootstrap-local.sh &lt;state-dir&gt;
+npm run build &amp;&amp; npx wrangler pages dev dist --port 8790 --persist-to &lt;state-dir&gt; --compatibility-date=2026-06-18
+<span class="c">   then once: POST /api/v2/admin/migrate-legacy</span>
+
+<span class="c"># 3  the four specs, local and then the preview (Playwright for Python)</span>
+for s in O K P1 P2; do python docs/overhaul/v2/e2e/$s.spec.py --base http://localhost:8790; done
+for s in O K P1 P2; do python docs/overhaul/v2/e2e/$s.spec.py --base https://infrahub-v2-preview.pages.dev; done
+
+<span class="c"># 4  money parity: the header of docs/overhaul/v2/e2e/P2-money-parity.ts has the exact vite build + node line</span></div>
+
+  <div class="cols-2 sp-3">
+    <div>
+      <h4>The gate on the merged code (re-run by the lead)</h4>
+      <table class="data compact">
+        <tr><td><span class="mono">vitest</span></td><td class="ok">104 passed, 5 skipped (109)</td></tr>
+        <tr><td><span class="mono">npm run build</span></td><td class="ok">exit 0</td></tr>
+        <tr><td><span class="mono">tsc --noEmit</span></td><td class="ok">2 errors, both already in <span class="mono">ImageReportGenerator.tsx</span> (main had 3; O fixed one)</td></tr>
+      </table>
+    </div>
+    <div class="callout">
+      <h3><span class="tag i">Inference</span> What this proof does not cover</h3>
+      <ul class="list small">
+        <li>Visual quality: specs check behaviour, not looks. Screenshots in each chapter were judged by eye.</li>
+        <li>Production data. Everything ran on the anonymised seed; the real database has never held a v2 table.</li>
+        <li>Authentication and security: out of scope for this overhaul.</li>
+        <li>Browsers other than Chromium; iOS Safari.</li>
+      </ul>
+    </div>
+  </div>
+</section>

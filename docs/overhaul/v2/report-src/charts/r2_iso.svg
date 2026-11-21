@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="chart" id="svg-r2_iso" viewBox="0 0 313.70 82.00" role="img" aria-label="Tables in the production database and in the preview database" style="display:block;width:100%;height:auto">
+<text x="0.00" y="17.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Production infrahub-db</text>
+<rect x="120.00" y="4.00" width="133.70" height="16.00" fill="#EAE9E4" />
+<rect x="120.00" y="4.00" width="56.29" height="16.00" fill="#64748B" />
+<text x="313.70" y="17.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >8 tables</text>
+<text x="0.00" y="45.00" font-family="'General Sans', sans-serif" font-size="10.5" font-weight="500" fill="#0F1E1C" text-anchor="start" >Preview D1</text>
+<rect x="120.00" y="32.00" width="133.70" height="16.00" fill="#EAE9E4" />
+<rect x="120.00" y="32.00" width="133.70" height="16.00" fill="#14B8A6" />
+<text x="313.70" y="45.00" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#0F1E1C" text-anchor="end" >19 tables</text>
+<text x="0.00" y="76.00" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="start" >production: none of the v2 tables</text>
+</svg>

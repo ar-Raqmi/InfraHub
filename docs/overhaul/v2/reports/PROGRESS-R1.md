@@ -1,0 +1,7 @@
+- 2026-11-22 01:50 read spec, notes, LEAD-FACTS, REPORT-F/D/P2, CONTRACT, NEEDS-lead; screenshots reviewed. Next: charts_r1.py + chapters 00-03.
+- 2026-11-22 02:20 charts_r1.py written (14 SVGs, asserts on LEAD-FACTS sums pass), screenshot crops cut to img/r1/. Next: chapters 00-03.
+- 2026-11-22 02:55 chapters 00-03 written and built (all six checks 0 with stubs for 07-12, 90, 99). Next: chapters 04 F, 05 D, 06 P2.
+- 2026-11-22 03:40 chapters 04-06 written; first full build; fixing overflows. Next: review contact sheets.
+- 2026-11-22 04:35 all pages reviewed on contact sheets and fixed; 6 checks 0 with stubs (28 pages). Next: delete stubs, final build, pdffonts, privacy grep, REPORT-R1.md.
+- 2026-11-22 04:50 stubs deleted, final R1.pdf (20 pages) built: six checks 0, pdffonts clean, numbers cross-checked. Next: REPORT-R1.md, then done.
+- 2026-11-22 05:00 REPORT-R1.md written; R1 done (20 pages, checks 0). Waiting for lead review.
