@@ -36,6 +36,7 @@ temp_*
 temp_live_ids.json
 *.sql
 !schema.sql
+!migrations/*.sql
 *.csv
 scripts/
 
