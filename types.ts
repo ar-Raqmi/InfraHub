@@ -312,6 +312,19 @@ export interface BQItem {
 
   // --- NEW: Pelarasan Addition ---
   isAdjustment?: boolean; // If true, this item was added during Pelarasan phase
+
+  // Officer's explicit "Guna kadar baharu" on a row whose book rate changed (also written to change_log).
+  bookDecision?: BookDecision;
+}
+
+export interface BookDecision {
+  choice: 'BAHARU';
+  at: string;
+  by: string | null;
+  contractCode: string;
+  versionNo: number | null;
+  from: { rate: number; unit: string; description: string };
+  to: { rate: number; unit: string; description: string };
 }
 
 export interface BQGroup {

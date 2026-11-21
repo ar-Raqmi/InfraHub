@@ -94,7 +94,7 @@ export class ProjectContractService {
         .bind(JSON.stringify(next), kosProjek, contract.id, versionId, contract.code, nowIso(), p.id),
       this.log.statement(this.actor, {
         entity: 'project', entityId: String(p.id), action: 'reprice', message: `Harga semula ke ${contract.code}`,
-        diff: { contractId: [p.contract_id, contract.id], rateBookVersionId: [p.rate_book_version_id, versionId], kosProjek: [p.kos_projek, kosProjek], totals: plan.totals },
+        diff: { contractId: [p.contract_id, contract.id], rateBookVersionId: [p.rate_book_version_id, versionId], kosProjek: [p.kos_projek, kosProjek], totals: plan.totals, unlocked: !!(unlock && (p.no_inden ?? '').trim()) },
       }),
     ])
     return { dryRun: false, plan, project: await new ProjectRepository(this.db).getById(String(p.id)) }

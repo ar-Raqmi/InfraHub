@@ -69,6 +69,18 @@ export class ContractRepository extends BaseRepository {
     return this.db.prepare(`UPDATE contracts SET status = ?, ${column} = ? WHERE id = ?`).bind(status, at, id)
   }
 
+  // The contract and everything that hangs off it, in child-first order (one D1 batch = one transaction).
+  public deleteStatements(id: string): D1PreparedStatement[] {
+    const versions = 'SELECT id FROM rate_book_versions WHERE contract_id = ?'
+    return [
+      this.db.prepare(`DELETE FROM rate_book_matches WHERE version_id IN (${versions})`).bind(id),
+      this.db.prepare(`DELETE FROM rate_book_groups WHERE version_id IN (${versions})`).bind(id),
+      this.db.prepare('DELETE FROM rate_book_versions WHERE contract_id = ?').bind(id),
+      this.db.prepare('DELETE FROM contract_companies WHERE contract_id = ?').bind(id),
+      this.db.prepare('DELETE FROM contracts WHERE id = ?').bind(id),
+    ]
+  }
+
   public async panel(contractId: string): Promise<ContractCompany[]> {
     const { results } = await this.db.prepare(
       `SELECT cc.company_name, cc.sort_index, cc.cap, co.details FROM contract_companies cc

@@ -1118,7 +1118,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
     const renderBookFlag = (bill: BQGroup, item: BQItem) => {
         const check = showBookFlags && book.contract ? checkRow(item, book.index) : null;
         if (!check || !book.contract) return null;
-        return <RowBookFlag item={item} check={check} contract={book.contract} versionNo={book.versionNo} readOnly={readOnly} onApply={(updates) => updateItem(bill.id, item.id, updates)} />;
+        return <RowBookFlag item={item} check={check} contract={book.contract} versionNo={book.versionNo} readOnly={readOnly} projectId={projectData.id} onApply={(updates) => updateItem(bill.id, item.id, updates)} />;
     };
 
     const renderItemRow = (bill: BQGroup, item: BQItem, index: number, isHidden: boolean) => {

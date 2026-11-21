@@ -79,6 +79,21 @@ contractApp.post('/:id/status', async (c) => {
   return c.json(await repo.get(contract.id))
 })
 
+// DELETE /api/contracts/:id - for mistakes and test data: refused while AKTIF or while any project uses it
+contractApp.delete('/:id', async (c) => {
+  const repo = new ContractRepository(c.env.DB)
+  const contract = await requireContract(repo, c.req.param('id'))
+  if (contract.status === 'AKTIF') throw new HttpError(409, 'Kontrak AKTIF tidak boleh dipadam; tutup dahulu')
+  const used = await c.env.DB.prepare('SELECT count(*) AS n FROM projects WHERE contract_id = ?').bind(contract.id).first<{ n: number }>()
+  if (used && used.n > 0) throw new HttpError(409, `${used.n} projek masih memakai kontrak ini`)
+  const actor = await actorFrom(c)
+  await c.env.DB.batch([
+    ...repo.deleteStatements(contract.id),
+    new ChangeLogRepository(c.env.DB).statement(actor, { entity: 'contract', entityId: contract.id, action: 'delete', message: `Padam kontrak ${contract.code}`, diff: { code: contract.code, status: contract.status } }),
+  ])
+  return c.json({ ok: true })
+})
+
 contractApp.get('/:id/companies', async (c) => {
   const repo = new ContractRepository(c.env.DB)
   const contract = await requireContract(repo, c.req.param('id'))

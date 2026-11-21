@@ -5,6 +5,7 @@ import { actorFrom, HttpError } from '../actor'
 import { ContractRepository } from '../repositories/ContractRepository'
 import { RateBookRepository } from '../repositories/RateBookRepository'
 import { ProjectContractService } from '../services/ProjectContractService'
+import { ChangeLogRepository } from '../repositories/ChangeLogRepository'
 
 // A new project takes the contract it names (a PJA may pick another), else the default AKTIF one.
 async function bindingFor(db: D1Database, requested: unknown) {
@@ -12,7 +13,7 @@ async function bindingFor(db: D1Database, requested: unknown) {
   const contract = typeof requested === 'string' && requested ? await contracts.get(requested) : await contracts.defaultContract()
   if (!contract) return null
   const version = await new RateBookRepository(db).currentVersion(contract.id)
-  return { contractId: contract.id, versionId: version?.id ?? null }
+  return { contractId: contract.id, versionId: version?.id ?? null, code: contract.code }
 }
 
 export const projectApp = new Hono<{ Bindings: AppBindings }>()
@@ -73,6 +74,18 @@ projectApp.post('/:id/contract', async (c) => {
   if (!contractId) throw new HttpError(400, 'contractId diperlukan')
   const svc = new ProjectContractService(c.env.DB, await actorFrom(c))
   return c.json(await svc.swap(c.req.param('id'), contractId, unlock))
+})
+
+// POST /api/projects/:id/log {action, message?, diff?} - record an officer decision on a project (e.g. row-rate)
+const LOG_ACTION = /^[a-z][a-z-]{2,39}$/
+projectApp.post('/:id/log', async (c) => {
+  const id = c.req.param('id')
+  const { action, message, diff } = await c.req.json<{ action: string; message?: string; diff?: unknown }>()
+  if (!LOG_ACTION.test(String(action ?? ''))) throw new HttpError(400, 'action tidak sah')
+  if (!(await new ProjectRepository(c.env.DB).getById(id))) throw new HttpError(404, 'Projek tidak dijumpai')
+  const actor = await actorFrom(c)
+  await new ChangeLogRepository(c.env.DB).statement(actor, { entity: 'project', entityId: id, action, message: message ? String(message).slice(0, 300) : null, diff }).run()
+  return c.json({ ok: true }, 201)
 })
 
 // POST /api/projects/:id/reprice {toContractId, dryRun, unlock?} - preview or apply old -> new rates

@@ -4,22 +4,8 @@ import React, { useState } from 'react';
 import { Button, ContractChip, DiffRow, Indicator, Sheet, type IndicatorState } from '../ui';
 import { findSource, type BookIndex, type BookRow } from '../../domain/rateBook/rows';
 import { rowStatus } from '../../domain/rateBook/rowStatus';
-import type { BQItem, Contract } from '../../types';
+import type { BookDecision, BQItem, Contract } from '../../types';
 import { apiService } from '../../services/apiService';
-
-/**
- * LOCAL ADAPTER (see NEEDS-lead, P2): the decision is recorded inside the BQ row (saved with the project) until
- * BQItem gains `bookDecision` and the API has a project change-log route.
- */
-export interface BookDecision {
-  choice: 'BAHARU';
-  at: string;
-  by: string | null;
-  contractCode: string;
-  versionNo: number | null;
-  from: { rate: number; unit: string; description: string };
-  to: { rate: number; unit: string; description: string };
-}
 
 export interface RowBookCheck {
   state: IndicatorState;
@@ -70,14 +56,25 @@ interface RowBookFlagProps {
   contract: Contract;
   versionNo: number | null;
   readOnly: boolean;
+  /** When set, the decision is also written to the project's change log. */
+  projectId?: number;
   onApply: (updates: Partial<BQItem>) => void;
 }
 
-const RowBookFlag: React.FC<RowBookFlagProps> = ({ item, check, contract, versionNo, readOnly, onApply }) => {
+const RowBookFlag: React.FC<RowBookFlagProps> = ({ item, check, contract, versionNo, readOnly, projectId, onApply }) => {
   const [open, setOpen] = useState(false);
   const { state, source } = check;
   const useNew = () => {
-    if (source) onApply(newRateUpdates(item, source, contract, versionNo));
+    if (!source) return;
+    const updates = newRateUpdates(item, source, contract, versionNo);
+    onApply(updates);
+    if (projectId) {
+      apiService.logProjectEvent(projectId, {
+        action: 'row-rate',
+        message: `Guna kadar baharu: ${item.description.slice(0, 80)}`,
+        diff: { itemId: item.id, ...updates.bookDecision },
+      }).catch(() => { /* the decision is still kept on the row (bookDecision) */ });
+    }
     setOpen(false);
   };
   return (

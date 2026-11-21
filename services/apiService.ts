@@ -483,6 +483,14 @@ class CloudflareService {
     }
 
     // --- v2: CHANGE LOG ---
+    async logProjectEvent(projectId: number, entry: { action: string; message?: string; diff?: unknown }): Promise<void> {
+        await this.request({ path: `/projects/${projectId}/log`, method: 'POST', body: entry, errorMessage: 'Gagal merekod log projek' });
+    }
+
+    async deleteContract(contractId: string): Promise<void> {
+        await this.request({ path: `/contracts/${contractId}`, method: 'DELETE', errorMessage: 'Gagal memadam kontrak' });
+    }
+
     async getChangeLog(filter: { entity?: string; entityId?: string; limit?: number } = {}): Promise<ChangeLogEntry[]> {
         const query: Record<string, string> = {};
         if (filter.entity) query.entity = filter.entity;

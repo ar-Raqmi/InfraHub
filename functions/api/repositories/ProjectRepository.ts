@@ -160,12 +160,13 @@ export class ProjectRepository extends BaseRepository {
   }
 
   // contractBinding: the sebutharga + rate book version a new project is priced from (CONTRACT §0 decision 3).
-  public async create(body: any, contractBinding: { contractId: string; versionId: string | null } | null = null): Promise<any> {
+  public async create(body: any, contractBinding: { contractId: string; versionId: string | null; code?: string } | null = null): Promise<any> {
     const newId = Date.now()
     const dbRecord = this.mapProjectBodyToDbRecord(body, newId)
     if (contractBinding) {
       dbRecord.contract_id = contractBinding.contractId
       dbRecord.rate_book_version_id = contractBinding.versionId
+      if (!dbRecord.no_sebutharga && contractBinding.code) dbRecord.no_sebutharga = contractBinding.code
     }
     const { keys, values, placeholders } = this.buildInsert(dbRecord)
 
