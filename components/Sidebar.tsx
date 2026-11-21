@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Image as ImageIcon, LogOut, Settings, LayoutDashboard, Briefcase, User as UserIcon, LucideIcon } from 'lucide-react';
+import { Users, Image as ImageIcon, LogOut, Settings, LayoutDashboard, Briefcase, User as UserIcon, FileSignature, Building2, LucideIcon } from 'lucide-react';
 import { Role } from '../types';
 import { pageHref } from '../lib/appUrl';
 import BrandMark from './ui/BrandMark';
@@ -23,6 +23,8 @@ interface NavEntry {
   title: string;
   Icon: LucideIcon;
   desktop: boolean;
+  /** Hidden from the phone tab bar (reached from in-page links there instead). */
+  mobile?: boolean;
   adminOnly?: boolean;
 }
 
@@ -32,6 +34,8 @@ const NAV_ENTRIES: NavEntry[] = [
   { page: 'report', label: 'Laporan Bergambar', tabLabel: 'Laporan', title: 'Laporan Bergambar', Icon: ImageIcon, desktop: true },
   { page: 'users', label: 'Pengguna', tabLabel: 'Pengguna', title: 'Pengguna', Icon: Users, desktop: true },
   { page: 'profile', label: 'Profil Pengguna', tabLabel: 'Profil', title: 'Profil Pengguna', Icon: UserIcon, desktop: false },
+  { page: 'kontrak', label: 'Kontrak', tabLabel: 'Kontrak', title: 'Kontrak & Buku Kadar', Icon: FileSignature, desktop: true, mobile: false },
+  { page: 'organisasi', label: 'Organisasi', tabLabel: 'Organisasi', title: 'Tetapan Organisasi', Icon: Building2, desktop: true, mobile: false, adminOnly: true },
   { page: 'settings', label: 'Tetapan', tabLabel: 'Tetapan', title: 'Tetapan', Icon: Settings, desktop: true, adminOnly: true },
 ];
 
@@ -132,7 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {mobileBottomNav && (
         <nav className="md:hidden fixed bottom-0 inset-x-0 bg-surface border-t border-line z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Navigasi utama">
           <div className="h-16 flex items-stretch">
-            {entries.map(e => <MobileTab key={e.page} entry={e} />)}
+            {entries.filter(e => e.mobile !== false).map(e => <MobileTab key={e.page} entry={e} />)}
           </div>
         </nav>
       )}

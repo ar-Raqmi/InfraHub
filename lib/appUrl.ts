@@ -17,6 +17,8 @@ export const PageUrl = {
   report: (year?: number) => addQuery('/report.html', { year }),
   profile: '/profile.html',
   settings: (year?: number) => addQuery('/settings.html', { year }),
+  kontrak: (id?: string) => addQuery('/kontrak.html', { id }),
+  organisasi: '/organisasi.html',
 };
 
 export function pageHref(page: string, year?: number): string {
@@ -27,6 +29,8 @@ export function pageHref(page: string, year?: number): string {
     case 'report': return PageUrl.report(year);
     case 'profile': return PageUrl.profile;
     case 'settings': return PageUrl.settings(year);
+    case 'kontrak': return PageUrl.kontrak();
+    case 'organisasi': return PageUrl.organisasi;
     case 'logout':
     case 'login': return PageUrl.login;
     default: return PageUrl.index;
