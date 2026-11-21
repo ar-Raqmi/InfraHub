@@ -1,0 +1,4 @@
+- 2026-11-21 22:27 read CONTRACT + C concepts; next: fonts
+- 2026-11-21 22:37 fonts, theme.css, tw-config, 17 primitives, shell re-skin, kit page written; build green, tsc 3; next: local server + screenshots
+- 2026-11-21 22:43 screenshots + probes done (no overflow 360/390/430, nav >=44, fonts loaded); DESIGN.md written; next: REPORT-D
+- 2026-11-21 22:45 REPORT-D.md written, server on 8792 stopped; done

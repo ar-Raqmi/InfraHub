@@ -47,82 +47,85 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const NavItem = ({ entry }: { entry: NavEntry }) => {
     const active = currentPage === entry.page;
-    const cls = `p-3 rounded-2xl transition-colors group relative ${active
-        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-        : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
+    const cls = `relative flex flex-col items-center justify-center gap-1 min-h-[60px] px-1 rounded-ih-md border transition-colors ${active
+        ? 'bg-surface border-line text-ink'
+        : 'border-transparent text-muted hover:text-ink hover:bg-surface/70'
       }`;
     const inner = (
       <>
-        <entry.Icon className="w-6 h-6" strokeWidth={1.5} />
-        {active && <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-400/50 rounded-l-full"></span>}
-        <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-slate-700">
-          {entry.label}
-        </div>
+        {active && <span className="absolute -left-3 top-3 bottom-3 w-[3px] rounded-r-full bg-emerald-bright" aria-hidden />}
+        <entry.Icon className={`w-[22px] h-[22px] ${active ? 'text-emerald-deep' : ''}`} strokeWidth={active ? 2.25 : 1.75} />
+        <span className={`text-[11.5px] leading-tight text-center ${active ? 'font-bold' : 'font-semibold'}`}>{entry.tabLabel}</span>
       </>
     );
     if (linkMode) {
-      return <a href={navHref(entry.page)} className={cls}>{inner}</a>;
+      return <a href={navHref(entry.page)} className={cls} title={entry.label} aria-current={active ? 'page' : undefined}>{inner}</a>;
     }
-    return <button onClick={() => onNavigate!(entry.page)} className={cls}>{inner}</button>;
+    return <button onClick={() => onNavigate!(entry.page)} className={cls} title={entry.label}>{inner}</button>;
   };
 
   const MobileTab = ({ entry }: { entry: NavEntry }) => {
     const active = currentPage === entry.page;
-    const cls = `flex-1 min-w-0 h-full flex flex-col items-center justify-center gap-0.5 ${active ? 'text-emerald-700' : 'text-slate-500'}`;
+    const cls = `flex-1 min-w-0 h-full flex flex-col items-center justify-center gap-1 ${active ? 'text-ink' : 'text-muted'}`;
     const inner = (
       <>
-        <span className={`px-4 py-1 rounded-full ${active ? 'bg-emerald-100' : ''}`}>
+        <span className={`px-4 py-1 rounded-full ${active ? 'bg-emerald-tint text-emerald-deep' : ''}`}>
           <entry.Icon className="w-5 h-5" strokeWidth={active ? 2.25 : 1.75} />
         </span>
-        <span className={`text-[11px] leading-none truncate max-w-full ${active ? 'font-extrabold' : 'font-semibold'}`}>{entry.tabLabel}</span>
+        <span className={`text-[11px] leading-none truncate max-w-full ${active ? 'font-bold' : 'font-semibold'}`}>{entry.tabLabel}</span>
       </>
     );
     if (linkMode) return <a href={navHref(entry.page)} className={cls} aria-current={active ? 'page' : undefined}>{inner}</a>;
     return <button onClick={() => onNavigate!(entry.page)} className={cls}>{inner}</button>;
   };
 
+  const Mark = ({ size }: { size: 'rail' | 'bar' }) => (
+    <span className={`${size === 'rail' ? 'w-11 h-11 rounded-ih-md' : 'w-9 h-9 rounded-ih-sm'} shrink-0 bg-emerald-bright text-ink flex items-center justify-center`}>
+      <HardHat className={size === 'rail' ? 'w-6 h-6' : 'w-5 h-5'} strokeWidth={2.25} />
+    </span>
+  );
+
   const Logo = () => {
     const logoInner = (
-      <div className="w-12 h-12 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-        <HardHat className="w-7 h-7" strokeWidth={2.5} />
-      </div>
+      <span className="flex flex-col items-center gap-1.5">
+        <Mark size="rail" />
+        <span className="font-display font-extrabold text-[13px] tracking-tight text-ink">InfraHub</span>
+      </span>
     );
     if (linkMode) {
-      return <a href={navHref('dashboard')} className="mb-10 block cursor-pointer">{logoInner}</a>;
+      return <a href={navHref('dashboard')} className="mb-6 flex justify-center cursor-pointer">{logoInner}</a>;
     }
-    return <div className="mb-10 cursor-pointer" onClick={() => onNavigate!('dashboard')}>{logoInner}</div>;
+    return <div className="mb-6 flex justify-center cursor-pointer" onClick={() => onNavigate!('dashboard')}>{logoInner}</div>;
   };
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed z-30 inset-y-6 left-6 w-20 bg-white rounded-[2.5rem] flex-col items-center py-8 border border-slate-100 shadow-2xl">
+      {/* Desktop rail: 112 px wide, flush left; ProjectDetail's fixed header starts at md:left-28 to match. */}
+      <aside className="hidden md:flex fixed z-30 inset-y-0 left-0 w-28 bg-paper-deep border-r border-line flex-col py-6 px-3">
         <Logo />
-        <nav className="flex-1 flex flex-col gap-4">
+        <nav className="flex-1 flex flex-col gap-1.5" aria-label="Navigasi utama">
           {entries.filter(e => e.desktop).map(e => <NavItem key={e.page} entry={e} />)}
         </nav>
-        <div className="flex flex-col items-center gap-4 mt-auto">
+        <div className="mt-auto pt-4 border-t border-line flex flex-col items-stretch gap-2">
+          <span className="ih-eyebrow text-[10px] text-muted text-center">{role}</span>
           <button
             onClick={onLogout}
-            className="p-3 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors group relative"
+            className="flex flex-col items-center justify-center gap-1 min-h-[60px] rounded-ih-md text-muted hover:text-danger hover:bg-danger-tint transition-colors"
+            title="Log Keluar"
           >
-            <LogOut className="w-6 h-6 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
-            <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-slate-700">
-              Log Keluar
-            </div>
+            <LogOut className="w-[22px] h-[22px]" strokeWidth={1.75} />
+            <span className="text-[11.5px] font-semibold leading-tight">Log Keluar</span>
           </button>
         </div>
       </aside>
 
       {/* Mobile top bar: solid, because tw-config.js disables blur and shadow so translucency would show content through it. */}
       {mobileTopBar && (
-        <header className="md:hidden fixed top-0 inset-x-0 h-14 bg-white border-b border-slate-200 z-[60] pl-4 pr-2 flex items-center gap-3">
-          <div className="w-9 h-9 shrink-0 bg-emerald-600 rounded-xl flex items-center justify-center text-white">
-            <HardHat className="w-5 h-5" />
-          </div>
+        <header className="md:hidden fixed top-0 inset-x-0 h-14 bg-surface border-b border-line z-[60] pl-4 pr-2 flex items-center gap-3">
+          <Mark size="bar" />
           <div className="min-w-0 flex-1 leading-tight">
-            <h1 className="font-extrabold text-slate-800 text-[15px] truncate">{pageTitle}</h1>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">InfraHub</span>
+            <h1 className="font-display font-bold text-ink text-[17px] tracking-tight truncate">{pageTitle}</h1>
+            <span className="block text-[10px] font-bold text-muted uppercase tracking-[0.14em]">InfraHub</span>
           </div>
           {mobileTopBarActions}
         </header>
@@ -130,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Mobile bottom tab bar */}
       {mobileBottomNav && (
-        <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Navigasi utama">
+        <nav className="md:hidden fixed bottom-0 inset-x-0 bg-surface border-t border-line z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Navigasi utama">
           <div className="h-16 flex items-stretch">
             {entries.map(e => <MobileTab key={e.page} entry={e} />)}
           </div>

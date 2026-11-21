@@ -30,7 +30,7 @@ const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearCh
   const refreshButton = (size: string) => (
     <button
       onClick={() => window.location.reload()}
-      className={`${size} flex items-center justify-center bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200 rounded-xl transition-colors group`}
+      className={`${size} flex items-center justify-center bg-surface text-muted hover:text-ink border border-line hover:border-ink rounded-ih-md transition-colors group`}
       title="Kemaskini Data"
       aria-label="Kemaskini Data"
     >
@@ -39,10 +39,8 @@ const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearCh
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-200 relative overflow-x-clip selection:bg-emerald-500/30 selection:text-emerald-900">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent"></div>
-      </div>
+    <div className="min-h-screen bg-paper text-ink font-sans relative overflow-x-clip">
+      <div className="hidden md:block absolute top-0 inset-x-0 h-[420px] ih-grid-paper ih-fade-down pointer-events-none" aria-hidden />
 
       <Sidebar
         role={role}
@@ -65,7 +63,7 @@ const AppShell: React.FC<AppShellProps> = ({ currentPage, selectedYear, onYearCh
             <header className="relative z-40 animate-fade-in hidden md:flex md:items-center justify-between mb-10 gap-4">
               <div className="flex items-center gap-4">
                 <YearSelector selectedYear={selectedYear} onYearChange={onYearChange} />
-                {refreshButton('p-2.5 shadow-sm hover:shadow-md')}
+                {refreshButton('w-11 h-11')}
               </div>
             </header>
           )}
