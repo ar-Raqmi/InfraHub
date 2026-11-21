@@ -27,3 +27,13 @@
 - **Contracts cannot be deleted.** The P2 e2e spec closes its test contract (DITUTUP) on cleanup; each run leaves one
   `E2E-P2/<hhmmss>` STANDALONE contract behind. A `DELETE /contracts/:id` for DRAF/unused contracts (or an e2e cleanup
   route) would let wave 3 clean up fully.
+
+### Lead: P2 requests resolved (2026-11-21)
+- `POST /api/projects/:id/log {action,message,diff}` added (action `^[a-z][a-z-]{2,39}$`, 404 for unknown project);
+  `RowBookFlag` now logs `row-rate` with the BookDecision; `BookDecision` + `BQItem.bookDecision` live in `types.ts`.
+- `reprice` change_log diff carries `unlocked: true|false`.
+- `POST /projects` sets `no_sebutharga = contract.code` when the caller leaves it blank.
+- `DELETE /api/contracts/:id`: 409 while AKTIF or while any project uses it; otherwise removes versions, groups,
+  matches, panel and the contract in one batch, logged. `apiService.deleteContract()` exists for e2e cleanup.
+- Probed on a fresh local state: delete AKTIF 409, delete unused DRAF 200, bad log action 400, row-rate 201,
+  new project noSebutharga = MPS/SH/302/25.
