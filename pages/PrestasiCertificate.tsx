@@ -4,6 +4,8 @@ import { Project } from '../types';
 import { apiService } from '../services/apiService';
 import { Download, Loader2, X, Star, Save, AlertCircle } from 'lucide-react';
 import { PrestasiPDFExporter } from '../services/pdf/PrestasiPDFExporter';
+import { useOrgDocs } from '../components/org/orgDocs';
+import { prestasiCriteria } from '../components/org/documentVars';
 
 interface PrestasiCertificateProps {
     project: Project;
@@ -15,6 +17,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
     const [isGenerating, setIsGenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [companyDetails, setCompanyDetails] = useState<any>(null);
+    const { docs: org, ready } = useOrgDocs(project);
 
     const [localScores, setLocalScores] = useState<number[]>(project.prestasiScores || [0, 0, 0, 0, 0, 0]);
     const [localSkop, setLocalSkop] = useState<'BEKALAN' | 'PERKHIDMATAN' | 'KERJA' | null>((project.skop as any) || null);
@@ -98,7 +101,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
         }
         setIsGenerating(true);
         try {
-            await PrestasiPDFExporter.export(project, localScores, localSkop, companyDetails);
+            await PrestasiPDFExporter.export(project, localScores, localSkop, companyDetails, ready ? org : undefined);
         } catch (e) {
             console.error(e);
             alert("Ralat menjana PDF");
@@ -206,14 +209,7 @@ const PrestasiCertificate: React.FC<PrestasiCertificateProps> = ({ project, onCl
                         </div>
 
                         <div className="space-y-4">
-                            {[
-                                "Keupayaan kontraktor/ pembekal memenuhi permintaan dari segi harga berbanding kontraktor/ pembekal lain.",
-                                "Keupayaan kontraktor/ pembekal untuk membekalkan barangan /perkhidmatan/kerja mengikut spesifikasi yang ditetapkan.",
-                                "Keupayaan kontraktor/ pembekal untuk membekalkan barangan/ perkhidmatan dalam jangkamasa yang ditetapkan.",
-                                "Keupayaan kontraktor/ pembekal untuk membuat tindakan pembetulan sekiranya barangan/ perkhidmatan yang dibekalkan tidak memenuhi spesifikasi yang ditetapkan.",
-                                "Penilaian terhadap kontraktor/pembekal dari segi sikap dan kerjasama yang ditunjukkan oleh kontraktor/pembekal.",
-                                "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
-                            ].map((q, idx) => (
+                            {prestasiCriteria(org).map((q, idx) => (
                                 <div
                                     key={idx}
                                     ref={el => { scoreRefs.current[idx] = el; }}

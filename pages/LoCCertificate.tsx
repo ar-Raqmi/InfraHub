@@ -3,6 +3,11 @@ import React, { useState } from 'react';
 import { Project, formatCurrency, formatDate } from '../types';
 import { LoCPDFExporter } from '../services/pdf/LoCPDFExporter';
 import CertificateModal from '../components/CertificateModal';
+import { locPolicyDate } from '../services/finance';
+import { useOrgDocs } from '../components/org/orgDocs';
+import { locTextVars, money2 } from '../components/org/documentVars';
+
+const T = 'doc.loc';
 
 interface LoCCertificateProps {
     project: Project;
@@ -14,16 +19,18 @@ const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, onClose }) => 
 
     // --- Calculation Logic ---
     const locDays = project.locDays || 0;
-    const locRate = 100;
+    const { docs: org, ready } = useOrgDocs(project);
+    const policy = org.locPolicy(locPolicyDate(project));
+    const vars = locTextVars(policy);
     const totalLoC = project.locAmount || 0;
 
     // Helper to format number to 2 decimals
-    const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = money2;
 
     const handleDownload = async () => {
         setIsGenerating(true);
         try {
-            await LoCPDFExporter.export(project);
+            await LoCPDFExporter.export(project, ready ? org : undefined);
         } catch (e) {
             console.error("PDF Generation Error", e);
             alert("Ralat menjana PDF.");
@@ -56,7 +63,7 @@ const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, onClose }) => 
                         <span className="uppercase leading-tight">{project.namaProjek}</span>
                     </div>
                     <div className="underline font-bold text-[12px] uppercase mb-6">
-                        DENDA LEWAT TUNTUTAN (LoC)
+                        {org.text(T, 'title')}
                     </div>
                 </div>
 
@@ -75,12 +82,10 @@ const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, onClose }) => 
 
                 {/* Section 3: Logic */}
                 <div className="mb-8 text-[12px]">
-                    <p className="font-bold mb-2">PENGIRAAN DENDA LEWAT TUNTUTAN</p>
-                    <ol className="list-decimal pl-4 space-y-1">
-                        <li>Tempoh liabiliti untuk tuntutan bayaran adalah 14 hari selepas Tarikh Siap Sebenar.</li>
-                        <li>Denda dikenakan bermula hari ke-15 selepas Tarikh Siap Sebenar.</li>
-                        <li>Kadar denda adalah RM 100.00 / Hari.</li>
-                    </ol>
+                    <p className="font-bold mb-2">{org.text(T, 'heading')}</p>
+                    <div className="space-y-1">
+                        {['rule1', 'rule2', 'rule3'].map((field) => <p key={field}>{org.text(T, field, vars)}</p>)}
+                    </div>
                 </div>
 
                 {/* Section 4: Calculation Box */}
@@ -88,7 +93,7 @@ const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, onClose }) => 
                     <div className="mb-6">
                         <div className="mb-2">BILANGAN HARI LEWAT:</div>
                         <div className="pl-4 font-normal mb-2">
-                            ( {formatDate(project.tarikhTuntutanBayaran)} - {formatDate(project.tarikhSiapSebenar)} ) - 14 HARI
+                            ( {formatDate(project.tarikhTuntutanBayaran)} - {formatDate(project.tarikhSiapSebenar)} ) - {policy.graceDays} HARI
                         </div>
                         <div className="pl-4 font-bold text-[14px] mb-4">
                             = {locDays} HARI
@@ -98,7 +103,7 @@ const LoCCertificate: React.FC<LoCCertificateProps> = ({ project, onClose }) => 
                     <div>
                         <div className="mb-2">JUMLAH DENDA (LoC):</div>
                         <div className="pl-4 font-normal mb-2">
-                            {locDays} HARI x RM 100.00
+                            {locDays} HARI x RM {fmt(policy.dailyRate)}
                         </div>
                         <div className="pl-4 font-black text-[18px]">
                             = RM {fmt(totalLoC)}

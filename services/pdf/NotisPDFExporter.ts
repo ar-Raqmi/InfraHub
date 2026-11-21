@@ -1,7 +1,11 @@
 import { Project, User } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
 import { Formatter } from '../Formatter';
-import { calculateLADDailyRate } from '../finance';
+import { calculateLADDailyRate, ladPolicyDate } from '../finance';
+import { loadOrgDocs, type OrgDocs } from '../../components/org/orgDocs';
+
+const U = 'doc.notis_umum';
+const K = 'doc.kerja_tidak_siap';
 
 type NoticeType = 'PEMBERITAHUAN' | 'PERINGATAN_1' | 'KERJA_TIDAK_SIAP' | 'PERINGATAN_2' | 'PERINGATAN_3';
 
@@ -13,22 +17,24 @@ export class NotisPDFExporter {
         letterMonthYear: string;
         selectedJuruteraId: number | string;
         juruteraList: User[];
-    }): Promise<void> {
+    }, orgDocs?: OrgDocs): Promise<void> {
         const { noticeType } = options;
+        const org = (orgDocs ?? await loadOrgDocs()).forProject(project);
 
         const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
+        if (noticeType !== 'KERJA_TIDAK_SIAP') await PDFBaseHelper.drawLetterhead(doc, org);
 
         if (noticeType === 'PEMBERITAHUAN') {
-            await this.generatePemberitahuanPDF(doc, project, pjaUser, options);
+            await this.generatePemberitahuanPDF(org, doc, project, pjaUser, options);
         } else if (noticeType === 'PERINGATAN_1') {
-            await this.generatePeringatanPertamaPDF(doc, project, pjaUser, companyDetails, options);
+            await this.generatePeringatanPertamaPDF(org, doc, project, pjaUser, companyDetails, options);
         } else if (noticeType === 'PERINGATAN_2') {
-            await this.generatePeringatanKeduaPDF(doc, project, pjaUser, companyDetails, options);
+            await this.generatePeringatanKeduaPDF(org, doc, project, pjaUser, companyDetails, options);
         } else if (noticeType === 'PERINGATAN_3') {
-            await this.generatePeringatanKetigaPDF(doc, project, pjaUser, companyDetails, options);
+            await this.generatePeringatanKetigaPDF(org, doc, project, pjaUser, companyDetails, options);
         } else if (noticeType === 'KERJA_TIDAK_SIAP') {
-            await this.generateKerjaTidakSiapPDF(doc, project, companyDetails);
+            await this.generateKerjaTidakSiapPDF(org, doc, project, companyDetails);
         }
     }
 
@@ -36,12 +42,22 @@ export class NotisPDFExporter {
         return Formatter.formatDateMalayTitleCase(isoDate);
     }
 
-    private static calculateLAD(kosProjek: number): number {
-        return calculateLADDailyRate(kosProjek);
+    private static calculateLAD(project: Project, org: OrgDocs): number {
+        return calculateLADDailyRate(project.kosProjek, org.ladPolicy(ladPolicyDate(project)));
+    }
+
+    private static italic(tokens: { text: string; bold: boolean }[]): { text: string; bold: boolean; italic: boolean }[] {
+        return tokens.map((t) => ({ ...t, italic: true }));
+    }
+
+    private static dateRangeVars(project: Project): { tarikh_mula: string; tarikh_tamat: string } {
+        const dmy = (iso?: string) => (iso ? iso.split('-').reverse().join('/') : '...');
+        return { tarikh_mula: dmy(project.tarikhMulaKontrak), tarikh_tamat: dmy(project.tarikhTamatKontrak) };
     }
 
     // --- PDF GENERATOR 1: NOTIS PEMBERITAHUAN ---
     private static async generatePemberitahuanPDF(
+        org: OrgDocs,
         doc: any,
         project: Project,
         pjaUser: User | undefined,
@@ -75,7 +91,7 @@ export class NotisPDFExporter {
         // Title
         doc.setFont("helvetica","bold");
         doc.setFontSize(14);
-        doc.text("NOTIS PEMBERITAHUAN", pageWidth / 2, y, { align: 'center' });
+        doc.text(org.text('doc.notis_pemberitahuan', 'title'), pageWidth / 2, y, { align: 'center' });
         y += 15;
 
         // Project Title
@@ -89,34 +105,32 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","normal");
         const startStr = this.formatMalayDateLong(startDate);
         const endStr = this.formatMalayDateLong(endDate);
-        const boldDateStr = `${startStr} sehingga ${endStr}`;
-        const para2Part1 = "Adalah dimaklumkan bahawa pihak Majlis Perbandaran Selayang akan melaksanakan kerja-kerja berkaitan di kawasan berkenaan. Kerja-kerja tersebut akan dilaksanakan pada ";
-        const fullPara2 = `${para2Part1}${boldDateStr}.`;
+        const fullPara2 = org.text('doc.notis_pemberitahuan', 'para1', { tarikh_mula: startStr, tarikh_tamat: endStr });
         const splitPara2 = doc.splitTextToSize(fullPara2, contentWidth);
         doc.text(splitPara2, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara2.length * 5) + 6;
 
-        const para3 = "Sehubungan dengan itu, pihak tuan/puan diminta memberikan kerjasama sepanjang kerja-kerja dijalankan seperti mengalihkan kenderaan dan harta benda tuan/puan di kawasan tersebut.";
+        const para3 = org.text('doc.notis_pemberitahuan', 'para2');
         const splitPara3 = doc.splitTextToSize(para3, contentWidth);
         doc.text(splitPara3, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara3.length * 5) + 6;
 
-        const para4 = "Kegagalan pihak tuan/puan untuk memberi kerjasama akan menjejaskan perlaksanaan projek kerajaan. Untuk sebarang pertanyaan, sila hubungi Jabatan Kejuruteraan, Majlis Perbandaran Selayang di talian 03-61265896.";
+        const para4 = org.text('doc.notis_pemberitahuan', 'para3');
         const splitPara4 = doc.splitTextToSize(para4, contentWidth);
         doc.text(splitPara4, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara4.length * 5) + 8;
 
         // Closing
-        doc.text("Sekian, dimaklumkan.", margin, y);
+        doc.text(org.text('doc.notis_pemberitahuan', 'closing'), margin, y);
         y += 15;
 
         // Slogans
-        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 5, 12);
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 5, 12, org.profile.slogans);
 
         // Signature
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("Saya yang menjalankan amanah,", margin, y); y += 22;
+        doc.text(org.text(U, 'signOff'), margin, y); y += 22;
 
         const jr = juruteraList.find(u => u.id == selectedJuruteraId);
         const signerName = jr ? jr.fullName.toUpperCase() : "NAMA JURUTERA...";
@@ -124,9 +138,9 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","bold");
         doc.text(`(${signerName})`, margin, y); y += 5;
         doc.setFont("helvetica","normal");
-        doc.text(jr?.jawatan || "Jurutera Awam", margin, y); y += 5;
-        doc.text(jr?.bahagian || "Jabatan Kejuruteraan", margin, y); y += 5;
-        doc.text("Majlis Perbandaran Selayang", margin, y);
+        doc.text(jr?.jawatan || org.text(U, 'signerRole'), margin, y); y += 5;
+        doc.text(jr?.bahagian || org.profile.department, margin, y); y += 5;
+        doc.text(org.profile.name, margin, y);
         
         // Footer
         y += 4;
@@ -134,13 +148,14 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","italic");
         const pjaName = pjaUser ? pjaUser.username.toUpperCase() : "PJA";
         const footerYear = startDate ? new Date(startDate).getFullYear() : 2025;
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(org.text(U, 'footer', { tahun: footerYear, pja: pjaName }), margin, y);
 
         doc.save(`Notis_Pemberitahuan_${project.noFail}.pdf`);
     }
 
     // --- PDF GENERATOR 2: NOTIS PERINGATAN PERTAMA ---
     private static async generatePeringatanPertamaPDF(
+        org: OrgDocs,
         doc: any,
         project: Project,
         pjaUser: User | undefined,
@@ -169,7 +184,7 @@ export class NotisPDFExporter {
         // Title
         doc.setFont("helvetica","bold");
         doc.setFontSize(12);
-        doc.text("PERINGATAN PERTAMA", pageWidth / 2, y, { align: 'center' });
+        doc.text(org.text('doc.notis_peringatan_1', 'title'), pageWidth / 2, y, { align: 'center' });
         y += 8;
 
         // Recipient (Company)
@@ -188,7 +203,7 @@ export class NotisPDFExporter {
         }
 
         // Salutation
-        doc.text("Tuan,", margin, y);
+        doc.text(org.text(U, 'salutation'), margin, y);
         y += 6;
 
         // Project Title
@@ -202,12 +217,12 @@ export class NotisPDFExporter {
         // Para 1
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("Saya dengan segala hormatnya merujuk kepada perkara di atas.", margin, y);
+        doc.text(org.text(U, 'reference'), margin, y);
         y += 6;
 
         // Para 2 (SST Reference)
         const sstDate = project.tarikhMulaKontrak ? this.formatMalayDateLong(project.tarikhMulaKontrak) : '................';
-        const para2 = `2. Berdasarkan surat setuju terima yang telah ditandatangani pada ${sstDate}, semakan jabatan mendapati pihak tuan perlu mematuhi perkara-perkara seperti berikut :`;
+        const para2 = org.text('doc.notis_peringatan_1', 'para2', { tarikh_sst: sstDate });
         const splitPara2 = doc.splitTextToSize(para2, contentWidth);
         doc.text(splitPara2, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara2.length * 5) + 4;
@@ -216,31 +231,29 @@ export class NotisPDFExporter {
         const listIndent = margin + 15;
         
         doc.text("i)", margin + 5, y);
-        doc.text("Menyiapkan kerja mengikut jadual yang ditetapkan", listIndent, y);
+        doc.text(org.text(U, 'item1'), listIndent, y);
         y += 5;
         
         doc.setFont("helvetica","bold");
-        const dateRange = `(Tarikh mula kerja : ${project.tarikhMulaKontrak ? project.tarikhMulaKontrak.split('-').reverse().join('/') : '...'} - ${project.tarikhTamatKontrak ? project.tarikhTamatKontrak.split('-').reverse().join('/') : '...'})`;
+        const dateRange = org.text('doc.notis_peringatan_1', 'dateRange', this.dateRangeVars(project));
         doc.text(dateRange, listIndent, y);
         y += 6;
 
         doc.setFont("helvetica","normal");
         doc.text("ii)", margin + 5, y);
-        doc.text("Menyiapkan kerja di tapak dengan kadar segera", listIndent, y);
+        doc.text(org.text(U, 'item2'), listIndent, y);
         y += 8;
 
         // Para 3 (Deadline)
-        const para3 = "3. Oleh yang demikian, pihak tuan dikehendaki untuk mematuhi perkara di atas dan dikehendaki untuk menyerahkan tuntutan dalam tempoh tujuh (7) hari daripada tarikh surat ini dikeluarkan.";
+        const para3 = org.text('doc.notis_peringatan_1', 'para3');
         const splitPara3 = doc.splitTextToSize(para3, contentWidth);
         doc.text(splitPara3, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara3.length * 5) + 4;
 
         // --- Para 4 (LAD Warning) ---
-        const ladRate = this.calculateLAD(project.kosProjek);
+        const ladRate = this.calculateLAD(project, org);
         const ladRateStr = `RM${PDFBaseHelper.formatNumber2dp(ladRate)}`;
 
-        const para4Part1 = "4. Kelewatan pihak tuan berbuat demikian akan mengakibatkan laporan prestasi kerja syarikat tuan terjejas dan denda kelewatan (LAD) sebanyak";
-        const para4Part2 = "/hari akan dikenakan.";
 
         const lineHeight = 5;
         let currentX = margin;
@@ -264,23 +277,21 @@ export class NotisPDFExporter {
             });
         };
 
-        printStyledText(para4Part1, false);
-        printStyledText(ladRateStr, true);
-        printStyledText(para4Part2, false);
+        org.tokens('doc.notis_peringatan_1', 'para4', { kadar_lad: ladRateStr }).forEach((t) => printStyledText(t.text, t.bold));
 
         y = currentY + (lineHeight + 5);
 
         // Closing
-        doc.text("Sekian dimaklumkan, terima kasih.", margin, y);
+        doc.text(org.text(U, 'closing'), margin, y);
         y += 10;
 
         // Slogans
-        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 8);
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 8, org.profile.slogans);
 
         // Signature
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("Saya yang menjalankan amanah,", margin, y); 
+        doc.text(org.text(U, 'signOff'), margin, y); 
         y += 18;
 
         const jr = juruteraList.find(u => u.id == selectedJuruteraId);
@@ -289,9 +300,9 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","bold");
         doc.text(`(${signerName})`, margin, y); y += 5;
         doc.setFont("helvetica","normal");
-        doc.text(jr?.jawatan || "Jurutera Awam", margin, y); y += 5;
-        doc.text(jr?.bahagian || "Jabatan Kejuruteraan", margin, y); y += 5;
-        doc.text("Majlis Perbandaran Selayang", margin, y);
+        doc.text(jr?.jawatan || org.text(U, 'signerRole'), margin, y); y += 5;
+        doc.text(jr?.bahagian || org.profile.department, margin, y); y += 5;
+        doc.text(org.profile.name, margin, y);
 
         // Footer
         y += 4;
@@ -299,13 +310,14 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","italic"); 
         const pjaName = pjaUser ? pjaUser.username.toUpperCase() : "PJA";
         const footerYear = new Date().getFullYear(); 
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(org.text(U, 'footer', { tahun: footerYear, pja: pjaName }), margin, y);
 
         doc.save(`Notis_Peringatan_1_${project.noFail}.pdf`);
     }
 
     // --- PDF GENERATOR 3: NOTIS PERINGATAN KEDUA ---
     private static async generatePeringatanKeduaPDF(
+        org: OrgDocs,
         doc: any,
         project: Project,
         pjaUser: User | undefined,
@@ -334,7 +346,7 @@ export class NotisPDFExporter {
         // Title
         doc.setFont("helvetica","bold");
         doc.setFontSize(12);
-        doc.text("PERINGATAN KEDUA", pageWidth / 2, y, { align: 'center' });
+        doc.text(org.text('doc.notis_peringatan_2', 'title'), pageWidth / 2, y, { align: 'center' });
         y += 12;
 
         // Recipient (Company)
@@ -353,7 +365,7 @@ export class NotisPDFExporter {
         }
 
         // Salutation
-        doc.text("Tuan,", margin, y);
+        doc.text(org.text(U, 'salutation'), margin, y);
         y += 6;
 
         // Project Title
@@ -367,12 +379,12 @@ export class NotisPDFExporter {
         // Para 1
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("Saya dengan segala hormatnya merujuk kepada perkara di atas.", margin, y);
+        doc.text(org.text(U, 'reference'), margin, y);
         y += 6;
 
         // Para 2
         const sstDate = project.tarikhMulaKontrak ? this.formatMalayDateLong(project.tarikhMulaKontrak) : '................';
-        const para2 = `2. Berdasarkan surat setuju terima yang telah ditandatangani pada ${sstDate}, didapati pihak tuan masih gagal melaksanakan perkara-perkara seperti berikut:`;
+        const para2 = org.text('doc.notis_peringatan_2', 'para2', { tarikh_sst: sstDate });
         const splitPara2 = doc.splitTextToSize(para2, contentWidth);
         doc.text(splitPara2, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara2.length * 5) + 4;
@@ -381,33 +393,29 @@ export class NotisPDFExporter {
         const listIndent = margin + 15;
         
         doc.text("i)", margin + 5, y);
-        doc.text("Menyiapkan kerja mengikut jadual yang ditetapkan", listIndent, y);
+        doc.text(org.text(U, 'item1'), listIndent, y);
         y += 5;
         doc.setFont("helvetica","bold");
-        const dateRange = `(Tarikh mula kerja : ${project.tarikhMulaKontrak ? project.tarikhMulaKontrak.split('-').reverse().join('/') : '...'} - ${project.tarikhTamatKontrak ? project.tarikhTamatKontrak.split('-').reverse().join('/') : '...'})`;
+        const dateRange = org.text('doc.notis_peringatan_2', 'dateRange', this.dateRangeVars(project));
         doc.text(dateRange, listIndent, y);
         y += 6;
 
         doc.setFont("helvetica","normal");
         doc.text("ii)", margin + 5, y);
-        doc.text("Menyiapkan kerja di tapak dengan kadar segera", listIndent, y);
+        doc.text(org.text(U, 'item2'), listIndent, y);
         y += 8;
 
         // Para 3
-        const para3 = "3. Oleh yang demikian, pihak tuan dikehendaki memberi penjelasan secara bertulis di atas kegagalan pihak tuan mematuhi perkara di atas.";
+        const para3 = org.text('doc.notis_peringatan_2', 'para3');
         const splitPara3 = doc.splitTextToSize(para3, contentWidth);
         doc.text(splitPara3, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara3.length * 5) + 4;
 
         // --- Para 4 (LAD HAS BEEN CHARGED) ---
-        const ladRate = this.calculateLAD(project.kosProjek);
+        const ladRate = this.calculateLAD(project, org);
         const ladRateStr = `RM${PDFBaseHelper.formatNumber2dp(ladRate)}`;
 
-        const segments = [
-            { text:"4. Sehubungan dengan itu, pihak tuan dikehendaki menyerahkan tuntutan dengan kadar segera dan pihak tuan juga telah dikenakan denda lewat LAD sebanyak", bold: false },
-            { text: ladRateStr, bold: true },
-            { text:"/hari dari tarikh tamat kontrak tersebut serta penilaian prestasi syarikat tuan telah terjejas.", bold: false }
-        ];
+        const segments = org.tokens('doc.notis_peringatan_2', 'para4', { kadar_lad: ladRateStr });
 
         const lineHeight = 5;
         let currentX = margin;
@@ -434,16 +442,16 @@ export class NotisPDFExporter {
         y = currentY + 10;
 
         // Closing
-        doc.text("Sekian dimaklumkan, terima kasih.", margin, y);
+        doc.text(org.text(U, 'closing'), margin, y);
         y += 10;
 
         // Slogans
-        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 8);
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 8, org.profile.slogans);
 
         // Signature
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("Saya yang menjalankan amanah,", margin, y); 
+        doc.text(org.text(U, 'signOff'), margin, y); 
         y += 18;
 
         const jr = juruteraList.find(u => u.id == selectedJuruteraId);
@@ -452,9 +460,9 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","bold");
         doc.text(`(${signerName})`, margin, y); y += 5;
         doc.setFont("helvetica","normal");
-        doc.text(jr?.jawatan || "Jurutera Awam", margin, y); y += 5;
-        doc.text(jr?.bahagian || "Jabatan Kejuruteraan", margin, y); y += 5;
-        doc.text("Majlis Perbandaran Selayang", margin, y);
+        doc.text(jr?.jawatan || org.text(U, 'signerRole'), margin, y); y += 5;
+        doc.text(jr?.bahagian || org.profile.department, margin, y); y += 5;
+        doc.text(org.profile.name, margin, y);
 
         // Footer
         y += 4;
@@ -462,13 +470,14 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","italic"); 
         const pjaName = pjaUser ? pjaUser.username.toUpperCase() : "PJA";
         const footerYear = new Date().getFullYear(); 
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(org.text(U, 'footer', { tahun: footerYear, pja: pjaName }), margin, y);
 
         doc.save(`Notis_Peringatan_2_${project.noFail}.pdf`);
     }
 
     // --- PDF GENERATOR 4: NOTIS PERINGATAN KETIGA ---
     private static async generatePeringatanKetigaPDF(
+        org: OrgDocs,
         doc: any,
         project: Project,
         pjaUser: User | undefined,
@@ -497,7 +506,7 @@ export class NotisPDFExporter {
         // Title
         doc.setFont("helvetica","bold");
         doc.setFontSize(12);
-        doc.text("PERINGATAN KETIGA", pageWidth / 2, y, { align: 'center' });
+        doc.text(org.text('doc.notis_peringatan_3', 'title'), pageWidth / 2, y, { align: 'center' });
         y += 12;
 
         // Recipient (Company)
@@ -516,7 +525,7 @@ export class NotisPDFExporter {
         }
 
         // Salutation
-        doc.text("Tuan,", margin, y);
+        doc.text(org.text(U, 'salutation'), margin, y);
         y += 6;
 
         // Project Title
@@ -530,12 +539,12 @@ export class NotisPDFExporter {
         // Para 1
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("Saya dengan segala hormatnya merujuk kepada perkara di atas.", margin, y);
+        doc.text(org.text(U, 'reference'), margin, y);
         y += 7;
 
         // Para 2
         const sstDate = project.tarikhMulaKontrak ? this.formatMalayDateLong(project.tarikhMulaKontrak) : '................';
-        const para2 = `2. Berdasarkan surat setuju terima yang telah ditandatangani pada ${sstDate}, didapati pihak tuan masih lagi gagal melaksanakan perkara-perkara seperti berikut:`;
+        const para2 = org.text('doc.notis_peringatan_3', 'para2', { tarikh_sst: sstDate });
         const splitPara2 = doc.splitTextToSize(para2, contentWidth);
         doc.text(splitPara2, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara2.length * 5) + 4;
@@ -544,48 +553,42 @@ export class NotisPDFExporter {
         const listIndent = margin + 15;
         
         doc.text("i)", margin + 5, y);
-        doc.text("Menyiapkan kerja mengikut jadual yang ditetapkan", listIndent, y);
+        doc.text(org.text(U, 'item1'), listIndent, y);
         y += 5;
         doc.setFont("helvetica","bold");
-        const startDisp = project.tarikhMulaKontrak ? project.tarikhMulaKontrak.split('-').reverse().join('/') : '...';
-        const endDisp = project.tarikhTamatKontrak ? project.tarikhTamatKontrak.split('-').reverse().join('/') : '...';
-        const dateRange = `(Tarikh mula kerja : ${startDisp}- ${endDisp})`;
+const dateRange = org.text('doc.notis_peringatan_3', 'dateRange', this.dateRangeVars(project));
         doc.text(dateRange, listIndent, y);
         y += 6;
 
         doc.setFont("helvetica","normal");
         doc.text("ii)", margin + 5, y);
-        doc.text("Menyiapkan kerja di tapak dengan kadar segera", listIndent, y);
+        doc.text(org.text(U, 'item2'), listIndent, y);
         y += 8;
 
         // Para 3
-        const para3 = "3. Oleh yang demikian, pihak tuan dikehendaki memberi penjelasan secara bertulis di atas kegagalan pihak tuan mematuhi perkara di atas.";
+        const para3 = org.text('doc.notis_peringatan_3', 'para3');
         const splitPara3 = doc.splitTextToSize(para3, contentWidth);
         doc.text(splitPara3, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara3.length * 5) + 5;
 
         // Para 4
-        const para4Start = "4. Sehubungan dengan itu, pihak tuan dikehendaki menyerahkan tuntutan dalam tempoh";
-        const para4Bold = "tujuh (7) hari";
-        const para4End = " daripada tarikh surat ini dikeluarkan atau tuan akan dikenakan denda lewat LAD. Kegagalan pihak tuan berbuat demikian akan menjejaskan penilaian prestasi syarikat tuan.";
-        
-        const fullPara4Text = `${para4Start}${para4Bold}${para4End}`;
+        const fullPara4Text = org.text('doc.notis_peringatan_3', 'para4');
         const splitPara4 = doc.splitTextToSize(fullPara4Text, contentWidth);
         
         doc.text(splitPara4, margin, y, { align: 'justify', maxWidth: contentWidth });
         y += (splitPara4.length * 5) + 8;
 
         // Closing
-        doc.text("Sekian dimaklumkan, terima kasih.", margin, y);
+        doc.text(org.text(U, 'closing'), margin, y);
         y += 12;
 
         // Slogans
-        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 10);
+        y = PDFBaseHelper.drawGovernmentSlogans(doc, margin, y, 4, 10, org.profile.slogans);
 
         // Signature
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("Saya yang menjalankan amanah,", margin, y); 
+        doc.text(org.text(U, 'signOff'), margin, y); 
         y += 15;
 
         const jr = juruteraList.find(u => u.id == selectedJuruteraId);
@@ -594,9 +597,9 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","bold");
         doc.text(`(${signerName})`, margin, y); y += 5;
         doc.setFont("helvetica","normal");
-        doc.text(jr?.jawatan || "Jurutera Awam", margin, y); y += 5;
-        doc.text(jr?.bahagian || "Jabatan Kejuruteraan", margin, y); y += 5;
-        doc.text("Majlis Perbandaran Selayang", margin, y);
+        doc.text(jr?.jawatan || org.text(U, 'signerRole'), margin, y); y += 5;
+        doc.text(jr?.bahagian || org.profile.department, margin, y); y += 5;
+        doc.text(org.profile.name, margin, y);
 
         // Footer
         y += 4;
@@ -604,13 +607,14 @@ export class NotisPDFExporter {
         doc.setFont("helvetica","italic"); 
         const pjaName = pjaUser ? pjaUser.username.toUpperCase() : "PJA";
         const footerYear = new Date().getFullYear(); 
-        doc.text(`PANEL ${footerYear}-PJA ${pjaName}`, margin, y);
+        doc.text(org.text(U, 'footer', { tahun: footerYear, pja: pjaName }), margin, y);
 
         doc.save(`Notis_Peringatan_3_${project.noFail}.pdf`);
     }
 
     // --- PDF GENERATOR 5: PERAKUAN KERJA TIDAK SIAP ---
     private static async generateKerjaTidakSiapPDF(
+        org: OrgDocs,
         doc: any,
         project: Project,
         companyDetails: any
@@ -653,19 +657,19 @@ export class NotisPDFExporter {
         // --- PAGE 1 ---
         doc.setFont("helvetica","bold");
         doc.setFontSize(12);
-        doc.text("KERAJAAN MALAYSIA", pageWidth / 2, y, { align:"center" });
+        doc.text(org.text(K, 'heading1'), pageWidth / 2, y, { align:"center" });
         y += 5;
-        doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, y, { align:"center" });
+        doc.text(org.text(K, 'heading2'), pageWidth / 2, y, { align:"center" });
         y += 5;
-        doc.text("JABATAN KEJURUTERAAN", pageWidth / 2, y, { align:"center" });
+        doc.text(org.text(K, 'heading3'), pageWidth / 2, y, { align:"center" });
         y += 10;
 
         doc.setFontSize(12);
-        doc.text("PERAKUAN KERJA TIDAK SIAP", pageWidth / 2, y, { align:"center" });
+        doc.text(org.text(K, 'title'), pageWidth / 2, y, { align:"center" });
         y += 5;
         doc.setFont("helvetica","italic");
         doc.setFontSize(11);
-        doc.text("(CERTIFICATE OF NON-COMPLETION)", pageWidth / 2, y, { align:"center" });
+        doc.text(org.text(K, 'subtitle'), pageWidth / 2, y, { align:"center" });
         y += 15;
 
         const refNo = `${project.noFail || ''} (   )`;
@@ -673,7 +677,7 @@ export class NotisPDFExporter {
             [
                 `Rujukan : ${refNo}`,
                 {
-                    content: `Pejabat : Majlis Perbandaran Selayang\nPersiaran 3, Bandar Baru Selayang,\n68100 Batu Caves,\nSelangor Darul Ehsan.\nTarikh...................................................`,
+                    content: `Pejabat : ${org.profile.name}\n${org.profile.addressLines.join('\n')}.\nTarikh...................................................`,
                     styles: { halign: 'left' }
                 }
             ]
@@ -710,7 +714,7 @@ export class NotisPDFExporter {
         doc.text(splitAddr, recipientX, y);
         y += (splitAddr.length * 4) + 8;
 
-        doc.text(`Berdaftar dengan C.I.D.B. dalam Gred"${companyDetails?.gred || 'G1'}"`, margin, y);
+        doc.text(org.text(K, 'cidb', { gred: companyDetails?.gred || 'G1' }), margin, y);
         y += 6;
 
         doc.setFont("helvetica","bold");
@@ -724,17 +728,8 @@ export class NotisPDFExporter {
 
         const completionDate = project.tarikhTamatKontrak ? this.formatMalayDateLong(project.tarikhTamatKontrak) : '................................';
 
-        const malayParts1 = [
-            { text:"Dengan ini adalah diperakui bahawa tuan telah gagal menyiapkan Kerja / Sebahagian daripada Kerja* yang tersebut di atas pada \"Tarikh Siap\" yang dinyatakan dalam Lampiran kepada Syarat-Syarat Kontrak ataupun dalam tempoh lanjutan masa yang telah dibenarkan di bawah Klausa 43 Syarat-Syarat Kontrak, iaitu pada " },
-            { text: completionDate, bold: true },
-            { text:" dan mengikut pendapat saya Kerja / Sebahagian daripada Kerja* tersebut itu sepatutnya telah disiapkan pada tarikh ini." }
-        ];
-
-        const englishParts1 = [
-            { text:"It is hereby certified that you have failed to complete the Works / Section of the Works* as mentioned above by the \"Date for Completion\" stated in the Appendix to the Conditions of Contract or within any extended time approved under Clause 43 of the Conditions of Contract, i.e. on ", italic: true },
-            { text: completionDate, bold: true, italic: true },
-            { text:" and in my opinion the said Works / Section of the Works* ought to have been completed.", italic: true }
-        ];
+        const malayParts1 = org.tokens(K, 'para1', { tarikh_siap_kontrak: completionDate });
+        const englishParts1 = this.italic(org.tokens(K, 'para1En', { tarikh_siap_kontrak: completionDate }));
 
         doc.setFontSize(11);
         const linesM1 = getStyledLines(malayParts1, contentWidth);
@@ -775,23 +770,14 @@ export class NotisPDFExporter {
         const indent = 10;
         const para2Width = contentWidth - indent;
 
-        const ladRate = this.calculateLAD(project.kosProjek);
+        const ladRate = this.calculateLAD(project, org);
         const ladStr = `RM${PDFBaseHelper.formatNumber2dp(ladRate)}`;
 
         doc.setFont("helvetica","normal");
         doc.text("2.", margin, y);
 
-        const malayParts2 = [
-            { text:"Menurut Klausa 40 Syarat-Syarat Kontrak, tuan adalah dengan ini diberitahu bahawa tuan kenalah membayar atau membenarkan kepada Kerajaan sejumlah wang yang dikira atas kadar yang dinyatakan dalam Lampiran kepada Syarat-Syarat Kontrak, iaitu " },
-            { text: ladStr, bold: true },
-            { text:" setiap hari sebagai Ganti Rugi Tertentu dan Ditetapkan banyaknya sepanjang tempoh yang Kerja / Sebahagian daripada Kerja* tersebut itu tidak disiapkan sepenuhnya dan saya akan memperakukan supaya potongan sewajarnya dibuat dari apa-apa wang yang kena dibayar atau yang akan kena dibayar kepada tuan di bawah Kontrak ini." }
-        ];
-
-        const englishParts2 = [
-            { text:"In accordance with Clause 40 of the Conditions of Contract, you are hereby informed that you are liable to pay or allow to the Government a sum calculated at the rate stated in the Appendix to the Conditions of Contract, i.e.", italic: true },
-            { text: ladStr, bold: true, italic: true },
-            { text:" per day as Liquidated and Ascertained Damages for the period during which the said Works / Section of the Works* shall so remain and have remain incomplete and I shall certify for deduction such damages from any money due or which may become due to you under this Contract.", italic: true }
-        ];
+        const malayParts2 = org.tokens(K, 'para2', { kadar_lad: ladStr });
+        const englishParts2 = this.italic(org.tokens(K, 'para2En', { kadar_lad: ladStr }));
 
         const linesM2 = getStyledLines(malayParts2, para2Width);
         const linesE2 = getStyledLines(englishParts2, para2Width);
@@ -830,10 +816,10 @@ export class NotisPDFExporter {
         y += 5;
 
         doc.setFont("helvetica","normal");
-        doc.text("Wakil Pegawai Penguasa", sigStartX + 15, y);
+        doc.text(org.text(K, 'signTitle'), sigStartX + 15, y);
         y += 5;
         doc.setFont("helvetica","italic");
-        doc.text("(Deputy Superintending Officer)", sigStartX + 12, y);
+        doc.text(org.text(K, 'signTitleEn'), sigStartX + 12, y);
         y += 15;
 
         const labelX = sigStartX;
@@ -863,9 +849,9 @@ export class NotisPDFExporter {
         doc.line(margin, footerY, pageWidth - margin, footerY);
         doc.setFontSize(9);
         doc.setFont("helvetica","normal");
-        doc.text("* Potong jika tidak berkenaan.", margin + 10, footerY + 5);
+        doc.text(org.text(K, 'footnote'), margin + 10, footerY + 5);
         doc.setFont("helvetica","italic");
-        doc.text("        Delete if not applicable.", margin + 10, footerY + 10);
+        doc.text(`        ${org.text(K, 'footnoteEn')}`, margin + 10, footerY + 10);
 
         doc.setFont("helvetica","normal");
         doc.text("2", pageWidth / 2, pageHeight - 15, { align: 'center' });

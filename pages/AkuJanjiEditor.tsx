@@ -3,6 +3,9 @@ import { Project, User } from '../types';
 import { Download, Loader2, FilePenLine } from 'lucide-react';
 import { AkuJanjiPDFExporter } from '../services/pdf/AkuJanjiPDFExporter';
 import FitToWidth from '../components/detail/FitToWidth';
+import { useOrgDocs } from '../components/org/orgDocs';
+
+const T = 'doc.aku_janji';
 
 // 210 mm at 96 dpi: the preview page's CSS width.
 const A4_WIDTH_PX = 794;
@@ -23,6 +26,7 @@ const MONTHS = [
 
 const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, pjaUser, onUpdate, isPrintView, readOnly = false }) => {
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const { docs: org, ready } = useOrgDocs(project);
     
     // Initial Defaults
     useEffect(() => {
@@ -58,12 +62,12 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
         try {
             await AkuJanjiPDFExporter.export(project, {
                 currentMonth,
-                selectedYear,
+                selectedYear: String(selectedYear),
                 pjaName,
                 companyName,
                 formattedSerahTapak,
                 formattedAduan
-            });
+            }, ready ? org : undefined);
         } catch (e) {
             console.error(e);
             alert("Gagal menjana PDF. Sila cuba lagi.");
@@ -136,13 +140,11 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                     </div>
 
                     <div className="mb-10 text-[13px] font-bold">
-                        <p>Pengarah,</p>
-                        <p>Jabatan Kejuruteraan,</p>
-                        <p>Majlis Perbandaran Selayang.</p>
+                        {org.text(T, 'recipient').split('\n').map((line, i) => <p key={i}>{line}</p>)}
                     </div>
 
                     <div className="text-center mb-10">
-                        <h1 className="text-[22px] font-bold uppercase tracking-wide">AKU JANJI</h1>
+                        <h1 className="text-[22px] font-bold uppercase tracking-wide">{org.text(T, 'title')}</h1>
                     </div>
 
                     <div className="text-justify text-[13px] leading-[1.6]">
@@ -150,19 +152,19 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                             {project.namaProjek}
                         </p>
                         <p className="mb-8">
-                            Adalah dimaklumkan bahawa, saya memperakukan bahawa kerja-kerja di tapak akan dimulakan dalam tempoh lima (5) hari selepas tarikh penyerahan tapak iaitu pada {formattedSerahTapak}.
+                            {org.text(T, 'para1', { tarikh_serah_tapak: formattedSerahTapak })}
                         </p>
                         <p className="mb-8">
-                            Sekiranya kerja-kerja tersebut gagal dimulakan dalam tempoh lima (5) hari, pihak MPS berhak menarik semula perlantikan syarikat saya dan melantik semula syarikat lain bagi kerja tersebut.
+                            {org.text(T, 'para2')}
                         </p>
                         <p className="mb-16">
-                            Sekian.
+                            {org.text(T, 'closing')}
                         </p>
                     </div>
 
                     <div className="flex justify-between items-start mt-12 text-[13px]">
                         <div className="w-[45%]">
-                            <p className="mb-16">Saya yang berjanji</p>
+                            <p className="mb-16">{org.text(T, 'signLeft')}</p>
                             <div className="border-b border-black border-dashed mb-2"></div>
                             <div className="grid grid-cols-[80px_1fr] gap-1">
                                 <div>Pengurus</div>
@@ -174,7 +176,7 @@ const AkuJanjiEditor: React.FC<AkuJanjiEditorProps> = ({ project, selectedYear, 
                             </div>
                         </div>
                         <div className="w-[45%]">
-                            <p className="mb-16">Saksi</p>
+                            <p className="mb-16">{org.text(T, 'signRight')}</p>
                             <div className="border-b border-black border-dashed mb-2"></div>
                             <div className="grid grid-cols-[80px_1fr] gap-1">
                                 <div>Nama</div>

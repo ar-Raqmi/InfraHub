@@ -4,6 +4,11 @@ import { Project, User, formatDateMalay } from '../types';
 import { apiService } from '../services/apiService';
 import { CPCPDFExporter } from '../services/pdf/CPCPDFExporter';
 import CertificateModal from '../components/CertificateModal';
+import { dlpPeriod } from '../services/finance';
+import { useOrgDocs } from '../components/org/orgDocs';
+import { EXTRA_POLICY_KEYS } from '../components/org/orgDefaults';
+
+const T = 'doc.cpc';
 
 interface CPCCertificateProps {
     project: Project;
@@ -30,28 +35,20 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
         fetchData();
     }, [project]);
 
+    const { docs: org, ready } = useOrgDocs(project);
     const tarikhSiap = project.tarikhSiapSebenar ? project.tarikhSiapSebenar : '';
-    
-    const getDLPStart = (dateStr: string) => {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        d.setDate(d.getDate() + 1);
-        return d.toISOString().split('T')[0];
-    };
-    const dlpStart = getDLPStart(tarikhSiap);
-
-    const getDLPEnd = (dateStr: string) => {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        d.setMonth(d.getMonth() + 6);
-        return d.toISOString().split('T')[0];
-    };
-    const dlpEnd = getDLPEnd(dlpStart);
+    const { start: dlpStart, end: dlpEnd } = dlpPeriod(tarikhSiap, org.number(EXTRA_POLICY_KEYS.dlpMonths, tarikhSiap));
+    const dash = '...................';
+    const bodyTokens = org.tokens(T, 'body', {
+        tarikh_siap: tarikhSiap ? formatDateMalay(tarikhSiap) : dash,
+        tarikh_mula_dlp: dlpStart ? formatDateMalay(dlpStart) : dash,
+        tarikh_tamat_dlp: dlpEnd ? formatDateMalay(dlpEnd) : dash,
+    });
 
     const handleDownload = async () => {
         setIsGenerating(true);
         try {
-            await CPCPDFExporter.export(project, pjaUser, companyDetails);
+            await CPCPDFExporter.export(project, pjaUser, companyDetails, ready ? org : undefined);
         } catch (e) {
             console.error(e);
             alert("Ralat menjana PDF.");
@@ -70,11 +67,11 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                     <div id="cpc-cert-container" className="w-[210mm] min-h-[297mm] bg-white px-[25mm] pt-[20mm] pb-[20mm] shadow-lg text-black relative box-border flex flex-col leading-snug" style={{ fontFamily: 'Arial, sans-serif' }}>
                         
                         <div className="text-center mb-6">
-                            <h2 className="text-[11pt] font-bold uppercase tracking-wide">KERAJAAN MALAYSIA</h2>
-                            <h1 className="text-[13pt] font-bold uppercase tracking-wide mb-4">MAJLIS PERBANDARAN SELAYANG</h1>
+                            <h2 className="text-[11pt] font-bold uppercase tracking-wide">{org.text(T, 'heading1')}</h2>
+                            <h1 className="text-[13pt] font-bold uppercase tracking-wide mb-4" data-testid="cpc-org-heading">{org.text(T, 'heading2')}</h1>
                             
-                            <p className="text-[10pt] uppercase">PERAKUAN SIAP KERJA</p>
-                            <p className="text-[9pt] italic">(CERTIFICATE OF PRACTICAL COMPLETION)</p>
+                            <p className="text-[10pt] uppercase">{org.text(T, 'title')}</p>
+                            <p className="text-[9pt] italic">{org.text(T, 'subtitle')}</p>
                         </div>
 
                         <div className="flex justify-between items-start mb-6 text-[9pt]">
@@ -82,10 +79,8 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                                 <p>Rujukan : {project.noFail || ''} ( &nbsp;&nbsp; )</p>
                             </div>
                             <div className="w-[45%]">
-                                <p className="font-bold">Majlis Perbandaran Selayang</p>
-                                <p>Persiaran 3, Bandar Baru Selayang,</p>
-                                <p>68100 Batu Caves,</p>
-                                <p>Selangor Darul Ehsan</p>
+                                <p className="font-bold">{org.profile.name}</p>
+                                {org.profile.addressLines.map((line, i) => <p key={i}>{line}</p>)}
                             </div>
                         </div>
 
@@ -103,41 +98,34 @@ const CPCCertificate: React.FC<CPCCertificateProps> = ({ project, pjaUser, onClo
                         </div>
 
                         <div className="mb-6 text-[9pt] font-bold">
-                            <p className="mb-1">Berdaftar dengan CIDB dalam Gred" {companyDetails?.gred || 'G1'}"</p>
+                            <p className="mb-1">{org.text(T, 'cidb', { gred: companyDetails?.gred || 'G1' })}</p>
                             <p>No. Sebutharga : {project.noSebutharga || '.........................'}</p>
                         </div>
 
                         <div className="mb-6 text-[9pt] flex items-start">
-                            <span className="font-normal w-[35mm] shrink-0">Sebutharga Untuk :</span> 
+                            <span className="font-normal w-[35mm] shrink-0">{org.text(T, 'sebuthargaLabel')}</span> 
                             <span className="font-bold uppercase text-justify leading-snug">{project.namaProjek}</span>
                         </div>
 
                         <div className="text-[9pt] text-justify leading-relaxed mb-12">
-                            <p>
-                                Menurut Syarat-Syarat Kontrak, dan tertakluk kepada penyiapan berkaitan dengan pembaikan apa-apa kecacatan, ketidaksempurnaan, kesusutan atau apa-apa dan yang mungkin terzahir dalam Tempoh Tanggungan Kecacatan maka adalah dengan ini di perakui bahawa seluruh Kerja yang tersebut telah siap sejajar dengan syarat-syarat dalam Dokumen Sebut Harga pada &nbsp;
-                                <span className="font-bold">{tarikhSiap ? formatDateMalay(tarikhSiap) : '...................'}</span>
-                                &nbsp; dan diambil milik pada &nbsp;
-                                <span className="font-bold">{dlpStart ? formatDateMalay(dlpStart) : '...................'}</span>
-                                &nbsp; dan dengan itu Tempoh Tanggungan Kecacatan untuk kerja kerja tersebut bermula pada &nbsp;
-                                <span className="font-bold">{dlpStart ? formatDateMalay(dlpStart) : '...................'}</span>
-                                &nbsp; dan berakhir pada &nbsp;
-                                <span className="font-bold">{dlpEnd ? formatDateMalay(dlpEnd) : '...................'}</span>.
+                            <p data-testid="cpc-body">
+                                {bodyTokens.map((t, i) => (t.bold ? <span key={i} className="font-bold">{t.text}</span> : <React.Fragment key={i}>{t.text}</React.Fragment>))}
                             </p>
                         </div>
 
                         <div className="flex justify-between items-end mt-auto text-[9pt] font-bold">
                             <div className="w-[45%]">
-                                <p className="mb-12">Diperakui di tapak,</p>
+                                <p className="mb-12">{org.text(T, 'signLeft')}</p>
                                 <div className="border-b border-black border-dashed mb-1 w-full"></div>
-                                <p>(Penolong Jurutera/Penyelia Tapak)</p>
+                                <p>{org.text(T, 'signLeftRole')}</p>
                                 <p>Nama Penuh : {pjaUser?.fullName?.toUpperCase() || ''}</p>
                                 <p>Jawatan : {pjaUser?.jawatan || ''}</p>
                             </div>
 
                             <div className="w-[45%]">
-                                <p className="mb-12">Disahkan,</p>
+                                <p className="mb-12">{org.text(T, 'signRight')}</p>
                                 <div className="border-b border-black border-dashed mb-1 w-full"></div>
-                                <p>(Jurutera)</p>
+                                <p>{org.text(T, 'signRightRole')}</p>
                                 <p>Nama Penuh :</p>
                                 <p>Jawatan :</p>
                             </div>

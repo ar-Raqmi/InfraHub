@@ -1,17 +1,20 @@
 import { Project, formatDate, formatCurrency } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
-import { calculateLADDailyRate, LAD_BLR, LAD_EFFECTIVE_RATE, LAD_SMALL_PROJECT_THRESHOLD } from '../finance';
+import { calculateLADDailyRate, ladPolicyDate } from '../finance';
+import { loadOrgDocs, type OrgDocs } from '../../components/org/orgDocs';
+import { ladTextVars } from '../../components/org/documentVars';
+
+const T = 'doc.lad';
 
 export class LADPDFExporter {
-    static async export(project: Project): Promise<void> {
-        // --- Calculation Logic ---
+    static async export(project: Project, orgDocs?: OrgDocs): Promise<void> {
+        const org = (orgDocs ?? await loadOrgDocs()).forProject(project);
+        const policy = org.ladPolicy(ladPolicyDate(project));
+        const vars = ladTextVars(policy);
         const contractSum = project.kosProjek || 0;
-        const isSmallProject = contractSum < LAD_SMALL_PROJECT_THRESHOLD;
-        const BLR = LAD_BLR;                 // 6.65 (display value)
-        const effectiveRate = LAD_EFFECTIVE_RATE; // 6.4 (display value)
-
-        // Daily Rate (shared finance util)
-        const dailyRate = calculateLADDailyRate(contractSum);
+        const isSmallProject = contractSum < policy.smallProjectThreshold;
+        const effectiveRate = policy.annualRatePct;
+        const dailyRate = calculateLADDailyRate(contractSum, policy);
 
         // Days
         const daysLate = project.ladDays || 0;
@@ -41,7 +44,7 @@ export class LADPDFExporter {
         y += (titleLines.length * 5) + 8; // Adjust spacing based on lines
 
         doc.setFontSize(10);
-        const subTitle ="DENDA KELEWATAN MENYIAPKAN KERJA";
+        const subTitle = org.text(T, 'title');
         doc.text(subTitle, margin, y);
         const textWidth = doc.getTextWidth(subTitle);
         doc.setLineWidth(0.3);
@@ -138,9 +141,7 @@ export class LADPDFExporter {
         doc.setFontSize(9);
         doc.setFont("helvetica","normal");
 
-        const note = isSmallProject 
-            ? "Bagi Kontrak bernilai kurang RM 20,000.00, kadar Denda (LAD) adalah RM 20.00/hari rata."
-            : `BLR ${BLR} ( Maklumat daripada Bahagian Perolehan )`;
+        const note = org.text(T, isSmallProject ? 'noteSmall' : 'noteBlr', vars);
         doc.text(note, margin + boxPadding, boxY);
         boxY += 12;
 
@@ -199,7 +200,7 @@ export class LADPDFExporter {
             boxY += 15;
         } else {
             doc.setFont("helvetica","bold");
-            doc.text("KADAR DENDA (LAD) = RM 20.00 / HARI", centerX, boxY, { align: 'center' });
+            doc.text(org.text(T, 'flatLine', vars), centerX, boxY, { align: 'center' });
             boxY += 15;
         }
 

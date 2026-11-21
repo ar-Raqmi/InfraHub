@@ -6,6 +6,23 @@ import { apiService } from '../services/apiService';
 import { Download, Loader2, X, FileText, Calendar, User as UserIcon, Settings } from 'lucide-react';
 import StrictDateInput from '../components/StrictDateInput';
 import { NotisPDFExporter } from '../services/pdf/NotisPDFExporter';
+import { ladPolicyDate } from '../services/finance';
+import { useOrgDocs } from '../components/org/orgDocs';
+import { ladRateText } from '../components/org/documentVars';
+import NoticePreview from '../components/org/NoticePreview';
+import { POLICY_KEYS } from '../domain/policy';
+
+// Default letter date per notice, in days relative to the contract end (Tetapan Organisasi -> Peraturan).
+const OFFSET_KEY: Record<string, string> = {
+    PERINGATAN_2: POLICY_KEYS.notice2Days,
+    PERINGATAN_3: POLICY_KEYS.notice3Days,
+};
+
+const offsetHint = (days: number): string => {
+    const n = Math.abs(days);
+    const span = n % 7 === 0 ? `${n / 7} minggu` : `${n} hari`;
+    return `*Tarikh default adalah ${span} ${days < 0 ? 'SEBELUM' : 'SELEPAS'} tamat kontrak.`;
+};
 
 interface NotisGeneratorProps {
     project: Project;
@@ -29,6 +46,9 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
     const [juruteraList, setJuruteraList] = useState<User[]>([]);
     const [selectedJuruteraId, setSelectedJuruteraId] = useState<number | string>('');
     const [companyDetails, setCompanyDetails] = useState<any>(null);
+    const { docs: org, ready } = useOrgDocs(project);
+    const ladRate = calculateLADDailyRate(project.kosProjek, org.ladPolicy(ladPolicyDate(project)));
+    const offsetDays = org.number(OFFSET_KEY[noticeType] ?? POLICY_KEYS.notice1Days, project.tarikhTamatKontrak || '');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -57,16 +77,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
         if (project.tarikhTamatKontrak) {
             const d = new Date(project.tarikhTamatKontrak);
             if (!isNaN(d.getTime())) {
-                if (noticeType === 'PERINGATAN_2') {
-                    // 1 Week AFTER End Date for Peringatan Kedua
-                    d.setDate(d.getDate() + 7);
-                } else if (noticeType === 'PERINGATAN_3') {
-                    // 2 Weeks AFTER End Date for Peringatan Ketiga
-                    d.setDate(d.getDate() + 14);
-                } else {
-                    // 1 Week BEFORE End Date for others (Default)
-                    d.setDate(d.getDate() - 7);
-                }
+                d.setDate(d.getDate() + offsetDays);
                 setLetterMonthYear(`${MONTHS[d.getMonth()]} ${d.getFullYear()}`);
             }
         } else {
@@ -74,7 +85,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
             const d = new Date();
             setLetterMonthYear(`${MONTHS[d.getMonth()]} ${d.getFullYear()}`);
         }
-    }, [project.tarikhTamatKontrak, noticeType]);
+    }, [project.tarikhTamatKontrak, noticeType, offsetDays]);
 
     // Helper for Selects
     const getMonthYearParts = (str: string) => {
@@ -107,7 +118,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                 letterMonthYear,
                 selectedJuruteraId,
                 juruteraList
-            });
+            }, ready ? org : undefined);
         } catch (e) {
             console.error(e);
             alert("Ralat menjana PDF Notis.");
@@ -193,7 +204,7 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                                 <div className="space-y-2 text-xs">
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Kadar LAD:</span>
-                                        <span className="font-mono font-bold text-slate-700">RM {calculateLADDailyRate(project.kosProjek).toFixed(2)}/hari</span>
+                                        <span className="font-mono font-bold text-slate-700">RM {ladRate.toFixed(2)}/hari</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Tarikh Mula (SST):</span>
@@ -228,16 +239,14 @@ const NotisGenerator: React.FC<NotisGeneratorProps> = ({ project, pjaUser, onClo
                                         </select>
                                     </div>
                                     <p className="text-[10px] text-slate-400 italic mt-1">
-                                        {noticeType === 'PERINGATAN_2' 
-                                            ? '*Tarikh default adalah 1 minggu SELEPAS tamat kontrak.' 
-                                            : noticeType === 'PERINGATAN_3'
-                                            ? '*Tarikh default adalah 2 minggu SELEPAS tamat kontrak.'
-                                            : '*Tarikh default adalah 1 minggu SEBELUM tamat kontrak.'}
+                                        {offsetHint(offsetDays)}
                                     </p>
                                 </div>
                             )}
                         </div>
                     )}
+
+                    <NoticePreview org={org} kind={noticeType} project={project} startDate={startDate} endDate={endDate} ladRate={ladRateText(ladRate)} />
 
                     {/* Signer Selection */}
                     <div className="space-y-3">
