@@ -1,23 +1,35 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { Project, ProjectStatus, formatCurrency, getStatusColor, getStatusLabel, formatDate, User, BP_OPTIONS, ZON_OPTIONS, MUKIM_OPTIONS, VoteDefinition, formatDateMalay, Role } from '../types';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, FileText, FileUp, Filter, Grid, List, Loader2, Plus, Recycle, RotateCcw, Search } from 'lucide-react';
+import { Project, ProjectStatus, User, VoteDefinition, Role, getStatusLabel } from '../types';
 import { apiService } from '../services/apiService';
 import { useUsers } from '../hooks/useUsers';
 import { useProjects } from '../hooks/useProjects';
 import { useSettings } from '../hooks/useSettings';
-import { Search, Plus, List, Grid, Filter, Download, Trash2, AlertTriangle, X, ChevronDown, Check, SlidersHorizontal, ArrowUpRight, RotateCcw, Settings2, Eye, EyeOff, Layout, DollarSign, Calculator, Save, Building2, Briefcase, FileText, Loader2, Calendar, FileImage, FileUp, ChevronLeft, ChevronRight, Recycle, ArrowUpDown, ArrowUp, ArrowDown, CalendarX } from 'lucide-react';
-import StrictDateInput from '../components/StrictDateInput';
+import { useContracts } from '../hooks/useContracts';
+import { hargaAkhir } from '../domain/money';
 import ImportIndenModal from '../components/ImportIndenModal';
 import { ProjectsListPDFExporter } from '../services/pdf';
+import type { ReportTitleScope } from '../services/pdf/ProjectsListPDFExporter';
 import BottomSheet from '../components/BottomSheet';
+import { Button, Card, IconButton, Select } from '../components/ui';
 import AddProjectFab from '../components/projects/AddProjectFab';
 import CompanyCard, { CompanyGroupData } from '../components/projects/CompanyCard';
+import CompanyGroupPanel from '../components/projects/CompanyGroupPanel';
+import CapUsage, { useCapOverrides } from '../components/projects/CapUsage';
+import FilterPanel, { DEFAULT_ROW_FILTERS, DATE_TYPES, RowFilters } from '../components/projects/FilterPanel';
 import MobilePager from '../components/projects/MobilePager';
 import MobileToolbar from '../components/projects/MobileToolbar';
-import PjaAvatar from '../components/projects/PjaAvatar';
 import ProjectActionsSheet from '../components/projects/ProjectActionsSheet';
 import ProjectCard from '../components/projects/ProjectCard';
+import ProjectsTable, { ColumnDef } from '../components/projects/ProjectsTable';
+import ReportScopeBar from '../components/projects/ReportScopeBar';
+import VoteSummary from '../components/projects/VoteSummary';
+import { DeleteProjectDialog, ExportReportDialog } from '../components/projects/ProjectDialogs';
+import {
+    CostMode, DEFAULT_SCOPE, NO_CONTRACT, ReportScope, allocationYear, capUsage, inScope, periodLabel, scopeLabel, voteSummary, voteTotals,
+} from '../components/projects/reportScope';
+import { repriceReason } from '../components/dash/worklist';
 
 interface ProjectsListProps {
     projects: Project[];
@@ -28,1488 +40,452 @@ interface ProjectsListProps {
     user: User;
 }
 
-// Circular Progress Component
-const CircularProgress = ({ value, size = 36, strokeWidth = 3 }: { value: number, size?: number, strokeWidth?: number }) => {
-    const radius = (size - strokeWidth) / 2;
-    const circumference = radius * 2 * Math.PI;
-    const offset = circumference - (value / 100) * circumference;
+const COLUMN_DEFS: ColumnDef[] = [
+    { id: 'noFail', label: 'No. Fail', group: 'Asas', default: true },
+    { id: 'namaProjek', label: 'Nama Projek', group: 'Asas', default: true },
+    { id: 'pjaId', label: 'PJA', group: 'Asas', default: true },
+    { id: 'noAduan', label: 'Aduan', group: 'Asas', default: true },
+    { id: 'lokasi', label: 'Lokasi', group: 'Asas', default: false },
+    { id: 'bp', label: 'BP', group: 'Asas', default: false },
+    { id: 'zon', label: 'Zon', group: 'Asas', default: false },
+    { id: 'mukim', label: 'Mukim', group: 'Asas', default: false },
+    { id: 'tarikhBuka', label: 'Tarikh Buka', group: 'Asas', default: false },
+    { id: 'namaSyarikat', label: 'Nama Syarikat', group: 'Kontrak', default: true },
+    { id: 'kontrak', label: 'Sebutharga', group: 'Kontrak', default: true },
+    { id: 'noVote', label: 'No. Vot', group: 'Kontrak', default: false },
+    { id: 'noSebutharga', label: 'No. Sebutharga', group: 'Kontrak', default: false },
+    { id: 'noInden', label: 'No. Inden', group: 'Kontrak', default: false },
+    { id: 'noBpp', label: 'No. BPP', group: 'Kontrak', default: false },
+    { id: 'tempohKontrak', label: 'Tempoh', group: 'Kontrak', default: false },
+    { id: 'status', label: 'Status & Progress', group: 'Status', default: true },
+    { id: 'prestasi', label: 'Prestasi', group: 'Status', default: false },
+    { id: 'kosProjek', label: 'Harga Kontrak', group: 'Kewangan', default: false },
+    { id: 'kosSebenar', label: 'Harga Akhir', group: 'Kewangan', default: false },
+    { id: 'wangTahanan', label: 'Wang Tahanan', group: 'Kewangan', default: false },
+    { id: 'ladAmount', label: 'LAD (RM)', group: 'Kewangan', default: false },
+    { id: 'ladDays', label: 'Hari LAD', group: 'Kewangan', default: false },
+    { id: 'locAmount', label: 'LOC (RM)', group: 'Kewangan', default: false },
+    { id: 'locDays', label: 'Hari LOC', group: 'Kewangan', default: false },
+    { id: 'tarikhLantikan', label: 'T. Lantikan', group: 'Tarikh', default: false },
+    { id: 'tarikhCetakanBpp', label: 'T. BPP', group: 'Tarikh', default: false },
+    { id: 'tarikhMulaKontrak', label: 'Mula Kontrak', group: 'Tarikh', default: false },
+    { id: 'tarikhTamatKontrak', label: 'Tamat Kontrak', group: 'Tarikh', default: false },
+    { id: 'tarikhSerahTapak', label: 'Serah Tapak', group: 'Tarikh', default: false },
+    { id: 'tarikhMulaKerja', label: 'Mula Kerja', group: 'Tarikh', default: false },
+    { id: 'tarikhSiapSebenar', label: 'Siap Sebenar', group: 'Tarikh', default: false },
+    { id: 'tarikhTuntutanBayaran', label: 'T. Tuntutan', group: 'Penutup', default: false },
+    { id: 'tarikhHantarKewangan', label: 'Hantar Kewangan', group: 'Penutup', default: false },
+    { id: 'tarikhPadanan', label: 'Padanan', group: 'Penutup', default: false },
+    { id: 'iso', label: 'ISO', group: 'Penutup', default: false },
+];
 
-    const colorClass = "text-emerald-500";
-    const strokeClass = "stroke-emerald-500";
+const DEFAULT_COLUMNS = Object.fromEntries(COLUMN_DEFS.map(c => [c.id, c.default])) as Record<string, boolean>;
+const ITEMS_PER_PAGE = 10;
 
-    return (
-        <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-            <svg className="transform -rotate-90 w-full h-full">
-                <circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    className="stroke-slate-200  fill-none"
-                    strokeWidth={strokeWidth}
-                />
-                <circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    className={`${strokeClass} fill-none transition-colors duration-1000 ease-out`}
-                    strokeWidth={strokeWidth}
-                    strokeDasharray={circumference}
-                    strokeDashoffset={offset}
-                    strokeLinecap="round"
-                />
-            </svg>
-            <span className={`absolute text-[9px] font-bold ${colorClass}`}>{Math.round(value)}%</span>
-        </div>
-    );
+const matchesRow = (p: Project, f: RowFilters, q: string) => {
+    const dateVal = ((p[f.dateType as keyof Project] as string | undefined) || '').split('T')[0];
+    return [p.noFail, p.namaProjek, p.noAduan, p.namaSyarikat].some(v => (v || '').toLowerCase().includes(q))
+        && (f.status === 'ALL' || p.status === f.status)
+        && (f.pja === 'ALL' || p.pjaId === Number(f.pja))
+        && (f.zon === 'ALL' || (!!p.zon && p.zon.includes(f.zon)))
+        && (f.bp === 'ALL' || p.bp === f.bp)
+        && (f.mukim === 'ALL' || p.mukim === f.mukim)
+        && (f.vote === 'ALL' || p.noVote === f.vote)
+        && (!f.dateStart || (!!dateVal && dateVal >= f.dateStart))
+        && (!f.dateEnd || (!!dateVal && dateVal <= f.dateEnd));
 };
 
-const filterSelectClass = "w-full h-11 md:h-auto pl-10 pr-8 py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-base md:text-xs font-bold text-slate-600  appearance-none focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:bg-white  transition-colors";
+const isEmpty = (v: unknown) => v === undefined || v === null || v === '';
+const byOpened = (a: Project, b: Project) => new Date(b.tarikhBuka || 0).getTime() - new Date(a.tarikhBuka || 0).getTime();
 
-const sortDirectionClass = (active: boolean) =>
-    `w-11 h-11 rounded-[10px] flex items-center justify-center ${active ? 'bg-white text-emerald-700 border border-slate-200' : 'text-slate-500'}`;
+/** Same ordering rules as before the re-skin: empties last, natural No. Fail, newest first as tie-break. */
+const compareBy = (key: string, dir: 'asc' | 'desc') => (a: Project, b: Project) => {
+    const val = (p: Project) => (key === 'kosSebenar' ? hargaAkhir(p) : (p as any)[key]);
+    const va = val(a), vb = val(b);
+    if (isEmpty(va) || isEmpty(vb)) return isEmpty(va) && isEmpty(vb) ? byOpened(a, b) : isEmpty(va) ? 1 : -1;
+    let c = 0;
+    if (key === 'noFail') {
+        c = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
+        if (c === 0) return byOpened(a, b);
+    } else if (typeof va === 'string') c = va.localeCompare(vb);
+    else if (typeof va === 'number') c = va - vb;
+    return dir === 'asc' ? c : -c;
+};
+
+const slug = (s: string) => s.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 60);
 
 const ProjectsList: React.FC<ProjectsListProps> = ({ projects, selectedYear, onAddProject, onEditProject, onDeleteProject, user }) => {
     const { users } = useUsers();
-    const { updateProject } = useProjects();
-    const {
-        votes: votesList,
-        companyOrder,
-        manualFinancials: hookManualFinancials,
-        companyDetails,
-        updateSettings,
-        isSyncing: isSettingsSyncing
-    } = useSettings(selectedYear);
+    const { projects: allProjects, updateProject } = useProjects();
+    const { contracts } = useContracts();
+    const { votes: votesList, companyOrder, manualFinancials: savedManual, companyDetails, updateSettings } = useSettings(selectedYear);
 
     const canQuickEdit = user.role === Role.ADMIN || user.role === Role.JURUTERA;
     const canImportInden = user.role === Role.ADMIN;
+    const pjas = useMemo(() => users.filter(u => u.role === Role.PJA), [users]);
+    const contractsById = useMemo(() => new Map(contracts.map(c => [c.id, c])), [contracts]);
 
-    const [manualFinancials, setManualFinancials] = useState(hookManualFinancials);
-
-    useEffect(() => {
-        setManualFinancials(hookManualFinancials);
-    }, [hookManualFinancials]);
-
+    const [scope, setScope] = useState<ReportScope>(DEFAULT_SCOPE);
+    const [rowFilters, setRowFilters] = useState<RowFilters>(DEFAULT_ROW_FILTERS);
+    const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
-    const [costViewMode, setCostViewMode] = useState<'contract' | 'actual' | 'both'>('contract');
-
+    const [costViewMode, setCostViewMode] = useState<CostMode>('contract');
     const [showSiap, setShowSiap] = useState(true);
     const [showTuntutan, setShowTuntutan] = useState(true);
-
+    const [manual, setManual] = useState(savedManual);
     const [isSavingFinancials, setIsSavingFinancials] = useState(false);
-
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
     const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
-    const [showColumnPicker, setShowColumnPicker] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'ALL'>('ALL');
-    const [filterPja, setFilterPja] = useState<string>('ALL');
-    const [filterZon, setFilterZon] = useState<string>('ALL');
-    const [filterBp, setFilterBp] = useState<string>('ALL');
-    const [filterMukim, setFilterMukim] = useState<string>('ALL');
-    const [filterVote, setFilterVote] = useState<string>('ALL');
-    const [filterLoC, setFilterLoC] = useState(false);
-    const [filterDateType, setFilterDateType] = useState<string>('tarikhBuka');
-    const [filterDateStart, setFilterDateStart] = useState<string | null>(null);
-    const [filterDateEnd, setFilterDateEnd] = useState<string | null>(null);
-
+    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(DEFAULT_COLUMNS);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
     const [deleteCountdown, setDeleteCountdown] = useState(0);
-
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [exportBilMesyuarat, setExportBilMesyuarat] = useState('');
     const [isImportIndenOpen, setIsImportIndenOpen] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [generationProgress, setGenerationProgress] = useState(0);
-
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
     const [pageInput, setPageInput] = useState('1');
-
-    const [sortKey, setSortKey] = useState<string>('tarikhBuka');
+    const [sortKey, setSortKey] = useState('tarikhBuka');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-    // Long press detection refs
-    const longPressTimer = React.useRef<any>(null);
-    const isLongPress = React.useRef(false);
+    useEffect(() => { setManual(savedManual); }, [savedManual]);
 
-    const handleMouseDown = () => {
-        isLongPress.current = false;
-        longPressTimer.current = setTimeout(() => {
-            isLongPress.current = true;
-        }, 500);
+    // Long press (500 ms) lets a user select text in a row without opening the project.
+    const longPressTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const isLongPress = useRef(false);
+    const rowMouse = {
+        onMouseDown: () => { isLongPress.current = false; longPressTimer.current = setTimeout(() => { isLongPress.current = true; }, 500); },
+        onMouseUp: () => clearTimeout(longPressTimer.current),
+        onMouseLeave: () => clearTimeout(longPressTimer.current),
     };
+    const openProject = (p: Project) => { if (!isLongPress.current) onEditProject(p); };
 
-    const handleMouseUp = () => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-        }
-    };
+    // ---- report scope: the single source of every total on this page ----
+    const scopeProjects = useMemo(() => allProjects.filter(p => inScope(p, scope, selectedYear)), [allProjects, scope, selectedYear]);
+    const scopeText = scopeLabel(scope, selectedYear, contractsById);
+    const allocYear = allocationYear(scope.period, selectedYear);
+    const otherYear = allocYear !== null && allocYear !== selectedYear ? allocYear : null;
+    const { data: otherSettings } = useQuery<any>({ queryKey: ['settings', otherYear], queryFn: () => apiService.getSettings(otherYear!), enabled: otherYear !== null });
+    const scopeVotes: VoteDefinition[] | null = allocYear === null ? null : otherYear ? (otherSettings?.vote_numbers ?? []) : votesList;
+    const summary = useMemo(() => voteSummary(scopeProjects, scopeVotes, costViewMode, hargaAkhir), [scopeProjects, scopeVotes, costViewMode]);
+    const totals = voteTotals(summary);
+    const hasUnbound = allProjects.some(p => !p.contractId);
+    // A closed sebutharga with no projects can never change a total, so it is left out of the picker.
+    const scopeContracts = contracts.filter(c => c.status !== 'DITUTUP' || (c.stats?.projects ?? 0) > 0 || scope.contractIds.includes(c.id));
 
-    const handleMouseLeave = () => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-        }
-    };
+    // ---- on-screen row filters: they narrow the list, never the totals ----
+    const filteredProjects = useMemo(() => {
+        const q = searchTerm.toLowerCase();
+        return scopeProjects.filter(p => matchesRow(p, rowFilters, q)).sort(compareBy(sortKey, sortDirection));
+    }, [scopeProjects, rowFilters, searchTerm, sortKey, sortDirection]);
 
-    const handleProjectClick = (project: Project) => {
-        if (!isLongPress.current) {
-            onEditProject(project);
-        }
-    };
+    const rowFilterParts = [
+        searchTerm && `carian "${searchTerm}"`,
+        rowFilters.status !== 'ALL' && `status ${getStatusLabel(rowFilters.status)}`,
+        rowFilters.pja !== 'ALL' && `PJA ${pjas.find(u => u.id === Number(rowFilters.pja))?.username.toUpperCase() ?? ''}`,
+        rowFilters.zon !== 'ALL' && `zon ${rowFilters.zon}`,
+        rowFilters.bp !== 'ALL' && `BP ${rowFilters.bp}`,
+        rowFilters.mukim !== 'ALL' && `mukim ${rowFilters.mukim}`,
+        rowFilters.vote !== 'ALL' && `vot ${rowFilters.vote}`,
+        (rowFilters.dateStart || rowFilters.dateEnd) && `${DATE_TYPES.find(([k]) => k === rowFilters.dateType)?.[1]} ${rowFilters.dateStart ?? '…'} – ${rowFilters.dateEnd ?? '…'}`,
+        viewMode === 'group' && !showSiap && 'tanpa projek siap',
+        viewMode === 'group' && !showTuntutan && 'tanpa tuntutan bayaran',
+    ].filter(Boolean) as string[];
+    const rowFilterText = rowFilterParts.length ? rowFilterParts.join(', ') : null;
+    const scopeChanged = scope.contractIds.length > 0 || scope.period.kind !== 'YEAR';
+    const activeFilterCount = rowFilterParts.filter(p => !p.startsWith('carian')).length + (scopeChanged ? 1 : 0);
 
-    const handleExportRotasiPDF = async () => {
-        setIsGeneratingPdf(true);
-        setGenerationProgress(10);
+    useEffect(() => { setCurrentPage(1); setPageInput('1'); }, [filteredProjects.length]);
+    const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
+    const pageRows = filteredProjects.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    const goToPage = (page: number) => { const p = Math.max(1, Math.min(page, totalPages)); setCurrentPage(p); setPageInput(String(p)); };
+    const commitPageInput = () => { const p = parseInt(pageInput); goToPage(isNaN(p) ? 1 : p); };
 
-        try {
-            await ProjectsListPDFExporter.exportRotasi(
-                selectedYear,
-                companyOrder,
-                projects,
-                companyDetails,
-                setGenerationProgress
-            );
-        } catch (e) {
-            console.error("Rotasi PDF Error", e);
-            alert("Gagal menjana PDF Rotasi.");
-        } finally {
-            setIsGeneratingPdf(false);
-            setGenerationProgress(0);
-        }
-    };
-
-    // Column Definitions
-    const columnDefs = [
-        { id: 'noFail', label: 'No. Fail', group: 'Asas', default: true },
-        { id: 'namaProjek', label: 'Nama Projek', group: 'Asas', default: true },
-        { id: 'pjaId', label: 'PJA', group: 'Asas', default: true },
-        { id: 'noAduan', label: 'Aduan', group: 'Asas', default: true },
-        { id: 'lokasi', label: 'Lokasi', group: 'Asas', default: false },
-        { id: 'bp', label: 'BP', group: 'Asas', default: false },
-        { id: 'zon', label: 'Zon', group: 'Asas', default: false },
-        { id: 'mukim', label: 'Mukim', group: 'Asas', default: false },
-        { id: 'tarikhBuka', label: 'Tarikh Buka', group: 'Asas', default: false },
-        { id: 'namaSyarikat', label: 'Nama Syarikat', group: 'Kontrak', default: true },
-        { id: 'noVote', label: 'No. Vot', group: 'Kontrak', default: false },
-        { id: 'noSebutharga', label: 'No. Sebutharga', group: 'Kontrak', default: false },
-        { id: 'noInden', label: 'No. Inden', group: 'Kontrak', default: false },
-        { id: 'noBpp', label: 'No. BPP', group: 'Kontrak', default: false },
-        { id: 'tempohKontrak', label: 'Tempoh', group: 'Kontrak', default: false },
-        { id: 'status', label: 'Status & Progress', group: 'Status', default: true },
-        { id: 'prestasi', label: 'Prestasi', group: 'Status', default: false },
-        { id: 'kosProjek', label: 'Harga Kontrak', group: 'Kewangan', default: false },
-        { id: 'kosSebenar', label: 'Harga Akhir', group: 'Kewangan', default: false },
-        { id: 'wangTahanan', label: 'Wang Tahanan', group: 'Kewangan', default: false },
-        { id: 'ladAmount', label: 'LAD (RM)', group: 'Kewangan', default: false },
-        { id: 'ladDays', label: 'Hari LAD', group: 'Kewangan', default: false },
-        { id: 'locAmount', label: 'LOC (RM)', group: 'Kewangan', default: false },
-        { id: 'locDays', label: 'Hari LOC', group: 'Kewangan', default: false },
-        { id: 'tarikhLantikan', label: 'T. Lantikan', group: 'Tarikh', default: false },
-        { id: 'tarikhCetakanBpp', label: 'T. BPP', group: 'Tarikh', default: false },
-        { id: 'tarikhMulaKontrak', label: 'Mula Kontrak', group: 'Tarikh', default: false },
-        { id: 'tarikhTamatKontrak', label: 'Tamat Kontrak', group: 'Tarikh', default: false },
-        { id: 'tarikhSerahTapak', label: 'Serah Tapak', group: 'Tarikh', default: false },
-        { id: 'tarikhMulaKerja', label: 'Mula Kerja', group: 'Tarikh', default: false },
-        { id: 'tarikhSiapSebenar', label: 'Siap Sebenar', group: 'Tarikh', default: false },
-        { id: 'tarikhTuntutanBayaran', label: 'T. Tuntutan', group: 'Penutup', default: false },
-        { id: 'tarikhHantarKewangan', label: 'Hantar Kewangan', group: 'Penutup', default: false },
-        { id: 'tarikhPadanan', label: 'Padanan', group: 'Penutup', default: false },
-        { id: 'iso', label: 'ISO', group: 'Penutup', default: false },
-    ];
-
-    const getInitialColumns = () => {
-        const initial: Record<string, boolean> = {};
-        columnDefs.forEach(col => {
-            initial[col.id] = col.default;
+    const groupedProjects = useMemo(() => {
+        const names = new Set(companyOrder);
+        filteredProjects.forEach(p => { if (p.namaSyarikat) names.add(p.namaSyarikat); });
+        const rank = (n: string) => { const i = companyOrder.indexOf(n); return i === -1 ? Number.MAX_SAFE_INTEGER : i; };
+        return Array.from(names).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b)).map(company => {
+            const list = filteredProjects.filter(p => p.namaSyarikat === company
+                && (showSiap || p.status !== ProjectStatus.SIAP) && (showTuntutan || p.status !== ProjectStatus.TUNTUTAN_BAYARAN));
+            const group: CompanyGroupData = { company, projects: list, totalCost: 0, totalHargaAkhir: 0, count: list.length, projectsByVote: {} };
+            for (const p of list) {
+                const contractVal = p.kosProjek || 0, akhir = hargaAkhir(p), vote = p.noVote || 'TIADA VOT';
+                group.totalCost += contractVal; group.totalHargaAkhir += akhir;
+                group.projectsByVote[vote] ??= { projects: [], subtotalContract: 0, subtotalAkhir: 0 };
+                group.projectsByVote[vote].projects.push(p);
+                group.projectsByVote[vote].subtotalContract += contractVal;
+                group.projectsByVote[vote].subtotalAkhir += akhir;
+            }
+            return group;
         });
-        return initial;
-    };
+    }, [filteredProjects, companyOrder, showSiap, showTuntutan]);
 
-    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(getInitialColumns);
+    // ---- company cap per contract (warn only) ----
+    const capContractIds = useMemo(() => {
+        const ids = scope.contractIds.length ? scope.contractIds : Array.from(new Set(scopeProjects.map(p => p.contractId || NO_CONTRACT)));
+        return ids.filter(id => id !== NO_CONTRACT && contractsById.has(id)).sort();
+    }, [scope.contractIds, scopeProjects, contractsById]);
+    const capOverrides = useCapOverrides(capContractIds);
+    const capContracts = capContractIds.map(id => contractsById.get(id)!).filter(Boolean);
+    const capSlot = (company: string) => <CapUsage lines={capUsage(company, allProjects, capContracts, capOverrides)} />;
 
-    // Column Actions
-    const handleSelectAllColumns = () => {
-        const all: Record<string, boolean> = {};
-        columnDefs.forEach(c => all[c.id] = true);
-        setVisibleColumns(all);
-    };
+    const getPjaUser = (id: number) => users.find(u => u.id === id);
+    const getVoteName = (code: string) => (scopeVotes ?? votesList).find((v: VoteDefinition) => v.code === code)?.name ?? code;
+    const contractOf = (p: Project) => contractsById.get(p.contractId ?? '');
+    const repriceOf = (p: Project) => (contracts.length ? repriceReason(p, contractsById) : null);
 
-    const handleDeselectAllColumns = () => {
-        const none: Record<string, boolean> = {};
-        columnDefs.forEach(c => none[c.id] = false);
-        setVisibleColumns(none);
-    };
-
-    const handleResetColumns = () => {
-        setVisibleColumns(getInitialColumns());
-    };
-
-    // Delete Logic
     useEffect(() => {
-        let timer: any;
-        if (projectToDelete) {
-            setDeleteCountdown(5);
-            timer = setInterval(() => {
-                setDeleteCountdown((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(timer);
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        }
+        if (!projectToDelete) return;
+        setDeleteCountdown(5);
+        const timer = setInterval(() => setDeleteCountdown(prev => { if (prev <= 1) { clearInterval(timer); return 0; } return prev - 1; }), 1000);
         return () => clearInterval(timer);
     }, [projectToDelete]);
 
-    const handleDeleteClick = (project: Project) => setProjectToDelete(project);
-    const confirmDelete = () => { if (projectToDelete) { onDeleteProject(projectToDelete); setProjectToDelete(null); } };
-    const cancelDelete = () => setProjectToDelete(null);
-
-    // Grouping Logic
-    const toggleCompany = (company: string) => {
-        setExpandedCompanies(prev => ({ ...prev, [company]: !prev[company] }));
+    const resetAll = () => {
+        setScope(DEFAULT_SCOPE); setRowFilters(DEFAULT_ROW_FILTERS); setSearchTerm('');
+        setShowSiap(true); setShowTuntutan(true); setSortKey('tarikhBuka'); setSortDirection('desc'); setVisibleColumns(DEFAULT_COLUMNS);
     };
+
+    const titleScope = (): ReportTitleScope => ({
+        period: (scope.period.kind === 'YEAR' ? `TAHUN ${selectedYear}` : periodLabel(scope.period, selectedYear)).toUpperCase(),
+        label: scopeText,
+        rowFilters: rowFilterText,
+        fileTag: slug(scopeText),
+    });
 
     const saveManualFinancials = async () => {
         setIsSavingFinancials(true);
-        try {
-            await updateSettings({ manual_financials: manualFinancials });
-        } catch (err) {
-            console.error('Failed to save financials:', err);
-        } finally {
-            setIsSavingFinancials(false);
-        }
+        try { await updateSettings({ manual_financials: manual }); } catch (err) { console.error('Failed to save financials:', err); } finally { setIsSavingFinancials(false); }
     };
 
-    // Filter Logic
-    const resetAllFilters = () => {
-        setFilterStatus('ALL');
-        setFilterPja('ALL');
-        setFilterZon('ALL');
-        setFilterBp('ALL');
-        setFilterMukim('ALL');
-        setFilterVote('ALL');
-        setSearchTerm('');
-        setShowSiap(true);
-        setShowTuntutan(true);
-        setFilterLoC(false);
-        setFilterDateType('tarikhBuka');
-        setFilterDateStart(null);
-        setFilterDateEnd(null);
-        setSortKey('tarikhBuka');
-        setSortDirection('desc');
-        handleResetColumns();
+    const runPdf = async (job: () => Promise<void>, fallback: string) => {
+        setIsGeneratingPdf(true); setGenerationProgress(10);
+        try { await job(); } catch (e) { console.error('PDF error', e); alert(fallback); } finally { setIsGeneratingPdf(false); setGenerationProgress(0); }
     };
 
-    const activeFilterCount = [
-        filterStatus !== 'ALL',
-        filterPja !== 'ALL',
-        filterZon !== 'ALL',
-        filterBp !== 'ALL',
-        filterMukim !== 'ALL',
-        filterVote !== 'ALL',
-        showSiap === false,
-        filterDateStart !== null,
-        filterDateEnd !== null
-    ].filter(Boolean).length;
-
-    /**
-     * getHargaAkhir (The Single Source of Truth for Final Net Cost)
-     * This includes BQ Pelarasan total minus LAD and Wang Tahanan.
-     */
-    const getHargaAkhir = (p: Project) => {
-        // If we are in Phase 3 (Tuntutan) or Phase 4 (Siap), we use the computed net final total.
-        const isPostPelarasan = [ProjectStatus.TUNTUTAN_BAYARAN, ProjectStatus.SIAP].includes(p.status);
-
-        if (!isPostPelarasan) {
-            return p.kosProjek ?? 0;
-        }
-
-        // If kosSebenar is already pre-calculated in ProjectDetail saving logic, use it.
-        // Otherwise, we calculate it on the fly: BQ Pelarasan Sum - LAD - Wang Tahanan.
-        if (p.kosSebenar !== undefined && p.kosSebenar !== null) {
-            return p.kosSebenar;
-        }
-
-        const pelarasanSum = p.bqDataPelarasan?.reduce((acc, group) => {
-            return acc + group.items.reduce((itemSum, item) => itemSum + (item.amount || 0), 0);
-        }, 0) || (p.kosProjek ?? 0);
-
-        const netTotal = pelarasanSum - (p.ladAmount || 0) - (p.wangTahanan || 0);
-        return Math.max(0, netTotal);
-    };
-
-    const filteredProjects = useMemo(() => {
-        const filtered = projects.filter(p => {
-            const matchesSearch =
-                (p.noFail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (p.namaProjek || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (p.noAduan || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (p.namaSyarikat || '').toLowerCase().includes(searchTerm.toLowerCase());
-
-            const matchesStatus = filterStatus === 'ALL' || p.status === filterStatus;
-            const matchesPja = filterPja === 'ALL' || p.pjaId === Number(filterPja);
-            const matchesZon = filterZon === 'ALL' || (p.zon && p.zon.includes(filterZon));
-            const matchesBp = filterBp === 'ALL' || p.bp === filterBp;
-            const matchesMukim = filterMukim === 'ALL' || p.mukim === filterMukim;
-            const matchesVote = filterVote === 'ALL' || p.noVote === filterVote;
-
-            const rawDateVal = p[filterDateType as keyof Project] as string | undefined;
-            const dateVal = rawDateVal ? rawDateVal.split('T')[0] : '';
-            const matchesDate = (!filterDateStart || (dateVal && dateVal >= filterDateStart)) &&
-                (!filterDateEnd || (dateVal && dateVal <= filterDateEnd));
-
-            return matchesSearch && matchesStatus && matchesPja && matchesZon && matchesBp && matchesMukim && matchesVote && matchesDate;
-        });
-
-        return filtered.sort((a, b) => {
-            const getVal = (p: Project, key: string) => {
-                // @ts-ignore
-                let val = p[key];
-                if (key === 'kosSebenar') val = getHargaAkhir(p);
-                return val;
-            };
-
-            const valA = getVal(a, sortKey);
-            const valB = getVal(b, sortKey);
-
-            // --- Rule: Empty values always at the bottom ---
-            const isEmptyA = valA === undefined || valA === null || valA === '';
-            const isEmptyB = valB === undefined || valB === null || valB === '';
-
-            if (isEmptyA && !isEmptyB) return 1;
-            if (!isEmptyA && isEmptyB) return -1;
-            if (isEmptyA && isEmptyB) {
-                // If both are empty for the current sort key, fallback to date desc
-                const dateA = new Date(a.tarikhBuka || 0).getTime();
-                const dateB = new Date(b.tarikhBuka || 0).getTime();
-                return dateB - dateA;
-            }
-
-            let comparison = 0;
-            if (sortKey === 'noFail') {
-                // Natural sort for file numbers (e.g., 2 comes before 10)
-                comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
-                if (comparison === 0) {
-                    // Secondary sort: Latest date on top
-                    const dateA = new Date(a.tarikhBuka || 0).getTime();
-                    const dateB = new Date(b.tarikhBuka || 0).getTime();
-                    return dateB - dateA;
-                }
-            } else if (typeof valA === 'string') {
-                comparison = valA.localeCompare(valB as string);
-            } else if (typeof valA === 'number') {
-                comparison = valA - (valB as number);
-            } else if (valA instanceof Date || (typeof valA === 'string' && !isNaN(Date.parse(valA)))) {
-                comparison = new Date(valA as string).getTime() - new Date(valB as string).getTime();
-            }
-
-            return sortDirection === 'asc' ? comparison : -comparison;
-        });
-    }, [projects, searchTerm, filterStatus, filterPja, filterZon, filterBp, filterMukim, filterVote, sortKey, sortDirection, filterDateType, filterDateStart, filterDateEnd]);
-
-    // Reset pagination when filter changes
-    useEffect(() => {
-        setCurrentPage(1);
-        setPageInput('1');
-    }, [filteredProjects.length]);
-
-    const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-
-    const paginatedProjects = useMemo(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        return filteredProjects.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredProjects, currentPage]);
-
-    const handlePageChange = (page: number) => {
-        const p = Math.max(1, Math.min(page, totalPages));
-        setCurrentPage(p);
-        setPageInput(p.toString());
-    };
-
-    const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPageInput(e.target.value);
-    };
-
-    const handlePageInputBlur = () => {
-        let p = parseInt(pageInput);
-        if (isNaN(p) || p < 1) p = 1;
-        if (p > totalPages) p = totalPages;
-        handlePageChange(p);
-    };
-
-    const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handlePageInputBlur();
-            e.currentTarget.blur();
-        }
-    };
-
-    // Grouped Projects with Custom Sorting and Vote Breakdown
-    const groupedProjects = useMemo(() => {
-        const grouped: CompanyGroupData[] = [];
-        const companiesSet = new Set(companyOrder);
-
-        filteredProjects.forEach(p => {
-            if (p.namaSyarikat) companiesSet.add(p.namaSyarikat);
-        });
-
-        const sortedCompanies = Array.from(companiesSet).sort((a, b) => {
-            const indexA = companyOrder.indexOf(a);
-            const indexB = companyOrder.indexOf(b);
-
-            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-            if (indexA !== -1) return -1;
-            if (indexB !== -1) return 1;
-            return (a as string).localeCompare(b as string);
-        });
-
-        sortedCompanies.forEach(compName => {
-            let compProjects = filteredProjects.filter(p => p.namaSyarikat === compName);
-
-            if (!showSiap) {
-                compProjects = compProjects.filter(p => p.status !== ProjectStatus.SIAP);
-            }
-
-            if (!showTuntutan) {
-                compProjects = compProjects.filter(p => p.status !== ProjectStatus.TUNTUTAN_BAYARAN);
-            }
-
-            if (filterLoC) {
-                compProjects = compProjects.filter(p => (p.locAmount || 0) > 0 || (p.locDays || 0) > 0);
-            }
-
-            const group: CompanyGroupData = {
-                company: compName as string,
-                projects: compProjects,
-                totalCost: 0,
-                totalHargaAkhir: 0,
-                count: 0,
-                projectsByVote: {}
-            };
-
-            compProjects.forEach(p => {
-                const contractVal = p.kosProjek || 0;
-                const akhirVal = getHargaAkhir(p);
-
-                group.totalCost += contractVal;
-                group.totalHargaAkhir += akhirVal;
-                group.count += 1;
-
-                const voteCode = p.noVote || 'TIADA VOT';
-                if (!group.projectsByVote[voteCode]) {
-                    group.projectsByVote[voteCode] = { projects: [], subtotalContract: 0, subtotalAkhir: 0 };
-                }
-                group.projectsByVote[voteCode].projects.push(p);
-                group.projectsByVote[voteCode].subtotalContract += contractVal;
-                group.projectsByVote[voteCode].subtotalAkhir += akhirVal;
-            });
-
-            grouped.push(group);
-        });
-
-        return grouped;
-    }, [filteredProjects, companyOrder, showSiap, showTuntutan, filterLoC]);
-
-    const exportToExcel = () => {
-        const activeCols = columnDefs.filter(c => visibleColumns[c.id]);
-        const headers: string[] = [];
-
-        activeCols.forEach(col => {
-            if (col.id === 'status') {
-                headers.push('"Status"');
-                headers.push('"Progress (%)"');
-            } else {
-                headers.push(`"${col.label}"`);
-            }
-        });
-
-        const rows = filteredProjects.map(p => {
-            return activeCols.map(c => {
-                if (c.id === 'status') {
-                    const statusText = p.status ? getStatusLabel(p.status) : '';
-                    const progressText = p.peratusSiap !== undefined ? p.peratusSiap : 0;
-                    return `"${statusText}","${progressText}"`;
-                }
-
-                // @ts-ignore
-                let val = p[c.id];
-
-                if (c.id === 'pjaId') {
-                    const u = users.find(u => u.id === val);
-                    val = u ? u.username : '';
-                }
-
-                if (c.id === 'kosSebenar') {
-                    val = getHargaAkhir(p);
-                }
-
-                if (val === undefined || val === null) return '""';
-
-                if (typeof val === 'string') {
-                    return `"${val.replace(/"/g, '""')}"`;
-                }
-                return `"${val}"`;
-            }).join(",");
-        });
-
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + headers.join(",") + "\n"
-            + rows.join("\n");
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Senarai_Projek_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    const getPjaUser = (id: number) => {
-        return users.find(user => user.id === id);
-    };
-
-    const getVoteName = (code: string) => {
-        const vote = votesList.find(v => v.code === code);
-        return vote ? vote.name : code;
-    };
-
-    // --- Financial Summary Logic ---
-    const financialSummary = useMemo(() => {
-        const summary: Record<string, { allocated: number; used: number; projectCount: number }> = {};
-
-        votesList.forEach(v => {
-            summary[v.code] = { allocated: v.allocation, used: 0, projectCount: 0 };
-        });
-
-        filteredProjects.forEach(p => {
-            if (p.noVote) {
-                if (!summary[p.noVote]) {
-                    summary[p.noVote] = { allocated: 0, used: 0, projectCount: 0 };
-                }
-
-                let costToAdd = 0;
-                if (costViewMode === 'contract') {
-                    costToAdd = p.kosProjek || 0;
-                } else {
-                    // actual (Harga Akhir) or both - uses unified actual cost logic
-                    costToAdd = getHargaAkhir(p);
-                }
-
-                summary[p.noVote].used += costToAdd;
-                summary[p.noVote].projectCount += 1;
-            }
-        });
-
-        return summary;
-    }, [filteredProjects, votesList, costViewMode]);
-    const handleExportRealPDF = async () => {
-        if (!exportBilMesyuarat) {
-            alert('Sila masukkan Bil. Mesyuarat.');
-            return;
-        }
-        setIsGeneratingPdf(true);
-        setGenerationProgress(10);
-
-        try {
-            await ProjectsListPDFExporter.exportSenarai(
-                selectedYear,
-                groupedProjects,
-                exportBilMesyuarat,
-                financialSummary,
-                manualFinancials,
-                getPjaUser,
-                getStatusLabel,
-                getVoteName,
-                setGenerationProgress
-            );
-            setIsExportModalOpen(false);
-        } catch (e) {
-            console.error("Real PDF Generation Error", e);
-            alert("Gagal menjana PDF. Sila guna 'Backup (Imej)'.");
-        } finally {
-            setIsGeneratingPdf(false);
-            setGenerationProgress(0);
-        }
-    };
-
-    const filterBody = (
-        <>
-            <div className="flex items-center justify-end md:justify-between mb-6">
-                <h4 className="hidden md:flex text-sm font-bold text-slate-800  items-center gap-2">
-                    <Settings2 className="w-4 h-4 text-emerald-500" />
-                    Tetapan Data & Paparan
-                </h4>
-                <button
-                    onClick={resetAllFilters}
-                    className="min-h-[44px] md:min-h-0 text-[11px] max-md:text-[13px] font-bold flex items-center gap-1.5 text-slate-500 hover:text-red-500 bg-slate-100  hover:bg-red-50  px-3 py-1.5 rounded-lg transition-colors"
-                >
-                    <RotateCcw className="w-3 h-3" /> Reset Semua
-                </button>
-            </div>
-
-            {viewMode === 'list' && (
-                <div className="md:hidden mb-6">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Susunan</div>
-                    <div className="flex gap-2">
-                        <div className="relative flex-1">
-                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><ArrowUpDown className="w-4 h-4 text-slate-400" /></div>
-                            <select value={sortKey} onChange={(e) => setSortKey(e.target.value)} aria-label="Susunan" className={filterSelectClass}>
-                                {columnDefs.map(col => <option key={col.id} value={col.id}>{col.label}</option>)}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                        </div>
-                        <div className="flex bg-slate-100 p-0.5 rounded-xl shrink-0">
-                            <button onClick={() => setSortDirection('asc')} aria-label="Menaik" aria-pressed={sortDirection === 'asc'} className={sortDirectionClass(sortDirection === 'asc')}><ArrowUp className="w-4 h-4" /></button>
-                            <button onClick={() => setSortDirection('desc')} aria-label="Menurun" aria-pressed={sortDirection === 'desc'} className={sortDirectionClass(sortDirection === 'desc')}><ArrowDown className="w-4 h-4" /></button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="mb-6">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tapisan Data (Row Filters)</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                            <SlidersHorizontal className="w-4 h-4 text-slate-400" />
-                        </div>
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value as any)}
-                            className={filterSelectClass}
-                        >
-                            <option value="ALL">Semua Status</option>
-                            <option value={ProjectStatus.FASA_DRAF}>Fasa Draf</option>
-                            <option value={ProjectStatus.MENUNGGU_LANTIKAN}>Menunggu Lantikan</option>
-                            <option value={ProjectStatus.DALAM_PROSES}>Dalam Proses</option>
-                            <option value={ProjectStatus.PEMERIKSAAN_TAPAK}>Pemeriksaan Tapak</option>
-                            <option value={ProjectStatus.TUNTUTAN_BAYARAN}>Tuntutan Bayaran</option>
-                            <option value={ProjectStatus.SIAP}>Siap</option>
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                        <select value={filterPja} onChange={(e) => setFilterPja(e.target.value)} className={filterSelectClass}>
-                            <option value="ALL">Semua PJA</option>
-                            {users.filter(u => u.role === 'PJA').map(u => <option key={u.id} value={u.id}>{u.username.toUpperCase()}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                        <select value={filterZon} onChange={(e) => setFilterZon(e.target.value)} className={filterSelectClass}>
-                            <option value="ALL">Semua Zon</option>
-                            {ZON_OPTIONS.map(z => <option key={z} value={z}>{z}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                        <select value={filterBp} onChange={(e) => setFilterBp(e.target.value)} className={filterSelectClass}>
-                            <option value="ALL">Semua BP</option>
-                            {BP_OPTIONS.map(bp => <option key={bp} value={bp}>{bp}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                        <select value={filterMukim} onChange={(e) => setFilterMukim(e.target.value)} className={filterSelectClass}>
-                            <option value="ALL">Semua Mukim</option>
-                            {MUKIM_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><Filter className="w-4 h-4 text-slate-400" /></div>
-                        <select
-                            value={filterVote}
-                            onChange={(e) => setFilterVote(e.target.value)}
-                            className={filterSelectClass}
-                        >
-                            <option value="ALL">Semua Vot</option>
-                            {votesList.map(v => (
-                                <option key={v.code} value={v.code}>{v.code} - {v.name}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                </div>
-            </div>
-
-            <div className="mb-6 pt-6 border-t border-slate-100">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Penapisan Tarikh (Date Range)</div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                            <Calendar className="w-4 h-4 text-slate-400" />
-                        </div>
-                        <select
-                            value={filterDateType}
-                            onChange={(e) => setFilterDateType(e.target.value)}
-                            className={filterSelectClass}
-                        >
-                            <option value="tarikhBuka">Tarikh Buka</option>
-                            <option value="tarikhLantikan">Tarikh Lantikan</option>
-                            <option value="tarikhMulaKontrak">Tarikh Mula Kontrak</option>
-                            <option value="tarikhTamatKontrak">Tarikh Tamat Kontrak</option>
-                            <option value="tarikhSiapSebenar">Tarikh Siap Sebenar</option>
-                            <option value="tarikhTuntutanBayaran">Tarikh Tuntutan</option>
-                            <option value="tarikhHantarKewangan">Tarikh Hantar Kewangan</option>
-                            <option value="tarikhPadanan">Tarikh Padanan</option>
-                            <option value="tarikhSerahTapak">Tarikh Serah Tapak</option>
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                            <StrictDateInput
-                                name="filterDateStart"
-                                value={filterDateStart || ''}
-                                onChange={(e) => setFilterDateStart(e.target.value)}
-                                placeholder="Dari (DD/MM/YYYY)"
-                                className="w-full h-11 md:h-auto px-4 py-0 md:py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-base md:text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
-                            />
-                        </div>
-                        {(filterDateStart || filterDateEnd) && (
-                            <button
-                                onClick={() => { setFilterDateStart(null); setFilterDateEnd(null); }}
-                                className="w-11 h-11 md:w-auto md:h-auto flex items-center justify-center p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                                title="Kosongkan Tarikh"
-                            >
-                                <CalendarX className="w-4 h-4" />
-                            </button>
-                        )}
-                    </div>
-                    <div className="flex-1">
-                        <StrictDateInput
-                            name="filterDateEnd"
-                            value={filterDateEnd || ''}
-                            onChange={(e) => setFilterDateEnd(e.target.value)}
-                            placeholder="Hingga (DD/MM/YYYY)"
-                            className="w-full h-11 md:h-auto px-4 py-0 md:py-2.5 bg-slate-50  border border-slate-200  rounded-xl text-base md:text-xs font-bold text-slate-600  outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="border-t border-slate-100  my-6"></div>
-
-            {viewMode === 'list' && (
-                <>
-                <button
-                    onClick={() => setShowColumnPicker(v => !v)}
-                    aria-expanded={showColumnPicker}
-                    className="md:hidden w-full min-h-[44px] px-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-sm font-bold text-slate-600"
-                >
-                    <Layout className="w-4 h-4 text-slate-400" /> Paparan Kolum
-                    <span className="ml-auto px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs">{columnDefs.filter(c => visibleColumns[c.id]).length} / {columnDefs.length}</span>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showColumnPicker ? 'rotate-180' : ''}`} />
-                </button>
-                <div className={showColumnPicker ? 'mt-3' : 'hidden md:block'}>
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kolum</div>
-                        <div className="flex gap-2">
-                            <button onClick={handleSelectAllColumns} className="min-h-[44px] md:min-h-0 text-[10px] max-md:text-xs font-bold px-3 md:px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Eye className="w-3 h-3" /> Semua</button>
-                            <button onClick={handleDeselectAllColumns} className="min-h-[44px] md:min-h-0 text-[10px] max-md:text-xs font-bold px-3 md:px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><EyeOff className="w-3 h-3" /> Kosong</button>
-                            <button onClick={handleResetColumns} className="min-h-[44px] md:min-h-0 text-[10px] max-md:text-xs font-bold px-3 md:px-2 py-1 bg-slate-100  rounded hover:bg-slate-200  text-slate-600  flex items-center gap-1"><Layout className="w-3 h-3" /> Asal</button>
-                        </div>
-                    </div>
-                    <div className="bg-slate-50  p-4 rounded-2xl border border-slate-200">
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                            {columnDefs.map(col => (
-                                <label key={col.id} className="min-h-[44px] md:min-h-0 flex items-center gap-2 cursor-pointer group p-1.5 rounded-lg hover:bg-white  transition-colors select-none">
-                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${visibleColumns[col.id] ? 'bg-emerald-500 border-emerald-500' : 'bg-white  border-slate-300  group-hover:border-emerald-400'}`}>
-                                        {visibleColumns[col.id] && <Check className="w-3 h-3 text-white stroke-[3]" />}
-                                    </div>
-                                    <input type="checkbox" className="hidden" checked={visibleColumns[col.id]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col.id]: !prev[col.id] }))} />
-                                    <span className={`text-[11px] font-bold truncate ${visibleColumns[col.id] ? 'text-slate-700' : 'text-slate-400'}`}>{col.label}</span>
-
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-                </>
-            )}
-
-            {viewMode === 'group' && (
-                <div className="flex flex-col gap-4">
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 md:gap-4 items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paparan Kos:</span>
-                        <div className="flex bg-slate-100  rounded-lg p-1">
-                            <button onClick={() => setCostViewMode('contract')} className={`min-h-[44px] md:min-h-0 px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'contract' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Kontrak</button>
-                            <button onClick={() => setCostViewMode('actual')} className={`min-h-[44px] md:min-h-0 px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'actual' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Harga Akhir</button>
-                            <button onClick={() => setCostViewMode('both')} className={`min-h-[44px] md:min-h-0 px-3 py-1.5 rounded text-xs font-bold transition-colors ${costViewMode === 'both' ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}>Semua</button>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 md:gap-4 items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tapis Projek:</span>
-                        <label className="min-h-[44px] md:min-h-0 flex items-center gap-2 cursor-pointer">
-                            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showSiap ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showSiap ? 'translate-x-5' : ''}`}></div>
-                            </div>
-                            <input type="checkbox" className="hidden" checked={showSiap} onChange={() => setShowSiap(!showSiap)} />
-
-                            <span className="text-xs font-bold text-slate-600">Tunjuk Projek Siap</span>
-                        </label>
-
-                        <label className="min-h-[44px] md:min-h-0 flex items-center gap-2 cursor-pointer">
-                            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${showTuntutan ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showTuntutan ? 'translate-x-5' : ''}`}></div>
-                            </div>
-                            <input type="checkbox" className="hidden" checked={showTuntutan} onChange={() => setShowTuntutan(!showTuntutan)} />
-
-                            <span className="text-xs font-bold text-slate-600">Tunjuk Tuntutan Bayaran</span>
-                        </label>
-                    </div>
-                </div>
-            )}
-        </>
+    const exportRotasi = () => runPdf(
+        () => ProjectsListPDFExporter.exportRotasi(titleScope(), companyOrder, scopeProjects, companyDetails, setGenerationProgress),
+        'Gagal menjana PDF Rotasi.',
     );
 
-    const sortLabel = columnDefs.find(c => c.id === sortKey)?.label;
+    const exportSenarai = () => {
+        if (!exportBilMesyuarat) { alert('Sila masukkan Bil. Mesyuarat.'); return; }
+        return runPdf(async () => {
+            await ProjectsListPDFExporter.exportSenarai(titleScope(), groupedProjects, exportBilMesyuarat, summary,
+                allocYear === selectedYear ? manual : null, getPjaUser, getStatusLabel, getVoteName, setGenerationProgress);
+            setIsExportModalOpen(false);
+        }, 'Gagal menjana PDF.');
+    };
+
+    const exportCsv = () => {
+        const cols = COLUMN_DEFS.filter(c => visibleColumns[c.id]);
+        const q = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        const headers = cols.flatMap(c => (c.id === 'status' ? ['Status', 'Progress (%)'] : [c.label])).map(q);
+        const value = (p: Project, id: string) => {
+            if (id === 'pjaId') return getPjaUser(p.pjaId)?.username ?? '';
+            if (id === 'kosSebenar') return hargaAkhir(p);
+            if (id === 'kontrak') return contractOf(p)?.code ?? '';
+            return (p as any)[id];
+        };
+        const rows = filteredProjects.map(p => cols.map(c => (c.id === 'status'
+            ? `${q(getStatusLabel(p.status))},${q(p.peratusSiap ?? 0)}` : q(value(p, c.id)))).join(','));
+        const link = document.createElement('a');
+        link.setAttribute('href', encodeURI(`data:text/csv;charset=utf-8,${headers.join(',')}\n${rows.join('\n')}`));
+        link.setAttribute('download', `Senarai_Projek_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    };
+
+    const scopeBar = (idPrefix: string) => (
+        <ReportScopeBar scope={scope} onChange={setScope} contracts={scopeContracts} hasUnbound={hasUnbound} year={selectedYear}
+            label={scopeText} count={scopeProjects.length} idPrefix={idPrefix} />
+    );
+
+    const filterPanel = (idPrefix: string) => (
+        <FilterPanel
+            idPrefix={idPrefix} filters={rowFilters} onChange={setRowFilters} onReset={resetAll} pjas={pjas} votes={votesList} viewMode={viewMode}
+            sortKey={sortKey} sortDirection={sortDirection} onSortKey={setSortKey} onSortDirection={setSortDirection}
+            columns={COLUMN_DEFS} visibleColumns={visibleColumns} onVisibleColumns={setVisibleColumns} defaultColumns={DEFAULT_COLUMNS}
+            costViewMode={costViewMode} onCostViewMode={setCostViewMode} showSiap={showSiap} onShowSiap={setShowSiap} showTuntutan={showTuntutan} onShowTuntutan={setShowTuntutan}
+        />
+    );
+
+    const sortLabel = COLUMN_DEFS.find(c => c.id === sortKey)?.label;
 
     return (
-        <div className="space-y-6 animate-fade-in pb-24 md:pb-40">
-
-            {/* Header Actions */}
-            <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 className="text-3xl font-bold gradient-text">Senarai Projek</h1>
-                    <p className="text-slate-500  mt-1">
-                        <span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai
-                    </p>
+        <div className="space-y-6 animate-fade-in pb-24 md:pb-40" data-testid="projects-page">
+            <header className="hidden md:flex items-end justify-between gap-6">
+                <div className="min-w-0">
+                    <p className="ih-eyebrow text-emerald-deep">Projek</p>
+                    <h1 className="font-display text-display-xl text-ink">Senarai projek</h1>
+                    <p className="text-muted mt-1"><span className="font-bold text-ink ih-num" data-testid="projects-count">{filteredProjects.length}</span> projek dijumpai · {scopeText}</p>
                 </div>
-                <button
-                    onClick={onAddProject}
-                    className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40  transition-colors duration-300 w-full md:w-auto justify-center"
-                >
-                    <Plus className="h-5 w-5" />
-                    <span>Tambah Projek</span>
-                </button>
-            </div>
+                <Button variant="primary" icon={Plus} onClick={onAddProject}>Tambah projek</Button>
+            </header>
 
             <MobileToolbar
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                activeFilterCount={activeFilterCount}
-                onOpenFilter={() => setIsFilterSheetOpen(true)}
-                onOpenActions={() => setIsActionSheetOpen(true)}
+                viewMode={viewMode} onViewModeChange={setViewMode} searchTerm={searchTerm} onSearchChange={setSearchTerm}
+                activeFilterCount={activeFilterCount} onOpenFilter={() => setIsFilterSheetOpen(true)} onOpenActions={() => setIsActionSheetOpen(true)}
             />
 
-            <div className="md:hidden !mt-3 flex items-center justify-between gap-3 text-sm text-slate-500">
-                <p><span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai</p>
+            <div className="md:hidden !mt-3 flex items-center justify-between gap-3 text-sm text-muted">
+                <p><span className="font-bold text-ink ih-num">{filteredProjects.length}</span> projek · {scopeText}</p>
                 {viewMode === 'list' && sortLabel && (
-                    <span className="flex items-center gap-1 text-xs font-bold text-slate-600">
+                    <span className="flex items-center gap-1 text-xs font-bold text-ink shrink-0">
                         {sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}{sortLabel}
                     </span>
                 )}
             </div>
 
-            {/* Advanced Filter Bar */}
-            <div className="hidden md:block bg-white/95  border border-white/10 shadow-xl p-5 rounded-3xl shadow-xl border border-white/20  space-y-4 relative z-30">
-                <div className="flex flex-col lg:flex-row gap-4">
-                    {viewMode === 'list' && (
-                        <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Cari No. Fail, Aduan, Projek, Syarikat..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50  border-transparent focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-colors text-slate-900  placeholder-slate-400 font-medium"
-                            />
+            <Card className="hidden md:block" padding="lg">
+                <p className="ih-eyebrow text-kontrak mb-3">Skop laporan</p>
+                {scopeBar('scope-desktop')}
+            </Card>
+
+            <Card className="hidden md:block relative z-30">
+                <div className="flex flex-wrap items-center gap-2">
+                    {viewMode === 'list' ? (
+                        <label className="relative flex-1 min-w-[320px]">
+                            <span className="sr-only">Cari projek</span>
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted pointer-events-none" aria-hidden />
+                            <input type="search" placeholder="Cari No. Fail, Aduan, Projek, Syarikat" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                                className="w-full min-h-11 pl-11 pr-3 bg-surface border border-line-strong rounded-ih-md text-[15px] text-ink placeholder:text-muted-faint focus:outline-none focus:border-emerald" />
+                        </label>
+                    ) : <div className="flex-1" />}
+                    <div className="contents">
+                        <div className="inline-flex p-0.5 bg-surface border border-line-strong rounded-ih-md" role="group" aria-label="Pandangan">
+                            <button type="button" aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} className={`min-h-10 px-3 rounded-ih-sm text-sm font-bold inline-flex items-center gap-2 ${viewMode === 'list' ? 'bg-ink text-paper' : 'text-ink'}`}><List className="w-4 h-4" /> Senarai</button>
+                            <button type="button" aria-pressed={viewMode === 'group'} onClick={() => setViewMode('group')} className={`min-h-10 px-3 rounded-ih-sm text-sm font-bold inline-flex items-center gap-2 ${viewMode === 'group' ? 'bg-ink text-paper' : 'text-ink'}`}><Grid className="w-4 h-4" /> Syarikat</button>
                         </div>
-                    )}
-                    {viewMode === 'group' && <div className="flex-1"></div>}
-
-                    <div className="flex flex-wrap gap-2">
-                        <div className="flex bg-slate-100  p-1 rounded-xl shrink-0">
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                title="Pandangan Senarai"
-                            >
-                                <List className="w-4 h-4" /> <span className="hidden md:inline">Senarai</span>
-                            </button>
-                            <button
-                                onClick={() => setViewMode('group')}
-                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${viewMode === 'group' ? 'bg-white  text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                title="Pandangan Kumpulan Syarikat"
-                            >
-                                <Grid className="w-4 h-4" /> <span className="hidden md:inline">Syarikat</span>
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={() => setShowFilterPanel(!showFilterPanel)}
-                            className={`h-full px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-colors relative ${showFilterPanel || activeFilterCount > 0 ? 'bg-emerald-50  text-emerald-600 border-emerald-200 ring-2 ring-emerald-500/20' : 'bg-white  border-slate-200  text-slate-600 hover:bg-slate-50'}`}
-                        >
-                            <Filter className="w-4 h-4" />
-                            <span>Filter</span>
-                            {activeFilterCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-600 text-white text-[10px] flex items-center justify-center rounded-full shadow-sm">
-                                    {activeFilterCount}
-                                </span>
-                            )}
-                        </button>
-
-                        <button
-                            onClick={viewMode === 'group' ? () => setIsExportModalOpen(true) : exportToExcel}
-                            className="h-full px-4 rounded-xl bg-emerald-50  text-emerald-600  hover:bg-emerald-100  flex items-center gap-2 transition-colors font-bold text-sm"
-                            title={viewMode === 'group' ? "Jana Laporan Panel" : "Export CSV"}
-                        >
-                            {viewMode === 'group' ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                            {viewMode === 'group' ? 'Laporan' : 'CSV'}
-                        </button>
-                        <button
-                            onClick={handleExportRotasiPDF}
-                            className="h-full px-4 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center gap-2 transition-colors font-bold text-sm"
-                            title=""
-                            disabled={isGeneratingPdf}
-                        >
-                            {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Recycle className="w-4 h-4" />}
-                            <span className="hidden sm:inline">Rotasi</span>
-                        </button>
-                        {canImportInden && (
-                            <button
-                                onClick={() => setIsImportIndenOpen(true)}
-                                className="h-full px-4 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center gap-2 transition-colors font-bold text-sm"
-                                title="Import No. Inden"
-                            >
-                                <FileUp className="w-4 h-4" />
-                                <span className="hidden sm:inline">Import No. Inden</span>
-                            </button>
+                        {viewMode === 'list' && (
+                            <div className="flex items-center gap-1">
+                                <div className="w-48"><Select aria-label="Susun ikut" value={sortKey} onChange={e => setSortKey(e.target.value)} className="min-h-11">
+                                    {COLUMN_DEFS.map(c => <option key={c.id} value={c.id}>Susun: {c.label}</option>)}
+                                </Select></div>
+                                <IconButton icon={sortDirection === 'asc' ? ArrowUp : ArrowDown} variant="outline" label={sortDirection === 'asc' ? 'Menaik' : 'Menurun'} onClick={() => setSortDirection(d => (d === 'asc' ? 'desc' : 'asc'))} />
+                            </div>
                         )}
+                        <Button variant={showFilterPanel || activeFilterCount > 0 ? 'ink' : 'outline'} icon={Filter} onClick={() => setShowFilterPanel(v => !v)} aria-expanded={showFilterPanel}>
+                            Tapis{activeFilterCount > 0 && <span className="ih-num"> ({activeFilterCount})</span>}
+                        </Button>
+                        {viewMode === 'group'
+                            ? <Button variant="outline" icon={FileText} onClick={() => setIsExportModalOpen(true)}>Laporan PDF</Button>
+                            : <Button variant="outline" icon={Download} onClick={exportCsv}>CSV</Button>}
+                        <Button variant="outline" icon={isGeneratingPdf ? Loader2 : Recycle} onClick={exportRotasi} disabled={isGeneratingPdf}>Rotasi</Button>
+                        {canImportInden && <Button variant="outline" icon={FileUp} onClick={() => setIsImportIndenOpen(true)}>Import No. Inden</Button>}
                     </div>
                 </div>
+                {showFilterPanel && <div className="pt-5 mt-5 border-t border-line animate-slide-up">{filterPanel('filter-desktop')}</div>}
+            </Card>
 
-                {showFilterPanel && (
-                    <div className="pt-6 border-t border-slate-100  animate-slide-up">
-                        {filterBody}
-                    </div>
-                )}
-            </div>
-
-            {/* List View with Pagination */}
             {viewMode === 'list' && (
                 <div className="md:hidden !mt-3 space-y-3">
-                    {paginatedProjects.length > 0 ? paginatedProjects.map(project => (
-                        <ProjectCard
-                            key={project.id}
-                            project={project}
-                            pja={getPjaUser(project.pjaId)}
-                            canDelete={user.role !== 'PJA'}
-                            onOpen={onEditProject}
-                            onDelete={handleDeleteClick}
-                        />
-                    )) : (
-                        <div className="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">Tiada projek dijumpai.</div>
-                    )}
+                    {pageRows.length > 0 ? pageRows.map(project => (
+                        <ProjectCard key={project.id} project={project} pja={getPjaUser(project.pjaId)} contract={contractOf(project)} repriceReason={repriceOf(project)}
+                            canDelete={user.role !== Role.PJA} onOpen={onEditProject} onDelete={setProjectToDelete} />
+                    )) : <p className="py-12 text-center text-muted bg-surface rounded-ih-lg border border-line">Tiada projek dijumpai.</p>}
                     {filteredProjects.length > 0 && (
-                        <MobilePager
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            totalCount={filteredProjects.length}
-                            itemsPerPage={itemsPerPage}
-                            pageInput={pageInput}
-                            onPageChange={handlePageChange}
-                            onPageInputChange={handlePageInputChange}
-                            onPageInputBlur={handlePageInputBlur}
-                            onPageInputKeyDown={handlePageInputKeyDown}
-                        />
+                        <MobilePager currentPage={currentPage} totalPages={totalPages} totalCount={filteredProjects.length} itemsPerPage={ITEMS_PER_PAGE} pageInput={pageInput}
+                            onPageChange={goToPage} onPageInputChange={e => setPageInput(e.target.value)} onPageInputBlur={commitPageInput}
+                            onPageInputKeyDown={e => { if (e.key === 'Enter') { commitPageInput(); e.currentTarget.blur(); } }} />
                     )}
                 </div>
             )}
+
             {viewMode === 'list' && (
-                <div className="hidden md:flex bg-white/95  border border-white/10 shadow-xl rounded-3xl shadow-xl border border-white/20  overflow-hidden min-h-[400px] flex-col">
-
-                    {/* Top Pagination Controls */}
+                <div className="hidden md:block space-y-3">
                     {filteredProjects.length > 0 && (
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b border-slate-200 bg-slate-50/50">
-                            <div className="flex items-center gap-4">
-                                <div className="text-xs font-medium text-slate-500">
-                                    Paparan <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)}</span> hingga <span className="font-bold text-slate-700">{Math.min(filteredProjects.length, currentPage * itemsPerPage)}</span> dari <span className="font-bold text-slate-700">{filteredProjects.length}</span> projek
-                                </div>
-
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 text-sm text-muted">
+                                <span>Paparan <b className="text-ink ih-num">{Math.min(filteredProjects.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</b> hingga <b className="text-ink ih-num">{Math.min(filteredProjects.length, currentPage * ITEMS_PER_PAGE)}</b> daripada <b className="text-ink ih-num">{filteredProjects.length}</b> projek</span>
                                 {(sortKey !== 'tarikhBuka' || sortDirection !== 'desc') && (
-                                    <button
-                                        onClick={() => {
-                                            setSortKey('tarikhBuka');
-                                            setSortDirection('desc');
-                                        }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
-                                    >
-                                        <RotateCcw className="w-3 h-3" />
-                                        Reset Susunan
-                                    </button>
+                                    <Button variant="ghost" size="sm" icon={RotateCcw} onClick={() => { setSortKey('tarikhBuka'); setSortDirection('desc'); }}>Reset susunan</Button>
                                 )}
                             </div>
-
                             <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    <ChevronLeft className="w-4 h-4 text-slate-600" />
-                                </button>
-
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-slate-500">Muka</span>
-                                    <input
-                                        type="number"
-                                        value={pageInput}
-                                        onChange={handlePageInputChange}
-                                        onBlur={handlePageInputBlur}
-                                        onKeyDown={handlePageInputKeyDown}
-                                        className="w-12 px-2 py-1.5 text-center text-xs font-bold bg-white  border border-slate-200  rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 shadow-sm"
-                                    />
-                                    <span className="text-xs text-slate-500">dari {totalPages}</span>
-                                </div>
-
-                                <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-slate-200  hover:bg-white  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    <ChevronRight className="w-4 h-4 text-slate-600" />
-                                </button>
+                                <IconButton icon={ChevronLeft} variant="outline" label="Muka sebelumnya" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)} />
+                                <label className="flex items-center gap-2 text-sm text-muted">Muka
+                                    <input type="number" aria-label="Muka" value={pageInput} onChange={e => setPageInput(e.target.value)} onBlur={commitPageInput}
+                                        onKeyDown={e => { if (e.key === 'Enter') { commitPageInput(); e.currentTarget.blur(); } }}
+                                        className="w-14 min-h-11 text-center bg-surface border border-line-strong rounded-ih-sm font-bold text-ink ih-num outline-none focus:border-emerald" />
+                                    daripada {totalPages}</label>
+                                <IconButton icon={ChevronRight} variant="outline" label="Muka seterusnya" disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)} />
                             </div>
                         </div>
                     )}
-
-                    <div className="overflow-x-auto flex-1">
-                        <table className="w-full">
-                            <thead className="bg-slate-50/80   sticky top-0 z-20 border-b border-slate-200">
-                                <tr>
-                                    {columnDefs.filter(c => visibleColumns[c.id]).map(col => {
-                                        const isSorted = sortKey === col.id;
-                                        return (
-                                            <th
-                                                key={col.id}
-                                                onClick={() => {
-                                                    if (isSorted) {
-                                                        setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-                                                    } else {
-                                                        setSortKey(col.id);
-                                                        setSortDirection('asc');
-                                                    }
-                                                }}
-                                                className="px-6 py-4 text-left text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-slate-100/50 transition-colors group"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    {col.label}
-                                                    <div className={`transition-opacity ${isSorted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                                        {isSorted ? (
-                                                            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-emerald-600" /> : <ArrowDown className="w-3 h-3 text-emerald-600" />
-                                                        ) : (
-                                                            <ArrowUpDown className="w-3 h-3 text-slate-300" />
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </th>
-                                        );
-                                    })}
-                                    <th className="px-6 py-4 w-16 bg-slate-50/80"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {paginatedProjects.length > 0 ? (
-                                    paginatedProjects.map((project) => (
-                                        <tr
-                                            key={project.id}
-                                            onMouseDown={handleMouseDown}
-                                            onMouseUp={handleMouseUp}
-                                            onMouseLeave={handleMouseLeave}
-                                            onClick={() => handleProjectClick(project)}
-                                            className="group hover:bg-slate-50/80  transition-colors duration-200 cursor-pointer"
-                                        >
-                                            {visibleColumns.noFail && <td className="px-6 py-4 whitespace-nowrap"><div className="font-bold text-slate-900  text-sm">{project.noFail}</div><div className="text-[10px] text-slate-400 font-mono mt-0.5">{formatDate(project.tarikhBuka)}</div></td>}
-                                            {visibleColumns.namaProjek && <td className="px-6 py-4 min-w-[300px]"><div className="text-sm font-medium text-slate-800  leading-relaxed whitespace-pre-wrap">{project.namaProjek}</div></td>}
-                                            {visibleColumns.pjaId && <td className="px-6 py-4 whitespace-nowrap">
-                                                {(() => {
-                                                    const pja = getPjaUser(project.pjaId);
-                                                    return (
-                                                        <div className="flex items-center gap-2">
-                                                            <PjaAvatar pja={pja} />
-                                                            <span className="text-xs font-bold text-slate-600">{pja?.username?.toUpperCase() || '-'}</span>
-                                                        </div>
-                                                    );
-                                                })()}
-                                            </td>}
-                                            {visibleColumns.noAduan && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[100px] overflow-y-auto custom-scrollbar">{project.noAduan ? project.noAduan.split(/[,;\n]/).map((aduan, idx) => { const cleanAduan = aduan.trim(); if (!cleanAduan) return null; return <div key={idx} className="text-[11px] text-slate-600  leading-tight">{cleanAduan}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
-                                            {visibleColumns.lokasi && <td className="px-6 py-4"><div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto custom-scrollbar min-w-[200px]">{project.lokasi ? project.lokasi.split('\n').map((loc, idx) => { const cleanLoc = loc.trim(); if (!cleanLoc) return null; return <div key={idx} className="text-[11px] text-slate-600  leading-tight mb-1 whitespace-pre-wrap">{cleanLoc}</div>; }) : <span className="text-xs text-slate-400">-</span>}</div></td>}
-                                            {visibleColumns.bp && <td className="px-6 py-4 text-xs text-slate-500">{project.bp}</td>}
-                                            {visibleColumns.zon && <td className="px-6 py-4 text-xs text-slate-500">{project.zon}</td>}
-                                            {visibleColumns.mukim && <td className="px-6 py-4 text-xs text-slate-500">{project.mukim}</td>}
-                                            {visibleColumns.tarikhBuka && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhBuka)}</td>}
-                                            {visibleColumns.namaSyarikat && <td className="px-6 py-4 min-w-[200px]"><div className="text-xs font-bold text-slate-700  leading-relaxed">{project.namaSyarikat || <span className="text-slate-400 italic font-normal">Belum Lantik</span>}</div></td>}
-                                            {visibleColumns.noVote && <td className="px-6 py-4 text-xs text-slate-500">{project.noVote}</td>}
-                                            {visibleColumns.noSebutharga && <td className="px-6 py-4 text-xs text-slate-500">{project.noSebutharga}</td>}
-                                            {visibleColumns.noInden && <td className="px-6 py-4 text-xs text-slate-500">{project.noInden}</td>}
-                                            {visibleColumns.noBpp && <td className="px-6 py-4 text-xs text-slate-500">{project.noBpp}</td>}
-                                            {visibleColumns.tempohKontrak && <td className="px-6 py-4 text-xs text-slate-500">{project.tempohKontrak}</td>}
-                                            {visibleColumns.status && <td className="px-6 py-4 whitespace-nowrap text-center"><div className="flex flex-col items-center justify-center gap-2"><CircularProgress value={project.peratusSiap || 0} size={34} strokeWidth={3} /><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm ${getStatusColor(project.status)} ${project.status === ProjectStatus.DALAM_PROSES ? '' : ''}`}><span className={`w-1.5 h-1.5 rounded-full ${project.status === ProjectStatus.DALAM_PROSES ? 'bg-blue-500' : project.status === ProjectStatus.SIAP ? 'bg-emerald-500' : 'bg-yellow-500'}`}></span>{getStatusLabel(project.status)}</span></div></td>}
-                                            {visibleColumns.prestasi && <td className="px-6 py-4 text-center font-bold text-slate-700">{project.prestasi || '-'}</td>}
-                                            {visibleColumns.kosProjek && <td className="px-6 py-4 text-right text-xs font-bold text-emerald-600">{formatCurrency(project.kosProjek)}</td>}
-                                            {visibleColumns.kosSebenar && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(getHargaAkhir(project))}</td>}
-                                            {visibleColumns.wangTahanan && <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{formatCurrency(project.wangTahanan)}</td>}
-                                            {visibleColumns.ladAmount && <td className="px-6 py-4 text-right text-xs font-bold text-red-500">{formatCurrency(project.ladAmount)}</td>}
-                                            {visibleColumns.ladDays && <td className="px-6 py-4 text-center text-xs text-slate-500">{project.ladDays || 0}</td>}
-                                            {visibleColumns.locAmount && <td className="px-6 py-4 text-right text-xs font-bold text-amber-500">{formatCurrency(project.locAmount)}</td>}
-                                            {visibleColumns.locDays && <td className="px-6 py-4 text-center text-xs text-slate-500">{project.locDays || 0}</td>}
-                                            {visibleColumns.tarikhLantikan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhLantikan)}</td>}
-                                            {visibleColumns.tarikhCetakanBpp && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhCetakanBpp)}</td>}
-                                            {visibleColumns.tarikhMulaKontrak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhMulaKontrak)}</td>}
-                                            {visibleColumns.tarikhTamatKontrak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhTamatKontrak)}</td>}
-                                            {visibleColumns.tarikhSerahTapak && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhSerahTapak)}</td>}
-                                            {visibleColumns.tarikhMulaKerja && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhMulaKerja)}</td>}
-                                            {visibleColumns.tarikhSiapSebenar && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhSiapSebenar)}</td>}
-                                            {visibleColumns.tarikhTuntutanBayaran && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhTuntutanBayaran)}</td>}
-                                            {visibleColumns.tarikhHantarKewangan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhHantarKewangan)}</td>}
-                                            {visibleColumns.tarikhPadanan && <td className="px-6 py-4 text-xs text-slate-500">{formatDate(project.tarikhPadanan)}</td>}
-                                            {visibleColumns.iso && <td className="px-6 py-4 text-xs text-slate-500">{project.iso}</td>}
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={(e) => { e.stopPropagation(); onEditProject(project); }} className="p-2 bg-white  rounded-lg text-emerald-600 hover:bg-emerald-50 shadow-sm border border-slate-100"><ArrowUpRight className="w-4 h-4" /></button>
-                                                    {user.role !== 'PJA' && (
-                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(project); }} className="p-2 bg-white  rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 shadow-sm border border-slate-100"><Trash2 className="w-4 h-4" /></button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={Object.values(visibleColumns).filter(Boolean).length + 1} className="px-6 py-12 text-center text-slate-400">
-                                            Tiada projek dijumpai.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <ProjectsTable rows={pageRows} columns={COLUMN_DEFS} visible={visibleColumns} getPja={getPjaUser} contractOf={contractOf} repriceOf={repriceOf}
+                        hargaAkhir={hargaAkhir} canDelete={user.role !== Role.PJA} onOpen={openProject} onDelete={setProjectToDelete} onRowMouse={rowMouse} />
                 </div>
             )}
 
-            {/* Group View */}
             {viewMode === 'group' && (
-                <div className="!mt-0 md:!mt-6 space-y-3 md:space-y-6">
+                <div className="!mt-0 md:!mt-6 space-y-3 md:space-y-4">
                     {groupedProjects.map((group, idx) => {
-                        const votesInGroup = Object.keys(group.projectsByVote).sort();
+                        const common = {
+                            index: idx, group, expanded: !!expandedCompanies[group.company],
+                            onToggle: () => setExpandedCompanies(prev => ({ ...prev, [group.company]: !prev[group.company] })),
+                            costViewMode, canQuickEdit, getPjaUser, getVoteName, getHargaAkhir: hargaAkhir, onOpenProject: onEditProject,
+                            onUpdateProject: (id: number, updates: Partial<Project>) => updateProject({ id, updates }), capSlot: capSlot(group.company),
+                        };
                         return (
                             <React.Fragment key={group.company}>
-                            <div className="hidden md:block relative overflow-hidden rounded-3xl bg-white/60   border border-white/20  shadow-sm transition-colors hover:shadow-md">
-                                <div className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer hover:bg-slate-50  transition-colors gap-4" onClick={() => toggleCompany(group.company)}>
-                                    <div className="flex items-center gap-4 flex-1">
-                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 shrink-0"><Building2 className="w-6 h-6" /></div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="text-lg font-bold text-slate-900  truncate flex items-center gap-3">{idx + 1}. {group.company} {group.count > 0 ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-600  font-bold uppercase tracking-wider">{group.count} Fail</span> : <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200  text-slate-400  font-bold uppercase tracking-wider italic">Tiada Projek</span>}</h3>
-                                            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-xs font-medium text-slate-500">
-                                                <div className="flex gap-4 border-l border-slate-200  pl-4 ml-2">
-                                                    {(costViewMode === 'contract' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span className="opacity-80">Harga Kontrak:</span> <strong className="text-emerald-700  font-mono text-sm">{formatCurrency(group.totalCost)}</strong></span>}
-                                                    {(costViewMode === 'actual' || costViewMode === 'both') && <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div><span className="opacity-80">Harga Akhir:</span><strong className="text-blue-700  font-mono text-sm">{formatCurrency(group.totalHargaAkhir)}</strong></span>}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${expandedCompanies[group.company] ? 'rotate-180' : ''}`} />
-                                </div>
-
-                                {expandedCompanies[group.company] && group.count > 0 && (
-                                    <div className="border-t border-slate-100  animate-slide-up bg-slate-50/30  overflow-x-auto">
-                                        <div className="w-full">
-                                            {votesInGroup.map(voteCode => {
-                                                const voteData = group.projectsByVote[voteCode];
-                                                return (
-                                                    <div key={voteCode} className="border-b border-slate-200  last:border-b-0">
-                                                        <div className="px-6 py-2 bg-slate-100/50  flex items-center justify-between">
-                                                            <div className="text-[11px] font-bold text-slate-500  uppercase tracking-widest flex items-center gap-2"><span className="bg-slate-200  px-2 py-0.5 rounded text-slate-700">{voteCode}</span><span>{getVoteName(voteCode)}</span></div>
-                                                        </div>
-                                                        <table className="w-full text-sm">
-                                                            <thead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                                                                <tr>
-                                                                    <th className="px-6 py-3 text-center font-extrabold w-[40px]">Bil</th>
-                                                                    <th className="px-6 py-3 text-left font-extrabold w-[350px]">No. Fail / Tajuk Projek</th>
-                                                                    <th className="px-6 py-3 text-center font-extrabold w-[100px]">Bulan</th>
-                                                                    <th className="px-6 py-3 text-center font-extrabold w-[80px]">PJA</th>
-                                                                    <th className="px-6 py-3 text-left font-extrabold">Lokasi</th>
-                                                                    <th className="px-6 py-3 text-center font-extrabold">Tarikh (Mula - Tamat)</th>
-                                                                    <th className="px-6 py-3 text-right font-extrabold">Kos</th>
-                                                                    <th className="px-6 py-3 text-center font-extrabold">Status</th>
-                                                                    <th className="px-6 py-3"></th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody className="divide-y divide-slate-100">
-                                                                {voteData.projects.map((p, pIdx) => {
-                                                                    const pjaUser = getPjaUser(p.pjaId);
-                                                                    const hargaAkhir = getHargaAkhir(p);
-
-                                                                    return (
-                                                                        <tr
-                                                                            key={p.id}
-                                                                            className="hover:bg-white/60 transition-colors group/row"
-                                                                        >
-                                                                            <td className="px-6 py-3 text-center align-top text-xs font-bold text-slate-400">{pIdx + 1}</td>
-                                                                            <td className="px-6 py-3 align-top"><div className="font-mono font-bold text-xs text-slate-600  mb-1">{p.noFail}</div><div className="font-medium text-slate-800  leading-relaxed text-[11px] opacity-80 whitespace-pre-wrap">{p.namaProjek}</div></td>
-                                                                            <td className="px-6 py-3 text-center align-top"><span className="px-3 py-1 rounded-lg bg-white  border border-slate-200  text-xs font-bold text-slate-600  shadow-sm">{p.bulan || '-'}</span></td>
-                                                                            <td className="px-6 py-3 text-center align-top"><span className="text-[10px] font-black text-slate-500  bg-slate-100  px-2 py-0.5 rounded shadow-sm">{pjaUser?.username.toUpperCase() || '-'}</span></td>
-                                                                            <td className="px-6 py-3 text-xs max-w-[200px] align-top"><div className="text-slate-600  whitespace-pre-wrap" title={p.lokasi}>{p.lokasi ? p.lokasi : '-'}</div></td>
-                                                                            <td className="px-6 py-3 text-center text-[10px] font-mono text-slate-500 align-top">{formatDate(p.tarikhMulaKontrak)}<br />-<br />{formatDate(p.tarikhTamatKontrak)}</td>
-                                                                            <td className="px-6 py-3 text-right font-mono font-bold text-xs align-top">
-                                                                                <div className={costViewMode === 'actual' ? 'hidden' : 'text-emerald-600'}>{formatCurrency(p.kosProjek)}</div>
-                                                                                <div className={costViewMode === 'contract' ? 'hidden' : 'text-blue-600'}>{formatCurrency(getHargaAkhir(p))}</div>
-                                                                            </td>
-                                                                            <td className="px-6 py-3 text-center align-top">
-                                                                                <div className="flex flex-col items-center gap-1">
-                                                                                    {canQuickEdit ? (
-                                                                                        <>
-                                                                                            <div className="flex items-center gap-1">
-                                                                                                <input
-                                                                                                    type="number"
-                                                                                                    min="0"
-                                                                                                    max="100"
-                                                                                                    value={p.peratusSiap ?? 0}
-                                                                                                    onChange={(e) => {
-                                                                                                        e.stopPropagation();
-                                                                                                        updateProject({ id: p.id, updates: { peratusSiap: parseInt(e.target.value) || 0 } });
-                                                                                                    }}
-                                                                                                    onClick={(e) => e.stopPropagation()}
-                                                                                                    className="w-12 text-center text-[10px] font-bold text-emerald-600 bg-white border border-emerald-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-emerald-500 transition-shadow"
-                                                                                                />
-                                                                                                <span className="text-[10px] font-bold text-emerald-600">%</span>
-                                                                                            </div>
-                                                                                            <select
-                                                                                                value={p.status}
-                                                                                                onChange={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    updateProject({ id: p.id, updates: { status: e.target.value as ProjectStatus } });
-                                                                                                }}
-                                                                                                onClick={(e) => e.stopPropagation()}
-                                                                                                className={`text-[9px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm outline-none cursor-pointer ${getStatusColor(p.status)}`}
-                                                                                            >
-                                                                                                {Object.values(ProjectStatus).map(status => (
-                                                                                                    <option key={status} value={status}>{getStatusLabel(status)}</option>
-                                                                                                ))}
-                                                                                            </select>
-                                                                                        </>
-                                                                                    ) : (
-                                                                                        <>
-                                                                                            <span className="text-[10px] font-bold text-emerald-600">{p.peratusSiap}%</span>
-                                                                                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${getStatusColor(p.status)}`}>{getStatusLabel(p.status)}</span>
-                                                                                        </>
-                                                                                    )}
-                                                                                </div>
-                                                                            </td>
-                                                                            <td className="px-6 py-3 text-right align-top">
-                                                                                <button
-                                                                                    onClick={(e) => { e.stopPropagation(); onEditProject(p); }}
-                                                                                    className="p-2 rounded-lg bg-white  text-emerald-600 shadow-sm opacity-0 group-hover/row:opacity-100 transition-colors"
-                                                                                >
-                                                                                    <ArrowUpRight className="w-4 h-4" />
-                                                                                </button>
-                                                                            </td>
-                                                                        </tr>
-                                                                    );
-                                                                })}
-                                                                <tr className="bg-slate-50  font-bold border-t border-slate-200">
-                                                                    <td colSpan={6} className="px-6 py-3 text-right text-[10px] uppercase text-slate-500 tracking-wider">Jumlah</td>
-                                                                    <td className="px-6 py-3 text-right font-mono text-xs text-slate-800">
-                                                                        {costViewMode === 'contract' ? formatCurrency(voteData.subtotalContract) : costViewMode === 'actual' ? formatCurrency(voteData.subtotalAkhir) : (<div><div>{formatCurrency(voteData.subtotalContract)}</div><div className="text-[10px] opacity-60">{formatCurrency(voteData.subtotalAkhir)}</div></div>)}
-                                                                    </td>
-                                                                    <td colSpan={2}></td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                );
-                                            })}
-                                            <div className="px-6 py-4 bg-emerald-50/50  flex justify-end items-center gap-6 border-t border-emerald-100">
-                                                <div className="flex items-center gap-2 mr-auto">
-                                                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
-                                                        :</span>
-                                                    <span className="text-xs font-black text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm">{group.count}</span>
-                                                </div>
-                                                <span className="text-[11px] font-bold uppercase text-emerald-600  tracking-wider">Jumlah Keseluruhan ({group.company})</span>
-                                                <span className="text-sm font-black font-mono text-emerald-700">{costViewMode === 'actual' ? formatCurrency(group.totalHargaAkhir) : formatCurrency(group.totalCost)}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                                {expandedCompanies[group.company] && group.count === 0 && <div className="p-8 text-center text-slate-400 italic text-sm bg-slate-50/30  border-t border-slate-100">Tiada projek untuk syarikat ini.</div>}
-                            </div>
-                            <CompanyCard
-                                index={idx}
-                                group={group}
-                                expanded={!!expandedCompanies[group.company]}
-                                onToggle={() => toggleCompany(group.company)}
-                                costViewMode={costViewMode}
-                                canQuickEdit={canQuickEdit}
-                                getPjaUser={getPjaUser}
-                                getVoteName={getVoteName}
-                                getHargaAkhir={getHargaAkhir}
-                                onOpenProject={onEditProject}
-                                onUpdateProject={(id, updates) => updateProject({ id, updates })}
-                            />
+                                <CompanyGroupPanel {...common} />
+                                <CompanyCard {...common} />
                             </React.Fragment>
                         );
                     })}
-
-                    {/* Integrated Summary Card (Vertical) */}
-                    {groupedProjects.length > 0 && (
-                        <div className="relative overflow-hidden rounded-3xl bg-white  border border-slate-200  shadow-xl p-6 mt-8 w-full mx-auto">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100"><div className="p-3 bg-slate-100  rounded-xl shadow-sm text-emerald-600"><Calculator className="w-5 h-5" /></div><h4 className="text-sm font-bold text-slate-800  uppercase tracking-widest">Rumusan Kewangan ({selectedYear})</h4></div>
-                            <div className="overflow-x-auto md:overflow-hidden rounded-xl border border-slate-200">
-                                <table className="w-full text-xs">
-                                    <thead className="bg-slate-50">
-                                        <tr><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider w-20">Kod Vot</th><th className="py-3 px-4 text-left font-extrabold text-slate-500  uppercase tracking-wider">Butiran</th><th className="py-3 px-4 text-center font-extrabold text-slate-500  uppercase tracking-wider">Bil. Projek</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Peruntukan</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Belanja</th><th className="py-3 px-4 text-right font-extrabold text-slate-500  uppercase tracking-wider">Baki</th></tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {Object.entries(financialSummary).map(([voteCode, data]) => (
-                                            <tr key={voteCode} className="hover:bg-slate-50">
-                                                <td className="py-3 px-4 font-mono font-bold text-slate-600">{voteCode}</td><td className="py-3 px-4 font-medium text-slate-700">{getVoteName(voteCode)}</td><td className="py-3 px-4 text-center font-bold text-slate-600">{data.projectCount}</td><td className="py-3 px-4 text-right font-mono text-slate-600">{formatCurrency((data as any).allocated)}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((data as any).used)}</td><td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">{formatCurrency((data as any).allocated - (data as any).used)}</td>
-                                            </tr>
-                                        ))}
-                                        <tr className="bg-slate-50  font-bold border-t-2 border-slate-200"><td colSpan={2} className="py-3 px-4 text-right uppercase text-[10px] text-slate-500 tracking-wider">Jumlah Besar</td><td className="py-3 px-4 text-center font-bold text-slate-800">{(Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0)}</td><td className="py-3 px-4 text-right font-mono text-slate-800">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0))}</td><td className="py-3 px-4 text-right font-mono text-red-500">-{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0))}</td><td className="py-3 px-4 text-right font-mono text-emerald-600">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0))}</td></tr>
-                                        <tr className="bg-emerald-50/30  font-bold border-t border-emerald-100">
-                                            <td colSpan={4} className="py-3 px-4 text-right uppercase text-[10px] text-emerald-600 tracking-wider">Jumlah Projek Keseluruhan</td>
-                                            <td colSpan={2} className="py-3 px-4 text-right font-mono text-emerald-700">{filteredProjects.length} Projek</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>                            <div className="mt-6 flex flex-col gap-4 border-t border-slate-200  pt-4">
-                                <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lain-lain (Sebutharga)</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.outsource || ''} onChange={e => setManualFinancials(prev => ({ ...prev, outsource: parseFloat(e.target.value) }))} className="w-28 md:w-24 h-11 md:h-auto text-base md:text-xs text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
-                                <div className="flex items-center justify-between text-xs"><span className="font-bold text-slate-500 uppercase">Tolak Lantikan YDP/TYDP</span><div className="flex items-center gap-2"><span className="text-slate-400 font-bold">RM</span><input type="number" value={manualFinancials.ydp || ''} onChange={e => setManualFinancials(prev => ({ ...prev, ydp: parseFloat(e.target.value) }))} className="w-28 md:w-24 h-11 md:h-auto text-base md:text-xs text-right bg-slate-50  border border-slate-200  rounded px-2 py-1 outline-none font-mono font-bold" placeholder="0.00" /></div></div>
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-200  bg-emerald-50/50  -mx-6 px-6 py-4 -mb-6 rounded-b-3xl">
-                                    <div className="flex items-center gap-3"><button onClick={saveManualFinancials} disabled={isSavingFinancials} className="min-h-[44px] md:min-h-0 px-4 py-2 bg-slate-800  text-white  rounded-lg text-[10px] max-md:text-xs font-bold shadow-md flex items-center gap-1 disabled:opacity-70"><Save className="w-3 h-3" /> Simpan</button></div>
-                                    <div className="text-right"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Baki Bersih</div><div className="font-mono font-black text-xl text-emerald-600  leading-none">{formatCurrency((Object.values(financialSummary) as any[]).reduce((a, b) => a + (b.allocated - b.used), 0) - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0))}</div></div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {groupedProjects.length === 0 && <div className="text-center text-slate-400 italic py-12 bg-white/95  border border-white/10 shadow-xl rounded-3xl">Tiada data syarikat untuk dipaparkan.</div>}
+                    {groupedProjects.length === 0 && <p className="text-center text-muted italic py-12 bg-surface border border-line rounded-ih-lg">Tiada data syarikat untuk dipaparkan.</p>}
+                    <VoteSummary
+                        summary={summary} totals={totals} scopeLabel={scopeText}
+                        costLabel={costViewMode === 'contract' ? 'harga kontrak' : 'harga akhir'}
+                        allocationYear={allocYear} manualEditable={allocYear === selectedYear}
+                        rowFilterNote={rowFilterText ? `Tapisan paparan (${rowFilterText}) hanya menapis senarai syarikat di atas; rumusan ini tidak berubah.` : null}
+                        manual={manual} onManualChange={setManual} onSave={saveManualFinancials} saving={isSavingFinancials} getVoteName={getVoteName}
+                    />
                 </div>
             )}
 
             <BottomSheet
                 open={isFilterSheetOpen}
-                title="Tetapan Data & Paparan"
+                title="Skop laporan & tapisan"
                 onClose={() => setIsFilterSheetOpen(false)}
                 footer={
                     <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm text-slate-500"><span className="font-bold text-emerald-600">{filteredProjects.length}</span> projek dijumpai</p>
-                        <button onClick={() => setIsFilterSheetOpen(false)} className="h-11 px-6 rounded-xl bg-emerald-600 text-white font-bold active:bg-emerald-700">Tutup</button>
+                        <p className="text-sm text-muted"><span className="font-bold text-ink ih-num">{filteredProjects.length}</span> projek dijumpai</p>
+                        <Button variant="primary" onClick={() => setIsFilterSheetOpen(false)}>Tutup</Button>
                     </div>
                 }
             >
-                {filterBody}
+                <div className="space-y-6">
+                    <div className="pb-5 border-b border-line">
+                        <p className="ih-eyebrow text-kontrak mb-3">Skop laporan</p>
+                        {scopeBar('scope-sheet')}
+                    </div>
+                    {filterPanel('filter-sheet')}
+                </div>
             </BottomSheet>
 
             <ProjectActionsSheet
-                open={isActionSheetOpen}
-                onClose={() => setIsActionSheetOpen(false)}
-                isGroupView={viewMode === 'group'}
-                isGeneratingPdf={isGeneratingPdf}
-                canImportInden={canImportInden}
-                onExportCsv={exportToExcel}
-                onOpenReport={() => setIsExportModalOpen(true)}
-                onExportRotasi={handleExportRotasiPDF}
+                open={isActionSheetOpen} onClose={() => setIsActionSheetOpen(false)} isGroupView={viewMode === 'group'} isGeneratingPdf={isGeneratingPdf}
+                canImportInden={canImportInden} onExportCsv={exportCsv} onOpenReport={() => setIsExportModalOpen(true)} onExportRotasi={exportRotasi}
                 onOpenImportInden={() => setIsImportIndenOpen(true)}
             />
 
             <AddProjectFab onClick={onAddProject} />
 
-            {isImportIndenOpen && canImportInden && (
-                <ImportIndenModal projects={projects} onClose={() => setIsImportIndenOpen(false)} />
+            {isImportIndenOpen && canImportInden && <ImportIndenModal projects={projects} onClose={() => setIsImportIndenOpen(false)} />}
+
+            {projectToDelete && (
+                <DeleteProjectDialog noFail={projectToDelete.noFail} countdown={deleteCountdown} onCancel={() => setProjectToDelete(null)}
+                    onConfirm={() => { onDeleteProject(projectToDelete); setProjectToDelete(null); }} />
             )}
-
-            {/* Delete Modal */}
-            {projectToDelete && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50  animate-fade-in" onClick={cancelDelete}>
-                    <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
-                        <button onClick={cancelDelete} aria-label="Tutup" className="absolute top-4 right-4 w-11 h-11 md:w-auto md:h-auto flex items-center justify-center text-slate-400 hover:text-slate-600  transition-colors p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
-                        <div className="flex flex-col items-center text-center pt-2">
-                            <div className="w-20 h-20 bg-red-50  rounded-full flex items-center justify-center mb-6 text-red-500"><div className="w-14 h-14 bg-red-100  rounded-full flex items-center justify-center"><AlertTriangle className="w-8 h-8 stroke-[1.5]" /></div></div>
-                            <h3 className="text-xl font-bold text-slate-900  mb-2 font-jakarta">Padam Projek?</h3>
-                            <p className="text-slate-500  mb-8 text-sm leading-relaxed px-4">Adakah anda pasti mahu memadam <span className="font-bold text-slate-900  block mt-1 p-2 bg-slate-50  rounded-lg border border-slate-200  break-words">{projectToDelete.noFail}</span></p>
-                            <div className="flex gap-3 w-full">
-                                <button onClick={cancelDelete} className="flex-1 py-3.5 px-4 bg-white  text-slate-700  rounded-xl font-bold hover:bg-slate-50  transition-colors border border-slate-200  shadow-sm hover:shadow-md">Batal</button>
-                                <button onClick={confirmDelete} disabled={deleteCountdown > 0} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg ${deleteCountdown > 0 ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 shadow-red-600/30 hover:-translate-y-0.5'}`}>
-                                    <Trash2 className="w-4 h-4" />
-                                    <span>{deleteCountdown > 0 ? `Tunggu (${deleteCountdown})` : 'Ya, Padam'}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
-
-            {/* PDF Export Modal with Progress */}
-            {isExportModalOpen && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  animate-fade-in" onClick={() => setIsExportModalOpen(false)}>
-                    <div className="bg-white  rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200  transform scale-100 transition-colors animate-slide-up relative" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-slate-900  flex items-center gap-2">
-                                <FileText className="w-6 h-6 text-emerald-600" />
-                                Laporan Panel Kontraktor
-                            </h3>
-                            <button onClick={() => setIsExportModalOpen(false)} className="text-slate-400 hover:text-slate-600  p-1 rounded-full hover:bg-slate-100  transition-colors">
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            {isGeneratingPdf ? (
-                                <div className="flex flex-col items-center justify-center py-4">
-                                    <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-2" />
-                                    <p className="text-sm font-bold text-slate-700">Menjana PDF... {generationProgress}%</p>
-                                    <div className="w-full bg-slate-100  h-2 rounded-full mt-2 overflow-hidden">
-                                        <div className="bg-emerald-500 h-full transition-colors duration-300" style={{ width: `${generationProgress}%` }}></div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 font-jakarta pl-1">
-                                            Bilangan Mesyuarat
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={exportBilMesyuarat}
-                                            onChange={e => setExportBilMesyuarat(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50  border border-slate-200  outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-                                            placeholder="cth: 01/01/2025"
-                                            autoFocus
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col gap-3">
-                                        <button
-                                            onClick={handleExportRealPDF}
-                                            disabled={isGeneratingPdf}
-                                            className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 disabled:opacity-70 group"
-                                        >
-                                            <FileText className="w-4 h-4" />
-                                            PDF
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>,
-                document.body
+            {isExportModalOpen && (
+                <ExportReportDialog scopeLabel={rowFilterText ? `${scopeText} (tapisan paparan: ${rowFilterText})` : scopeText} bil={exportBilMesyuarat}
+                    onBilChange={setExportBilMesyuarat} generating={isGeneratingPdf} progress={generationProgress}
+                    onClose={() => setIsExportModalOpen(false)} onExport={exportSenarai} />
             )}
         </div>
     );

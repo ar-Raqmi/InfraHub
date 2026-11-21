@@ -1,9 +1,25 @@
 import { Project, User, formatCurrency, formatDate } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
 
+/** Which filter produced the report: printed in the title so a figure never travels without its scope. */
+export interface ReportTitleScope {
+    /** e.g. "TAHUN 2026", "SEMUA TAHUN", "TARIKH BUKA 01/01/2026 – 30/06/2026". */
+    period: string;
+    /** Full scope line, e.g. "Sebutharga MPS/SH/302/25 · Tahun 2026". */
+    label: string;
+    /** Extra on-screen row filters, when any are active. */
+    rowFilters?: string | null;
+    fileTag: string;
+}
+
+const amount = (v: number | null) => (v === null ? '-' : formatCurrency(v).replace('RM', ''));
+
+const scopeLines = (scope: ReportTitleScope) =>
+    [`SKOP LAPORAN: ${scope.label}`.toUpperCase(), scope.rowFilters ? `TAPISAN PAPARAN: ${scope.rowFilters}`.toUpperCase() : null].filter(Boolean) as string[];
+
 export class ProjectsListPDFExporter {
     static async exportRotasi(
-        selectedYear: string | number,
+        scope: ReportTitleScope,
         companyOrder: string[],
         projects: Project[],
         companyDetails: any,
@@ -19,7 +35,13 @@ export class ProjectsListPDFExporter {
         // Header
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
-        doc.text(`JADUAL PENGILIRAN KONTRAKTOR PANEL INFRASTRUKTUR JABATAN KEJURUTERAAN TAHUN ${selectedYear}`, pageWidth / 2, currentY, { align: "center" });
+        doc.text(`JADUAL PENGILIRAN KONTRAKTOR PANEL INFRASTRUKTUR JABATAN KEJURUTERAAN ${scope.period}`, pageWidth / 2, currentY, { align: "center" });
+        doc.setFont("helvetica", "normal");
+        for (const line of scopeLines(scope)) {
+            currentY += 4;
+            doc.text(line, pageWidth / 2, currentY, { align: "center" });
+        }
+        doc.setFont("helvetica", "bold");
         currentY += 7;
 
         const months = ["JAN", "FEB", "MAC", "APR", "MEI", "JUN", "JUL", "OGO", "SEP", "OKT", "NOV", "DIS"];
@@ -136,11 +158,11 @@ export class ProjectsListPDFExporter {
         });
 
         setGenerationProgress(100);
-        doc.save(`Rotasi_Kontraktor_${selectedYear}.pdf`);
+        doc.save(`Rotasi_Kontraktor_${scope.fileTag}.pdf`);
     }
 
     static async exportSenarai(
-        selectedYear: string | number,
+        scope: ReportTitleScope,
         groupedProjects: any[],
         exportBilMesyuarat: string,
         financialSummary: any,
@@ -163,7 +185,9 @@ export class ProjectsListPDFExporter {
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(8);
                 doc.text(`SENARAI KONTRAKTOR PANEL YANG TELAH DILANTIK`, pageWidth / 2, 20, { align: "center" });
-                doc.text(`UNTUK KERJA INFRASTRUKTUR BAGI TAHUN ${selectedYear}`, pageWidth / 2, 25, { align: "center" });
+                doc.text(`UNTUK KERJA INFRASTRUKTUR BAGI ${scope.period}`, pageWidth / 2, 25, { align: "center" });
+                doc.setFont("helvetica", "normal");
+                scopeLines(scope).forEach((line, i) => doc.text(line, pageWidth / 2, 29 + i * 3.5, { align: "center" }));
 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(8);
@@ -326,7 +350,7 @@ export class ProjectsListPDFExporter {
         currentY = 20;
         doc.setFontSize(8);
         doc.setFont("helvetica", "bold");
-        doc.text(`RUMUSAN (${selectedYear})`, marginX, currentY);
+        doc.text(`RUMUSAN (${scope.label})`.toUpperCase(), marginX, currentY);
         currentY += 5;
 
         const globalSummaryBody = Object.entries(financialSummary).map(([voteCode, data]) => {
@@ -334,29 +358,31 @@ export class ProjectsListPDFExporter {
                 voteCode,
                 getVoteName(voteCode),
                 (data as any).projectCount,
-                formatCurrency((data as any).allocated).replace('RM', ''),
-                formatCurrency((data as any).used).replace('RM', ''),
-                formatCurrency((data as any).allocated - (data as any).used).replace('RM', '')
+                amount((data as any).allocated),
+                amount((data as any).used),
+                amount((data as any).allocated === null ? null : (data as any).allocated - (data as any).used)
             ];
         });
 
-        const totalAlloc = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.allocated, 0);
+        // Allocation is null when the scope spans several financial years: no balance is printed then.
+        const lines = Object.values(financialSummary) as any[];
+        const totalAlloc = lines.some(l => l.allocated === null) ? null : lines.reduce((a, b) => a + b.allocated, 0);
         const totalUsed = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.used, 0);
         const totalProjectCount = (Object.values(financialSummary) as any[]).reduce((a, b) => a + b.projectCount, 0);
-        const totalBal = totalAlloc - totalUsed;
+        const totalBal = totalAlloc === null ? null : totalAlloc - totalUsed;
 
         // @ts-ignore
         doc.autoTable({
             startY: currentY,
-            head: [['VOT', 'PERUNTUKAN', 'PROJEK', 'JUMLAH', 'PERBELANJAAN', 'BAKI']],
+            head: [['VOT', 'BUTIRAN', 'PROJEK', 'PERUNTUKAN', 'PERBELANJAAN', 'BAKI']],
             body: [
                 ...globalSummaryBody,
                 [
                     { content: 'JUMLAH', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
                     { content: `${totalProjectCount}`, styles: { halign: 'center', fontStyle: 'bold' } },
-                    { content: formatCurrency(totalAlloc).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } },
-                    { content: formatCurrency(totalUsed).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 0, 0] } },
-                    { content: formatCurrency(totalBal).replace('RM', ''), styles: { halign: 'right', fontStyle: 'bold' } }
+                    { content: amount(totalAlloc), styles: { halign: 'right', fontStyle: 'bold' } },
+                    { content: amount(totalUsed), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 0, 0] } },
+                    { content: amount(totalBal), styles: { halign: 'right', fontStyle: 'bold' } }
                 ]
             ],
             theme: 'grid',
@@ -376,6 +402,11 @@ export class ProjectsListPDFExporter {
         // @ts-ignore
         currentY = doc.lastAutoTable.finalY + 10;
 
+        if (totalBal === null || !manualFinancials) {
+            setGenerationProgress(100);
+            doc.save(`Senarai_Kontraktor_Panel_${scope.fileTag}.pdf`);
+            return;
+        }
         const netBalance = totalBal - (manualFinancials.outsource || 0) - (manualFinancials.ydp || 0);
         const deductionData = [
             ['TOLAK LAIN-LAIN (SEBUTHARGA)', formatCurrency(manualFinancials.outsource || 0)],
@@ -397,6 +428,6 @@ export class ProjectsListPDFExporter {
         });
 
         setGenerationProgress(100);
-        doc.save(`Senarai_Kontraktor_Panel_${selectedYear}.pdf`);
+        doc.save(`Senarai_Kontraktor_Panel_${scope.fileTag}.pdf`);
     }
 }

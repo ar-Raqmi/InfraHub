@@ -19,8 +19,8 @@ const plainText = (html: string) => {
 };
 
 const Byline: React.FC<{ item: BulletinItem; unread: boolean }> = ({ item, unread }) => (
-  <p className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${unread ? 'text-red-600' : 'text-slate-400'}`}>
-    {unread && <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
+  <p className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${unread ? 'text-danger' : 'text-muted'}`}>
+    {unread && <span className="w-2 h-2 rounded-full bg-danger shrink-0" />}
     <span>{formatDate(item.date)}</span>
     <span aria-hidden>·</span>
     <span className="truncate">{item.author}</span>
@@ -35,34 +35,34 @@ const MobileBulletins: React.FC<MobileBulletinsProps> = ({ bulletins, userId, is
   const isUnread = (item: BulletinItem) => !item.readBy?.includes(userId);
 
   return (
-    <div className={`md:hidden bg-white rounded-2xl border p-4 ${isUnread(latest) ? 'border-red-200' : 'border-slate-200'}`}>
+    <div className={`md:hidden bg-surface rounded-ih-lg border p-4 ${isUnread(latest) ? 'border-danger-line' : 'border-line'}`}>
       <div className="flex items-start justify-between gap-2">
         <Byline item={latest} unread={isUnread(latest)} />
         {isAdmin && (
-          <button onClick={() => onDelete(latest)} aria-label="Padam buletin" className="w-11 h-11 -mt-3 -mr-2 shrink-0 flex items-center justify-center rounded-xl text-slate-400 active:bg-red-50 active:text-red-500">
+          <button onClick={() => onDelete(latest)} aria-label="Padam buletin" className="w-11 h-11 -mt-3 -mr-2 shrink-0 flex items-center justify-center rounded-ih-md text-muted active:bg-danger-tint active:text-danger">
             <Trash2 className="w-4 h-4" />
           </button>
         )}
       </div>
-      <p className="clamp-3 text-sm font-medium text-slate-700 leading-relaxed break-words">{plainText(latest.content) || 'Tiada kandungan...'}</p>
+      <p className="clamp-3 text-sm text-ink leading-relaxed break-words">{plainText(latest.content) || 'Tiada kandungan...'}</p>
       <div className="flex items-center justify-between gap-3 mt-3">
-        <span className="text-xs text-slate-500 min-w-0 truncate">{reactionSummary(latest) || 'Tiada reaksi'}</span>
-        <button onClick={() => onRead(latest)} className={`h-11 px-4 shrink-0 rounded-xl text-sm font-bold border ${isUnread(latest) ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-200'}`}>
-          {isUnread(latest) ? 'Baca Penuh' : 'Lihat'}
+        <span className="text-xs text-muted min-w-0 truncate">{reactionSummary(latest) || 'Tiada reaksi'}</span>
+        <button onClick={() => onRead(latest)} className={`h-11 px-4 shrink-0 rounded-ih-md text-sm font-bold border ${isUnread(latest) ? 'bg-ink text-paper border-ink' : 'bg-surface text-ink border-line-strong'}`}>
+          {isUnread(latest) ? 'Baca penuh' : 'Lihat'}
         </button>
       </div>
 
       {others.length > 0 && (
-        <details className="group mt-3 border-t border-slate-100">
-          <summary className="list-none flex items-center justify-between min-h-[44px] text-sm font-bold text-slate-600 cursor-pointer">
+        <details className="group mt-3 border-t border-line">
+          <summary className="list-none flex items-center justify-between min-h-[44px] text-sm font-bold text-ink cursor-pointer">
             Buletin lain ({others.length})
             <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
           </summary>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-line">
             {others.map(item => (
               <button key={item.id} onClick={() => onRead(item)} className="w-full text-left py-3 min-h-[44px]">
                 <Byline item={item} unread={isUnread(item)} />
-                <p className="clamp-2 text-sm text-slate-700 mt-1 break-words">{plainText(item.content) || 'Tiada kandungan...'}</p>
+                <p className="clamp-2 text-sm text-ink-soft mt-1 break-words">{plainText(item.content) || 'Tiada kandungan...'}</p>
               </button>
             ))}
           </div>

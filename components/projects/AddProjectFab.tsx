@@ -18,7 +18,7 @@ const AddProjectFab: React.FC<{ onClick: () => void }> = ({ onClick }) => {
         <button
             onClick={onClick}
             aria-label="Tambah Projek"
-            className={`md:hidden fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 h-14 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 border border-emerald-700 active:bg-emerald-700 ${compact ? 'w-14' : 'px-5'}`}
+            className={`md:hidden fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 h-14 rounded-full bg-emerald-bright text-ink font-bold flex items-center justify-center gap-2 border border-emerald active:bg-emerald ${compact ? 'w-14' : 'px-5'}`}
         >
             <Plus className="w-6 h-6 shrink-0" />
             {!compact && <span>Tambah Projek</span>}

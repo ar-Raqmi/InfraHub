@@ -1,0 +1,5 @@
+- 2026-11-21 23:17 setup: state bootstrapped, server on 8794, migrate-legacy run (3 contracts, 490 projects), before screenshots taken; next: worklist logic + dashboard
+- 2026-11-21 23:32 dashboard (Pusat kawalan/Hari ini) + projects list/scope/summary components written; tsc 3, build green; next: visual check + e2e
+- 2026-11-22 00:06 e2e 20/20, mutation check, regressions 11/11, phone probes, vitest 18+70, screenshots 15; next: REPORT-P1
+- 2026-11-22 00:08 lead add-on: BP/Zon/Mukim filters now from useLookups (probe 3/3 lists equal API, marker shown, restored); e2e+regress re-run green; next: REPORT-P1
+- 2026-11-22 00:10 REPORT-P1 written; done; server on 8794 stopped (restart: npx wrangler pages dev dist --port 8794 --persist-to ~/.hermes/cache/scratch/v2/state-P1 --compatibility-date=2026-06-18)
