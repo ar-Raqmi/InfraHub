@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
             report: path.resolve(__dirname, 'report.html'),
             profile: path.resolve(__dirname, 'profile.html'),
             settings: path.resolve(__dirname, 'settings.html'),
+            kit: path.resolve(__dirname, 'kit.html'),
           },
         },
       }
