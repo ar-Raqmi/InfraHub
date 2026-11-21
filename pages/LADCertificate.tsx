@@ -3,7 +3,11 @@ import React, { useState } from 'react';
 import { Project, formatCurrency, formatDate } from '../types';
 import { LADPDFExporter } from '../services/pdf/LADPDFExporter';
 import CertificateModal from '../components/CertificateModal';
-import { calculateLADDailyRate, LAD_BLR, LAD_EFFECTIVE_RATE, LAD_SMALL_PROJECT_THRESHOLD } from '../services/finance';
+import { calculateLADDailyRate, ladPolicyDate } from '../services/finance';
+import { useOrgDocs } from '../components/org/orgDocs';
+import { ladTextVars, money2 } from '../components/org/documentVars';
+
+const T = 'doc.lad';
 
 interface LADCertificateProps {
     project: Project;
@@ -12,27 +16,27 @@ interface LADCertificateProps {
 
 const LADCertificate: React.FC<LADCertificateProps> = ({ project, onClose }) => {
     const [isGenerating, setIsGenerating] = useState(false);
+    const { docs: org, ready } = useOrgDocs(project);
 
-    // --- Calculation Logic ---
+    // Rates come from the LAD policy in force on the project's contract date (Tetapan Organisasi -> Peraturan).
+    const policy = org.ladPolicy(ladPolicyDate(project));
+    const vars = ladTextVars(policy);
     const contractSum = project.kosProjek || 0;
-    const isSmallProject = contractSum < LAD_SMALL_PROJECT_THRESHOLD;
-    const BLR = LAD_BLR;                 // 6.65 (display value)
-    const effectiveRate = LAD_EFFECTIVE_RATE; // 6.4 (display value)
-
-    // Daily Rate (shared finance util)
-    const dailyRate = calculateLADDailyRate(contractSum);
+    const isSmallProject = contractSum < policy.smallProjectThreshold;
+    const effectiveRate = policy.annualRatePct;
+    const dailyRate = calculateLADDailyRate(contractSum, policy);
 
     // Days
     const daysLate = project.ladDays || 0;
     const totalLAD = Math.round((dailyRate * daysLate + Number.EPSILON) * 100) / 100;
 
     // Helper to format number to 2 decimals
-    const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = money2;
 
     const handleDownload = async () => {
         setIsGenerating(true);
         try {
-            await LADPDFExporter.export(project);
+            await LADPDFExporter.export(project, ready ? org : undefined);
         } catch (e) {
             console.error("PDF Generation Error", e);
             alert("Ralat menjana PDF.");
@@ -65,7 +69,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, onClose }) => 
                                 <span className="uppercase leading-tight">{project.namaProjek}</span>
                             </div>
                             <div className="underline font-bold text-[12px] uppercase mb-6">
-                                DENDA KELEWATAN MENYIAPKAN KERJA
+                                {org.text(T, 'title')}
                             </div>
                         </div>
 
@@ -99,10 +103,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, onClose }) => 
                         {/* Section 3: Calculation Box */}
                         <div className="border-2 border-black p-6 font-bold text-[12px] mb-8">
                             <div className="mb-6 italic font-normal">
-                                {isSmallProject 
-                                    ?"Bagi Kontrak bernilai kurang RM 20,000.00, kadar Denda (LAD) adalah RM 20.00/hari rata."
-                                    : `BLR ${BLR} ( Maklumat daripada Bahagian Perolehan )`
-                                }
+                                {org.text(T, isSmallProject ? 'noteSmall' : 'noteBlr', vars)}
                             </div>
 
                             {/* Formula Display */}
@@ -134,7 +135,7 @@ const LADCertificate: React.FC<LADCertificateProps> = ({ project, onClose }) => 
                                 </div>
                             ) : (
                                 <div className="text-center mb-8">
-                                    KADAR DENDA (LAD) = RM 20.00 / HARI
+                                    {org.text(T, 'flatLine', vars)}
                                 </div>
                             )}
 

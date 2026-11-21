@@ -1,15 +1,19 @@
 import { Project, formatDate } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
+import { locPolicyDate } from '../finance';
+import { loadOrgDocs, type OrgDocs } from '../../components/org/orgDocs';
+import { locTextVars } from '../../components/org/documentVars';
+
+const T = 'doc.loc';
 
 export class LoCPDFExporter {
-    static async export(project: Project): Promise<void> {
-        // --- Calculation Logic ---
+    static async export(project: Project, orgDocs?: OrgDocs): Promise<void> {
+        const org = (orgDocs ?? await loadOrgDocs()).forProject(project);
+        const policy = org.locPolicy(locPolicyDate(project));
         const locDays = project.locDays || 0;
-        const locRate = 100;
         const totalLoC = project.locAmount || 0;
-
-        // Helper to format number to 2 decimals
         const fmt = PDFBaseHelper.formatNumber2dp;
+        const vars = locTextVars(policy);
 
         const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -32,7 +36,7 @@ export class LoCPDFExporter {
         y += (titleLines.length * 5) + 8; // Adjust spacing based on lines
 
         doc.setFontSize(10);
-        const subTitle = "DENDA LEWAT TUNTUTAN (LoC)";
+        const subTitle = org.text(T, 'title');
         doc.text(subTitle, margin, y);
         const textWidth = doc.getTextWidth(subTitle);
         doc.setLineWidth(0.3);
@@ -82,15 +86,11 @@ export class LoCPDFExporter {
 
         // CALCULATION LOGIC EXPLANATION
         doc.setFont("helvetica", "bold");
-        doc.text("PENGIRAAN DENDA LEWAT TUNTUTAN", margin, y);
+        doc.text(org.text(T, 'heading'), margin, y);
         y += 8;
 
         doc.setFont("helvetica", "normal");
-        const logicText = [
-            "1. Tempoh liabiliti untuk tuntutan bayaran adalah 14 hari selepas Tarikh Siap Sebenar.",
-            "2. Denda dikenakan bermula hari ke-15 selepas Tarikh Siap Sebenar.",
-            "3. Kadar denda adalah RM 100.00 / Hari."
-        ];
+        const logicText = ['rule1', 'rule2', 'rule3'].map((field) => org.text(T, field, vars));
         
         logicText.forEach(line => {
             doc.text(line, margin, y);
@@ -109,7 +109,7 @@ export class LoCPDFExporter {
         doc.text("BILANGAN HARI LEWAT:", margin + boxPadding, boxY);
         boxY += 8;
 
-        const calcStr = `( ${formatDate(project.tarikhTuntutanBayaran)} - ${formatDate(project.tarikhSiapSebenar)} ) - 14 HARI`;
+        const calcStr = `( ${formatDate(project.tarikhTuntutanBayaran)} - ${formatDate(project.tarikhSiapSebenar)} ) - ${policy.graceDays} HARI`;
         doc.setFont("helvetica", "normal");
         doc.text(calcStr, margin + boxPadding + 10, boxY);
         boxY += 8;
@@ -123,7 +123,7 @@ export class LoCPDFExporter {
         boxY += 8;
         
         doc.setFont("helvetica", "normal");
-        doc.text(`${locDays} HARI  x  RM ${locRate}.00`, margin + boxPadding + 10, boxY);
+        doc.text(`${locDays} HARI  x  RM ${fmt(policy.dailyRate)}`, margin + boxPadding + 10, boxY);
         boxY += 8;
 
         doc.setFontSize(14);

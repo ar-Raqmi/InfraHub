@@ -1,25 +1,16 @@
 import { Project, User, formatDateMalay } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
+import { dlpPeriod } from '../finance';
+import { loadOrgDocs, type OrgDocs } from '../../components/org/orgDocs';
+import { EXTRA_POLICY_KEYS } from '../../components/org/orgDefaults';
+
+const T = 'doc.cpc';
 
 export class CPCPDFExporter {
-    static async export(project: Project, pjaUser?: User, companyDetails?: any): Promise<void> {
+    static async export(project: Project, pjaUser?: User, companyDetails?: any, orgDocs?: OrgDocs): Promise<void> {
+        const org = (orgDocs ?? await loadOrgDocs()).forProject(project);
         const tarikhSiap = project.tarikhSiapSebenar ? project.tarikhSiapSebenar : '';
-        
-        const getDLPStart = (dateStr: string) => {
-            if (!dateStr) return '';
-            const d = new Date(dateStr);
-            d.setDate(d.getDate() + 1);
-            return d.toISOString().split('T')[0];
-        };
-        const dlpStart = getDLPStart(tarikhSiap);
-
-        const getDLPEnd = (dateStr: string) => {
-            if (!dateStr) return '';
-            const d = new Date(dateStr);
-            d.setMonth(d.getMonth() + 6);
-            return d.toISOString().split('T')[0];
-        };
-        const dlpEnd = getDLPEnd(dlpStart);
+        const { start: dlpStart, end: dlpEnd } = dlpPeriod(tarikhSiap, org.number(EXTRA_POLICY_KEYS.dlpMonths, tarikhSiap));
 
         const jsPDF = PDFBaseHelper.getJsPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -31,21 +22,21 @@ export class CPCPDFExporter {
 
         doc.setFont("helvetica","bold");
         doc.setFontSize(12);
-        doc.text("KERAJAAN MALAYSIA", pageWidth / 2, currentY, { align:"center" });
+        doc.text(org.text(T, 'heading1'), pageWidth / 2, currentY, { align:"center" });
         currentY += 6;
         
         doc.setFontSize(12);
-        doc.text("MAJLIS PERBANDARAN SELAYANG", pageWidth / 2, currentY, { align:"center" });
+        doc.text(org.text(T, 'heading2'), pageWidth / 2, currentY, { align:"center" });
         currentY += 8;
 
         doc.setFont("helvetica","normal");
         doc.setFontSize(11);
-        doc.text("PERAKUAN SIAP KERJA", pageWidth / 2, currentY, { align:"center" });
+        doc.text(org.text(T, 'title'), pageWidth / 2, currentY, { align:"center" });
         currentY += 5;
 
         doc.setFont("helvetica","italic");
         doc.setFontSize(9);
-        doc.text("(CERTIFICATE OF PRACTICAL COMPLETION)", pageWidth / 2, currentY, { align:"center" });
+        doc.text(org.text(T, 'subtitle'), pageWidth / 2, currentY, { align:"center" });
         currentY += 15;
 
         doc.setFont("helvetica","normal");
@@ -57,14 +48,12 @@ export class CPCPDFExporter {
         doc.text(`Rujukan : ${project.noFail || ''} (   )`, leftColX, currentY);
         
         doc.setFont("helvetica","bold");
-        doc.text("Majlis Perbandaran Selayang", rightColX, currentY);
-        currentY += 4;
+        doc.text(org.profile.name, rightColX, currentY);
         doc.setFont("helvetica","normal");
-        doc.text("Persiaran 3, Bandar Baru Selayang,", rightColX, currentY);
-        currentY += 4;
-        doc.text("68100 Batu Caves,", rightColX, currentY);
-        currentY += 4;
-        doc.text("Selangor Darul Ehsan", rightColX, currentY);
+        for (const line of org.profile.addressLines) {
+            currentY += 4;
+            doc.text(line, rightColX, currentY);
+        }
         
         currentY += 12; 
 
@@ -87,13 +76,13 @@ export class CPCPDFExporter {
         currentY += (splitAddress.length * 4) + 8;
 
         doc.setFont("helvetica","bold");
-        doc.text(`Berdaftar dengan CIDB dalam Gred" ${companyDetails?.gred || 'G1'}"`, leftColX, currentY);
+        doc.text(org.text(T, 'cidb', { gred: companyDetails?.gred || 'G1' }), leftColX, currentY);
         currentY += 5;
         doc.text(`No. Sebutharga : ${project.noSebutharga || '.........................'}`, leftColX, currentY);
         currentY += 10;
 
         doc.setFont("helvetica","normal");
-        const labelSebutharga ="Sebutharga Untuk :";
+        const labelSebutharga = org.text(T, 'sebuthargaLabel');
         doc.text(labelSebutharga, leftColX, currentY);
         
         const labelWidth = doc.getTextWidth(labelSebutharga);
@@ -114,17 +103,7 @@ export class CPCPDFExporter {
         const date2 = dlpStart ? formatDateMalay(dlpStart) : '...................';
         const date3 = dlpEnd ? formatDateMalay(dlpEnd) : '...................';
 
-        const tokens = [
-            { text:"Menurut Syarat-Syarat Kontrak, dan tertakluk kepada penyiapan berkaitan dengan pembaikan apa-apa kecacatan, ketidaksempurnaan, kesusutan atau apa-apa dan yang mungkin terzahir dalam Tempoh Tanggungan Kecacatan maka adalah dengan ini di perakui bahawa seluruh Kerja yang tersebut telah siap sejajar dengan syarat-syarat dalam Dokumen Sebut Harga pada ", bold: false },
-            { text: date1, bold: true },
-            { text:" dan diambil milik pada ", bold: false },
-            { text: date2, bold: true },
-            { text:" dan dengan itu Tempoh Tanggungan Kecacatan untuk kerja kerja tersebut bermula pada ", bold: false },
-            { text: date2, bold: true },
-            { text:" dan berakhir pada ", bold: false },
-            { text: date3, bold: true },
-            { text:".", bold: false }
-        ];
+        const tokens = org.tokens(T, 'body', { tarikh_siap: date1, tarikh_mula_dlp: date2, tarikh_tamat_dlp: date3 });
 
         const lineHeight = 5; 
         let cursorX = leftColX;
@@ -157,8 +136,8 @@ export class CPCPDFExporter {
         doc.setFont("helvetica","bold");
         doc.setFontSize(11);
         
-        doc.text("Diperakui di tapak,", sigLeftX, currentY);
-        doc.text("Disahkan,", sigRightX, currentY);
+        doc.text(org.text(T, 'signLeft'), sigLeftX, currentY);
+        doc.text(org.text(T, 'signRight'), sigRightX, currentY);
         currentY += 25; 
 
         doc.setLineDash([1, 1], 0);
@@ -172,7 +151,7 @@ export class CPCPDFExporter {
         
         const sigStartY = currentY;
 
-        doc.text(`(Penolong Jurutera/Penyelia Tapak)`, sigLeftX, currentY);
+        doc.text(org.text(T, 'signLeftRole'), sigLeftX, currentY);
         currentY += 5;
         
         const maxLeftWidth = sigRightX - sigLeftX - 10; 
@@ -186,7 +165,7 @@ export class CPCPDFExporter {
 
         let rightY = sigStartY;
         
-        doc.text(`(Jurutera)`, sigRightX, rightY);
+        doc.text(org.text(T, 'signRightRole'), sigRightX, rightY);
         rightY += 5;
         doc.text(`Nama Penuh :`, sigRightX, rightY);
         rightY += 5;

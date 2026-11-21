@@ -1,0 +1,4 @@
+- 2026-11-21 23:17 read contract/wave2/API/design; bootstrapped state-O; snapshot of pre-change source in scratch/O/before for parity. Next: build+serve, before captures
+- 2026-11-21 23:28 config layer (components/org: defaults JSON, template, OrgDocs loader+hook) + all owned exporters/cert pages/finance wired; tsc 2, vitest 70 pass; parity before vs after-fallback: 30/30 PDFs identical text. Next: seed script run, seeded parity, Organisasi page
+- 2026-11-21 23:45 Organisasi page (5 sections, history, LAD check), Login re-skin, NoticePreview, e2e spec written; phone probe clean. Next: run e2e, letterhead before/after, report
+- 2026-11-22 00:04 DONE: e2e 10/10 PASS, parity 30/30 identical (fallback, seeded, after-e2e), intended-change diff = org lines only, NEEDS-lead (0003 SQL + 8 requests), REPORT-O written, 19 screenshots

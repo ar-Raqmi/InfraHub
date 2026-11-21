@@ -1,5 +1,8 @@
 import { Project } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
+import { loadOrgDocs, type OrgDocs } from '../../components/org/orgDocs';
+
+const T = 'doc.aku_janji';
 
 export class AkuJanjiPDFExporter {
     static async export(project: Project, options: {
@@ -9,7 +12,8 @@ export class AkuJanjiPDFExporter {
         companyName: string;
         formattedSerahTapak: string;
         formattedAduan: string;
-    }): Promise<void> {
+    }, orgDocs?: OrgDocs): Promise<void> {
+        const org = (orgDocs ?? await loadOrgDocs()).forProject(project);
         const { currentMonth, selectedYear, pjaName, companyName, formattedSerahTapak, formattedAduan } = options;
 
         const jsPDF = PDFBaseHelper.getJsPDF();
@@ -34,16 +38,15 @@ export class AkuJanjiPDFExporter {
         // Recipient (Top Left)
         let yPos = 50;
         const lineHeight = 5;
-        doc.text("Pengarah,", margin, yPos);
-        yPos += lineHeight;
-        doc.text("Jabatan Kejuruteraan,", margin, yPos);
-        yPos += lineHeight;
-        doc.text("Majlis Perbandaran Selayang.", margin, yPos);
+        org.text(T, 'recipient').split('\n').forEach((line, i) => {
+            if (i > 0) yPos += lineHeight;
+            doc.text(line, margin, yPos);
+        });
 
         // Title "AKU JANJI"
         yPos += 25;
         doc.setFontSize(16);
-        doc.text("AKU JANJI", pageWidth / 2, yPos, { align: 'center' });
+        doc.text(org.text(T, 'title'), pageWidth / 2, yPos, { align: 'center' });
 
         // --- BODY ---
         yPos += 20;
@@ -57,28 +60,28 @@ export class AkuJanjiPDFExporter {
         yPos += titleHeight + 10;
 
         doc.setFont("helvetica", "normal");
-        const para1 = `Adalah dimaklumkan bahawa, saya memperakukan bahawa kerja-kerja di tapak akan dimulakan dalam tempoh lima (5) hari selepas tarikh penyerahan tapak iaitu pada ${formattedSerahTapak}`;
+        const para1 = org.text(T, 'para1', { tarikh_serah_tapak: formattedSerahTapak });
         const splitPara1 = doc.splitTextToSize(para1, contentWidth);
         doc.text(splitPara1, margin, yPos, { align: 'justify', maxWidth: contentWidth });
         
         const para1Height = doc.getTextDimensions(splitPara1).h;
         yPos += para1Height + 10;
 
-        const para2 = "Sekiranya kerja-kerja tersebut gagal dimulakan dalam tempoh lima (5) hari, pihak MPS berhak menarik semula perlantikan syarikat saya dan melantik semula syarikat lain bagi kerja tersebut.";
+        const para2 = org.text(T, 'para2');
         const splitPara2 = doc.splitTextToSize(para2, contentWidth);
         doc.text(splitPara2, margin, yPos, { align: 'justify', maxWidth: contentWidth });
         
         const para2Height = doc.getTextDimensions(splitPara2).h;
         yPos += para2Height + 10;
 
-        doc.text("Sekian.", margin, yPos);
+        doc.text(org.text(T, 'closing'), margin, yPos);
         yPos += 30;
 
         // --- SIGNATURES ---
         const sigStartY = yPos;
-        doc.text("Saya yang berjanji", margin, sigStartY);
+        doc.text(org.text(T, 'signLeft'), margin, sigStartY);
         const rightColX = pageWidth / 2 + 10;
-        doc.text("Saksi", rightColX, sigStartY);
+        doc.text(org.text(T, 'signRight'), rightColX, sigStartY);
 
         const lineY = sigStartY + 15;
         doc.setLineDash([1, 1], 0); 

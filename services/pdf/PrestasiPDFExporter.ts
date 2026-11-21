@@ -1,10 +1,13 @@
 import { Project, formatCurrency, formatDate } from '../../types';
 import { PDFBaseHelper } from './PDFBaseHelper';
+import { loadOrgDocs, type OrgDocs } from '../../components/org/orgDocs';
+import { prestasiCriteria } from '../../components/org/documentVars';
 
-
+const T = 'doc.prestasi';
 
 export class PrestasiPDFExporter {
-    static async export(project: Project, localScores: number[], localSkop: string | null, companyDetails?: any): Promise<void> {
+    static async export(project: Project, localScores: number[], localSkop: string | null, companyDetails?: any, orgDocs?: OrgDocs): Promise<void> {
+        const org = (orgDocs ?? await loadOrgDocs()).forProject(project);
         const totalScore = localScores.reduce((a, b) => a + b, 0);
         const percentage = Math.ceil((totalScore / 60) * 100);
 
@@ -15,7 +18,7 @@ export class PrestasiPDFExporter {
         const margin = 15;
         let currentY = 15;
 
-        const sealLogo = await PDFBaseHelper.getBase64ImageFromURL("https://upload.wikimedia.org/wikipedia/commons/6/6e/Selayang_Seal.png");
+        const sealLogo = org.logo ? await PDFBaseHelper.getBase64ImageFromURL(org.logo.src) : null;
 
         if (sealLogo) {
             doc.addImage(sealLogo, 'PNG', pageWidth / 2 - 12, currentY, 24, 20);
@@ -26,7 +29,7 @@ export class PrestasiPDFExporter {
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
-        doc.text("BORANG PRESTASI KONTRAKTOR / PEMBEKAL", pageWidth / 2, currentY, { align: "center" });
+        doc.text(org.text(T, 'title'), pageWidth / 2, currentY, { align: "center" });
         doc.setLineWidth(0.5);
         doc.line(pageWidth / 2 - 55, currentY + 1, pageWidth / 2 + 55, currentY + 1);
         currentY += 10;
@@ -172,14 +175,7 @@ export class PrestasiPDFExporter {
             return y + boxHeight + 8;
         };
 
-        const questions = [
-            "Keupayaan kontraktor/ pembekal memenuhi permintaan dari segi harga berbanding kontraktor/ pembekal lain.",
-            "Keupayaan kontraktor/ pembekal untuk membekalkan barangan /perkhidmatan/kerja mengikut spesifikasi yang ditetapkan.",
-            "Keupayaan kontraktor/ pembekal untuk membekalkan barangan/ perkhidmatan dalam jangkamasa yang ditetapkan.",
-            "Keupayaan kontraktor/ pembekal untuk membuat tindakan pembetulan sekiranya barangan/ perkhidmatan yang dibekalkan tidak memenuhi spesifikasi yang ditetapkan.",
-            "Penilaian terhadap kontraktor/pembekal dari segi sikap dan kerjasama yang ditunjukkan oleh kontraktor/pembekal.",
-            "Kekemasan dan kebersihan semasa dan selepas melaksanakan kerja / penghantaran bekalan."
-        ];
+        const questions = prestasiCriteria(org);
 
         for (let i = 0; i < 4; i++) {
             doc.setFontSize(9);
@@ -270,11 +266,7 @@ export class PrestasiPDFExporter {
 
         currentY += cBoxHeight + 15;
 
-        const titles = [
-            "PENGESAHAN PEGAWAI PENYELIA TAPAK / PENERIMA BEKALAN",
-            "PENGESAHAN PEGAWAI / JURUTERA",
-            "PERAKUAN PENGARAH JABATAN - Maklumat telah dikemaskini di dalam sistem."
-        ];
+        const titles = ['sign1', 'sign2', 'sign3'].map((field) => org.text(T, field));
 
         for (const title of titles) {
             doc.setFillColor(220, 220, 220);
@@ -311,7 +303,7 @@ export class PrestasiPDFExporter {
         doc.line(margin, footerY, pageWidth - margin, footerY);
         doc.setFontSize(7);
         doc.setTextColor(0, 0, 0);
-        doc.text("Sila hantar salinan borang ini ke :    Bahagian Perolehan, Majlis Perbandaran Selayang", margin, footerY + 4);
+        doc.text(org.text(T, 'footer'), margin, footerY + 4);
 
         doc.save(`Borang_Prestasi_${project.noFail || 'Draft'}.pdf`);
     }

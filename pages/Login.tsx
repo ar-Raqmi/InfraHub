@@ -1,12 +1,28 @@
 import React, { useState } from 'react';
 import { apiService } from '../services/apiService';
 import { User as UserType } from '../types';
-import { User, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import BrandMark from '../components/ui/BrandMark';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { BrandMark, Button, Field, Input } from '../components/ui';
+import { useOrgDocs } from '../components/org/orgDocs';
 
 interface LoginProps {
   onLogin: (user: UserType) => void;
 }
+
+/** The organisation using this InfraHub (from Tetapan Organisasi), shown under the product brand. */
+const OrgLine: React.FC = () => {
+  const { docs } = useOrgDocs();
+  const { profile, logo } = docs;
+  return (
+    <div className="flex items-center gap-3 rounded-ih-md border border-line bg-paper px-3 py-2.5" data-testid="login-org">
+      {logo && <img src={logo.src} alt="" className="w-9 h-9 object-contain shrink-0" />}
+      <div className="min-w-0">
+        <p className="ih-eyebrow text-muted">Digunakan oleh</p>
+        <p className="font-bold text-ink leading-tight break-words">{profile.name}</p>
+      </div>
+    </div>
+  );
+};
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
@@ -30,87 +46,67 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50  flex items-start justify-center p-4 pt-10 md:items-center md:pt-4 relative overflow-hidden font-sans selection:bg-emerald-500/30">
-      
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent"></div>
-      </div>
-
-      <div className="w-full max-w-md bg-white/95  rounded-[40px] p-6 md:p-12 shadow-2xl border border-white/50  relative z-10 animate-fade-in">
-        
-        <div className="flex flex-row md:flex-col items-center gap-4 md:gap-0 mb-6 md:mb-10">
-          <BrandMark size={64} className="md:mb-6 shadow-sm" />
-          <div className="md:text-center">
-            <h2 className="text-3xl md:text-4xl font-black text-slate-900  mb-1 md:mb-2 tracking-tight font-jakarta">InfraHub</h2>
-            <p className="text-slate-500  font-bold uppercase tracking-[0.2em] text-[10px]">by Syafiq Daniel</p>
+    <div className="min-h-screen bg-paper flex items-start justify-center px-4 py-8 md:items-center font-sans">
+      <div className="w-full max-w-md bg-surface border border-line rounded-ih-xl p-6 md:p-10 animate-fade-in space-y-6">
+        <div className="flex items-center gap-4">
+          <BrandMark size={56} />
+          <div className="min-w-0">
+            <h1 className="font-display text-display-l text-ink">InfraHub</h1>
+            <p className="text-sm text-muted">Projek infrastruktur, dari tapak ke bayaran.</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
-          <div className="space-y-2">
-            <label htmlFor="login-username" className="text-[10px] font-black text-slate-400  uppercase tracking-widest ml-1">ID Pengguna</label>
-            <div className="relative group">
-              <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-                <User className="w-5 h-5" />
-              </div>
-              <input 
-                id="login-username"
-                type="text" 
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                autoComplete="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder=""
-                className="w-full pl-12 pr-5 py-4 rounded-2xl bg-slate-50  border border-slate-200  focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow text-slate-900  placeholder-slate-400 shadow-sm"
-                required
-              />
-            </div>
-          </div>
+        <OrgLine />
 
-          <div className="space-y-2">
-            <label htmlFor="login-password" className="text-[10px] font-black text-slate-400  uppercase tracking-widest ml-1">Kata Laluan</label>
-            <div className="relative group">
-              <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-                <Lock className="w-5 h-5" />
-              </div>
-              <input 
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Field label="ID pengguna" htmlFor="login-username">
+            <Input
+              id="login-username"
+              type="text"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </Field>
+
+          <Field label="Kata laluan" htmlFor="login-password">
+            <div className="relative">
+              <Input
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder=""
-                className="w-full pl-12 pr-14 md:pr-5 py-4 rounded-2xl bg-slate-50  border border-slate-200  focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow text-slate-900  placeholder-slate-400 shadow-sm"
+                className="pr-14"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(v => !v)}
                 aria-label={showPassword ? 'Sembunyikan kata laluan' : 'Tunjuk kata laluan'}
-                className="md:hidden absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-xl text-slate-400 active:bg-slate-100"
+                className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-ih-sm text-muted hover:text-ink active:bg-paper-deep"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-          </div>
+          </Field>
 
           {error && (
-            <div className="p-4 rounded-2xl bg-red-50  border border-red-100  text-red-600  text-sm font-medium text-center">
+            <p role="alert" className="p-3 rounded-ih-md bg-danger-tint border border-danger-line text-danger text-sm font-bold">
               {error}
-            </div>
+            </p>
           )}
 
-          <button 
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 bg-slate-900  text-white  rounded-2xl font-bold text-lg hover:bg-emerald-600  transition-colors shadow-xl shadow-slate-900/10  mt-2 md:mt-4 flex items-center justify-center gap-2 group disabled:opacity-70"
-          >
-            {loading ? 'Sila tunggu...' : 'Log Masuk'} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <Button type="submit" variant="primary" size="lg" block disabled={loading}>
+            {loading ? 'Sila tunggu…' : 'Log masuk'} {!loading && <ArrowRight className="w-5 h-5" aria-hidden />}
+          </Button>
         </form>
+
+        <p className="text-center text-[12px] font-bold uppercase tracking-[0.2em] text-muted">by Syafiq Daniel</p>
       </div>
     </div>
   );
