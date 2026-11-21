@@ -66,7 +66,7 @@ const getAutoNumber = (items: BQItem[], currentIndex: number) => {
 
 
 export class BQPDFExporter {
-  static async exportBQ(formData: any, users: User[], locationRows: ProjectLocation[]): Promise<void> {
+  static async exportBQ(formData: any, users: User[], locationRows: ProjectLocation[], rateSource?: string): Promise<void> {
     const jsPDF = PDFBaseHelper.getJsPDF();
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -367,6 +367,7 @@ Jabatan Kejuruteraan` }],
     doc.addPage();
     const grandTotal = bqData.reduce((acc: number, g: any) => acc + g.items.reduce((s: number, i: any) => s + (i.amount || 0), 0), 0);
     doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text("RINGKASAN", pageWidth / 2, 20, { align: "center" });
+    if (rateSource) { doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(`Kadar: ${rateSource}`, pageWidth / 2, 25, { align: "center" }); }
 
     const summaryBody = bqData.map((b: any) => [
       { content: b.title, styles: { fontStyle: 'bold' } },

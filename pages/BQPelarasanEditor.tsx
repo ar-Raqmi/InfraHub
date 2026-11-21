@@ -55,6 +55,9 @@ import BillSetupToggle, { globalDimsSummary } from '../components/bq/BillSetupTo
 import PinnedAddButton from '../components/bq/PinnedAddButton';
 import PelarasanPriceNotices from '../components/bq/PelarasanPriceNotices';
 import { useIsMobile } from '../components/bq/useIsMobile';
+import { useProjectBook } from '../components/bq/useProjectBook';
+import { locateRef, refMiss, syncSnapshot, type TemplateMiss } from '../components/bq/bookTemplate';
+import { BookPickerHeading, TemplateMissSheet } from '../components/bq/BookNotices';
 
 const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     originalData,
@@ -73,7 +76,10 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     const [isGlobalLinkModalOpen, setIsGlobalLinkModalOpen] = useState<{ itemId: string, partId: string } | null>(null);
 
-    const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
+    // Pelarasan additions are priced from the project's own contract book, not the global Pustaka.
+    const book = useProjectBook(projectData);
+    const bqLibrary = book.groups;
+    const [templateMisses, setTemplateMisses] = useState<TemplateMiss[]>([]);
     const [bqTemplates, setBqTemplates] = useState<BQTemplateDefinition[]>([]);
     const [recentItems, setRecentItems] = useState<{ groupId: string, itemId: string, variantId?: string }[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -107,12 +113,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
     useEffect(() => {
         const fetchLibrary = async () => {
             try {
-                const [library, templates] = await Promise.all([
-                    apiService.getLibraryGroups(),
-                    apiService.getTemplates()
-                ]);
-                setBqLibrary(library);
-                setBqTemplates(templates);
+                setBqTemplates(await apiService.getTemplates());
             } catch (err) {
                 console.error('Failed to load BQ library/templates:', err);
             }
@@ -568,6 +569,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
         }
 
         const newGroups: BQGroup[] = [];
+        const misses: TemplateMiss[] = [];
         if (tpl.bills && tpl.bills.length > 0) {
             tpl.bills.forEach((billDef, bIdx) => {
                 const billCalcId = `calc-pelarasan-${Math.random().toString(36).substr(2, 9)}`;
@@ -596,23 +598,9 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                             isAdjustment: true
                         };
 
-                        // Sync with Library if source exists
-                        if (newItem.sourceItemId) {
-                            const group = bqLibrary.find(g => g.id === newItem.sourceGroupId);
-                            const libItem = group?.items.find(i => i.id === newItem.sourceItemId);
-                            if (libItem) {
-                                if (newItem.sourceVariantId) {
-                                    const libVariant = libItem.variants?.find(v => v.id === newItem.sourceVariantId);
-                                    if (libVariant) {
-                                        newItem.rate = libVariant.rate;
-                                        newItem.unit = libVariant.unit;
-                                    }
-                                } else {
-                                    newItem.rate = libItem.rate || 0;
-                                    newItem.unit = libItem.unit || '';
-                                }
-                            }
-                        }
+                        // Re-price from the project's book; a line the book lacks stays, flagged, and is listed.
+                        const miss = syncSnapshot(newItem, book.index);
+                        if (miss) misses.push(miss);
 
                         // Apply Global Dimensions
                         const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
@@ -631,12 +619,13 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
                         bill.items.push(newItem);
                     } else {
                         const ref = itemOrRef as BQTemplateItemRef;
-                        const group = bqLibrary.find(g => g.id === ref.groupId);
-                        if (group) {
-                            const libItem = group.items.find(i => i.id === ref.itemId);
-                            if (libItem) {
-                                const bqIt = createItem(bqLibrary, ref.groupId, ref.itemId, ref.variantId);
-                                bqIt.sourceGroupId = ref.groupId;
+                        const located = locateRef(bqLibrary, ref);
+                        if (!located) misses.push(refMiss(ref));
+                        if (located) {
+                            const group = located.group;
+                            if (located.item) {
+                                const bqIt = createItem(bqLibrary, group.id, ref.itemId, ref.variantId);
+                                bqIt.sourceGroupId = group.id;
                                 bqIt.sourceItemId = ref.itemId;
                                 bqIt.sourceVariantId = ref.variantId;
                                 bqIt.isAdjustment = true;
@@ -678,6 +667,7 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             setActiveBillId(newGroups[0].id);
         }
         setIsTemplateModalOpen(false);
+        setTemplateMisses(misses);
     };
 
     const moveBill = (billId: string, direction: 'up' | 'down') => {
@@ -1469,11 +1459,12 @@ const BQPelarasanEditor: React.FC<BQPelarasanEditorProps> = ({
             </BillNavSheet>
 
             {/* --- MODALS --- */}
+            <TemplateMissSheet misses={templateMisses} book={book} onClose={() => setTemplateMisses([])} />
             {isAddItemModalOpen && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-black/60 animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
                     <div className="bg-white rounded-none md:rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-full md:h-[80vh] flex flex-col overflow-hidden border border-slate-200 transform scale-100 transition-colors animate-slide-up" onClick={e => e.stopPropagation()}>
                         <div className="p-4 md:p-6 gap-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
-                            <div className="flex items-center gap-3 min-w-0"><div className="p-2 bg-amber-100 text-amber-600 rounded-lg shrink-0"><Plus className="w-5 h-5" /></div><div className="min-w-0"><h3 className="font-bold text-slate-900">Tambah Item Pelarasan</h3><p className="text-xs text-slate-500 truncate md:overflow-visible md:whitespace-normal">Pilih item baru untuk ditambah ke dalam {activeBill?.title}</p></div></div>
+                            <div className="flex items-center gap-3 min-w-0"><div className="p-2 bg-amber-100 text-amber-600 rounded-lg shrink-0"><Plus className="w-5 h-5" /></div><BookPickerHeading book={book} title="Tambah item pelarasan daripada buku kadar" hint={<>Pilih item baru untuk ditambah ke dalam {activeBill?.title}</>} /></div>
                             <button onClick={() => setIsAddItemModalOpen(false)} aria-label="Tutup" className="p-2.5 md:p-2 shrink-0 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
                         </div>
                         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">

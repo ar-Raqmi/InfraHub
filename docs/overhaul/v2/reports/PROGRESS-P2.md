@@ -1,0 +1,6 @@
+- 2026-11-21 23:17 read CONTRACT/WAVE2/API/DESIGN + editors; state bootstrapped; next: serve + migrate-legacy, build components
+- 2026-11-21 23:20 money rules moved to components/detail/moneyRules.ts (domain/money + policies); parity script 0 diffs; next: ProjectDetail wiring + header
+- 2026-11-21 23:29 built: ContractPanel/SwapSheet/PhaseStepper/CostHUD (detail), useProjectBook/RowBookFlag/bookTemplate/BookNotices (bq), editors on project book, PDF rate line; tsc 3, build green; next: e2e spec
+- 2026-11-21 23:34 e2e P2.spec.py 17/17 PASS on :8795; next: visual review desktop/phone, screenshots, report
+- 2026-11-21 23:48 evidence collected (spec 17/17 x2, parity 0 diffs, tsc 3, build, vitest 70, probes); NEEDS-lead filed; next: REPORT-P2.md
+- 2026-11-21 23:51 REPORT-P2.md written; server on :8795 stopped; done

@@ -55,6 +55,11 @@ import { BillBar, BillNavSheet, NavGroup } from '../components/bq/BillNav';
 import BillSetupToggle, { globalDimsSummary } from '../components/bq/BillSetupToggle';
 import PinnedAddButton from '../components/bq/PinnedAddButton';
 import { useIsMobile } from '../components/bq/useIsMobile';
+import { useProjectBook } from '../components/bq/useProjectBook';
+import { locateRef, refMiss, syncSnapshot, type TemplateMiss } from '../components/bq/bookTemplate';
+import { BookPickerHeading, TemplateMissSheet } from '../components/bq/BookNotices';
+import RowBookFlag, { checkRow } from '../components/bq/RowBookFlag';
+import { ProjectStatus } from '../types';
 
 
 
@@ -71,7 +76,10 @@ const BQEditor: React.FC<BQEditorProps> = ({
     const [activeBillId, setActiveBillId] = useState<string | null>(null);
     const isFirstMount = useRef(true);
     const [bills, setBills] = useState<BQGroup[]>(initialData || []);
-    const [bqLibrary, setBqLibrary] = useState<PresetGroup[]>([]);
+    // The project's own contract book (not the global Pustaka) prices every new line.
+    const book = useProjectBook(projectData);
+    const bqLibrary = book.groups;
+    const [templateMisses, setTemplateMisses] = useState<TemplateMiss[]>([]);
     const [bqTemplates, setBqTemplates] = useState<BQTemplateDefinition[]>([]);
     const [recentItems, setRecentItems] = useState<{ groupId: string, itemId: string, variantId?: string }[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -170,12 +178,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [library, templates] = await Promise.all([
-                    apiService.getLibraryGroups(),
-                    apiService.getTemplates()
-                ]);
-                setBqLibrary(library);
-                setBqTemplates(templates);
+                setBqTemplates(await apiService.getTemplates());
             } catch (err) {
                 console.error('Failed to load BQ data:', err);
             }
@@ -566,6 +569,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
         if (isMultistep && templateLocations.length === 0) { setTemplateError(true); if (onShowToast) onShowToast("Sila pilih sekurang-kurangnya satu lokasi.", "error"); return; }
 
         const newGroups: BQGroup[] = [];
+        const misses: TemplateMiss[] = [];
         if (tpl.bills && tpl.bills.length > 0) {
             tpl.bills.forEach((billDef, bIdx) => {
                 const billCalcId = `calc-${Math.random().toString(36).substr(2, 9)}`;
@@ -595,24 +599,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
                         const itemSnapshot = itemOrRef as BQItem;
                         const newItem = { ...itemSnapshot, id: Math.random().toString(36).substr(2, 9) };
 
-                        // 1. Sync with Library if source exists
-                        if (newItem.sourceItemId) {
-                            const group = bqLibrary.find(g => g.id === newItem.sourceGroupId);
-                            const libItem = group?.items.find(i => i.id === newItem.sourceItemId);
-                            if (libItem) {
-                                if (newItem.sourceVariantId) {
-                                    const libVariant = libItem.variants?.find(v => v.id === newItem.sourceVariantId);
-                                    if (libVariant) {
-                                        newItem.rate = libVariant.rate;
-                                        newItem.unit = libVariant.unit;
-                                        // Optional: Update description/label if changed in library? Keeping template desc is safer for context.
-                                    }
-                                } else {
-                                    newItem.rate = libItem.rate || 0;
-                                    newItem.unit = libItem.unit || '';
-                                }
-                            }
-                        }
+                        // 1. Re-price from the project's book; a line the book lacks stays, flagged, and is listed.
+                        const miss = syncSnapshot(newItem, book.index);
+                        if (miss) misses.push(miss);
 
                         // 2. Apply Global Dimensions from Import Step
                         const currentTplDims = (tpl.key === 'PERMULAAN_BASIC' || tpl.key === 'PERMULAAN_EMPTY') ? null : templateDims;
@@ -633,7 +622,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
                     } else {
                         // LEGACY REF MODE (Backwards Compatibility)
                         const ref = itemOrRef as BQTemplateItemRef;
-                        const group = bqLibrary.find(g => g.id === ref.groupId);
+                        const located = locateRef(bqLibrary, ref);
+                        if (!located) misses.push(refMiss(ref));
+                        const group = located?.group;
                         if (group) {
                             // Add Group Header if changed
                             if (ref.groupId !== lastGroupId) {
@@ -642,7 +633,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                 lastItemId = ''; // Reset item tracker on group change
                             }
 
-                            const libItem = group.items.find(i => i.id === ref.itemId);
+                            const libItem = located.item;
                             if (libItem) {
                                 // Handle Item Header for Variants
                                 if (ref.variantId || (libItem.variants && libItem.variants.length > 0)) {
@@ -656,9 +647,9 @@ const BQEditor: React.FC<BQEditorProps> = ({
                                     lastItemId = ref.itemId;
                                 }
 
-                                const bqIt = createItem(bqLibrary, ref.groupId, ref.itemId, ref.variantId);
+                                const bqIt = createItem(bqLibrary, group.id, ref.itemId, ref.variantId);
                                 // Restore source tracking
-                                bqIt.sourceGroupId = ref.groupId;
+                                bqIt.sourceGroupId = group.id;
                                 bqIt.sourceItemId = ref.itemId;
                                 bqIt.sourceVariantId = ref.variantId;
 
@@ -686,6 +677,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
         setBills(renumberedBills);
         if (renumberedBills.length > 0 && newGroups.length > 0) setActiveBillId(newGroups[0].id);
         setIsTemplateModalOpen(false);
+        setTemplateMisses(misses);
     };
 
     const handleCaptureTemplate = async () => {
@@ -1121,6 +1113,14 @@ const BQEditor: React.FC<BQEditorProps> = ({
         />
     );
 
+    // Draf rows only: a signed BQ keeps its contract rates and is not nagged about later books.
+    const showBookFlags = (!projectData.status || projectData.status === ProjectStatus.FASA_DRAF) && !book.isLoading && book.groups.length > 0;
+    const renderBookFlag = (bill: BQGroup, item: BQItem) => {
+        const check = showBookFlags && book.contract ? checkRow(item, book.index) : null;
+        if (!check || !book.contract) return null;
+        return <RowBookFlag item={item} check={check} contract={book.contract} versionNo={book.versionNo} readOnly={readOnly} onApply={(updates) => updateItem(bill.id, item.id, updates)} />;
+    };
+
     const renderItemRow = (bill: BQGroup, item: BQItem, index: number, isHidden: boolean) => {
         if (isHidden) return null;
         const autoNumber = getAutoNumber(bill.items, index);
@@ -1170,10 +1170,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
         }
         const paddingLeftClass = 'pl-10';
         const isRecentlyAdded = lastAddedItemId === item.id;
+        const bookFlag = renderBookFlag(bill, item);
         if (isMobile) {
             return (
                 <BQItemCardMobile
                     key={item.id}
+                    flag={bookFlag}
                     item={item}
                     autoNumber={autoNumber}
                     readOnly={readOnly}
@@ -1194,7 +1196,7 @@ const BQEditor: React.FC<BQEditorProps> = ({
             <div key={item.id} id={`bq-item-${item.id}`} className={`py-4 border-b border-slate-100  last:border-0 group hover:bg-slate-50  px-2 rounded-xl transition-colors duration-700 ${isRecentlyAdded ? 'bg-emerald-50/80  ring-2 ring-emerald-500' : ''}`}>
                 <div className="flex justify-between items-start gap-3 mb-2">
                     <div className="text-xs font-black text-slate-400 mt-1.5 min-w-[30px]">{autoNumber}</div>
-                    <div className={`flex-1 ${paddingLeftClass}`}><AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className="w-full bg-transparent outline-none text-sm font-medium text-slate-800" minHeight={40} />{item.variant && <div className="text-xs text-slate-500 italic mt-1">{item.variant}</div>}</div>
+                    <div className={`flex-1 ${paddingLeftClass}`}><AutoResizeTextarea value={item.description} onChange={(e) => updateItem(bill.id, item.id, { description: e.target.value })} disabled={readOnly} className="w-full bg-transparent outline-none text-sm font-medium text-slate-800" minHeight={40} />{item.variant && <div className="text-xs text-slate-500 italic mt-1">{item.variant}</div>}{bookFlag && <div className="mt-1.5">{bookFlag}</div>}</div>
                     <div className="flex flex-col items-end gap-1"><div className="flex items-center gap-1 text-xs text-slate-400"><span>Kadar:</span><DimensionInput value={item.rate} onChange={(val) => updateItem(bill.id, item.id, { rate: val })} disabled={readOnly} className="w-20 text-right bg-transparent border-b border-slate-200 focus:border-emerald-500 outline-none text-slate-700  font-mono" /></div><span className="text-xs bg-slate-100  px-2 py-0.5 rounded text-slate-500">{item.unit}</span></div>
                 </div>
                 <div className={`flex flex-col sm:flex-row items-start gap-3 bg-slate-50  p-2 rounded-lg ml-12`}>
@@ -1641,11 +1643,12 @@ const BQEditor: React.FC<BQEditorProps> = ({
             />
 
             {/* --- MODALS --- */}
+            <TemplateMissSheet misses={templateMisses} book={book} onClose={() => setTemplateMisses([])} />
             {isAddItemModalOpen && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-black/60 animate-fade-in" onClick={() => setIsAddItemModalOpen(false)}>
                     <div className="bg-white rounded-none md:rounded-[2.5rem] shadow-2xl max-w-4xl w-full h-full md:h-[80vh] flex flex-col overflow-hidden border border-slate-200  transform scale-100 transition-colors animate-slide-up" onClick={e => e.stopPropagation()}>
                         <div className="p-4 md:p-6 gap-3 border-b border-slate-100  flex justify-between items-center bg-white  shrink-0">
-                            <div className="flex items-center gap-3 min-w-0"><div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg shrink-0"><Plus className="w-5 h-5" /></div><div className="min-w-0"><h3 className="font-bold text-slate-900">Pilih Item dari Pustaka</h3><p className="text-xs text-slate-500 truncate md:overflow-visible md:whitespace-normal">Klik butang [+] untuk menambah item ke dalam {activeBill?.title}</p></div></div>
+                            <div className="flex items-center gap-3 min-w-0"><div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg shrink-0"><Plus className="w-5 h-5" /></div><BookPickerHeading book={book} hint={<>Klik butang [+] untuk menambah item ke dalam {activeBill?.title}</>} /></div>
                             <button onClick={() => setIsAddItemModalOpen(false)} aria-label="Tutup" className="p-2.5 md:p-2 shrink-0 hover:bg-slate-100  rounded-full text-slate-400 transition-colors"><X className="w-6 h-6" /></button>
                         </div>
                         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">

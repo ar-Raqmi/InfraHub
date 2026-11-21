@@ -20,11 +20,13 @@ interface BQItemCardMobileProps {
     onDelete: () => void;
     // The item's CalcPartRow list, rendered by the editor.
     children: React.ReactNode;
+    /** Stale-rate indicator for the row (components/bq/RowBookFlag), shown under the description. */
+    flag?: React.ReactNode;
 }
 
 // Phone layout of one BQ item: single column, description at full width,
 // totals and always-visible actions at the foot.
-const BQItemCardMobile: React.FC<BQItemCardMobileProps> = ({ item, autoNumber, readOnly, isRecentlyAdded, isFirst, onUpdate, onToggleGlobal, onToggleCustomCalc, onAddPart, onMove, onDelete, children }) => (
+const BQItemCardMobile: React.FC<BQItemCardMobileProps> = ({ item, autoNumber, readOnly, isRecentlyAdded, isFirst, onUpdate, onToggleGlobal, onToggleCustomCalc, onAddPart, onMove, onDelete, children, flag }) => (
     <div id={`bq-item-${item.id}`} className={`p-3 rounded-2xl border bg-white transition-colors duration-700 ${isRecentlyAdded ? 'bg-emerald-50/80 ring-2 ring-emerald-500 border-emerald-200' : 'border-slate-200'}`}>
         <div className="flex items-center gap-2">
             <span className="text-xs font-black text-slate-500 bg-slate-100 rounded-lg px-2 py-1">{autoNumber}</span>
@@ -37,6 +39,7 @@ const BQItemCardMobile: React.FC<BQItemCardMobileProps> = ({ item, autoNumber, r
         <div className="mt-3">
             <ClampedTextarea value={item.description} onChange={(e) => onUpdate({ description: e.target.value })} disabled={readOnly} lines={3} className="w-full bg-transparent outline-none text-base font-medium text-slate-800" />
             {item.variant && <div className="text-sm text-slate-500 italic mt-1 break-words">{item.variant}</div>}
+            {flag && <div className="mt-1">{flag}</div>}
         </div>
         <div className="mt-2 space-y-2">
             {item.isCustomCalc ? (

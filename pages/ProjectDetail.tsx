@@ -28,6 +28,14 @@ import LokasiTextarea from '../components/detail/LokasiTextarea';
 import { STATUS_OPTIONS, TriColourBar, parseProgress } from '../components/detail/progress';
 import { useIsMobile } from '../components/detail/useIsMobile';
 import { useAutosize } from '../components/detail/useAutosize';
+import CostHUD from '../components/detail/CostHUD';
+import ContractPanel from '../components/detail/ContractPanel';
+import { PhaseStepperDesktop, PhaseStepperPhone } from '../components/detail/PhaseStepper';
+import { useOrgConfig } from '../hooks/useOrgConfig';
+import { useContracts } from '../hooks/useContracts';
+import { useRateBookVersions } from '../hooks/useRateBook';
+import { rateSourceLabel } from '../components/bq/useProjectBook';
+import { ladPatch, ladPolicyFor, locPatch, locPolicyFor, settlementPatch, toPolicyRules } from '../components/detail/moneyRules';
 
 
 
@@ -78,151 +86,15 @@ const calculateBusinessDays = (startDateStr: string, endDateStr: string): number
   return count;
 };
 
-interface CostHUDProps {
-  grandTotal: number;
-  finalTotal?: number;
-  extraTotal?: number;
-  status: ProjectStatus;
-  progress: number;
-  onStatusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  onProgressChange: (val: number) => void;
-  saveAction: React.ReactNode;
-  exportAction: React.ReactNode;
-  isPelarasanActive: boolean;
-  isReadOnly?: boolean;
-  isVerifying?: boolean;
-  hasFullData?: boolean;
-  showRemoteUpdateNotice?: boolean;
-  onApplyRemoteUpdate?: () => void;
-  hasUnsavedChanges?: boolean;
-  isNewProject?: boolean;
-}
-
-const CostHUD = ({
-  grandTotal, finalTotal, extraTotal, status, progress,
-  onStatusChange, onProgressChange, saveAction, exportAction,
-  isPelarasanActive, isReadOnly, isVerifying, hasFullData,
-  showRemoteUpdateNotice, onApplyRemoteUpdate,
-  hasUnsavedChanges, isNewProject
-}: CostHUDProps) => {
-  const saveState = getSaveState(!!isNewProject, !!hasUnsavedChanges);
-  const [localProgress, setLocalProgress] = useState(progress ? progress.toString() : '0');
-  const [isEditingProgress, setIsEditingProgress] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { setLocalProgress(progress !== undefined ? progress.toString() : '0'); }, [progress]);
-
-  const handleBlur = () => {
-    const val = parseProgress(localProgress);
-    onProgressChange(val); setLocalProgress(val.toString());
-    setIsEditingProgress(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleBlur();
-      (e.currentTarget as HTMLInputElement).blur();
-    }
-  };
-
-  const toggleEdit = () => {
-    if (isReadOnly) return;
-    setIsEditingProgress(true);
-    setTimeout(() => inputRef.current?.focus(), 50);
-  };
-
-  return createPortal(
-    <div className="fixed top-0 left-0 md:left-28 right-0 z-[90] max-md:hidden bg-white border-b border-slate-300 shadow-xl no-print">
-      <div className="grid grid-cols-1 md:grid-cols-[1.4fr_minmax(0,1.4fr)_1.2fr] items-center px-3 py-1.5 md:px-8 md:py-3 gap-2 md:gap-0">
-
-        <div className="flex items-center gap-2 md:gap-3 justify-between md:justify-start w-full">
-          <div className="flex items-center gap-2 md:gap-3 shrink-0">
-
-            <div className="relative group">
-              <select
-                name="status"
-                value={status}
-                onChange={onStatusChange}
-                disabled={isReadOnly}
-                className="appearance-none bg-slate-100 border-2 border-slate-200 rounded-xl py-1 md:py-1.5 pl-3 md:pl-4 pr-8 md:pr-10 text-[10px] md:text-[11px] font-black text-slate-700 focus:ring-2 focus:ring-emerald-500 transition-all uppercase tracking-wider cursor-pointer hover:bg-white hover:border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400 pointer-events-none group-hover:text-emerald-500 transition-colors" />
-            </div>
-            {!isReadOnly && <div className="scale-90 md:scale-95">{saveAction}</div>}
-            <div className="scale-90 md:scale-95">{exportAction}</div>
-            
-            <div className={`hidden sm:flex px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider items-center ${saveState.className}`}>
-              {saveState.label}
-            </div>
-          </div>
-
-        </div>
-
-        <div className="hidden md:flex flex-col items-center justify-center w-full max-w-md mx-auto px-4">
-          <div className="flex items-center justify-between w-full mb-1 px-1">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prestasi Projek</span>
-            <div
-              className={`flex items-center gap-1 px-2 py-0 rounded-lg transition-all ${isReadOnly ? '' : 'hover:bg-emerald-50 cursor-pointer group'}`}
-              onClick={toggleEdit}
-            >
-              <div className="flex items-baseline">
-                <input
-                  ref={inputRef}
-                  type="number"
-                  value={localProgress}
-                  onChange={(e) => setLocalProgress(e.target.value)}
-                  onBlur={handleBlur}
-                  onKeyDown={handleKeyDown}
-                  disabled={isReadOnly}
-                  className={`w-10 text-right bg-transparent border-b-2 border-transparent p-0 text-base font-black text-emerald-600 focus:ring-0 outline-none transition-all ${isEditingProgress ? 'border-emerald-500 bg-white shadow-inner rounded-t px-1' : ''}`}
-                />
-                <span className="text-xs font-black text-emerald-500/50">%</span>
-              </div>
-              {!isReadOnly && <Edit className="w-3 h-3 text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity" />}
-            </div>
-          </div>
-          <TriColourBar progress={progress} className="flex gap-1 h-3.5 w-full" segmentClassName="flex-1 bg-slate-100 border border-slate-900 overflow-hidden h-full" />
-        </div>
-
-        {/* Column 3: Price Breakdown (Right) */}
-        <div className="hidden md:flex items-center justify-end gap-6 w-full">
-          <div className="flex flex-col items-end shrink-0">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 leading-none text-right">
-              {isPelarasanActive ? 'Harga Kontrak' : 'Jumlah Kos'}
-            </p>
-            <p className={`font-mono font-bold leading-none ${isPelarasanActive ? 'text-slate-400 line-through text-base' : 'text-xl text-emerald-600'}`}>
-              {(isVerifying || !hasFullData) ? (
-                <span className="animate-pulse opacity-50 px-2 bg-slate-100 rounded text-sm font-sans uppercase tracking-tight text-slate-400">Memuatkan...</span>
-              ) : formatCurrency(grandTotal)}
-            </p>
-          </div>
-
-          {isPelarasanActive && finalTotal !== undefined && (
-            <div className="flex items-center gap-6 border-l-2 border-slate-100 pl-6 shrink-0">
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5 leading-none text-right">Harga Akhir</span>
-                <p className={`text-xl font-black font-mono leading-none ${finalTotal < grandTotal ? 'text-red-600' : finalTotal > grandTotal ? 'text-blue-600' : 'text-emerald-600'}`}>
-                  {formatCurrency(finalTotal)}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-    </div>,
-    document.body
-  );
-};
-
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, projects = [], onClose, onSave, onSwitchProject, currentUserRole, selectedYear, onShowToast }) => {
   const { createProject, createProjectAsync, updateProject, updateProjectAsync } = useProjects();
   const { users } = useUsers();
   const queryClient = useQueryClient();
   const projectYear = project?.tarikhBuka ? new Date(project.tarikhBuka).getFullYear() : selectedYear;
   const { companies, votes: voteNumbers, sebuthargaNumbers, settings } = useSettings(projectYear);
+  const { policies } = useOrgConfig();
+  const { contracts, activeContract } = useContracts();
+  const policyRules = useMemo(() => toPolicyRules(policies), [policies]);
 
   // Get the latest project data from the cache (which is updated by Realtime in useProjects)
   const { data: latestProject, isFetching: isVerifying, isError: isVerifyError } = useQuery({
@@ -765,88 +637,23 @@ const CACHE_VERSION = 'v126';
     if (formData.tempohKontrak !== newVal) { setFormData(prev => ({ ...prev, tempohKontrak: newVal })); }
   }, [tempohVal, tempohUnit]);
 
+  // LAD / LoC / kos sebenar: domain/money fed by the dated policy rules (Tetapan), see components/detail/moneyRules.
   useEffect(() => {
-    if (formData.tarikhTamatKontrak && formData.tarikhSiapSebenar) {
-      const endDate = new Date(formData.tarikhTamatKontrak); const actualDate = new Date(formData.tarikhSiapSebenar);
-      const timeDiff = actualDate.getTime() - endDate.getTime(); const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      const ladDays = dayDiff > 0 ? dayDiff : 0; const contractSum = formData.kosProjek || 0;
-      let dailyRate = contractSum < 20000 ? 20.00 : Math.round(((contractSum * 0.064) / 365 + Number.EPSILON) * 100) / 100;
-      const totalLad = parseFloat((dailyRate * ladDays).toFixed(2));
-      if (formData.ladDays !== ladDays || formData.ladAmount !== totalLad) { setFormData(prev => ({ ...prev, ladDays: ladDays, ladAmount: totalLad })); }
-    } else { if (formData.ladDays !== 0 && formData.ladDays !== undefined) { setFormData(prev => ({ ...prev, ladDays: 0, ladAmount: 0 })); } }
-  }, [formData.tarikhTamatKontrak, formData.tarikhSiapSebenar, formData.kosProjek]);
+    if (!policyRules.length) return;
+    const patch = ladPatch(formData, ladPolicyFor(policyRules, formData));
+    if (patch) setFormData(prev => ({ ...prev, ...patch }));
+  }, [formData.tarikhTamatKontrak, formData.tarikhSiapSebenar, formData.kosProjek, policyRules]);
 
-  // --- LoC Calculation Effect ---
   useEffect(() => {
-    if (formData.isLocDeductionEnabled !== false) {
-      if (formData.tarikhSiapSebenar && formData.tarikhTuntutanBayaran) {
-        const siapDate = new Date(formData.tarikhSiapSebenar);
-        const tuntutanDate = new Date(formData.tarikhTuntutanBayaran);
-
-        const timeDiff = tuntutanDate.getTime() - siapDate.getTime();
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-        const locDays = Math.max(0, dayDiff - 14);
-        const locRate = 100.00;
-        const totalLoC = locDays * locRate;
-
-        if (formData.locDays !== locDays || formData.locAmount !== totalLoC) {
-          setFormData(prev => ({ ...prev, locDays: locDays, locAmount: totalLoC }));
-        }
-      } else {
-        if (formData.locDays !== 0 && formData.locDays !== undefined) {
-          setFormData(prev => ({ ...prev, locDays: 0, locAmount: 0 }));
-        }
-      }
-    } else {
-      if (formData.locDays !== 0 || formData.locAmount !== 0) {
-        setFormData(prev => ({ ...prev, locDays: 0, locAmount: 0 }));
-      }
-    }
-  }, [formData.tarikhSiapSebenar, formData.tarikhTuntutanBayaran, formData.isLocDeductionEnabled]);
+    if (!policyRules.length) return;
+    const patch = locPatch(formData, locPolicyFor(policyRules, formData));
+    if (patch) setFormData(prev => ({ ...prev, ...patch }));
+  }, [formData.tarikhSiapSebenar, formData.tarikhTuntutanBayaran, formData.isLocDeductionEnabled, policyRules]);
 
   useEffect(() => {
     if (project?.id && !hasFullSyncRef.current) return;
-    const bqSum = formData.bqDataPelarasan?.reduce((acc, group) => {
-      const gSum = group.items.reduce((itemSum, item) => {
-        const val = Number(item.amount) || 0;
-        return itemSum + val;
-      }, 0);
-      return acc + gSum;
-    }, 0);
-
-    const bqOriginalSum = formData.bqData?.reduce((acc, group) => {
-      const gSum = group.items.reduce((itemSum, item) => {
-        const val = Number(item.amount) || 0;
-        return itemSum + val;
-      }, 0);
-      return acc + gSum;
-    }, 0) || 0;
-
-    const bqSumVal = bqSum || 0;
-    const hasPelarasan = formData.bqDataPelarasan && formData.bqDataPelarasan.length > 0;
-    
-    const rawAdjustedBqSum = (bqSumVal === 0 && !hasPelarasan)
-      ? (Number(formData.kosProjek) || 0)
-      : bqSumVal;
-
-    const contractPrice = Number(formData.kosProjek) || 0;
-    const cappedAdjustedBqSum = Math.min(rawAdjustedBqSum, contractPrice);
-    const extraPrice = Math.max(0, rawAdjustedBqSum - contractPrice);
-
-    const ladAmount = Number(formData.ladAmount) || 0;
-    const locAmount = Number(formData.locAmount) || 0;
-    const wangTahanan = Number(formData.wangTahanan) || 0;
-
-    const finalCalculatedTotal = cappedAdjustedBqSum - ladAmount - locAmount - wangTahanan;
-
-    if (Number(formData.kosSebenar) !== finalCalculatedTotal || Number(formData.bqPelarasanExtra) !== extraPrice) {
-      setFormData(prev => ({
-        ...prev,
-        kosSebenar: Math.max(0, parseFloat(finalCalculatedTotal.toFixed(2))),
-        bqPelarasanExtra: parseFloat(extraPrice.toFixed(2))
-      }));
-    }
+    const patch = settlementPatch(formData);
+    if (patch) setFormData(prev => ({ ...prev, ...patch }));
   }, [formData.bqDataPelarasan, formData.ladAmount, formData.locAmount, formData.wangTahanan, formData.kosProjek, formData.bqData]);
 
   useEffect(() => {
@@ -953,6 +760,31 @@ const CACHE_VERSION = 'v126';
     }
   }, [formData.bqData]);
 
+  // No. Sebutharga follows the bound contract (new projects: the AKTIF one the API will bind them to).
+  const boundContract = contracts.find(c => c.id === formData.contractId) ?? (formData.contractId ? undefined : activeContract);
+  const boundContractCode = boundContract?.code;
+  const { data: bookVersions = [] } = useRateBookVersions(boundContract?.id);
+  const pricedVersionNo = bookVersions.find(v => v.id === formData.rateBookVersionId)?.versionNo ?? boundContract?.stats?.currentVersion ?? null;
+  useEffect(() => {
+    if (boundContractCode && !formData.noSebutharga) setFormData(prev => ({ ...prev, noSebutharga: boundContractCode }));
+  }, [boundContractCode, formData.noSebutharga]);
+
+  const saveBeforeSwap = async () => {
+    if (!project?.id) return;
+    await updateProjectAsync({ id: project.id, updates: formData });
+    setHasUnsavedChanges(false);
+    onShowToast?.('Perubahan projek disimpan dahulu sebelum menukar sebutharga.', 'info');
+  };
+
+  // Re-price applied on the server: take its BQ, total, contract and No. Sebutharga as the new saved state.
+  const handleContractApplied = (saved: Project) => {
+    setFormData(prev => ({ ...prev, bqData: saved.bqData, kosProjek: saved.kosProjek, contractId: saved.contractId, rateBookVersionId: saved.rateBookVersionId, noSebutharga: saved.noSebutharga, updatedAt: saved.updatedAt }));
+    setHasUnsavedChanges(false);
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    queryClient.invalidateQueries({ queryKey: ['contracts'] });
+    onShowToast?.(`Projek kini memakai sebutharga ${saved.noSebutharga}.`, 'success');
+  };
+
   const handleAkuJanjiUpdate = (updates: Partial<Project>) => {
     setFormData(prev => ({ ...prev, ...updates }));
     setHasUnsavedChanges(true);
@@ -989,7 +821,7 @@ const CACHE_VERSION = 'v126';
   };
 
   const handleExportRealBQPDF = async () => {
-    await BQPDFExporter.exportBQ(formData, users, locationRows);
+    await BQPDFExporter.exportBQ(formData, users, locationRows, rateSourceLabel(boundContract, pricedVersionNo));
   };
 
   const handleExportRealPelarasanPDF = async () => {
@@ -1086,7 +918,7 @@ const CACHE_VERSION = 'v126';
       <div className="group"> <label className={labelClass}>No. Inden</label> <input type="text" name="noInden" value={formData.noInden || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass} placeholder="cth: A00321423" /> </div>
     ),
     noSebutharga: (
-      <div className="group"> <label className={labelClass}>No. Sebutharga</label> <select name="noSebutharga" value={formData.noSebutharga || ''} onChange={handleInputChange} disabled={isPTSectionReadOnly} className={inputClass}> <option value="">Pilih No. Sebutharga...</option> {sebuthargaNumbers.map(sh => <option key={sh} value={sh}>{sh}</option>)} </select> </div>
+      <div className="group"> <label className={labelClass}>No. Sebutharga</label> <input type="text" name="noSebutharga" value={formData.noSebutharga || ''} readOnly className={`${inputClass} bg-slate-50`} aria-describedby="noSebutharga-hint" /> <p id="noSebutharga-hint" className="mt-1 text-xs text-muted">Ditetapkan oleh kontrak projek. Tukar melalui "Tukar sebutharga" di atas.</p> </div>
     ),
   };
   const ptCardTop = (
@@ -1223,6 +1055,15 @@ const CACHE_VERSION = 'v126';
           onProgressChange={handleProgressChange}
           readOnly={isGlobalReadOnly}
         />}
+        {isMobile && <PhaseStepperPhone project={formData} />}
+        <ContractPanel
+          project={formData}
+          savedId={project?.id}
+          readOnly={isGlobalReadOnly}
+          hasUnsavedChanges={hasUnsavedChanges}
+          onApplied={handleContractApplied}
+          onSaveFirst={saveBeforeSwap}
+        />
         
         {/* Warning Notice & Certificate Status Card */}
         {(() => {
@@ -1359,9 +1200,7 @@ const CACHE_VERSION = 'v126';
         })()}
         
         <div className="mb-6 max-md:hidden">
-          <div className="grid grid-cols-4 bg-slate-100 p-1 rounded-2xl gap-2 border border-slate-200">
-            {TABS.map((tab) => (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-2 py-3 md:px-4 md:py-3 rounded-xl text-[10px] md:text-xs font-bold transition-colors flex flex-col md:flex-row items-center justify-center gap-2 border border-transparent ${activeTab === tab.id ? `${tab.color}` : 'text-slate-500 hover:bg-slate-200 hover:text-slate-900'}`} > {tab.label} </button>))}
-          </div>
+          <PhaseStepperDesktop project={formData} tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
         {activeTab === 'phase1' && (
           <div className="space-y-4">
