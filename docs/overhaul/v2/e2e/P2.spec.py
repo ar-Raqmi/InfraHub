@@ -296,7 +296,11 @@ class Scenario:
         status, _ = api.call('POST', f'/projects/{self.pid}/contract', {'contractId': aktif['id']})
         check('API refuses the swap once No. Inden is set', status == 423, f'status={status}')
         self.ui.open(self.pid)
-        page.locator('[data-testid=reprice-banner]').get_by_role('button', name='Harga semula').click()
+        # An issued No. Inden locks the project to its rates (domain/repricing), so the re-price nag goes away;
+        # the swap is still reachable through "Tukar sebutharga", where the lock is explained and can be lifted.
+        page.wait_for_selector('[data-testid=swap-open]', timeout=20000)
+        check('No. Inden hides the re-price banner (locked to its rates)', not page.locator('[data-testid=reprice-banner]').is_visible())
+        page.click('[data-testid=swap-open]')
         page.click(f'button[data-code="{aktif["code"]}"]')
         page.wait_for_selector('[data-testid=reprice-preview]', timeout=20000)
         check('UI shows why it is locked and keeps apply disabled',

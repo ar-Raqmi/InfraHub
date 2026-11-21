@@ -160,7 +160,7 @@ def verify_lad(page, st, shots):
 
 def verify_notis_preview(page, base, project, shots):
     page.goto(f'{base}/project.html?id={project["id"]}')
-    page.get_by_role('button', name=re.compile('File Creation')).click()
+    page.get_by_role('tab', name=re.compile('File Creation')).click()  # phase tabs are role=tab since P2's stepper
     page.get_by_role('button', name='Jana Notis').click()
     page.locator('select').filter(has_text='Notis Pemberitahuan').select_option('PERINGATAN_1')
     expect(page.locator('[data-testid=notis-preview]')).to_contain_text(f'pihak {SHORT} meminta tuntutan')
