@@ -3,7 +3,7 @@
 
 Standalone: python P1.spec.py --base http://localhost:8794
 Creates its own data (a STANDALONE clone of the AKTIF contract + one FASA_DRAF project), never edits the AKTIF
-contract, deletes the project at the end. The test contract stays (DITUTUP) because the API has no contract DELETE.
+contract, deletes the project and then the (now unused) test contract at the end.
 Password: line 2 of ~/Documents/InfraHub-backups/dev-seed/CREDS.txt (or env INFRAHUB_E2E_PASSWORD); never printed.
 """
 import argparse, datetime, json, os, sys, time, urllib.error, urllib.request
@@ -160,11 +160,15 @@ def scope_filter_totals(browser, base, api, aktif, contract):
     ctx.close()
 
 
-def cleanup(api, project):
+def cleanup(api, project, contract):
     status, _ = api.call('DELETE', f"/projects/{project['id']}")
     _, projects = api.call('GET', '/projects')
     gone = all(p['id'] != project['id'] for p in projects)
     check('cleanup: test project deleted', status == 200 and gone, f'status={status}')
+    # Only possible once no project uses it: DELETE /contracts refuses AKTIF or used contracts (409).
+    status, _ = api.call('DELETE', f"/contracts/{contract['id']}")
+    _, contracts = api.call('GET', '/contracts')
+    check('cleanup: test contract deleted', status == 200 and all(c['id'] != contract['id'] for c in contracts), f'status={status}')
 
 
 def stage(name, fn, *args):
@@ -194,8 +198,7 @@ def main():
             stage('scope totals', scope_filter_totals, browser, base, api, aktif, contract)
         finally:
             if project:
-                cleanup(api, project)
-                print(f"NOTE  contract {contract['code']} left in DITUTUP state (the API has no contract DELETE)")
+                cleanup(api, project, contract)
             browser.close()
     print(f'{sum(results)}/{len(results)} checks passed')
     sys.exit(0 if all(results) else 1)
