@@ -17,6 +17,9 @@ describe('repriceReason', () => {
     expect(repriceReason(project({ contractId: 'a' }), byId)).toBeNull();
     expect(repriceReason(project({ contractId: 'c', status: ProjectStatus.DALAM_PROSES }), byId)).toBeNull();
   });
+  it('treats an issued No. Inden as locked to its sebutharga', () => {
+    expect(repriceReason(project({ contractId: 'c', status: ProjectStatus.MENUNGGU_LANTIKAN, noInden: 'A0012345' }), byId)).toBeNull();
+  });
 });
 
 describe('paperworkWait', () => {

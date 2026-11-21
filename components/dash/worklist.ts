@@ -1,4 +1,5 @@
 import { Contract, Project, ProjectStatus } from '../../types';
+import { repriceReason as domainRepriceReason } from '../../domain/repricing';
 
 /** Pure "Perlu tindakan" rules for the dashboard. No React, no fetching: inputs in, lists out. */
 
@@ -33,18 +34,9 @@ export function pendingNotice(project: Project, today: string = todayIso()): str
   return null;
 }
 
-const PRE_AWARD = new Set<ProjectStatus>([ProjectStatus.FASA_DRAF, ProjectStatus.MENUNGGU_LANTIKAN]);
-
-/** Why a not-yet-awarded project must be re-priced, or null when its sebutharga is the live one. */
-export function repriceReason(project: Project, contractsById: Map<string, Contract>): string | null {
-  if (!PRE_AWARD.has(project.status)) return null;
-  if (!project.contractId) return 'Tiada sebutharga';
-  const contract = contractsById.get(project.contractId);
-  if (!contract) return 'Sebutharga tidak dijumpai';
-  if (contract.status === 'DITUTUP') return 'Sebutharga sudah ditutup';
-  if (contract.status === 'DRAF') return 'Sebutharga masih draf';
-  return null;
-}
+/** Why a not-yet-awarded project must be re-priced (rule: domain/repricing), or null when its sebutharga is usable. */
+export const repriceReason = (project: Project, contractsById: Map<string, Contract>): string | null =>
+  domainRepriceReason(project, id => contractsById.get(id)?.status);
 
 export type PaperworkStage = 'TUNTUTAN' | 'KEWANGAN';
 

@@ -41,6 +41,10 @@ projectApp.get('/:id', async (c) => {
 // POST /api/projects
 projectApp.post('/', async (c) => {
   const body = await c.req.json()
+  if (!body || typeof body !== 'object') throw new HttpError(400, 'Badan permintaan JSON diperlukan')
+  // NOT NULL columns: an omitted field is stored as the empty string the form itself sends (drafts may be saved
+  // before BP is chosen; 5 live projects have bp = ''), instead of failing with a 500 on the constraint.
+  for (const k of ['namaProjek', 'bp'] as const) body[k] ??= ''
   const repo = new ProjectRepository(c.env.DB)
   const created = await repo.create(body, await bindingFor(c.env.DB, body.contractId))
   return c.json(created)
