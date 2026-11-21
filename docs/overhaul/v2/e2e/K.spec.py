@@ -15,6 +15,7 @@ from pathlib import Path
 
 from openpyxl import Workbook
 from playwright.sync_api import sync_playwright
+from e2e_http import USER_AGENT
 
 CHROME = '/home/rezephyr/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'
 CREDS = Path.home() / 'Documents/InfraHub-backups/dev-seed/CREDS.txt'
@@ -36,7 +37,7 @@ class Api:
         self.user = None
 
     def call(self, method, path, body=None):
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json', 'User-Agent': USER_AGENT}
         if self.user:
             headers['X-InfraHub-User'] = str(self.user['id'])
         req = urllib.request.Request(f'{self.base}/api{path}', method=method, headers=headers,

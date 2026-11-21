@@ -22,6 +22,7 @@ import urllib.error
 import urllib.request
 
 from playwright.sync_api import expect, sync_playwright
+from e2e_http import USER_AGENT
 
 CHROME = '/home/rezephyr/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'
 CREDS = os.path.expanduser('~/Documents/InfraHub-backups/dev-seed/CREDS.txt')
@@ -40,7 +41,7 @@ class Api:
         self.uid = None
 
     def call(self, path, method='GET', body=None):
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json', 'User-Agent': USER_AGENT}
         if self.uid:
             headers['X-InfraHub-User'] = str(self.uid)
         data = json.dumps(body).encode() if body is not None else None

@@ -8,6 +8,7 @@ Password: line 2 of ~/Documents/InfraHub-backups/dev-seed/CREDS.txt (or env INFR
 """
 import argparse, datetime, json, os, sys, time, urllib.error, urllib.request
 from playwright.sync_api import sync_playwright
+from e2e_http import USER_AGENT
 
 CHROME = os.environ.get('CHROME', '/home/rezephyr/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome')
 STATUSES = ['FASA_DRAF', 'MENUNGGU_LANTIKAN', 'DALAM_PROSES', 'PEMERIKSAAN_TAPAK', 'TUNTUTAN_BAYARAN', 'SIAP']
@@ -32,7 +33,7 @@ class Api:
         self.user = None
 
     def call(self, method, path, body=None):
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json', 'User-Agent': USER_AGENT}
         if self.user:
             headers['X-InfraHub-User'] = str(self.user['id'])
         data = json.dumps(body).encode() if body is not None else None

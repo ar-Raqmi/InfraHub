@@ -12,6 +12,7 @@ import json
 import os
 import urllib.error
 import urllib.request
+from e2e_http import USER_AGENT
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULTS = os.path.join(HERE, '..', '..', '..', '..', 'components', 'org', 'org-defaults.json')
@@ -24,7 +25,7 @@ class Api:
         self.uid = None
 
     def call(self, path, method='GET', body=None):
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json', 'User-Agent': USER_AGENT}
         if self.uid:
             headers['X-InfraHub-User'] = str(self.uid)
         data = json.dumps(body).encode() if body is not None else None

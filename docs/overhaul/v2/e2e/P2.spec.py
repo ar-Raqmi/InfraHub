@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from playwright.sync_api import sync_playwright
+from e2e_http import USER_AGENT
 
 CREDS = Path.home() / 'Documents/InfraHub-backups/dev-seed/CREDS.txt'
 CHROME = '/home/rezephyr/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'
@@ -47,7 +48,7 @@ class Api:
 
     def call(self, method: str, path: str, body=None) -> tuple[int, Any]:
         data = json.dumps(body).encode() if body is not None else None
-        req = urllib.request.Request(f'{self.base}/api{path}', data=data, method=method)
+        req = urllib.request.Request(f'{self.base}/api{path}', data=data, method=method, headers={'User-Agent': USER_AGENT})
         req.add_header('Content-Type', 'application/json')
         if self.user:
             req.add_header('X-InfraHub-User', str(self.user['id']))
